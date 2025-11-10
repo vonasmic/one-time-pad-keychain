@@ -1,0 +1,1407 @@
+ARM GAS  /tmp/ccmRhIV4.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"hash.c"
+  14              		.text
+  15              		.section	.text.wc_HashTypeConvert,"ax",%progbits
+  16              		.align	1
+  17              		.global	wc_HashTypeConvert
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	wc_HashTypeConvert:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 431E     		subs	r3, r0, #1
+  30 0002 132B     		cmp	r3, #19
+  31 0004 28BF     		it	cs
+  32 0006 0020     		movcs	r0, #0
+  33 0008 C0B2     		uxtb	r0, r0
+  34 000a 7047     		bx	lr
+  36              		.section	.text.wc_HashGetOID,"ax",%progbits
+  37              		.align	1
+  38              		.global	wc_HashGetOID
+  39              		.syntax unified
+  40              		.thumb
+  41              		.thumb_func
+  42              		.fpu fpv4-sp-d16
+  44              	wc_HashGetOID:
+  45              		@ args = 0, pretend = 0, frame = 0
+  46              		@ frame_needed = 0, uses_anonymous_args = 0
+  47              		@ link register save eliminated.
+  48 0000 0138     		subs	r0, r0, #1
+  49 0002 C0B2     		uxtb	r0, r0
+  50 0004 1228     		cmp	r0, #18
+  51 0006 9ABF     		itte	ls
+  52 0008 024B     		ldrls	r3, .L7
+  53 000a 53F82000 		ldrls	r0, [r3, r0, lsl #2]
+  54 000e 6FF0AC00 		mvnhi	r0, #172
+  55 0012 7047     		bx	lr
+  56              	.L8:
+  57              		.align	2
+  58              	.L7:
+  59 0014 00000000 		.word	.LANCHOR0
+  61              		.section	.text.wc_OidGetHash,"ax",%progbits
+ARM GAS  /tmp/ccmRhIV4.s 			page 2
+
+
+  62              		.align	1
+  63              		.global	wc_OidGetHash
+  64              		.syntax unified
+  65              		.thumb
+  66              		.thumb_func
+  67              		.fpu fpv4-sp-d16
+  69              	wc_OidGetHash:
+  70              		@ args = 0, pretend = 0, frame = 0
+  71              		@ frame_needed = 0, uses_anonymous_args = 0
+  72              		@ link register save eliminated.
+  73 0000 124B     		ldr	r3, .L21
+  74 0002 9842     		cmp	r0, r3
+  75 0004 0FDC     		bgt	.L10
+  76 0006 0E3B     		subs	r3, r3, #14
+  77 0008 9842     		cmp	r0, r3
+  78 000a 1ADD     		ble	.L18
+  79 000c 104B     		ldr	r3, .L21+4
+  80 000e 0344     		add	r3, r3, r0
+  81 0010 0D2B     		cmp	r3, #13
+  82 0012 16D8     		bhi	.L18
+  83 0014 DFE803F0 		tbb	[pc, r3]
+  84              	.L14:
+  85 0018 13       		.byte	(.L17-.L14)/2
+  86 0019 15       		.byte	(.L18-.L14)/2
+  87 001a 0F       		.byte	(.L16-.L14)/2
+  88 001b 11       		.byte	(.L15-.L14)/2
+  89 001c 15       		.byte	(.L18-.L14)/2
+  90 001d 15       		.byte	(.L18-.L14)/2
+  91 001e 15       		.byte	(.L18-.L14)/2
+  92 001f 15       		.byte	(.L18-.L14)/2
+  93 0020 15       		.byte	(.L18-.L14)/2
+  94 0021 15       		.byte	(.L18-.L14)/2
+  95 0022 15       		.byte	(.L18-.L14)/2
+  96 0023 17       		.byte	(.L19-.L14)/2
+  97 0024 15       		.byte	(.L18-.L14)/2
+  98 0025 0D       		.byte	(.L13-.L14)/2
+  99              		.p2align 1
+ 100              	.L10:
+ 101 0026 0B4B     		ldr	r3, .L21+8
+ 102 0028 9842     		cmp	r0, r3
+ 103 002a 0CBF     		ite	eq
+ 104 002c 0420     		moveq	r0, #4
+ 105 002e 0020     		movne	r0, #0
+ 106 0030 7047     		bx	lr
+ 107              	.L13:
+ 108 0032 0A20     		movs	r0, #10
+ 109 0034 7047     		bx	lr
+ 110              	.L16:
+ 111 0036 0B20     		movs	r0, #11
+ 112 0038 7047     		bx	lr
+ 113              	.L15:
+ 114 003a 0C20     		movs	r0, #12
+ 115 003c 7047     		bx	lr
+ 116              	.L17:
+ 117 003e 0D20     		movs	r0, #13
+ 118 0040 7047     		bx	lr
+ 119              	.L18:
+ARM GAS  /tmp/ccmRhIV4.s 			page 3
+
+
+ 120 0042 0020     		movs	r0, #0
+ 121 0044 7047     		bx	lr
+ 122              	.L19:
+ 123 0046 0620     		movs	r0, #6
+ 124 0048 7047     		bx	lr
+ 125              	.L22:
+ 126 004a 00BF     		.align	2
+ 127              	.L21:
+ 128 004c FD7AB37C 		.word	2092137213
+ 129 0050 10854C83 		.word	-2092137200
+ 130 0054 31F1037D 		.word	2097410353
+ 132              		.section	.text.wc_HashGetDigestSize,"ax",%progbits
+ 133              		.align	1
+ 134              		.global	wc_HashGetDigestSize
+ 135              		.syntax unified
+ 136              		.thumb
+ 137              		.thumb_func
+ 138              		.fpu fpv4-sp-d16
+ 140              	wc_HashGetDigestSize:
+ 141              		@ args = 0, pretend = 0, frame = 0
+ 142              		@ frame_needed = 0, uses_anonymous_args = 0
+ 143              		@ link register save eliminated.
+ 144 0000 0138     		subs	r0, r0, #1
+ 145 0002 C0B2     		uxtb	r0, r0
+ 146 0004 1028     		cmp	r0, #16
+ 147 0006 9ABF     		itte	ls
+ 148 0008 024B     		ldrls	r3, .L26
+ 149 000a 33F91000 		ldrshls	r0, [r3, r0, lsl #1]
+ 150 000e 6FF0AC00 		mvnhi	r0, #172
+ 151 0012 7047     		bx	lr
+ 152              	.L27:
+ 153              		.align	2
+ 154              	.L26:
+ 155 0014 00000000 		.word	.LANCHOR1
+ 157              		.section	.text.wc_HashGetBlockSize,"ax",%progbits
+ 158              		.align	1
+ 159              		.global	wc_HashGetBlockSize
+ 160              		.syntax unified
+ 161              		.thumb
+ 162              		.thumb_func
+ 163              		.fpu fpv4-sp-d16
+ 165              	wc_HashGetBlockSize:
+ 166              		@ args = 0, pretend = 0, frame = 0
+ 167              		@ frame_needed = 0, uses_anonymous_args = 0
+ 168              		@ link register save eliminated.
+ 169 0000 0138     		subs	r0, r0, #1
+ 170 0002 C0B2     		uxtb	r0, r0
+ 171 0004 1028     		cmp	r0, #16
+ 172 0006 9ABF     		itte	ls
+ 173 0008 024B     		ldrls	r3, .L31
+ 174 000a 33F91000 		ldrshls	r0, [r3, r0, lsl #1]
+ 175 000e 6FF0AC00 		mvnhi	r0, #172
+ 176 0012 7047     		bx	lr
+ 177              	.L32:
+ 178              		.align	2
+ 179              	.L31:
+ 180 0014 00000000 		.word	.LANCHOR2
+ARM GAS  /tmp/ccmRhIV4.s 			page 4
+
+
+ 182              		.section	.text.wc_HashInit_ex,"ax",%progbits
+ 183              		.align	1
+ 184              		.global	wc_HashInit_ex
+ 185              		.syntax unified
+ 186              		.thumb
+ 187              		.thumb_func
+ 188              		.fpu fpv4-sp-d16
+ 190              	wc_HashInit_ex:
+ 191              		@ args = 0, pretend = 0, frame = 0
+ 192              		@ frame_needed = 0, uses_anonymous_args = 0
+ 193              		@ link register save eliminated.
+ 194 0000 10B4     		push	{r4}
+ 195 0002 0C46     		mov	r4, r1
+ 196 0004 1146     		mov	r1, r2
+ 197 0006 1A46     		mov	r2, r3
+ 198 0008 40B3     		cbz	r0, .L43
+ 199 000a 80F89841 		strb	r4, [r0, #408]
+ 200 000e 033C     		subs	r4, r4, #3
+ 201 0010 C0F89C11 		str	r1, [r0, #412]
+ 202 0014 0E2C     		cmp	r4, #14
+ 203 0016 21D8     		bhi	.L43
+ 204 0018 DFE804F0 		tbb	[pc, r4]
+ 205              	.L36:
+ 206 001c 25       		.byte	(.L44-.L36)/2
+ 207 001d 08       		.byte	(.L42-.L36)/2
+ 208 001e 25       		.byte	(.L44-.L36)/2
+ 209 001f 0C       		.byte	(.L41-.L36)/2
+ 210 0020 25       		.byte	(.L44-.L36)/2
+ 211 0021 25       		.byte	(.L44-.L36)/2
+ 212 0022 20       		.byte	(.L43-.L36)/2
+ 213 0023 10       		.byte	(.L40-.L36)/2
+ 214 0024 14       		.byte	(.L39-.L36)/2
+ 215 0025 18       		.byte	(.L38-.L36)/2
+ 216 0026 1C       		.byte	(.L37-.L36)/2
+ 217 0027 20       		.byte	(.L43-.L36)/2
+ 218 0028 20       		.byte	(.L43-.L36)/2
+ 219 0029 25       		.byte	(.L44-.L36)/2
+ 220 002a 25       		.byte	(.L44-.L36)/2
+ 221 002b 00       		.p2align 1
+ 222              	.L42:
+ 223 002c 5DF8044B 		ldr	r4, [sp], #4
+ 224 0030 FFF7FEBF 		b	wc_InitSha_ex
+ 225              	.L41:
+ 226 0034 5DF8044B 		ldr	r4, [sp], #4
+ 227 0038 FFF7FEBF 		b	wc_InitSha256_ex
+ 228              	.L40:
+ 229 003c 5DF8044B 		ldr	r4, [sp], #4
+ 230 0040 FFF7FEBF 		b	wc_InitSha3_224
+ 231              	.L39:
+ 232 0044 5DF8044B 		ldr	r4, [sp], #4
+ 233 0048 FFF7FEBF 		b	wc_InitSha3_256
+ 234              	.L38:
+ 235 004c 5DF8044B 		ldr	r4, [sp], #4
+ 236 0050 FFF7FEBF 		b	wc_InitSha3_384
+ 237              	.L37:
+ 238 0054 5DF8044B 		ldr	r4, [sp], #4
+ 239 0058 FFF7FEBF 		b	wc_InitSha3_512
+ARM GAS  /tmp/ccmRhIV4.s 			page 5
+
+
+ 240              	.L43:
+ 241 005c 6FF0AC00 		mvn	r0, #172
+ 242              	.L33:
+ 243 0060 5DF8044B 		ldr	r4, [sp], #4
+ 244 0064 7047     		bx	lr
+ 245              	.L44:
+ 246 0066 6FF0E700 		mvn	r0, #231
+ 247 006a F9E7     		b	.L33
+ 249              		.section	.text.wc_HashNew,"ax",%progbits
+ 250              		.align	1
+ 251              		.global	wc_HashNew
+ 252              		.syntax unified
+ 253              		.thumb
+ 254              		.thumb_func
+ 255              		.fpu fpv4-sp-d16
+ 257              	wc_HashNew:
+ 258              		@ args = 0, pretend = 0, frame = 0
+ 259              		@ frame_needed = 0, uses_anonymous_args = 0
+ 260 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 261 0004 0546     		mov	r5, r0
+ 262 0006 4FF4D070 		mov	r0, #416
+ 263 000a 0F46     		mov	r7, r1
+ 264 000c 9046     		mov	r8, r2
+ 265 000e 1E46     		mov	r6, r3
+ 266 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 267 0014 0446     		mov	r4, r0
+ 268 0016 78B1     		cbz	r0, .L48
+ 269 0018 2946     		mov	r1, r5
+ 270 001a 4346     		mov	r3, r8
+ 271 001c 3A46     		mov	r2, r7
+ 272 001e FFF7FEFF 		bl	wc_HashInit_ex
+ 273 0022 0546     		mov	r5, r0
+ 274 0024 18B1     		cbz	r0, .L46
+ 275 0026 2046     		mov	r0, r4
+ 276 0028 FFF7FEFF 		bl	wolfSSL_Free
+ 277 002c 0024     		movs	r4, #0
+ 278              	.L46:
+ 279 002e 06B1     		cbz	r6, .L45
+ 280 0030 3560     		str	r5, [r6]
+ 281              	.L45:
+ 282 0032 2046     		mov	r0, r4
+ 283 0034 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 284              	.L48:
+ 285 0038 6FF07C05 		mvn	r5, #124
+ 286 003c F7E7     		b	.L46
+ 288              		.section	.text.wc_HashInit,"ax",%progbits
+ 289              		.align	1
+ 290              		.global	wc_HashInit
+ 291              		.syntax unified
+ 292              		.thumb
+ 293              		.thumb_func
+ 294              		.fpu fpv4-sp-d16
+ 296              	wc_HashInit:
+ 297              		@ args = 0, pretend = 0, frame = 0
+ 298              		@ frame_needed = 0, uses_anonymous_args = 0
+ 299              		@ link register save eliminated.
+ 300 0000 6FF00103 		mvn	r3, #1
+ARM GAS  /tmp/ccmRhIV4.s 			page 6
+
+
+ 301 0004 0022     		movs	r2, #0
+ 302 0006 FFF7FEBF 		b	wc_HashInit_ex
+ 304              		.section	.text.wc_HashUpdate,"ax",%progbits
+ 305              		.align	1
+ 306              		.global	wc_HashUpdate
+ 307              		.syntax unified
+ 308              		.thumb
+ 309              		.thumb_func
+ 310              		.fpu fpv4-sp-d16
+ 312              	wc_HashUpdate:
+ 313              		@ args = 0, pretend = 0, frame = 0
+ 314              		@ frame_needed = 0, uses_anonymous_args = 0
+ 315              		@ link register save eliminated.
+ 316 0000 10B4     		push	{r4}
+ 317 0002 0C46     		mov	r4, r1
+ 318 0004 1146     		mov	r1, r2
+ 319 0006 1A46     		mov	r2, r3
+ 320 0008 30B3     		cbz	r0, .L68
+ 321 000a 01B9     		cbnz	r1, .L58
+ 322 000c 23BB     		cbnz	r3, .L68
+ 323              	.L58:
+ 324 000e E31E     		subs	r3, r4, #3
+ 325 0010 0E2B     		cmp	r3, #14
+ 326 0012 21D8     		bhi	.L68
+ 327 0014 DFE803F0 		tbb	[pc, r3]
+ 328              	.L60:
+ 329 0018 25       		.byte	(.L69-.L60)/2
+ 330 0019 08       		.byte	(.L66-.L60)/2
+ 331 001a 25       		.byte	(.L69-.L60)/2
+ 332 001b 0C       		.byte	(.L65-.L60)/2
+ 333 001c 25       		.byte	(.L69-.L60)/2
+ 334 001d 25       		.byte	(.L69-.L60)/2
+ 335 001e 20       		.byte	(.L68-.L60)/2
+ 336 001f 10       		.byte	(.L64-.L60)/2
+ 337 0020 14       		.byte	(.L63-.L60)/2
+ 338 0021 18       		.byte	(.L62-.L60)/2
+ 339 0022 1C       		.byte	(.L61-.L60)/2
+ 340 0023 20       		.byte	(.L68-.L60)/2
+ 341 0024 20       		.byte	(.L68-.L60)/2
+ 342 0025 25       		.byte	(.L69-.L60)/2
+ 343 0026 25       		.byte	(.L69-.L60)/2
+ 344 0027 00       		.p2align 1
+ 345              	.L66:
+ 346 0028 5DF8044B 		ldr	r4, [sp], #4
+ 347 002c FFF7FEBF 		b	wc_ShaUpdate
+ 348              	.L65:
+ 349 0030 5DF8044B 		ldr	r4, [sp], #4
+ 350 0034 FFF7FEBF 		b	wc_Sha256Update
+ 351              	.L64:
+ 352 0038 5DF8044B 		ldr	r4, [sp], #4
+ 353 003c FFF7FEBF 		b	wc_Sha3_224_Update
+ 354              	.L63:
+ 355 0040 5DF8044B 		ldr	r4, [sp], #4
+ 356 0044 FFF7FEBF 		b	wc_Sha3_256_Update
+ 357              	.L62:
+ 358 0048 5DF8044B 		ldr	r4, [sp], #4
+ 359 004c FFF7FEBF 		b	wc_Sha3_384_Update
+ARM GAS  /tmp/ccmRhIV4.s 			page 7
+
+
+ 360              	.L61:
+ 361 0050 5DF8044B 		ldr	r4, [sp], #4
+ 362 0054 FFF7FEBF 		b	wc_Sha3_512_Update
+ 363              	.L68:
+ 364 0058 6FF0AC00 		mvn	r0, #172
+ 365              	.L56:
+ 366 005c 5DF8044B 		ldr	r4, [sp], #4
+ 367 0060 7047     		bx	lr
+ 368              	.L69:
+ 369 0062 6FF0E700 		mvn	r0, #231
+ 370 0066 F9E7     		b	.L56
+ 372              		.section	.text.wc_HashFinal,"ax",%progbits
+ 373              		.align	1
+ 374              		.global	wc_HashFinal
+ 375              		.syntax unified
+ 376              		.thumb
+ 377              		.thumb_func
+ 378              		.fpu fpv4-sp-d16
+ 380              	wc_HashFinal:
+ 381              		@ args = 0, pretend = 0, frame = 0
+ 382              		@ frame_needed = 0, uses_anonymous_args = 0
+ 383              		@ link register save eliminated.
+ 384 0000 0B46     		mov	r3, r1
+ 385 0002 1146     		mov	r1, r2
+ 386 0004 C8B1     		cbz	r0, .L81
+ 387 0006 C2B1     		cbz	r2, .L81
+ 388 0008 033B     		subs	r3, r3, #3
+ 389 000a 0E2B     		cmp	r3, #14
+ 390 000c 15D8     		bhi	.L81
+ 391 000e DFE803F0 		tbb	[pc, r3]
+ 392              	.L73:
+ 393 0012 17       		.byte	(.L82-.L73)/2
+ 394 0013 08       		.byte	(.L79-.L73)/2
+ 395 0014 17       		.byte	(.L82-.L73)/2
+ 396 0015 0A       		.byte	(.L78-.L73)/2
+ 397 0016 17       		.byte	(.L82-.L73)/2
+ 398 0017 17       		.byte	(.L82-.L73)/2
+ 399 0018 14       		.byte	(.L81-.L73)/2
+ 400 0019 0C       		.byte	(.L77-.L73)/2
+ 401 001a 0E       		.byte	(.L76-.L73)/2
+ 402 001b 10       		.byte	(.L75-.L73)/2
+ 403 001c 12       		.byte	(.L74-.L73)/2
+ 404 001d 14       		.byte	(.L81-.L73)/2
+ 405 001e 14       		.byte	(.L81-.L73)/2
+ 406 001f 17       		.byte	(.L82-.L73)/2
+ 407 0020 17       		.byte	(.L82-.L73)/2
+ 408 0021 00       		.p2align 1
+ 409              	.L79:
+ 410 0022 FFF7FEBF 		b	wc_ShaFinal
+ 411              	.L78:
+ 412 0026 FFF7FEBF 		b	wc_Sha256Final
+ 413              	.L77:
+ 414 002a FFF7FEBF 		b	wc_Sha3_224_Final
+ 415              	.L76:
+ 416 002e FFF7FEBF 		b	wc_Sha3_256_Final
+ 417              	.L75:
+ 418 0032 FFF7FEBF 		b	wc_Sha3_384_Final
+ARM GAS  /tmp/ccmRhIV4.s 			page 8
+
+
+ 419              	.L74:
+ 420 0036 FFF7FEBF 		b	wc_Sha3_512_Final
+ 421              	.L81:
+ 422 003a 6FF0AC00 		mvn	r0, #172
+ 423 003e 7047     		bx	lr
+ 424              	.L82:
+ 425 0040 6FF0E700 		mvn	r0, #231
+ 426 0044 7047     		bx	lr
+ 428              		.section	.text.wc_HashFree,"ax",%progbits
+ 429              		.align	1
+ 430              		.global	wc_HashFree
+ 431              		.syntax unified
+ 432              		.thumb
+ 433              		.thumb_func
+ 434              		.fpu fpv4-sp-d16
+ 436              	wc_HashFree:
+ 437              		@ args = 0, pretend = 0, frame = 0
+ 438              		@ frame_needed = 0, uses_anonymous_args = 0
+ 439 0000 08B5     		push	{r3, lr}
+ 440 0002 F8B1     		cbz	r0, .L93
+ 441 0004 0339     		subs	r1, r1, #3
+ 442 0006 0E29     		cmp	r1, #14
+ 443 0008 1CD8     		bhi	.L93
+ 444 000a DFE801F0 		tbb	[pc, r1]
+ 445              	.L86:
+ 446 000e 1E       		.byte	(.L94-.L86)/2
+ 447 000f 08       		.byte	(.L92-.L86)/2
+ 448 0010 1E       		.byte	(.L94-.L86)/2
+ 449 0011 0C       		.byte	(.L91-.L86)/2
+ 450 0012 1E       		.byte	(.L94-.L86)/2
+ 451 0013 1E       		.byte	(.L94-.L86)/2
+ 452 0014 1B       		.byte	(.L93-.L86)/2
+ 453 0015 0F       		.byte	(.L90-.L86)/2
+ 454 0016 12       		.byte	(.L89-.L86)/2
+ 455 0017 15       		.byte	(.L88-.L86)/2
+ 456 0018 18       		.byte	(.L87-.L86)/2
+ 457 0019 1B       		.byte	(.L93-.L86)/2
+ 458 001a 1B       		.byte	(.L93-.L86)/2
+ 459 001b 1E       		.byte	(.L94-.L86)/2
+ 460 001c 1E       		.byte	(.L94-.L86)/2
+ 461 001d 00       		.p2align 1
+ 462              	.L92:
+ 463 001e FFF7FEFF 		bl	wc_ShaFree
+ 464              	.L95:
+ 465 0022 0020     		movs	r0, #0
+ 466              	.L83:
+ 467 0024 08BD     		pop	{r3, pc}
+ 468              	.L91:
+ 469 0026 FFF7FEFF 		bl	wc_Sha256Free
+ 470 002a FAE7     		b	.L95
+ 471              	.L90:
+ 472 002c FFF7FEFF 		bl	wc_Sha3_224_Free
+ 473 0030 F7E7     		b	.L95
+ 474              	.L89:
+ 475 0032 FFF7FEFF 		bl	wc_Sha3_256_Free
+ 476 0036 F4E7     		b	.L95
+ 477              	.L88:
+ARM GAS  /tmp/ccmRhIV4.s 			page 9
+
+
+ 478 0038 FFF7FEFF 		bl	wc_Sha3_384_Free
+ 479 003c F1E7     		b	.L95
+ 480              	.L87:
+ 481 003e FFF7FEFF 		bl	wc_Sha3_512_Free
+ 482 0042 EEE7     		b	.L95
+ 483              	.L93:
+ 484 0044 6FF0AC00 		mvn	r0, #172
+ 485 0048 ECE7     		b	.L83
+ 486              	.L94:
+ 487 004a 6FF0E700 		mvn	r0, #231
+ 488 004e E9E7     		b	.L83
+ 490              		.section	.text.wc_HashDelete,"ax",%progbits
+ 491              		.align	1
+ 492              		.global	wc_HashDelete
+ 493              		.syntax unified
+ 494              		.thumb
+ 495              		.thumb_func
+ 496              		.fpu fpv4-sp-d16
+ 498              	wc_HashDelete:
+ 499              		@ args = 0, pretend = 0, frame = 0
+ 500              		@ frame_needed = 0, uses_anonymous_args = 0
+ 501 0000 38B5     		push	{r3, r4, r5, lr}
+ 502 0002 0C46     		mov	r4, r1
+ 503 0004 0546     		mov	r5, r0
+ 504 0006 60B1     		cbz	r0, .L98
+ 505 0008 90F89811 		ldrb	r1, [r0, #408]	@ zero_extendqisi2
+ 506 000c FFF7FEFF 		bl	wc_HashFree
+ 507 0010 0028     		cmp	r0, #0
+ 508 0012 05DB     		blt	.L96
+ 509 0014 2846     		mov	r0, r5
+ 510 0016 FFF7FEFF 		bl	wolfSSL_Free
+ 511 001a 0020     		movs	r0, #0
+ 512 001c 24B1     		cbz	r4, .L99
+ 513 001e 2060     		str	r0, [r4]
+ 514              	.L96:
+ 515 0020 38BD     		pop	{r3, r4, r5, pc}
+ 516              	.L98:
+ 517 0022 6FF0AC00 		mvn	r0, #172
+ 518 0026 FBE7     		b	.L96
+ 519              	.L99:
+ 520 0028 2046     		mov	r0, r4
+ 521 002a F9E7     		b	.L96
+ 523              		.section	.text.wc_ShaHash_ex,"ax",%progbits
+ 524              		.align	1
+ 525              		.global	wc_ShaHash_ex
+ 526              		.syntax unified
+ 527              		.thumb
+ 528              		.thumb_func
+ 529              		.fpu fpv4-sp-d16
+ 531              	wc_ShaHash_ex:
+ 532              		@ args = 4, pretend = 0, frame = 8
+ 533              		@ frame_needed = 0, uses_anonymous_args = 0
+ 534 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 535 0004 0746     		mov	r7, r0
+ 536 0006 4FF49C70 		mov	r0, #312
+ 537 000a 8846     		mov	r8, r1
+ 538 000c 1646     		mov	r6, r2
+ARM GAS  /tmp/ccmRhIV4.s 			page 10
+
+
+ 539 000e 0193     		str	r3, [sp, #4]
+ 540 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 541 0014 0546     		mov	r5, r0
+ 542 0016 D8B1     		cbz	r0, .L104
+ 543 0018 089A     		ldr	r2, [sp, #32]
+ 544 001a 0199     		ldr	r1, [sp, #4]
+ 545 001c FFF7FEFF 		bl	wc_InitSha_ex
+ 546 0020 0446     		mov	r4, r0
+ 547 0022 70B9     		cbnz	r0, .L102
+ 548 0024 4246     		mov	r2, r8
+ 549 0026 3946     		mov	r1, r7
+ 550 0028 2846     		mov	r0, r5
+ 551 002a FFF7FEFF 		bl	wc_ShaUpdate
+ 552 002e 0446     		mov	r4, r0
+ 553 0030 20B9     		cbnz	r0, .L103
+ 554 0032 3146     		mov	r1, r6
+ 555 0034 2846     		mov	r0, r5
+ 556 0036 FFF7FEFF 		bl	wc_ShaFinal
+ 557 003a 0446     		mov	r4, r0
+ 558              	.L103:
+ 559 003c 2846     		mov	r0, r5
+ 560 003e FFF7FEFF 		bl	wc_ShaFree
+ 561              	.L102:
+ 562 0042 2846     		mov	r0, r5
+ 563 0044 FFF7FEFF 		bl	wolfSSL_Free
+ 564              	.L100:
+ 565 0048 2046     		mov	r0, r4
+ 566 004a 02B0     		add	sp, sp, #8
+ 567              		@ sp needed
+ 568 004c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 569              	.L104:
+ 570 0050 6FF07C04 		mvn	r4, #124
+ 571 0054 F8E7     		b	.L100
+ 573              		.section	.text.wc_ShaHash,"ax",%progbits
+ 574              		.align	1
+ 575              		.global	wc_ShaHash
+ 576              		.syntax unified
+ 577              		.thumb
+ 578              		.thumb_func
+ 579              		.fpu fpv4-sp-d16
+ 581              	wc_ShaHash:
+ 582              		@ args = 0, pretend = 0, frame = 0
+ 583              		@ frame_needed = 0, uses_anonymous_args = 0
+ 584 0000 6FF00103 		mvn	r3, #1
+ 585 0004 07B5     		push	{r0, r1, r2, lr}
+ 586 0006 0093     		str	r3, [sp]
+ 587 0008 0023     		movs	r3, #0
+ 588 000a FFF7FEFF 		bl	wc_ShaHash_ex
+ 589 000e 03B0     		add	sp, sp, #12
+ 590              		@ sp needed
+ 591 0010 5DF804FB 		ldr	pc, [sp], #4
+ 593              		.section	.text.wc_Sha256Hash_ex,"ax",%progbits
+ 594              		.align	1
+ 595              		.global	wc_Sha256Hash_ex
+ 596              		.syntax unified
+ 597              		.thumb
+ 598              		.thumb_func
+ARM GAS  /tmp/ccmRhIV4.s 			page 11
+
+
+ 599              		.fpu fpv4-sp-d16
+ 601              	wc_Sha256Hash_ex:
+ 602              		@ args = 4, pretend = 0, frame = 8
+ 603              		@ frame_needed = 0, uses_anonymous_args = 0
+ 604 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 605 0004 0746     		mov	r7, r0
+ 606 0006 4FF49E70 		mov	r0, #316
+ 607 000a 8846     		mov	r8, r1
+ 608 000c 1646     		mov	r6, r2
+ 609 000e 0193     		str	r3, [sp, #4]
+ 610 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 611 0014 0546     		mov	r5, r0
+ 612 0016 D8B1     		cbz	r0, .L110
+ 613 0018 089A     		ldr	r2, [sp, #32]
+ 614 001a 0199     		ldr	r1, [sp, #4]
+ 615 001c FFF7FEFF 		bl	wc_InitSha256_ex
+ 616 0020 0446     		mov	r4, r0
+ 617 0022 70B9     		cbnz	r0, .L108
+ 618 0024 4246     		mov	r2, r8
+ 619 0026 3946     		mov	r1, r7
+ 620 0028 2846     		mov	r0, r5
+ 621 002a FFF7FEFF 		bl	wc_Sha256Update
+ 622 002e 0446     		mov	r4, r0
+ 623 0030 20B9     		cbnz	r0, .L109
+ 624 0032 3146     		mov	r1, r6
+ 625 0034 2846     		mov	r0, r5
+ 626 0036 FFF7FEFF 		bl	wc_Sha256Final
+ 627 003a 0446     		mov	r4, r0
+ 628              	.L109:
+ 629 003c 2846     		mov	r0, r5
+ 630 003e FFF7FEFF 		bl	wc_Sha256Free
+ 631              	.L108:
+ 632 0042 2846     		mov	r0, r5
+ 633 0044 FFF7FEFF 		bl	wolfSSL_Free
+ 634              	.L106:
+ 635 0048 2046     		mov	r0, r4
+ 636 004a 02B0     		add	sp, sp, #8
+ 637              		@ sp needed
+ 638 004c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 639              	.L110:
+ 640 0050 6FF07C04 		mvn	r4, #124
+ 641 0054 F8E7     		b	.L106
+ 643              		.section	.text.wc_Sha256Hash,"ax",%progbits
+ 644              		.align	1
+ 645              		.global	wc_Sha256Hash
+ 646              		.syntax unified
+ 647              		.thumb
+ 648              		.thumb_func
+ 649              		.fpu fpv4-sp-d16
+ 651              	wc_Sha256Hash:
+ 652              		@ args = 0, pretend = 0, frame = 0
+ 653              		@ frame_needed = 0, uses_anonymous_args = 0
+ 654 0000 6FF00103 		mvn	r3, #1
+ 655 0004 07B5     		push	{r0, r1, r2, lr}
+ 656 0006 0093     		str	r3, [sp]
+ 657 0008 0023     		movs	r3, #0
+ 658 000a FFF7FEFF 		bl	wc_Sha256Hash_ex
+ARM GAS  /tmp/ccmRhIV4.s 			page 12
+
+
+ 659 000e 03B0     		add	sp, sp, #12
+ 660              		@ sp needed
+ 661 0010 5DF804FB 		ldr	pc, [sp], #4
+ 663              		.section	.text.wc_Sha3_224Hash_ex,"ax",%progbits
+ 664              		.align	1
+ 665              		.global	wc_Sha3_224Hash_ex
+ 666              		.syntax unified
+ 667              		.thumb
+ 668              		.thumb_func
+ 669              		.fpu fpv4-sp-d16
+ 671              	wc_Sha3_224Hash_ex:
+ 672              		@ args = 4, pretend = 0, frame = 8
+ 673              		@ frame_needed = 0, uses_anonymous_args = 0
+ 674 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 675 0004 0746     		mov	r7, r0
+ 676 0006 4FF4CC70 		mov	r0, #408
+ 677 000a 8846     		mov	r8, r1
+ 678 000c 1646     		mov	r6, r2
+ 679 000e 0193     		str	r3, [sp, #4]
+ 680 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 681 0014 0546     		mov	r5, r0
+ 682 0016 D8B1     		cbz	r0, .L116
+ 683 0018 089A     		ldr	r2, [sp, #32]
+ 684 001a 0199     		ldr	r1, [sp, #4]
+ 685 001c FFF7FEFF 		bl	wc_InitSha3_224
+ 686 0020 0446     		mov	r4, r0
+ 687 0022 70B9     		cbnz	r0, .L114
+ 688 0024 4246     		mov	r2, r8
+ 689 0026 3946     		mov	r1, r7
+ 690 0028 2846     		mov	r0, r5
+ 691 002a FFF7FEFF 		bl	wc_Sha3_224_Update
+ 692 002e 0446     		mov	r4, r0
+ 693 0030 20B9     		cbnz	r0, .L115
+ 694 0032 3146     		mov	r1, r6
+ 695 0034 2846     		mov	r0, r5
+ 696 0036 FFF7FEFF 		bl	wc_Sha3_224_Final
+ 697 003a 0446     		mov	r4, r0
+ 698              	.L115:
+ 699 003c 2846     		mov	r0, r5
+ 700 003e FFF7FEFF 		bl	wc_Sha3_224_Free
+ 701              	.L114:
+ 702 0042 2846     		mov	r0, r5
+ 703 0044 FFF7FEFF 		bl	wolfSSL_Free
+ 704              	.L112:
+ 705 0048 2046     		mov	r0, r4
+ 706 004a 02B0     		add	sp, sp, #8
+ 707              		@ sp needed
+ 708 004c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 709              	.L116:
+ 710 0050 6FF07C04 		mvn	r4, #124
+ 711 0054 F8E7     		b	.L112
+ 713              		.section	.text.wc_Sha3_224Hash,"ax",%progbits
+ 714              		.align	1
+ 715              		.global	wc_Sha3_224Hash
+ 716              		.syntax unified
+ 717              		.thumb
+ 718              		.thumb_func
+ARM GAS  /tmp/ccmRhIV4.s 			page 13
+
+
+ 719              		.fpu fpv4-sp-d16
+ 721              	wc_Sha3_224Hash:
+ 722              		@ args = 0, pretend = 0, frame = 0
+ 723              		@ frame_needed = 0, uses_anonymous_args = 0
+ 724 0000 6FF00103 		mvn	r3, #1
+ 725 0004 07B5     		push	{r0, r1, r2, lr}
+ 726 0006 0093     		str	r3, [sp]
+ 727 0008 0023     		movs	r3, #0
+ 728 000a FFF7FEFF 		bl	wc_Sha3_224Hash_ex
+ 729 000e 03B0     		add	sp, sp, #12
+ 730              		@ sp needed
+ 731 0010 5DF804FB 		ldr	pc, [sp], #4
+ 733              		.section	.text.wc_Sha3_256Hash_ex,"ax",%progbits
+ 734              		.align	1
+ 735              		.global	wc_Sha3_256Hash_ex
+ 736              		.syntax unified
+ 737              		.thumb
+ 738              		.thumb_func
+ 739              		.fpu fpv4-sp-d16
+ 741              	wc_Sha3_256Hash_ex:
+ 742              		@ args = 4, pretend = 0, frame = 8
+ 743              		@ frame_needed = 0, uses_anonymous_args = 0
+ 744 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 745 0004 0746     		mov	r7, r0
+ 746 0006 4FF4CC70 		mov	r0, #408
+ 747 000a 8846     		mov	r8, r1
+ 748 000c 1646     		mov	r6, r2
+ 749 000e 0193     		str	r3, [sp, #4]
+ 750 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 751 0014 0546     		mov	r5, r0
+ 752 0016 D8B1     		cbz	r0, .L122
+ 753 0018 089A     		ldr	r2, [sp, #32]
+ 754 001a 0199     		ldr	r1, [sp, #4]
+ 755 001c FFF7FEFF 		bl	wc_InitSha3_256
+ 756 0020 0446     		mov	r4, r0
+ 757 0022 70B9     		cbnz	r0, .L120
+ 758 0024 4246     		mov	r2, r8
+ 759 0026 3946     		mov	r1, r7
+ 760 0028 2846     		mov	r0, r5
+ 761 002a FFF7FEFF 		bl	wc_Sha3_256_Update
+ 762 002e 0446     		mov	r4, r0
+ 763 0030 20B9     		cbnz	r0, .L121
+ 764 0032 3146     		mov	r1, r6
+ 765 0034 2846     		mov	r0, r5
+ 766 0036 FFF7FEFF 		bl	wc_Sha3_256_Final
+ 767 003a 0446     		mov	r4, r0
+ 768              	.L121:
+ 769 003c 2846     		mov	r0, r5
+ 770 003e FFF7FEFF 		bl	wc_Sha3_256_Free
+ 771              	.L120:
+ 772 0042 2846     		mov	r0, r5
+ 773 0044 FFF7FEFF 		bl	wolfSSL_Free
+ 774              	.L118:
+ 775 0048 2046     		mov	r0, r4
+ 776 004a 02B0     		add	sp, sp, #8
+ 777              		@ sp needed
+ 778 004c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ARM GAS  /tmp/ccmRhIV4.s 			page 14
+
+
+ 779              	.L122:
+ 780 0050 6FF07C04 		mvn	r4, #124
+ 781 0054 F8E7     		b	.L118
+ 783              		.section	.text.wc_Sha3_256Hash,"ax",%progbits
+ 784              		.align	1
+ 785              		.global	wc_Sha3_256Hash
+ 786              		.syntax unified
+ 787              		.thumb
+ 788              		.thumb_func
+ 789              		.fpu fpv4-sp-d16
+ 791              	wc_Sha3_256Hash:
+ 792              		@ args = 0, pretend = 0, frame = 0
+ 793              		@ frame_needed = 0, uses_anonymous_args = 0
+ 794 0000 6FF00103 		mvn	r3, #1
+ 795 0004 07B5     		push	{r0, r1, r2, lr}
+ 796 0006 0093     		str	r3, [sp]
+ 797 0008 0023     		movs	r3, #0
+ 798 000a FFF7FEFF 		bl	wc_Sha3_256Hash_ex
+ 799 000e 03B0     		add	sp, sp, #12
+ 800              		@ sp needed
+ 801 0010 5DF804FB 		ldr	pc, [sp], #4
+ 803              		.section	.text.wc_Sha3_384Hash_ex,"ax",%progbits
+ 804              		.align	1
+ 805              		.global	wc_Sha3_384Hash_ex
+ 806              		.syntax unified
+ 807              		.thumb
+ 808              		.thumb_func
+ 809              		.fpu fpv4-sp-d16
+ 811              	wc_Sha3_384Hash_ex:
+ 812              		@ args = 4, pretend = 0, frame = 8
+ 813              		@ frame_needed = 0, uses_anonymous_args = 0
+ 814 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 815 0004 0746     		mov	r7, r0
+ 816 0006 4FF4CC70 		mov	r0, #408
+ 817 000a 8846     		mov	r8, r1
+ 818 000c 1646     		mov	r6, r2
+ 819 000e 0193     		str	r3, [sp, #4]
+ 820 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 821 0014 0546     		mov	r5, r0
+ 822 0016 D8B1     		cbz	r0, .L128
+ 823 0018 089A     		ldr	r2, [sp, #32]
+ 824 001a 0199     		ldr	r1, [sp, #4]
+ 825 001c FFF7FEFF 		bl	wc_InitSha3_384
+ 826 0020 0446     		mov	r4, r0
+ 827 0022 70B9     		cbnz	r0, .L126
+ 828 0024 4246     		mov	r2, r8
+ 829 0026 3946     		mov	r1, r7
+ 830 0028 2846     		mov	r0, r5
+ 831 002a FFF7FEFF 		bl	wc_Sha3_384_Update
+ 832 002e 0446     		mov	r4, r0
+ 833 0030 20B9     		cbnz	r0, .L127
+ 834 0032 3146     		mov	r1, r6
+ 835 0034 2846     		mov	r0, r5
+ 836 0036 FFF7FEFF 		bl	wc_Sha3_384_Final
+ 837 003a 0446     		mov	r4, r0
+ 838              	.L127:
+ 839 003c 2846     		mov	r0, r5
+ARM GAS  /tmp/ccmRhIV4.s 			page 15
+
+
+ 840 003e FFF7FEFF 		bl	wc_Sha3_384_Free
+ 841              	.L126:
+ 842 0042 2846     		mov	r0, r5
+ 843 0044 FFF7FEFF 		bl	wolfSSL_Free
+ 844              	.L124:
+ 845 0048 2046     		mov	r0, r4
+ 846 004a 02B0     		add	sp, sp, #8
+ 847              		@ sp needed
+ 848 004c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 849              	.L128:
+ 850 0050 6FF07C04 		mvn	r4, #124
+ 851 0054 F8E7     		b	.L124
+ 853              		.section	.text.wc_Sha3_384Hash,"ax",%progbits
+ 854              		.align	1
+ 855              		.global	wc_Sha3_384Hash
+ 856              		.syntax unified
+ 857              		.thumb
+ 858              		.thumb_func
+ 859              		.fpu fpv4-sp-d16
+ 861              	wc_Sha3_384Hash:
+ 862              		@ args = 0, pretend = 0, frame = 0
+ 863              		@ frame_needed = 0, uses_anonymous_args = 0
+ 864 0000 6FF00103 		mvn	r3, #1
+ 865 0004 07B5     		push	{r0, r1, r2, lr}
+ 866 0006 0093     		str	r3, [sp]
+ 867 0008 0023     		movs	r3, #0
+ 868 000a FFF7FEFF 		bl	wc_Sha3_384Hash_ex
+ 869 000e 03B0     		add	sp, sp, #12
+ 870              		@ sp needed
+ 871 0010 5DF804FB 		ldr	pc, [sp], #4
+ 873              		.section	.text.wc_Sha3_512Hash_ex,"ax",%progbits
+ 874              		.align	1
+ 875              		.global	wc_Sha3_512Hash_ex
+ 876              		.syntax unified
+ 877              		.thumb
+ 878              		.thumb_func
+ 879              		.fpu fpv4-sp-d16
+ 881              	wc_Sha3_512Hash_ex:
+ 882              		@ args = 4, pretend = 0, frame = 8
+ 883              		@ frame_needed = 0, uses_anonymous_args = 0
+ 884 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 885 0004 0746     		mov	r7, r0
+ 886 0006 4FF4CC70 		mov	r0, #408
+ 887 000a 8846     		mov	r8, r1
+ 888 000c 1646     		mov	r6, r2
+ 889 000e 0193     		str	r3, [sp, #4]
+ 890 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 891 0014 0546     		mov	r5, r0
+ 892 0016 D8B1     		cbz	r0, .L134
+ 893 0018 089A     		ldr	r2, [sp, #32]
+ 894 001a 0199     		ldr	r1, [sp, #4]
+ 895 001c FFF7FEFF 		bl	wc_InitSha3_512
+ 896 0020 0446     		mov	r4, r0
+ 897 0022 70B9     		cbnz	r0, .L132
+ 898 0024 4246     		mov	r2, r8
+ 899 0026 3946     		mov	r1, r7
+ 900 0028 2846     		mov	r0, r5
+ARM GAS  /tmp/ccmRhIV4.s 			page 16
+
+
+ 901 002a FFF7FEFF 		bl	wc_Sha3_512_Update
+ 902 002e 0446     		mov	r4, r0
+ 903 0030 20B9     		cbnz	r0, .L133
+ 904 0032 3146     		mov	r1, r6
+ 905 0034 2846     		mov	r0, r5
+ 906 0036 FFF7FEFF 		bl	wc_Sha3_512_Final
+ 907 003a 0446     		mov	r4, r0
+ 908              	.L133:
+ 909 003c 2846     		mov	r0, r5
+ 910 003e FFF7FEFF 		bl	wc_Sha3_512_Free
+ 911              	.L132:
+ 912 0042 2846     		mov	r0, r5
+ 913 0044 FFF7FEFF 		bl	wolfSSL_Free
+ 914              	.L130:
+ 915 0048 2046     		mov	r0, r4
+ 916 004a 02B0     		add	sp, sp, #8
+ 917              		@ sp needed
+ 918 004c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 919              	.L134:
+ 920 0050 6FF07C04 		mvn	r4, #124
+ 921 0054 F8E7     		b	.L130
+ 923              		.section	.text.wc_Hash_ex,"ax",%progbits
+ 924              		.align	1
+ 925              		.global	wc_Hash_ex
+ 926              		.syntax unified
+ 927              		.thumb
+ 928              		.thumb_func
+ 929              		.fpu fpv4-sp-d16
+ 931              	wc_Hash_ex:
+ 932              		@ args = 12, pretend = 0, frame = 8
+ 933              		@ frame_needed = 0, uses_anonymous_args = 0
+ 934 0000 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+ 935 0002 0546     		mov	r5, r0
+ 936 0004 0C46     		mov	r4, r1
+ 937 0006 1146     		mov	r1, r2
+ 938 0008 1A46     		mov	r2, r3
+ 939 000a DDE90873 		ldrd	r7, r3, [sp, #32]
+ 940 000e 0193     		str	r3, [sp, #4]
+ 941 0010 FFF7FEFF 		bl	wc_HashGetDigestSize
+ 942 0014 0028     		cmp	r0, #0
+ 943 0016 0A9E     		ldr	r6, [sp, #40]
+ 944 0018 11DB     		blt	.L135
+ 945 001a B842     		cmp	r0, r7
+ 946 001c 3BD8     		bhi	.L145
+ 947 001e 033D     		subs	r5, r5, #3
+ 948 0020 019B     		ldr	r3, [sp, #4]
+ 949 0022 0E2D     		cmp	r5, #14
+ 950 0024 09D8     		bhi	.L137
+ 951 0026 DFE805F0 		tbb	[pc, r5]
+ 952              	.L138:
+ 953 002a 39       		.byte	(.L146-.L138)/2
+ 954 002b 0C       		.byte	(.L144-.L138)/2
+ 955 002c 39       		.byte	(.L146-.L138)/2
+ 956 002d 13       		.byte	(.L143-.L138)/2
+ 957 002e 39       		.byte	(.L146-.L138)/2
+ 958 002f 39       		.byte	(.L146-.L138)/2
+ 959 0030 39       		.byte	(.L146-.L138)/2
+ARM GAS  /tmp/ccmRhIV4.s 			page 17
+
+
+ 960 0031 1A       		.byte	(.L142-.L138)/2
+ 961 0032 21       		.byte	(.L141-.L138)/2
+ 962 0033 28       		.byte	(.L140-.L138)/2
+ 963 0034 2F       		.byte	(.L139-.L138)/2
+ 964 0035 08       		.byte	(.L137-.L138)/2
+ 965 0036 08       		.byte	(.L137-.L138)/2
+ 966 0037 39       		.byte	(.L146-.L138)/2
+ 967 0038 39       		.byte	(.L146-.L138)/2
+ 968 0039 00       		.p2align 1
+ 969              	.L137:
+ 970 003a 6FF0AC00 		mvn	r0, #172
+ 971              	.L135:
+ 972 003e 03B0     		add	sp, sp, #12
+ 973              		@ sp needed
+ 974 0040 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 975              	.L144:
+ 976 0042 2046     		mov	r0, r4
+ 977 0044 0896     		str	r6, [sp, #32]
+ 978 0046 03B0     		add	sp, sp, #12
+ 979              		@ sp needed
+ 980 0048 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 981 004c FFF7FEBF 		b	wc_ShaHash_ex
+ 982              	.L143:
+ 983 0050 2046     		mov	r0, r4
+ 984 0052 0896     		str	r6, [sp, #32]
+ 985 0054 03B0     		add	sp, sp, #12
+ 986              		@ sp needed
+ 987 0056 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 988 005a FFF7FEBF 		b	wc_Sha256Hash_ex
+ 989              	.L142:
+ 990 005e 2046     		mov	r0, r4
+ 991 0060 0896     		str	r6, [sp, #32]
+ 992 0062 03B0     		add	sp, sp, #12
+ 993              		@ sp needed
+ 994 0064 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 995 0068 FFF7FEBF 		b	wc_Sha3_224Hash_ex
+ 996              	.L141:
+ 997 006c 2046     		mov	r0, r4
+ 998 006e 0896     		str	r6, [sp, #32]
+ 999 0070 03B0     		add	sp, sp, #12
+ 1000              		@ sp needed
+ 1001 0072 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 1002 0076 FFF7FEBF 		b	wc_Sha3_256Hash_ex
+ 1003              	.L140:
+ 1004 007a 2046     		mov	r0, r4
+ 1005 007c 0896     		str	r6, [sp, #32]
+ 1006 007e 03B0     		add	sp, sp, #12
+ 1007              		@ sp needed
+ 1008 0080 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 1009 0084 FFF7FEBF 		b	wc_Sha3_384Hash_ex
+ 1010              	.L139:
+ 1011 0088 2046     		mov	r0, r4
+ 1012 008a 0896     		str	r6, [sp, #32]
+ 1013 008c 03B0     		add	sp, sp, #12
+ 1014              		@ sp needed
+ 1015 008e BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 1016 0092 FFF7FEBF 		b	wc_Sha3_512Hash_ex
+ARM GAS  /tmp/ccmRhIV4.s 			page 18
+
+
+ 1017              	.L145:
+ 1018 0096 6FF08300 		mvn	r0, #131
+ 1019 009a D0E7     		b	.L135
+ 1020              	.L146:
+ 1021 009c 6FF0E700 		mvn	r0, #231
+ 1022 00a0 CDE7     		b	.L135
+ 1024              		.section	.text.wc_Hash,"ax",%progbits
+ 1025              		.align	1
+ 1026              		.global	wc_Hash
+ 1027              		.syntax unified
+ 1028              		.thumb
+ 1029              		.thumb_func
+ 1030              		.fpu fpv4-sp-d16
+ 1032              	wc_Hash:
+ 1033              		@ args = 4, pretend = 0, frame = 0
+ 1034              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1035 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 1036 0002 6FF0010C 		mvn	ip, #1
+ 1037 0006 0024     		movs	r4, #0
+ 1038 0008 CDE9014C 		strd	r4, ip, [sp, #4]
+ 1039 000c 069C     		ldr	r4, [sp, #24]
+ 1040 000e 0094     		str	r4, [sp]
+ 1041 0010 FFF7FEFF 		bl	wc_Hash_ex
+ 1042 0014 04B0     		add	sp, sp, #16
+ 1043              		@ sp needed
+ 1044 0016 10BD     		pop	{r4, pc}
+ 1046              		.section	.text.wc_Sha3_512Hash,"ax",%progbits
+ 1047              		.align	1
+ 1048              		.global	wc_Sha3_512Hash
+ 1049              		.syntax unified
+ 1050              		.thumb
+ 1051              		.thumb_func
+ 1052              		.fpu fpv4-sp-d16
+ 1054              	wc_Sha3_512Hash:
+ 1055              		@ args = 0, pretend = 0, frame = 0
+ 1056              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1057 0000 6FF00103 		mvn	r3, #1
+ 1058 0004 07B5     		push	{r0, r1, r2, lr}
+ 1059 0006 0093     		str	r3, [sp]
+ 1060 0008 0023     		movs	r3, #0
+ 1061 000a FFF7FEFF 		bl	wc_Sha3_512Hash_ex
+ 1062 000e 03B0     		add	sp, sp, #12
+ 1063              		@ sp needed
+ 1064 0010 5DF804FB 		ldr	pc, [sp], #4
+ 1066              		.section	.text.wc_Shake128Hash_ex,"ax",%progbits
+ 1067              		.align	1
+ 1068              		.global	wc_Shake128Hash_ex
+ 1069              		.syntax unified
+ 1070              		.thumb
+ 1071              		.thumb_func
+ 1072              		.fpu fpv4-sp-d16
+ 1074              	wc_Shake128Hash_ex:
+ 1075              		@ args = 8, pretend = 0, frame = 0
+ 1076              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1077 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 1078 0004 8046     		mov	r8, r0
+ 1079 0006 4FF4CC70 		mov	r0, #408
+ARM GAS  /tmp/ccmRhIV4.s 			page 19
+
+
+ 1080 000a 8946     		mov	r9, r1
+ 1081 000c 1646     		mov	r6, r2
+ 1082 000e 1F46     		mov	r7, r3
+ 1083 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 1084 0014 0546     		mov	r5, r0
+ 1085 0016 D8B1     		cbz	r0, .L153
+ 1086 0018 DDE90812 		ldrd	r1, r2, [sp, #32]
+ 1087 001c FFF7FEFF 		bl	wc_InitShake128
+ 1088 0020 0446     		mov	r4, r0
+ 1089 0022 78B9     		cbnz	r0, .L151
+ 1090 0024 4A46     		mov	r2, r9
+ 1091 0026 4146     		mov	r1, r8
+ 1092 0028 2846     		mov	r0, r5
+ 1093 002a FFF7FEFF 		bl	wc_Shake128_Update
+ 1094 002e 0446     		mov	r4, r0
+ 1095 0030 28B9     		cbnz	r0, .L152
+ 1096 0032 3A46     		mov	r2, r7
+ 1097 0034 3146     		mov	r1, r6
+ 1098 0036 2846     		mov	r0, r5
+ 1099 0038 FFF7FEFF 		bl	wc_Shake128_Final
+ 1100 003c 0446     		mov	r4, r0
+ 1101              	.L152:
+ 1102 003e 2846     		mov	r0, r5
+ 1103 0040 FFF7FEFF 		bl	wc_Shake128_Free
+ 1104              	.L151:
+ 1105 0044 2846     		mov	r0, r5
+ 1106 0046 FFF7FEFF 		bl	wolfSSL_Free
+ 1107              	.L149:
+ 1108 004a 2046     		mov	r0, r4
+ 1109 004c BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 1110              	.L153:
+ 1111 0050 6FF07C04 		mvn	r4, #124
+ 1112 0054 F9E7     		b	.L149
+ 1114              		.section	.text.wc_Shake128Hash,"ax",%progbits
+ 1115              		.align	1
+ 1116              		.global	wc_Shake128Hash
+ 1117              		.syntax unified
+ 1118              		.thumb
+ 1119              		.thumb_func
+ 1120              		.fpu fpv4-sp-d16
+ 1122              	wc_Shake128Hash:
+ 1123              		@ args = 0, pretend = 0, frame = 0
+ 1124              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1125 0000 13B5     		push	{r0, r1, r4, lr}
+ 1126 0002 6FF0010C 		mvn	ip, #1
+ 1127 0006 0024     		movs	r4, #0
+ 1128 0008 CDE9004C 		strd	r4, ip, [sp]
+ 1129 000c FFF7FEFF 		bl	wc_Shake128Hash_ex
+ 1130 0010 02B0     		add	sp, sp, #8
+ 1131              		@ sp needed
+ 1132 0012 10BD     		pop	{r4, pc}
+ 1134              		.section	.text.wc_Shake256Hash_ex,"ax",%progbits
+ 1135              		.align	1
+ 1136              		.global	wc_Shake256Hash_ex
+ 1137              		.syntax unified
+ 1138              		.thumb
+ 1139              		.thumb_func
+ARM GAS  /tmp/ccmRhIV4.s 			page 20
+
+
+ 1140              		.fpu fpv4-sp-d16
+ 1142              	wc_Shake256Hash_ex:
+ 1143              		@ args = 8, pretend = 0, frame = 0
+ 1144              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1145 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 1146 0004 8046     		mov	r8, r0
+ 1147 0006 4FF4CC70 		mov	r0, #408
+ 1148 000a 8946     		mov	r9, r1
+ 1149 000c 1646     		mov	r6, r2
+ 1150 000e 1F46     		mov	r7, r3
+ 1151 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 1152 0014 0546     		mov	r5, r0
+ 1153 0016 D8B1     		cbz	r0, .L159
+ 1154 0018 DDE90812 		ldrd	r1, r2, [sp, #32]
+ 1155 001c FFF7FEFF 		bl	wc_InitShake256
+ 1156 0020 0446     		mov	r4, r0
+ 1157 0022 78B9     		cbnz	r0, .L157
+ 1158 0024 4A46     		mov	r2, r9
+ 1159 0026 4146     		mov	r1, r8
+ 1160 0028 2846     		mov	r0, r5
+ 1161 002a FFF7FEFF 		bl	wc_Shake256_Update
+ 1162 002e 0446     		mov	r4, r0
+ 1163 0030 28B9     		cbnz	r0, .L158
+ 1164 0032 3A46     		mov	r2, r7
+ 1165 0034 3146     		mov	r1, r6
+ 1166 0036 2846     		mov	r0, r5
+ 1167 0038 FFF7FEFF 		bl	wc_Shake256_Final
+ 1168 003c 0446     		mov	r4, r0
+ 1169              	.L158:
+ 1170 003e 2846     		mov	r0, r5
+ 1171 0040 FFF7FEFF 		bl	wc_Shake256_Free
+ 1172              	.L157:
+ 1173 0044 2846     		mov	r0, r5
+ 1174 0046 FFF7FEFF 		bl	wolfSSL_Free
+ 1175              	.L155:
+ 1176 004a 2046     		mov	r0, r4
+ 1177 004c BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 1178              	.L159:
+ 1179 0050 6FF07C04 		mvn	r4, #124
+ 1180 0054 F9E7     		b	.L155
+ 1182              		.section	.text.wc_Shake256Hash,"ax",%progbits
+ 1183              		.align	1
+ 1184              		.global	wc_Shake256Hash
+ 1185              		.syntax unified
+ 1186              		.thumb
+ 1187              		.thumb_func
+ 1188              		.fpu fpv4-sp-d16
+ 1190              	wc_Shake256Hash:
+ 1191              		@ args = 0, pretend = 0, frame = 0
+ 1192              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1193 0000 13B5     		push	{r0, r1, r4, lr}
+ 1194 0002 6FF0010C 		mvn	ip, #1
+ 1195 0006 0024     		movs	r4, #0
+ 1196 0008 CDE9004C 		strd	r4, ip, [sp]
+ 1197 000c FFF7FEFF 		bl	wc_Shake256Hash_ex
+ 1198 0010 02B0     		add	sp, sp, #8
+ 1199              		@ sp needed
+ARM GAS  /tmp/ccmRhIV4.s 			page 21
+
+
+ 1200 0012 10BD     		pop	{r4, pc}
+ 1202              		.section	.rodata.CSWTCH.4,"a"
+ 1203              		.align	2
+ 1204              		.set	.LANCHOR0,. + 0
+ 1207              	CSWTCH.4:
+ 1208 0000 18FFFFFF 		.word	-232
+ 1209 0004 53FFFFFF 		.word	-173
+ 1210 0008 18FFFFFF 		.word	-232
+ 1211 000c 31F1037D 		.word	2097410353
+ 1212 0010 18FFFFFF 		.word	-232
+ 1213 0014 FB7AB37C 		.word	2092137211
+ 1214 0018 18FFFFFF 		.word	-232
+ 1215 001c 18FFFFFF 		.word	-232
+ 1216 0020 18FFFFFF 		.word	-232
+ 1217 0024 FD7AB37C 		.word	2092137213
+ 1218 0028 F27AB37C 		.word	2092137202
+ 1219 002c F37AB37C 		.word	2092137203
+ 1220 0030 F07AB37C 		.word	2092137200
+ 1221 0034 53FFFFFF 		.word	-173
+ 1222 0038 53FFFFFF 		.word	-173
+ 1223 003c 18FFFFFF 		.word	-232
+ 1224 0040 18FFFFFF 		.word	-232
+ 1225 0044 F17AB37C 		.word	2092137201
+ 1226 0048 F67AB37C 		.word	2092137206
+ 1227              		.section	.rodata.CSWTCH.7,"a"
+ 1228              		.align	1
+ 1229              		.set	.LANCHOR1,. + 0
+ 1232              	CSWTCH.7:
+ 1233 0000 18FF     		.short	-232
+ 1234 0002 1000     		.short	16
+ 1235 0004 18FF     		.short	-232
+ 1236 0006 1400     		.short	20
+ 1237 0008 18FF     		.short	-232
+ 1238 000a 2000     		.short	32
+ 1239 000c 18FF     		.short	-232
+ 1240 000e 18FF     		.short	-232
+ 1241 0010 18FF     		.short	-232
+ 1242 0012 1C00     		.short	28
+ 1243 0014 2000     		.short	32
+ 1244 0016 3000     		.short	48
+ 1245 0018 4000     		.short	64
+ 1246 001a 18FF     		.short	-232
+ 1247 001c 18FF     		.short	-232
+ 1248 001e 18FF     		.short	-232
+ 1249 0020 18FF     		.short	-232
+ 1250              		.section	.rodata.CSWTCH.9,"a"
+ 1251              		.align	1
+ 1252              		.set	.LANCHOR2,. + 0
+ 1255              	CSWTCH.9:
+ 1256 0000 18FF     		.short	-232
+ 1257 0002 4000     		.short	64
+ 1258 0004 18FF     		.short	-232
+ 1259 0006 4000     		.short	64
+ 1260 0008 18FF     		.short	-232
+ 1261 000a 4000     		.short	64
+ 1262 000c 18FF     		.short	-232
+ 1263 000e 18FF     		.short	-232
+ARM GAS  /tmp/ccmRhIV4.s 			page 22
+
+
+ 1264 0010 18FF     		.short	-232
+ 1265 0012 9000     		.short	144
+ 1266 0014 8800     		.short	136
+ 1267 0016 6800     		.short	104
+ 1268 0018 4800     		.short	72
+ 1269 001a 18FF     		.short	-232
+ 1270 001c 18FF     		.short	-232
+ 1271 001e 18FF     		.short	-232
+ 1272 0020 18FF     		.short	-232
+ 1273              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccmRhIV4.s 			page 23
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 hash.c
+     /tmp/ccmRhIV4.s:16     .text.wc_HashTypeConvert:0000000000000000 $t
+     /tmp/ccmRhIV4.s:25     .text.wc_HashTypeConvert:0000000000000000 wc_HashTypeConvert
+     /tmp/ccmRhIV4.s:37     .text.wc_HashGetOID:0000000000000000 $t
+     /tmp/ccmRhIV4.s:44     .text.wc_HashGetOID:0000000000000000 wc_HashGetOID
+     /tmp/ccmRhIV4.s:59     .text.wc_HashGetOID:0000000000000014 $d
+     /tmp/ccmRhIV4.s:62     .text.wc_OidGetHash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:69     .text.wc_OidGetHash:0000000000000000 wc_OidGetHash
+     /tmp/ccmRhIV4.s:85     .text.wc_OidGetHash:0000000000000018 $d
+     /tmp/ccmRhIV4.s:99     .text.wc_OidGetHash:0000000000000026 $t
+     /tmp/ccmRhIV4.s:128    .text.wc_OidGetHash:000000000000004c $d
+     /tmp/ccmRhIV4.s:133    .text.wc_HashGetDigestSize:0000000000000000 $t
+     /tmp/ccmRhIV4.s:140    .text.wc_HashGetDigestSize:0000000000000000 wc_HashGetDigestSize
+     /tmp/ccmRhIV4.s:155    .text.wc_HashGetDigestSize:0000000000000014 $d
+     /tmp/ccmRhIV4.s:158    .text.wc_HashGetBlockSize:0000000000000000 $t
+     /tmp/ccmRhIV4.s:165    .text.wc_HashGetBlockSize:0000000000000000 wc_HashGetBlockSize
+     /tmp/ccmRhIV4.s:180    .text.wc_HashGetBlockSize:0000000000000014 $d
+     /tmp/ccmRhIV4.s:183    .text.wc_HashInit_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:190    .text.wc_HashInit_ex:0000000000000000 wc_HashInit_ex
+     /tmp/ccmRhIV4.s:206    .text.wc_HashInit_ex:000000000000001c $d
+     /tmp/ccmRhIV4.s:250    .text.wc_HashNew:0000000000000000 $t
+     /tmp/ccmRhIV4.s:257    .text.wc_HashNew:0000000000000000 wc_HashNew
+     /tmp/ccmRhIV4.s:289    .text.wc_HashInit:0000000000000000 $t
+     /tmp/ccmRhIV4.s:296    .text.wc_HashInit:0000000000000000 wc_HashInit
+     /tmp/ccmRhIV4.s:305    .text.wc_HashUpdate:0000000000000000 $t
+     /tmp/ccmRhIV4.s:312    .text.wc_HashUpdate:0000000000000000 wc_HashUpdate
+     /tmp/ccmRhIV4.s:329    .text.wc_HashUpdate:0000000000000018 $d
+     /tmp/ccmRhIV4.s:373    .text.wc_HashFinal:0000000000000000 $t
+     /tmp/ccmRhIV4.s:380    .text.wc_HashFinal:0000000000000000 wc_HashFinal
+     /tmp/ccmRhIV4.s:393    .text.wc_HashFinal:0000000000000012 $d
+     /tmp/ccmRhIV4.s:429    .text.wc_HashFree:0000000000000000 $t
+     /tmp/ccmRhIV4.s:436    .text.wc_HashFree:0000000000000000 wc_HashFree
+     /tmp/ccmRhIV4.s:446    .text.wc_HashFree:000000000000000e $d
+     /tmp/ccmRhIV4.s:491    .text.wc_HashDelete:0000000000000000 $t
+     /tmp/ccmRhIV4.s:498    .text.wc_HashDelete:0000000000000000 wc_HashDelete
+     /tmp/ccmRhIV4.s:524    .text.wc_ShaHash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:531    .text.wc_ShaHash_ex:0000000000000000 wc_ShaHash_ex
+     /tmp/ccmRhIV4.s:574    .text.wc_ShaHash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:581    .text.wc_ShaHash:0000000000000000 wc_ShaHash
+     /tmp/ccmRhIV4.s:594    .text.wc_Sha256Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:601    .text.wc_Sha256Hash_ex:0000000000000000 wc_Sha256Hash_ex
+     /tmp/ccmRhIV4.s:644    .text.wc_Sha256Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:651    .text.wc_Sha256Hash:0000000000000000 wc_Sha256Hash
+     /tmp/ccmRhIV4.s:664    .text.wc_Sha3_224Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:671    .text.wc_Sha3_224Hash_ex:0000000000000000 wc_Sha3_224Hash_ex
+     /tmp/ccmRhIV4.s:714    .text.wc_Sha3_224Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:721    .text.wc_Sha3_224Hash:0000000000000000 wc_Sha3_224Hash
+     /tmp/ccmRhIV4.s:734    .text.wc_Sha3_256Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:741    .text.wc_Sha3_256Hash_ex:0000000000000000 wc_Sha3_256Hash_ex
+     /tmp/ccmRhIV4.s:784    .text.wc_Sha3_256Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:791    .text.wc_Sha3_256Hash:0000000000000000 wc_Sha3_256Hash
+     /tmp/ccmRhIV4.s:804    .text.wc_Sha3_384Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:811    .text.wc_Sha3_384Hash_ex:0000000000000000 wc_Sha3_384Hash_ex
+     /tmp/ccmRhIV4.s:854    .text.wc_Sha3_384Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:861    .text.wc_Sha3_384Hash:0000000000000000 wc_Sha3_384Hash
+     /tmp/ccmRhIV4.s:874    .text.wc_Sha3_512Hash_ex:0000000000000000 $t
+ARM GAS  /tmp/ccmRhIV4.s 			page 24
+
+
+     /tmp/ccmRhIV4.s:881    .text.wc_Sha3_512Hash_ex:0000000000000000 wc_Sha3_512Hash_ex
+     /tmp/ccmRhIV4.s:924    .text.wc_Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:931    .text.wc_Hash_ex:0000000000000000 wc_Hash_ex
+     /tmp/ccmRhIV4.s:953    .text.wc_Hash_ex:000000000000002a $d
+     /tmp/ccmRhIV4.s:1025   .text.wc_Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:1032   .text.wc_Hash:0000000000000000 wc_Hash
+     /tmp/ccmRhIV4.s:1047   .text.wc_Sha3_512Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:1054   .text.wc_Sha3_512Hash:0000000000000000 wc_Sha3_512Hash
+     /tmp/ccmRhIV4.s:1067   .text.wc_Shake128Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:1074   .text.wc_Shake128Hash_ex:0000000000000000 wc_Shake128Hash_ex
+     /tmp/ccmRhIV4.s:1115   .text.wc_Shake128Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:1122   .text.wc_Shake128Hash:0000000000000000 wc_Shake128Hash
+     /tmp/ccmRhIV4.s:1135   .text.wc_Shake256Hash_ex:0000000000000000 $t
+     /tmp/ccmRhIV4.s:1142   .text.wc_Shake256Hash_ex:0000000000000000 wc_Shake256Hash_ex
+     /tmp/ccmRhIV4.s:1183   .text.wc_Shake256Hash:0000000000000000 $t
+     /tmp/ccmRhIV4.s:1190   .text.wc_Shake256Hash:0000000000000000 wc_Shake256Hash
+     /tmp/ccmRhIV4.s:1203   .rodata.CSWTCH.4:0000000000000000 $d
+     /tmp/ccmRhIV4.s:1207   .rodata.CSWTCH.4:0000000000000000 CSWTCH.4
+     /tmp/ccmRhIV4.s:1228   .rodata.CSWTCH.7:0000000000000000 $d
+     /tmp/ccmRhIV4.s:1232   .rodata.CSWTCH.7:0000000000000000 CSWTCH.7
+     /tmp/ccmRhIV4.s:1251   .rodata.CSWTCH.9:0000000000000000 $d
+     /tmp/ccmRhIV4.s:1255   .rodata.CSWTCH.9:0000000000000000 CSWTCH.9
+     /tmp/ccmRhIV4.s:221    .text.wc_HashInit_ex:000000000000002b $d
+     /tmp/ccmRhIV4.s:221    .text.wc_HashInit_ex:000000000000002c $t
+     /tmp/ccmRhIV4.s:344    .text.wc_HashUpdate:0000000000000027 $d
+     /tmp/ccmRhIV4.s:344    .text.wc_HashUpdate:0000000000000028 $t
+     /tmp/ccmRhIV4.s:408    .text.wc_HashFinal:0000000000000021 $d
+     /tmp/ccmRhIV4.s:408    .text.wc_HashFinal:0000000000000022 $t
+     /tmp/ccmRhIV4.s:461    .text.wc_HashFree:000000000000001d $d
+     /tmp/ccmRhIV4.s:461    .text.wc_HashFree:000000000000001e $t
+     /tmp/ccmRhIV4.s:968    .text.wc_Hash_ex:0000000000000039 $d
+     /tmp/ccmRhIV4.s:968    .text.wc_Hash_ex:000000000000003a $t
+
+UNDEFINED SYMBOLS
+wc_InitSha_ex
+wc_InitSha256_ex
+wc_InitSha3_224
+wc_InitSha3_256
+wc_InitSha3_384
+wc_InitSha3_512
+wolfSSL_Malloc
+wolfSSL_Free
+wc_ShaUpdate
+wc_Sha256Update
+wc_Sha3_224_Update
+wc_Sha3_256_Update
+wc_Sha3_384_Update
+wc_Sha3_512_Update
+wc_ShaFinal
+wc_Sha256Final
+wc_Sha3_224_Final
+wc_Sha3_256_Final
+wc_Sha3_384_Final
+wc_Sha3_512_Final
+wc_ShaFree
+wc_Sha256Free
+wc_Sha3_224_Free
+ARM GAS  /tmp/ccmRhIV4.s 			page 25
+
+
+wc_Sha3_256_Free
+wc_Sha3_384_Free
+wc_Sha3_512_Free
+wc_InitShake128
+wc_Shake128_Update
+wc_Shake128_Final
+wc_Shake128_Free
+wc_InitShake256
+wc_Shake256_Update
+wc_Shake256_Final
+wc_Shake256_Free

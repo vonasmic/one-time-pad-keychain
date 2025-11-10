@@ -1,0 +1,590 @@
+ARM GAS  /tmp/cc4TE7yq.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_hal_rng.c"
+  14              		.text
+  15              		.section	.text.HAL_RNG_MspInit,"ax",%progbits
+  16              		.align	1
+  17              		.weak	HAL_RNG_MspInit
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	HAL_RNG_MspInit:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 7047     		bx	lr
+  31              		.section	.text.HAL_RNG_Init,"ax",%progbits
+  32              		.align	1
+  33              		.global	HAL_RNG_Init
+  34              		.syntax unified
+  35              		.thumb
+  36              		.thumb_func
+  37              		.fpu fpv4-sp-d16
+  39              	HAL_RNG_Init:
+  40              		@ args = 0, pretend = 0, frame = 0
+  41              		@ frame_needed = 0, uses_anonymous_args = 0
+  42 0000 38B5     		push	{r3, r4, r5, lr}
+  43 0002 0446     		mov	r4, r0
+  44 0004 40B3     		cbz	r0, .L10
+  45 0006 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+  46 0008 03F0FF02 		and	r2, r3, #255
+  47 000c 13B9     		cbnz	r3, .L4
+  48 000e 0272     		strb	r2, [r0, #8]
+  49 0010 FFF7FEFF 		bl	HAL_RNG_MspInit
+  50              	.L4:
+  51 0014 0223     		movs	r3, #2
+  52 0016 6372     		strb	r3, [r4, #9]
+  53 0018 2368     		ldr	r3, [r4]
+  54 001a 6168     		ldr	r1, [r4, #4]
+  55 001c 1A68     		ldr	r2, [r3]
+  56 001e 22F00402 		bic	r2, r2, #4
+  57 0022 1A60     		str	r2, [r3]
+  58 0024 214A     		ldr	r2, .L15
+  59 0026 0A43     		orrs	r2, r2, r1
+  60 0028 1A60     		str	r2, [r3]
+ARM GAS  /tmp/cc4TE7yq.s 			page 2
+
+
+  61 002a 4AF6C722 		movw	r2, #43719
+  62 002e 1A61     		str	r2, [r3, #16]
+  63 0030 1A68     		ldr	r2, [r3]
+  64 0032 22F08042 		bic	r2, r2, #1073741824
+  65 0036 1A60     		str	r2, [r3]
+  66 0038 FFF7FEFF 		bl	HAL_GetTick
+  67 003c 0546     		mov	r5, r0
+  68              	.L12:
+  69 003e 2368     		ldr	r3, [r4]
+  70 0040 1A68     		ldr	r2, [r3]
+  71 0042 5000     		lsls	r0, r2, #1
+  72 0044 0AD4     		bmi	.L6
+  73 0046 1A68     		ldr	r2, [r3]
+  74 0048 42F00402 		orr	r2, r2, #4
+  75 004c 1A60     		str	r2, [r3]
+  76 004e 5B68     		ldr	r3, [r3, #4]
+  77 0050 5906     		lsls	r1, r3, #25
+  78 0052 11D5     		bpl	.L7
+  79 0054 0423     		movs	r3, #4
+  80 0056 6372     		strb	r3, [r4, #9]
+  81              	.L10:
+  82 0058 0120     		movs	r0, #1
+  83 005a 0CE0     		b	.L3
+  84              	.L6:
+  85 005c FFF7FEFF 		bl	HAL_GetTick
+  86 0060 401B     		subs	r0, r0, r5
+  87 0062 0428     		cmp	r0, #4
+  88 0064 EBD9     		bls	.L12
+  89 0066 2368     		ldr	r3, [r4]
+  90 0068 1B68     		ldr	r3, [r3]
+  91 006a 5B00     		lsls	r3, r3, #1
+  92 006c E7D5     		bpl	.L12
+  93 006e 0120     		movs	r0, #1
+  94 0070 0223     		movs	r3, #2
+  95 0072 6072     		strb	r0, [r4, #9]
+  96 0074 E360     		str	r3, [r4, #12]
+  97              	.L3:
+  98 0076 38BD     		pop	{r3, r4, r5, pc}
+  99              	.L7:
+ 100 0078 FFF7FEFF 		bl	HAL_GetTick
+ 101 007c 0546     		mov	r5, r0
+ 102              	.L13:
+ 103 007e 2368     		ldr	r3, [r4]
+ 104 0080 5B68     		ldr	r3, [r3, #4]
+ 105 0082 DB07     		lsls	r3, r3, #31
+ 106 0084 04D5     		bpl	.L9
+ 107 0086 0123     		movs	r3, #1
+ 108 0088 0020     		movs	r0, #0
+ 109 008a 6372     		strb	r3, [r4, #9]
+ 110 008c E060     		str	r0, [r4, #12]
+ 111 008e F2E7     		b	.L3
+ 112              	.L9:
+ 113 0090 FFF7FEFF 		bl	HAL_GetTick
+ 114 0094 401B     		subs	r0, r0, r5
+ 115 0096 0428     		cmp	r0, #4
+ 116 0098 F1D9     		bls	.L13
+ 117 009a 2368     		ldr	r3, [r4]
+ARM GAS  /tmp/cc4TE7yq.s 			page 3
+
+
+ 118 009c 5B68     		ldr	r3, [r3, #4]
+ 119 009e DA07     		lsls	r2, r3, #31
+ 120 00a0 EDD4     		bmi	.L13
+ 121 00a2 0423     		movs	r3, #4
+ 122 00a4 6372     		strb	r3, [r4, #9]
+ 123 00a6 0223     		movs	r3, #2
+ 124 00a8 E360     		str	r3, [r4, #12]
+ 125 00aa D5E7     		b	.L10
+ 126              	.L16:
+ 127              		.align	2
+ 128              	.L15:
+ 129 00ac 000DF040 		.word	1089473792
+ 131              		.section	.text.HAL_RNG_MspDeInit,"ax",%progbits
+ 132              		.align	1
+ 133              		.weak	HAL_RNG_MspDeInit
+ 134              		.syntax unified
+ 135              		.thumb
+ 136              		.thumb_func
+ 137              		.fpu fpv4-sp-d16
+ 139              	HAL_RNG_MspDeInit:
+ 140              		@ args = 0, pretend = 0, frame = 0
+ 141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 142              		@ link register save eliminated.
+ 143 0000 7047     		bx	lr
+ 145              		.section	.text.HAL_RNG_DeInit,"ax",%progbits
+ 146              		.align	1
+ 147              		.global	HAL_RNG_DeInit
+ 148              		.syntax unified
+ 149              		.thumb
+ 150              		.thumb_func
+ 151              		.fpu fpv4-sp-d16
+ 153              	HAL_RNG_DeInit:
+ 154              		@ args = 0, pretend = 0, frame = 0
+ 155              		@ frame_needed = 0, uses_anonymous_args = 0
+ 156 0000 70B5     		push	{r4, r5, r6, lr}
+ 157 0002 0546     		mov	r5, r0
+ 158 0004 0028     		cmp	r0, #0
+ 159 0006 33D0     		beq	.L22
+ 160 0008 0268     		ldr	r2, [r0]
+ 161 000a 1368     		ldr	r3, [r2]
+ 162 000c 23F08043 		bic	r3, r3, #1073741824
+ 163 0010 23F02003 		bic	r3, r3, #32
+ 164 0014 43F08043 		orr	r3, r3, #1073741824
+ 165 0018 1360     		str	r3, [r2]
+ 166 001a 1368     		ldr	r3, [r2]
+ 167 001c 23F08043 		bic	r3, r3, #1073741824
+ 168 0020 1360     		str	r3, [r2]
+ 169 0022 FFF7FEFF 		bl	HAL_GetTick
+ 170 0026 0646     		mov	r6, r0
+ 171              	.L24:
+ 172 0028 2B68     		ldr	r3, [r5]
+ 173 002a 1C68     		ldr	r4, [r3]
+ 174 002c 14F08044 		ands	r4, r4, #1073741824
+ 175 0030 0FD1     		bne	.L21
+ 176 0032 1A68     		ldr	r2, [r3]
+ 177 0034 2846     		mov	r0, r5
+ 178 0036 22F00C02 		bic	r2, r2, #12
+ARM GAS  /tmp/cc4TE7yq.s 			page 4
+
+
+ 179 003a 1A60     		str	r2, [r3]
+ 180 003c 5A68     		ldr	r2, [r3, #4]
+ 181 003e 22F06002 		bic	r2, r2, #96
+ 182 0042 5A60     		str	r2, [r3, #4]
+ 183 0044 FFF7FEFF 		bl	HAL_RNG_MspDeInit
+ 184 0048 2046     		mov	r0, r4
+ 185 004a 6C72     		strb	r4, [r5, #9]
+ 186 004c 2C72     		strb	r4, [r5, #8]
+ 187 004e EC60     		str	r4, [r5, #12]
+ 188              	.L19:
+ 189 0050 70BD     		pop	{r4, r5, r6, pc}
+ 190              	.L21:
+ 191 0052 FFF7FEFF 		bl	HAL_GetTick
+ 192 0056 801B     		subs	r0, r0, r6
+ 193 0058 0428     		cmp	r0, #4
+ 194 005a E5D9     		bls	.L24
+ 195 005c 2B68     		ldr	r3, [r5]
+ 196 005e 1B68     		ldr	r3, [r3]
+ 197 0060 5B00     		lsls	r3, r3, #1
+ 198 0062 E1D5     		bpl	.L24
+ 199 0064 0223     		movs	r3, #2
+ 200 0066 0124     		movs	r4, #1
+ 201 0068 6C72     		strb	r4, [r5, #9]
+ 202 006a EB60     		str	r3, [r5, #12]
+ 203 006c 0023     		movs	r3, #0
+ 204 006e 2B72     		strb	r3, [r5, #8]
+ 205              	.L22:
+ 206 0070 0120     		movs	r0, #1
+ 207 0072 EDE7     		b	.L19
+ 209              		.section	.text.HAL_RNG_GenerateRandomNumber_IT,"ax",%progbits
+ 210              		.align	1
+ 211              		.global	HAL_RNG_GenerateRandomNumber_IT
+ 212              		.syntax unified
+ 213              		.thumb
+ 214              		.thumb_func
+ 215              		.fpu fpv4-sp-d16
+ 217              	HAL_RNG_GenerateRandomNumber_IT:
+ 218              		@ args = 0, pretend = 0, frame = 0
+ 219              		@ frame_needed = 0, uses_anonymous_args = 0
+ 220              		@ link register save eliminated.
+ 221 0000 037A     		ldrb	r3, [r0, #8]	@ zero_extendqisi2
+ 222 0002 012B     		cmp	r3, #1
+ 223 0004 13D0     		beq	.L29
+ 224 0006 0123     		movs	r3, #1
+ 225 0008 427A     		ldrb	r2, [r0, #9]	@ zero_extendqisi2
+ 226 000a 0372     		strb	r3, [r0, #8]
+ 227 000c 9A42     		cmp	r2, r3
+ 228 000e 08D1     		bne	.L28
+ 229 0010 0223     		movs	r3, #2
+ 230 0012 0268     		ldr	r2, [r0]
+ 231 0014 4372     		strb	r3, [r0, #9]
+ 232 0016 1368     		ldr	r3, [r2]
+ 233 0018 0020     		movs	r0, #0
+ 234 001a 43F00803 		orr	r3, r3, #8
+ 235 001e 1360     		str	r3, [r2]
+ 236 0020 7047     		bx	lr
+ 237              	.L28:
+ARM GAS  /tmp/cc4TE7yq.s 			page 5
+
+
+ 238 0022 0022     		movs	r2, #0
+ 239 0024 0272     		strb	r2, [r0, #8]
+ 240 0026 0422     		movs	r2, #4
+ 241 0028 C260     		str	r2, [r0, #12]
+ 242 002a 1846     		mov	r0, r3
+ 243 002c 7047     		bx	lr
+ 244              	.L29:
+ 245 002e 0220     		movs	r0, #2
+ 246 0030 7047     		bx	lr
+ 248              		.section	.text.HAL_RNG_ReadLastRandomNumber,"ax",%progbits
+ 249              		.align	1
+ 250              		.global	HAL_RNG_ReadLastRandomNumber
+ 251              		.syntax unified
+ 252              		.thumb
+ 253              		.thumb_func
+ 254              		.fpu fpv4-sp-d16
+ 256              	HAL_RNG_ReadLastRandomNumber:
+ 257              		@ args = 0, pretend = 0, frame = 0
+ 258              		@ frame_needed = 0, uses_anonymous_args = 0
+ 259              		@ link register save eliminated.
+ 260 0000 0069     		ldr	r0, [r0, #16]
+ 261 0002 7047     		bx	lr
+ 263              		.section	.text.HAL_RNG_ReadyDataCallback,"ax",%progbits
+ 264              		.align	1
+ 265              		.weak	HAL_RNG_ReadyDataCallback
+ 266              		.syntax unified
+ 267              		.thumb
+ 268              		.thumb_func
+ 269              		.fpu fpv4-sp-d16
+ 271              	HAL_RNG_ReadyDataCallback:
+ 272              		@ args = 0, pretend = 0, frame = 0
+ 273              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274              		@ link register save eliminated.
+ 275 0000 7047     		bx	lr
+ 277              		.section	.text.HAL_RNG_ErrorCallback,"ax",%progbits
+ 278              		.align	1
+ 279              		.weak	HAL_RNG_ErrorCallback
+ 280              		.syntax unified
+ 281              		.thumb
+ 282              		.thumb_func
+ 283              		.fpu fpv4-sp-d16
+ 285              	HAL_RNG_ErrorCallback:
+ 286              		@ args = 0, pretend = 0, frame = 0
+ 287              		@ frame_needed = 0, uses_anonymous_args = 0
+ 288              		@ link register save eliminated.
+ 289 0000 7047     		bx	lr
+ 291              		.section	.text.HAL_RNG_IRQHandler,"ax",%progbits
+ 292              		.align	1
+ 293              		.global	HAL_RNG_IRQHandler
+ 294              		.syntax unified
+ 295              		.thumb
+ 296              		.thumb_func
+ 297              		.fpu fpv4-sp-d16
+ 299              	HAL_RNG_IRQHandler:
+ 300              		@ args = 0, pretend = 0, frame = 0
+ 301              		@ frame_needed = 0, uses_anonymous_args = 0
+ 302 0000 0368     		ldr	r3, [r0]
+ARM GAS  /tmp/cc4TE7yq.s 			page 6
+
+
+ 303 0002 10B5     		push	{r4, lr}
+ 304 0004 5A68     		ldr	r2, [r3, #4]
+ 305 0006 0446     		mov	r4, r0
+ 306 0008 9106     		lsls	r1, r2, #26
+ 307 000a 0BD5     		bpl	.L34
+ 308 000c 1023     		movs	r3, #16
+ 309 000e C360     		str	r3, [r0, #12]
+ 310              	.L35:
+ 311 0010 0423     		movs	r3, #4
+ 312 0012 2046     		mov	r0, r4
+ 313 0014 6372     		strb	r3, [r4, #9]
+ 314 0016 FFF7FEFF 		bl	HAL_RNG_ErrorCallback
+ 315 001a 6FF06002 		mvn	r2, #96
+ 316 001e 2368     		ldr	r3, [r4]
+ 317 0020 5A60     		str	r2, [r3, #4]
+ 318              	.L33:
+ 319 0022 10BD     		pop	{r4, pc}
+ 320              	.L34:
+ 321 0024 5006     		lsls	r0, r2, #25
+ 322 0026 05D5     		bpl	.L36
+ 323 0028 5107     		lsls	r1, r2, #29
+ 324 002a 16D4     		bmi	.L37
+ 325 002c 5968     		ldr	r1, [r3, #4]
+ 326 002e 21F04001 		bic	r1, r1, #64
+ 327 0032 5960     		str	r1, [r3, #4]
+ 328              	.L36:
+ 329 0034 D207     		lsls	r2, r2, #31
+ 330 0036 F4D5     		bpl	.L33
+ 331 0038 1A68     		ldr	r2, [r3]
+ 332 003a 22F00802 		bic	r2, r2, #8
+ 333 003e 1A60     		str	r2, [r3]
+ 334 0040 9968     		ldr	r1, [r3, #8]
+ 335 0042 637A     		ldrb	r3, [r4, #9]	@ zero_extendqisi2
+ 336 0044 2161     		str	r1, [r4, #16]
+ 337 0046 042B     		cmp	r3, #4
+ 338 0048 EBD0     		beq	.L33
+ 339 004a 0123     		movs	r3, #1
+ 340 004c 6372     		strb	r3, [r4, #9]
+ 341 004e 0023     		movs	r3, #0
+ 342 0050 2046     		mov	r0, r4
+ 343 0052 2372     		strb	r3, [r4, #8]
+ 344 0054 FFF7FEFF 		bl	HAL_RNG_ReadyDataCallback
+ 345 0058 E3E7     		b	.L33
+ 346              	.L37:
+ 347 005a 0822     		movs	r2, #8
+ 348 005c E260     		str	r2, [r4, #12]
+ 349 005e 1A68     		ldr	r2, [r3]
+ 350 0060 22F00802 		bic	r2, r2, #8
+ 351 0064 1A60     		str	r2, [r3]
+ 352 0066 D3E7     		b	.L35
+ 354              		.section	.text.HAL_RNG_GetState,"ax",%progbits
+ 355              		.align	1
+ 356              		.global	HAL_RNG_GetState
+ 357              		.syntax unified
+ 358              		.thumb
+ 359              		.thumb_func
+ 360              		.fpu fpv4-sp-d16
+ARM GAS  /tmp/cc4TE7yq.s 			page 7
+
+
+ 362              	HAL_RNG_GetState:
+ 363              		@ args = 0, pretend = 0, frame = 0
+ 364              		@ frame_needed = 0, uses_anonymous_args = 0
+ 365              		@ link register save eliminated.
+ 366 0000 407A     		ldrb	r0, [r0, #9]	@ zero_extendqisi2
+ 367 0002 7047     		bx	lr
+ 369              		.section	.text.HAL_RNG_GetError,"ax",%progbits
+ 370              		.align	1
+ 371              		.global	HAL_RNG_GetError
+ 372              		.syntax unified
+ 373              		.thumb
+ 374              		.thumb_func
+ 375              		.fpu fpv4-sp-d16
+ 377              	HAL_RNG_GetError:
+ 378              		@ args = 0, pretend = 0, frame = 0
+ 379              		@ frame_needed = 0, uses_anonymous_args = 0
+ 380              		@ link register save eliminated.
+ 381 0000 C068     		ldr	r0, [r0, #12]
+ 382 0002 7047     		bx	lr
+ 384              		.section	.text.RNG_RecoverSeedError,"ax",%progbits
+ 385              		.align	1
+ 386              		.global	RNG_RecoverSeedError
+ 387              		.syntax unified
+ 388              		.thumb
+ 389              		.thumb_func
+ 390              		.fpu fpv4-sp-d16
+ 392              	RNG_RecoverSeedError:
+ 393              		@ args = 0, pretend = 0, frame = 8
+ 394              		@ frame_needed = 0, uses_anonymous_args = 0
+ 395 0000 0023     		movs	r3, #0
+ 396 0002 13B5     		push	{r0, r1, r4, lr}
+ 397 0004 0193     		str	r3, [sp, #4]
+ 398 0006 0368     		ldr	r3, [r0]
+ 399 0008 5A68     		ldr	r2, [r3, #4]
+ 400 000a 5207     		lsls	r2, r2, #29
+ 401 000c 09D4     		bmi	.L50
+ 402 000e 5A68     		ldr	r2, [r3, #4]
+ 403 0010 22F04002 		bic	r2, r2, #64
+ 404 0014 5A60     		str	r2, [r3, #4]
+ 405              	.L51:
+ 406 0016 C368     		ldr	r3, [r0, #12]
+ 407 0018 23F00803 		bic	r3, r3, #8
+ 408 001c C360     		str	r3, [r0, #12]
+ 409 001e 0020     		movs	r0, #0
+ 410 0020 18E0     		b	.L53
+ 411              	.L50:
+ 412 0022 1A68     		ldr	r2, [r3]
+ 413 0024 42F08042 		orr	r2, r2, #1073741824
+ 414 0028 1A60     		str	r2, [r3]
+ 415 002a 1A68     		ldr	r2, [r3]
+ 416 002c 22F08042 		bic	r2, r2, #1073741824
+ 417 0030 1A60     		str	r2, [r3]
+ 418 0032 0422     		movs	r2, #4
+ 419 0034 0192     		str	r2, [sp, #4]
+ 420              	.L54:
+ 421 0036 019A     		ldr	r2, [sp, #4]
+ 422 0038 013A     		subs	r2, r2, #1
+ARM GAS  /tmp/cc4TE7yq.s 			page 8
+
+
+ 423 003a 0192     		str	r2, [sp, #4]
+ 424 003c 019A     		ldr	r2, [sp, #4]
+ 425 003e 5AB9     		cbnz	r2, .L52
+ 426              	.L63:
+ 427 0040 0124     		movs	r4, #1
+ 428 0042 4472     		strb	r4, [r0, #9]
+ 429 0044 C368     		ldr	r3, [r0, #12]
+ 430 0046 0272     		strb	r2, [r0, #8]
+ 431 0048 43F00203 		orr	r3, r3, #2
+ 432 004c C360     		str	r3, [r0, #12]
+ 433 004e FFF7FEFF 		bl	HAL_RNG_ErrorCallback
+ 434 0052 2046     		mov	r0, r4
+ 435              	.L53:
+ 436 0054 02B0     		add	sp, sp, #8
+ 437              		@ sp needed
+ 438 0056 10BD     		pop	{r4, pc}
+ 439              	.L52:
+ 440 0058 1A68     		ldr	r2, [r3]
+ 441 005a 5400     		lsls	r4, r2, #1
+ 442 005c EBD4     		bmi	.L54
+ 443 005e 5A68     		ldr	r2, [r3, #4]
+ 444 0060 5106     		lsls	r1, r2, #25
+ 445 0062 42BF     		ittt	mi
+ 446 0064 5A68     		ldrmi	r2, [r3, #4]
+ 447 0066 22F04002 		bicmi	r2, r2, #64
+ 448 006a 5A60     		strmi	r2, [r3, #4]
+ 449 006c 0422     		movs	r2, #4
+ 450 006e 0192     		str	r2, [sp, #4]
+ 451              	.L57:
+ 452 0070 019A     		ldr	r2, [sp, #4]
+ 453 0072 013A     		subs	r2, r2, #1
+ 454 0074 0192     		str	r2, [sp, #4]
+ 455 0076 019A     		ldr	r2, [sp, #4]
+ 456 0078 002A     		cmp	r2, #0
+ 457 007a E1D0     		beq	.L63
+ 458 007c 5A68     		ldr	r2, [r3, #4]
+ 459 007e 5207     		lsls	r2, r2, #29
+ 460 0080 F6D4     		bmi	.L57
+ 461 0082 C8E7     		b	.L51
+ 463              		.section	.text.HAL_RNG_GenerateRandomNumber,"ax",%progbits
+ 464              		.align	1
+ 465              		.global	HAL_RNG_GenerateRandomNumber
+ 466              		.syntax unified
+ 467              		.thumb
+ 468              		.thumb_func
+ 469              		.fpu fpv4-sp-d16
+ 471              	HAL_RNG_GenerateRandomNumber:
+ 472              		@ args = 0, pretend = 0, frame = 0
+ 473              		@ frame_needed = 0, uses_anonymous_args = 0
+ 474 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 475 0004 037A     		ldrb	r3, [r0, #8]	@ zero_extendqisi2
+ 476 0006 0546     		mov	r5, r0
+ 477 0008 012B     		cmp	r3, #1
+ 478 000a 0E46     		mov	r6, r1
+ 479 000c 43D0     		beq	.L73
+ 480 000e 0124     		movs	r4, #1
+ 481 0010 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ARM GAS  /tmp/cc4TE7yq.s 			page 9
+
+
+ 482 0012 0472     		strb	r4, [r0, #8]
+ 483 0014 A342     		cmp	r3, r4
+ 484 0016 DFB2     		uxtb	r7, r3
+ 485 0018 3AD1     		bne	.L66
+ 486 001a 0223     		movs	r3, #2
+ 487 001c 4372     		strb	r3, [r0, #9]
+ 488 001e 0368     		ldr	r3, [r0]
+ 489 0020 5C68     		ldr	r4, [r3, #4]
+ 490 0022 14F04004 		ands	r4, r4, #64
+ 491 0026 0BD0     		beq	.L67
+ 492 0028 0823     		movs	r3, #8
+ 493 002a C360     		str	r3, [r0, #12]
+ 494 002c FFF7FEFF 		bl	RNG_RecoverSeedError
+ 495 0030 0128     		cmp	r0, #1
+ 496 0032 0446     		mov	r4, r0
+ 497 0034 04D1     		bne	.L67
+ 498 0036 2023     		movs	r3, #32
+ 499 0038 EB60     		str	r3, [r5, #12]
+ 500              	.L65:
+ 501 003a 2046     		mov	r0, r4
+ 502 003c BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 503              	.L67:
+ 504 0040 FFF7FEFF 		bl	HAL_GetTick
+ 505 0044 8046     		mov	r8, r0
+ 506              	.L75:
+ 507 0046 2B68     		ldr	r3, [r5]
+ 508 0048 5A68     		ldr	r2, [r3, #4]
+ 509 004a D207     		lsls	r2, r2, #31
+ 510 004c 0FD5     		bpl	.L69
+ 511 004e 9A68     		ldr	r2, [r3, #8]
+ 512 0050 5B68     		ldr	r3, [r3, #4]
+ 513 0052 2A61     		str	r2, [r5, #16]
+ 514 0054 5B06     		lsls	r3, r3, #25
+ 515 0056 4ABF     		itet	mi
+ 516 0058 0823     		movmi	r3, #8
+ 517 005a 2746     		movpl	r7, r4
+ 518 005c EB60     		strmi	r3, [r5, #12]
+ 519 005e 4FF00103 		mov	r3, #1
+ 520 0062 3C46     		mov	r4, r7
+ 521 0064 58BF     		it	pl
+ 522 0066 3260     		strpl	r2, [r6]
+ 523 0068 6B72     		strb	r3, [r5, #9]
+ 524              	.L72:
+ 525 006a 0023     		movs	r3, #0
+ 526 006c 0EE0     		b	.L76
+ 527              	.L69:
+ 528 006e FFF7FEFF 		bl	HAL_GetTick
+ 529 0072 A0EB0800 		sub	r0, r0, r8
+ 530 0076 0428     		cmp	r0, #4
+ 531 0078 E5D9     		bls	.L75
+ 532 007a 2B68     		ldr	r3, [r5]
+ 533 007c 5B68     		ldr	r3, [r3, #4]
+ 534 007e 13F00103 		ands	r3, r3, #1
+ 535 0082 E0D1     		bne	.L75
+ 536 0084 0124     		movs	r4, #1
+ 537 0086 0222     		movs	r2, #2
+ 538 0088 6C72     		strb	r4, [r5, #9]
+ARM GAS  /tmp/cc4TE7yq.s 			page 10
+
+
+ 539 008a EA60     		str	r2, [r5, #12]
+ 540              	.L76:
+ 541 008c 2B72     		strb	r3, [r5, #8]
+ 542 008e D4E7     		b	.L65
+ 543              	.L66:
+ 544 0090 0423     		movs	r3, #4
+ 545 0092 C360     		str	r3, [r0, #12]
+ 546 0094 E9E7     		b	.L72
+ 547              	.L73:
+ 548 0096 0224     		movs	r4, #2
+ 549 0098 CFE7     		b	.L65
+ 551              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc4TE7yq.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_hal_rng.c
+     /tmp/cc4TE7yq.s:16     .text.HAL_RNG_MspInit:0000000000000000 $t
+     /tmp/cc4TE7yq.s:25     .text.HAL_RNG_MspInit:0000000000000000 HAL_RNG_MspInit
+     /tmp/cc4TE7yq.s:32     .text.HAL_RNG_Init:0000000000000000 $t
+     /tmp/cc4TE7yq.s:39     .text.HAL_RNG_Init:0000000000000000 HAL_RNG_Init
+     /tmp/cc4TE7yq.s:129    .text.HAL_RNG_Init:00000000000000ac $d
+     /tmp/cc4TE7yq.s:132    .text.HAL_RNG_MspDeInit:0000000000000000 $t
+     /tmp/cc4TE7yq.s:139    .text.HAL_RNG_MspDeInit:0000000000000000 HAL_RNG_MspDeInit
+     /tmp/cc4TE7yq.s:146    .text.HAL_RNG_DeInit:0000000000000000 $t
+     /tmp/cc4TE7yq.s:153    .text.HAL_RNG_DeInit:0000000000000000 HAL_RNG_DeInit
+     /tmp/cc4TE7yq.s:210    .text.HAL_RNG_GenerateRandomNumber_IT:0000000000000000 $t
+     /tmp/cc4TE7yq.s:217    .text.HAL_RNG_GenerateRandomNumber_IT:0000000000000000 HAL_RNG_GenerateRandomNumber_IT
+     /tmp/cc4TE7yq.s:249    .text.HAL_RNG_ReadLastRandomNumber:0000000000000000 $t
+     /tmp/cc4TE7yq.s:256    .text.HAL_RNG_ReadLastRandomNumber:0000000000000000 HAL_RNG_ReadLastRandomNumber
+     /tmp/cc4TE7yq.s:264    .text.HAL_RNG_ReadyDataCallback:0000000000000000 $t
+     /tmp/cc4TE7yq.s:271    .text.HAL_RNG_ReadyDataCallback:0000000000000000 HAL_RNG_ReadyDataCallback
+     /tmp/cc4TE7yq.s:278    .text.HAL_RNG_ErrorCallback:0000000000000000 $t
+     /tmp/cc4TE7yq.s:285    .text.HAL_RNG_ErrorCallback:0000000000000000 HAL_RNG_ErrorCallback
+     /tmp/cc4TE7yq.s:292    .text.HAL_RNG_IRQHandler:0000000000000000 $t
+     /tmp/cc4TE7yq.s:299    .text.HAL_RNG_IRQHandler:0000000000000000 HAL_RNG_IRQHandler
+     /tmp/cc4TE7yq.s:355    .text.HAL_RNG_GetState:0000000000000000 $t
+     /tmp/cc4TE7yq.s:362    .text.HAL_RNG_GetState:0000000000000000 HAL_RNG_GetState
+     /tmp/cc4TE7yq.s:370    .text.HAL_RNG_GetError:0000000000000000 $t
+     /tmp/cc4TE7yq.s:377    .text.HAL_RNG_GetError:0000000000000000 HAL_RNG_GetError
+     /tmp/cc4TE7yq.s:385    .text.RNG_RecoverSeedError:0000000000000000 $t
+     /tmp/cc4TE7yq.s:392    .text.RNG_RecoverSeedError:0000000000000000 RNG_RecoverSeedError
+     /tmp/cc4TE7yq.s:464    .text.HAL_RNG_GenerateRandomNumber:0000000000000000 $t
+     /tmp/cc4TE7yq.s:471    .text.HAL_RNG_GenerateRandomNumber:0000000000000000 HAL_RNG_GenerateRandomNumber
+
+UNDEFINED SYMBOLS
+HAL_GetTick

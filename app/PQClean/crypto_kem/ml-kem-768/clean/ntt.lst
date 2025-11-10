@@ -1,0 +1,375 @@
+ARM GAS  /tmp/ccSzgKOP.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ntt.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLKEM768_CLEAN_ntt,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLKEM768_CLEAN_ntt
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLKEM768_CLEAN_ntt:
+  26              		@ args = 0, pretend = 0, frame = 16
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  29 0004 0646     		mov	r6, r0
+  30 0006 4FF00709 		mov	r9, #7
+  31 000a 4FF00108 		mov	r8, #1
+  32 000e 8025     		movs	r5, #128
+  33 0010 85B0     		sub	sp, sp, #20
+  34              	.L2:
+  35 0012 0024     		movs	r4, #0
+  36 0014 1A4B     		ldr	r3, .L8
+  37 0016 03EB4803 		add	r3, r3, r8, lsl #1
+  38              	.L5:
+  39 001a A246     		mov	r10, r4
+  40 001c 2A19     		adds	r2, r5, r4
+  41 001e 33F9021B 		ldrsh	r1, [r3], #2
+  42 0022 08F10108 		add	r8, r8, #1
+  43 0026 06EB420B 		add	fp, r6, r2, lsl #1
+  44 002a 06EB4407 		add	r7, r6, r4, lsl #1
+  45              	.L3:
+  46 002e 9245     		cmp	r10, r2
+  47 0030 0BD3     		bcc	.L4
+  48 0032 04EB4504 		add	r4, r4, r5, lsl #1
+  49 0036 FF2C     		cmp	r4, #255
+  50 0038 EFD9     		bls	.L5
+  51 003a B9F10109 		subs	r9, r9, #1
+  52 003e 4FEA5505 		lsr	r5, r5, #1
+  53 0042 E6D1     		bne	.L2
+  54 0044 05B0     		add	sp, sp, #20
+  55              		@ sp needed
+  56 0046 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+  57              	.L4:
+  58 004a BBF90000 		ldrsh	r0, [fp]
+ARM GAS  /tmp/ccSzgKOP.s 			page 2
+
+
+  59 004e CDE90232 		strd	r3, r2, [sp, #8]
+  60 0052 4843     		muls	r0, r1, r0
+  61 0054 0191     		str	r1, [sp, #4]
+  62 0056 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+  63 005a DDE90232 		ldrd	r3, r2, [sp, #8]
+  64 005e B7F900C0 		ldrsh	ip, [r7]
+  65 0062 80B2     		uxth	r0, r0
+  66 0064 ACEB000C 		sub	ip, ip, r0
+  67 0068 2BF802CB 		strh	ip, [fp], #2	@ movhi
+  68 006c 37F802CB 		ldrh	ip, [r7], #2
+  69 0070 0199     		ldr	r1, [sp, #4]
+  70 0072 6044     		add	r0, r0, ip
+  71 0074 27F8020C 		strh	r0, [r7, #-2]	@ movhi
+  72 0078 0AF1010A 		add	r10, r10, #1
+  73 007c D7E7     		b	.L3
+  74              	.L9:
+  75 007e 00BF     		.align	2
+  76              	.L8:
+  77 0080 00000000 		.word	.LANCHOR0
+  79              		.section	.text.PQCLEAN_MLKEM768_CLEAN_invntt,"ax",%progbits
+  80              		.align	1
+  81              		.global	PQCLEAN_MLKEM768_CLEAN_invntt
+  82              		.syntax unified
+  83              		.thumb
+  84              		.thumb_func
+  85              		.fpu fpv4-sp-d16
+  87              	PQCLEAN_MLKEM768_CLEAN_invntt:
+  88              		@ args = 0, pretend = 0, frame = 24
+  89              		@ frame_needed = 0, uses_anonymous_args = 0
+  90 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  91 0004 0446     		mov	r4, r0
+  92 0006 4FF00709 		mov	r9, #7
+  93 000a 4FF07F08 		mov	r8, #127
+  94 000e 0226     		movs	r6, #2
+  95 0010 87B0     		sub	sp, sp, #28
+  96              	.L11:
+  97 0012 0025     		movs	r5, #0
+  98 0014 284B     		ldr	r3, .L21
+  99 0016 03EB4803 		add	r3, r3, r8, lsl #1
+ 100              	.L16:
+ 101 001a 33F90229 		ldrsh	r2, [r3], #-2
+ 102 001e AA46     		mov	r10, r5
+ 103 0020 0292     		str	r2, [sp, #8]
+ 104 0022 AA19     		adds	r2, r5, r6
+ 105 0024 2CBF     		ite	cs
+ 106 0026 0121     		movcs	r1, #1
+ 107 0028 0021     		movcc	r1, #0
+ 108 002a 08F1FF38 		add	r8, r8, #-1
+ 109 002e 04EB450B 		add	fp, r4, r5, lsl #1
+ 110 0032 0191     		str	r1, [sp, #4]
+ 111 0034 04EB4207 		add	r7, r4, r2, lsl #1
+ 112              	.L14:
+ 113 0038 9245     		cmp	r10, r2
+ 114 003a 1DD3     		bcc	.L15
+ 115 003c 019A     		ldr	r2, [sp, #4]
+ 116 003e 002A     		cmp	r2, #0
+ 117 0040 0CBF     		ite	eq
+ARM GAS  /tmp/ccSzgKOP.s 			page 3
+
+
+ 118 0042 3246     		moveq	r2, r6
+ 119 0044 0022     		movne	r2, #0
+ 120 0046 3244     		add	r2, r2, r6
+ 121 0048 1544     		add	r5, r5, r2
+ 122 004a FF2D     		cmp	r5, #255
+ 123 004c E5D9     		bls	.L16
+ 124 004e B9F10109 		subs	r9, r9, #1
+ 125 0052 4FEA4606 		lsl	r6, r6, #1
+ 126 0056 DCD1     		bne	.L11
+ 127 0058 40F2A156 		movw	r6, #1441
+ 128 005c A51E     		subs	r5, r4, #2
+ 129 005e 04F5FF74 		add	r4, r4, #510
+ 130              	.L18:
+ 131 0062 35F9020F 		ldrsh	r0, [r5, #2]!
+ 132 0066 7043     		muls	r0, r6, r0
+ 133 0068 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 134 006c A542     		cmp	r5, r4
+ 135 006e 2880     		strh	r0, [r5]	@ movhi
+ 136 0070 F7D1     		bne	.L18
+ 137 0072 07B0     		add	sp, sp, #28
+ 138              		@ sp needed
+ 139 0074 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 140              	.L15:
+ 141 0078 BBF80010 		ldrh	r1, [fp]
+ 142 007c B7F90000 		ldrsh	r0, [r7]
+ 143 0080 CDE90432 		strd	r3, r2, [sp, #16]
+ 144 0084 0844     		add	r0, r0, r1
+ 145 0086 00B2     		sxth	r0, r0
+ 146 0088 0391     		str	r1, [sp, #12]
+ 147 008a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_barrett_reduce
+ 148 008e 2BF8020B 		strh	r0, [fp], #2	@ movhi
+ 149 0092 37F8020B 		ldrh	r0, [r7], #2
+ 150 0096 0399     		ldr	r1, [sp, #12]
+ 151 0098 029B     		ldr	r3, [sp, #8]
+ 152 009a 401A     		subs	r0, r0, r1
+ 153 009c 00B2     		sxth	r0, r0
+ 154 009e 27F8020C 		strh	r0, [r7, #-2]	@ movhi
+ 155 00a2 5843     		muls	r0, r3, r0
+ 156 00a4 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 157 00a8 DDE90432 		ldrd	r3, r2, [sp, #16]
+ 158 00ac 27F8020C 		strh	r0, [r7, #-2]	@ movhi
+ 159 00b0 0AF1010A 		add	r10, r10, #1
+ 160 00b4 C0E7     		b	.L14
+ 161              	.L22:
+ 162 00b6 00BF     		.align	2
+ 163              	.L21:
+ 164 00b8 00000000 		.word	.LANCHOR0
+ 166              		.section	.text.PQCLEAN_MLKEM768_CLEAN_basemul,"ax",%progbits
+ 167              		.align	1
+ 168              		.global	PQCLEAN_MLKEM768_CLEAN_basemul
+ 169              		.syntax unified
+ 170              		.thumb
+ 171              		.thumb_func
+ 172              		.fpu fpv4-sp-d16
+ 174              	PQCLEAN_MLKEM768_CLEAN_basemul:
+ 175              		@ args = 0, pretend = 0, frame = 0
+ 176              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/ccSzgKOP.s 			page 4
+
+
+ 177 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 178 0002 0446     		mov	r4, r0
+ 179 0004 1F46     		mov	r7, r3
+ 180 0006 4888     		ldrh	r0, [r1, #2]
+ 181 0008 5388     		ldrh	r3, [r2, #2]
+ 182 000a 0E46     		mov	r6, r1
+ 183 000c 10FB03F0 		smulbb	r0, r0, r3
+ 184 0010 1546     		mov	r5, r2
+ 185 0012 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 186 0016 2080     		strh	r0, [r4]	@ movhi
+ 187 0018 7843     		muls	r0, r7, r0
+ 188 001a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 189 001e 2080     		strh	r0, [r4]	@ movhi
+ 190 0020 2B88     		ldrh	r3, [r5]
+ 191 0022 3088     		ldrh	r0, [r6]
+ 192 0024 10FB03F0 		smulbb	r0, r0, r3
+ 193 0028 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 194 002c 2388     		ldrh	r3, [r4]
+ 195 002e 1844     		add	r0, r0, r3
+ 196 0030 2080     		strh	r0, [r4]	@ movhi
+ 197 0032 6B88     		ldrh	r3, [r5, #2]
+ 198 0034 3088     		ldrh	r0, [r6]
+ 199 0036 10FB03F0 		smulbb	r0, r0, r3
+ 200 003a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 201 003e 6080     		strh	r0, [r4, #2]	@ movhi
+ 202 0040 2B88     		ldrh	r3, [r5]
+ 203 0042 7088     		ldrh	r0, [r6, #2]
+ 204 0044 10FB03F0 		smulbb	r0, r0, r3
+ 205 0048 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+ 206 004c 6388     		ldrh	r3, [r4, #2]
+ 207 004e 1844     		add	r0, r0, r3
+ 208 0050 6080     		strh	r0, [r4, #2]	@ movhi
+ 209 0052 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 211              		.global	PQCLEAN_MLKEM768_CLEAN_zetas
+ 212              		.section	.rodata.PQCLEAN_MLKEM768_CLEAN_zetas,"a"
+ 213              		.align	1
+ 214              		.set	.LANCHOR0,. + 0
+ 217              	PQCLEAN_MLKEM768_CLEAN_zetas:
+ 218 0000 ECFB     		.short	-1044
+ 219 0002 0AFD     		.short	-758
+ 220 0004 99FE     		.short	-359
+ 221 0006 13FA     		.short	-1517
+ 222 0008 D505     		.short	1493
+ 223 000a 8E05     		.short	1422
+ 224 000c 1F01     		.short	287
+ 225 000e CA00     		.short	202
+ 226 0010 55FF     		.short	-171
+ 227 0012 6E02     		.short	622
+ 228 0014 2906     		.short	1577
+ 229 0016 B600     		.short	182
+ 230 0018 C203     		.short	962
+ 231 001a 4EFB     		.short	-1202
+ 232 001c 3EFA     		.short	-1474
+ 233 001e BC05     		.short	1468
+ 234 0020 3D02     		.short	573
+ 235 0022 D3FA     		.short	-1325
+ 236 0024 0801     		.short	264
+ARM GAS  /tmp/ccSzgKOP.s 			page 5
+
+
+ 237 0026 7F01     		.short	383
+ 238 0028 C3FC     		.short	-829
+ 239 002a B205     		.short	1458
+ 240 002c BEF9     		.short	-1602
+ 241 002e 7EFF     		.short	-130
+ 242 0030 57FD     		.short	-681
+ 243 0032 F903     		.short	1017
+ 244 0034 DC02     		.short	732
+ 245 0036 6002     		.short	608
+ 246 0038 FAF9     		.short	-1542
+ 247 003a 9B01     		.short	411
+ 248 003c 33FF     		.short	-205
+ 249 003e DDF9     		.short	-1571
+ 250 0040 C704     		.short	1223
+ 251 0042 8C02     		.short	652
+ 252 0044 D8FD     		.short	-552
+ 253 0046 F703     		.short	1015
+ 254 0048 F3FA     		.short	-1293
+ 255 004a D305     		.short	1491
+ 256 004c E6FE     		.short	-282
+ 257 004e F8F9     		.short	-1544
+ 258 0050 0402     		.short	516
+ 259 0052 F8FF     		.short	-8
+ 260 0054 C0FE     		.short	-320
+ 261 0056 66FD     		.short	-666
+ 262 0058 AEF9     		.short	-1618
+ 263 005a 76FB     		.short	-1162
+ 264 005c 7E00     		.short	126
+ 265 005e BD05     		.short	1469
+ 266 0060 ABFC     		.short	-853
+ 267 0062 A6FF     		.short	-90
+ 268 0064 F1FE     		.short	-271
+ 269 0066 3E03     		.short	830
+ 270 0068 6B00     		.short	107
+ 271 006a 73FA     		.short	-1421
+ 272 006c 09FF     		.short	-247
+ 273 006e 49FC     		.short	-951
+ 274 0070 72FE     		.short	-398
+ 275 0072 C103     		.short	961
+ 276 0074 1CFA     		.short	-1508
+ 277 0076 2BFD     		.short	-725
+ 278 0078 C001     		.short	448
+ 279 007a D7FB     		.short	-1065
+ 280 007c A502     		.short	677
+ 281 007e 05FB     		.short	-1275
+ 282 0080 B1FB     		.short	-1103
+ 283 0082 AE01     		.short	430
+ 284 0084 2B02     		.short	555
+ 285 0086 4B03     		.short	843
+ 286 0088 1DFB     		.short	-1251
+ 287 008a 6703     		.short	871
+ 288 008c 0E06     		.short	1550
+ 289 008e 6900     		.short	105
+ 290 0090 A601     		.short	422
+ 291 0092 4B02     		.short	587
+ 292 0094 B100     		.short	177
+ 293 0096 15FF     		.short	-235
+ARM GAS  /tmp/ccSzgKOP.s 			page 6
+
+
+ 294 0098 DDFE     		.short	-291
+ 295 009a 34FE     		.short	-460
+ 296 009c 2606     		.short	1574
+ 297 009e 7506     		.short	1653
+ 298 00a0 0AFF     		.short	-246
+ 299 00a2 0A03     		.short	778
+ 300 00a4 8704     		.short	1159
+ 301 00a6 6DFF     		.short	-147
+ 302 00a8 F7FC     		.short	-777
+ 303 00aa CB05     		.short	1483
+ 304 00ac A6FD     		.short	-602
+ 305 00ae 5F04     		.short	1119
+ 306 00b0 CAF9     		.short	-1590
+ 307 00b2 8402     		.short	644
+ 308 00b4 98FC     		.short	-872
+ 309 00b6 5D01     		.short	349
+ 310 00b8 A201     		.short	418
+ 311 00ba 4901     		.short	329
+ 312 00bc 64FF     		.short	-156
+ 313 00be B5FF     		.short	-75
+ 314 00c0 3103     		.short	817
+ 315 00c2 4904     		.short	1097
+ 316 00c4 5B02     		.short	603
+ 317 00c6 6202     		.short	610
+ 318 00c8 2A05     		.short	1322
+ 319 00ca FBFA     		.short	-1285
+ 320 00cc 47FA     		.short	-1465
+ 321 00ce 8001     		.short	384
+ 322 00d0 41FB     		.short	-1215
+ 323 00d2 78FF     		.short	-136
+ 324 00d4 C204     		.short	1218
+ 325 00d6 C9FA     		.short	-1335
+ 326 00d8 96FC     		.short	-874
+ 327 00da DC00     		.short	220
+ 328 00dc 5DFB     		.short	-1187
+ 329 00de 85F9     		.short	-1659
+ 330 00e0 5FFB     		.short	-1185
+ 331 00e2 06FA     		.short	-1530
+ 332 00e4 02FB     		.short	-1278
+ 333 00e6 1A03     		.short	794
+ 334 00e8 1AFA     		.short	-1510
+ 335 00ea AAFC     		.short	-854
+ 336 00ec 9AFC     		.short	-870
+ 337 00ee DE01     		.short	478
+ 338 00f0 94FF     		.short	-108
+ 339 00f2 CCFE     		.short	-308
+ 340 00f4 E403     		.short	996
+ 341 00f6 DF03     		.short	991
+ 342 00f8 BE03     		.short	958
+ 343 00fa 4CFA     		.short	-1460
+ 344 00fc F205     		.short	1522
+ 345 00fe 5C06     		.short	1628
+ 346              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccSzgKOP.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ntt.c
+     /tmp/ccSzgKOP.s:16     .text.PQCLEAN_MLKEM768_CLEAN_ntt:0000000000000000 $t
+     /tmp/ccSzgKOP.s:25     .text.PQCLEAN_MLKEM768_CLEAN_ntt:0000000000000000 PQCLEAN_MLKEM768_CLEAN_ntt
+     /tmp/ccSzgKOP.s:77     .text.PQCLEAN_MLKEM768_CLEAN_ntt:0000000000000080 $d
+     /tmp/ccSzgKOP.s:80     .text.PQCLEAN_MLKEM768_CLEAN_invntt:0000000000000000 $t
+     /tmp/ccSzgKOP.s:87     .text.PQCLEAN_MLKEM768_CLEAN_invntt:0000000000000000 PQCLEAN_MLKEM768_CLEAN_invntt
+     /tmp/ccSzgKOP.s:164    .text.PQCLEAN_MLKEM768_CLEAN_invntt:00000000000000b8 $d
+     /tmp/ccSzgKOP.s:167    .text.PQCLEAN_MLKEM768_CLEAN_basemul:0000000000000000 $t
+     /tmp/ccSzgKOP.s:174    .text.PQCLEAN_MLKEM768_CLEAN_basemul:0000000000000000 PQCLEAN_MLKEM768_CLEAN_basemul
+     /tmp/ccSzgKOP.s:217    .rodata.PQCLEAN_MLKEM768_CLEAN_zetas:0000000000000000 PQCLEAN_MLKEM768_CLEAN_zetas
+     /tmp/ccSzgKOP.s:213    .rodata.PQCLEAN_MLKEM768_CLEAN_zetas:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+PQCLEAN_MLKEM768_CLEAN_barrett_reduce

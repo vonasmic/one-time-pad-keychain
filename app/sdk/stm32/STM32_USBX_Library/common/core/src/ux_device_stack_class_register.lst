@@ -1,0 +1,113 @@
+ARM GAS  /tmp/ccN0z2qc.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_class_register.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_class_register,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_class_register
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_class_register:
+  26              		@ args = 4, pretend = 0, frame = 48
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+  29 0004 1E46     		mov	r6, r3
+  30 0006 0023     		movs	r3, #0
+  31 0008 8DB0     		sub	sp, sp, #52
+  32 000a 0D46     		mov	r5, r1
+  33 000c 1746     		mov	r7, r2
+  34 000e 6946     		mov	r1, sp
+  35 0010 3F22     		movs	r2, #63
+  36 0012 8046     		mov	r8, r0
+  37 0014 DDF85090 		ldr	r9, [sp, #80]
+  38 0018 0093     		str	r3, [sp]
+  39 001a FFF7FEFF 		bl	_ux_utility_string_length_check
+  40 001e C8B9     		cbnz	r0, .L1
+  41 0020 0F4B     		ldr	r3, .L4
+  42 0022 1B68     		ldr	r3, [r3]
+  43 0024 D3F8FC40 		ldr	r4, [r3, #252]
+  44 0028 236C     		ldr	r3, [r4, #64]
+  45 002a B3B9     		cbnz	r3, .L3
+  46 002c 009A     		ldr	r2, [sp]
+  47 002e 2046     		mov	r0, r4
+  48 0030 4146     		mov	r1, r8
+  49 0032 0132     		adds	r2, r2, #1
+  50 0034 FFF7FEFF 		bl	_ux_utility_memory_copy
+  51 0038 0523     		movs	r3, #5
+  52 003a C4E91667 		strd	r6, r7, [r4, #88]
+  53 003e 6564     		str	r5, [r4, #68]
+  54 0040 C4F85490 		str	r9, [r4, #84]
+  55 0044 01A8     		add	r0, sp, #4
+  56 0046 CDE90949 		strd	r4, r9, [sp, #36]
+  57 004a 0193     		str	r3, [sp, #4]
+  58 004c A847     		blx	r5
+ARM GAS  /tmp/ccN0z2qc.s 			page 2
+
+
+  59 004e 08B9     		cbnz	r0, .L1
+  60 0050 0123     		movs	r3, #1
+  61 0052 2364     		str	r3, [r4, #64]
+  62              	.L1:
+  63 0054 0DB0     		add	sp, sp, #52
+  64              		@ sp needed
+  65 0056 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+  66              	.L3:
+  67 005a 1220     		movs	r0, #18
+  68 005c FAE7     		b	.L1
+  69              	.L5:
+  70 005e 00BF     		.align	2
+  71              	.L4:
+  72 0060 00000000 		.word	_ux_system_slave
+  74              		.section	.text._uxe_device_stack_class_register,"ax",%progbits
+  75              		.align	1
+  76              		.global	_uxe_device_stack_class_register
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+  80              		.fpu fpv4-sp-d16
+  82              	_uxe_device_stack_class_register:
+  83              		@ args = 4, pretend = 0, frame = 0
+  84              		@ frame_needed = 0, uses_anonymous_args = 0
+  85              		@ link register save eliminated.
+  86 0000 30B4     		push	{r4, r5}
+  87 0002 18B1     		cbz	r0, .L6
+  88 0004 11B1     		cbz	r1, .L6
+  89 0006 30BC     		pop	{r4, r5}
+  90 0008 FFF7FEBF 		b	_ux_device_stack_class_register
+  91              	.L6:
+  92 000c FA20     		movs	r0, #250
+  93 000e 30BC     		pop	{r4, r5}
+  94 0010 7047     		bx	lr
+  96              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccN0z2qc.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_class_register.c
+     /tmp/ccN0z2qc.s:16     .text._ux_device_stack_class_register:0000000000000000 $t
+     /tmp/ccN0z2qc.s:25     .text._ux_device_stack_class_register:0000000000000000 _ux_device_stack_class_register
+     /tmp/ccN0z2qc.s:72     .text._ux_device_stack_class_register:0000000000000060 $d
+     /tmp/ccN0z2qc.s:75     .text._uxe_device_stack_class_register:0000000000000000 $t
+     /tmp/ccN0z2qc.s:82     .text._uxe_device_stack_class_register:0000000000000000 _uxe_device_stack_class_register
+
+UNDEFINED SYMBOLS
+_ux_utility_string_length_check
+_ux_utility_memory_copy
+_ux_system_slave

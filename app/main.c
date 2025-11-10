@@ -12,12 +12,17 @@
 #include "spi.h"
 #include "cmd.h"
 #include "log.h"
+#include "sphincs.h"
+#include "stm32u5xx_hal.h"
 
 LOG_DEF("main");
 
 bool main_spi_auto = false;
 u8 main_spi_get_resp = 0;
 u8 main_spi_no_resp = 0;
+
+/* RNG handle for hardware random number generator */
+RNG_HandleTypeDef hrng;
 
 static bool _spi_cs_active = false;
 #define _SPI_BUF_SIZE (512)
@@ -67,13 +72,46 @@ void Error_Handler(void)
     }
 }
 
-static bool _get_hex(u8 *dest, const char *src)
-{   // read one byte of HEX value
-    if (hex_to_bin(dest, src, 1) != 1)
-        return (false);
-
-    return (true);
+/* HAL RNG MSP Init - required for hardware RNG to work */
+void HAL_RNG_MspInit(RNG_HandleTypeDef *hrng)
+{
+    (void)hrng;  /* unused parameter */
+    /* Enable RNG clock */
+    __HAL_RCC_RNG_CLK_ENABLE();
 }
+
+void HAL_RNG_MspDeInit(RNG_HandleTypeDef *hrng)
+{
+    (void)hrng;  /* unused parameter */
+    /* Disable RNG clock */
+    __HAL_RCC_RNG_CLK_DISABLE();
+}
+
+/**
+  * @brief RNG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RNG_Init(void)
+{
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    
+    /* Configure RNG clock source to HSI48 */
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RNG;
+    PeriphClkInit.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    
+    /* Initialize RNG peripheral */
+    hrng.Instance = RNG;
+    if (HAL_RNG_Init(&hrng) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
+
 
 static void _led1_on (void)
 {
@@ -135,75 +173,13 @@ static void _spi_auto_task(void)
     OS_PRINTF(NL);
 }
 
-static bool _skip_cs_char(char ch)
-{   // following characters can be used for skip CS manipulation
-    // only usable as first or last character (or both) in SPI data stream
-    return (((ch == 'x') || (ch == '\\')) ? true : false);
-}
-
-static bool _parse_hex(char *data)
-{
-    char spi_tx_buf[_SPI_BUF_SIZE];
-    char spi_rx_buf[_SPI_BUF_SIZE];
-    int buf_size = 0;
-    int i;
-    u8 tmp;
-    bool skip_cs = false;
-
-    if (_skip_cs_char(*data))
-    {   // 
-        data++;
-        skip_cs = true;
-    }
-
-    if (! _get_hex(&tmp, data))
-        return (false);
-
-    // convert HEX to binary data to buffer
-    do
-    {
-        data+=2;
-        while (*data == ' ')
-            data++; // skip spaces
-
-        spi_tx_buf[buf_size] = tmp;
-
-        if (buf_size < (_SPI_BUF_SIZE-1))
-            buf_size++;
-    }
-    while (_get_hex(&tmp, data));
-
-    _led1_off();
-
-    if (skip_cs == false)
-    {
-        _spi_cs_enable();
-    }
-
-    // transfer buffer to spi
-    spi1_data_transfer((u8 *)spi_rx_buf, (u8 *)spi_tx_buf, buf_size);
-
-    if (! _skip_cs_char(*data))
-        _spi_cs_disable();
-
-    // print result
-    for (i=0; i<buf_size; i++)
-    {
-        OS_PRINTF("%02X", spi_rx_buf[i]);
-    }
-    OS_PRINTF(NL);
-    return (true);
-}
-
 static void _tty_rx_parser(char *data)
 {
     while (*data == ' ')
         data++; // skip spaces
 
-    if (! _parse_hex(data))
-    {
-        cmd_parse(data);
-    }
+    // STM32 is the sole command handler: no raw hex pass-through
+    cmd_parse(data);
     OS_FLUSH();
 }
 
@@ -276,6 +252,9 @@ int main(void)
     sys_init();
     sys_clock_config();
     
+    /* Initialize hardware RNG - must be done early for wolfSSL */
+    MX_RNG_Init();
+    
     main_gpio_init();
 
     wd_init();
@@ -292,6 +271,10 @@ int main(void)
     OS_PUTTEXT(NL);
     OS_PUTTEXT("APP START" NL);
     MAIN_LED_OFF;
+    
+    // Initialize SPHINCS randombytes early
+    extern void sphincs_init_early(void);
+    sphincs_init_early();
     
     OS_PUTTEXT("# BUILD DATE: " __DATE__ NL);
 

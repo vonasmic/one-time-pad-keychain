@@ -1,0 +1,95 @@
+ARM GAS  /tmp/cct70iQv.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"cbd.c"
+  14              		.text
+  15              		.section	.text.cbd2,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	cbd2:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  28 0002 0025     		movs	r5, #0
+  29              	.L3:
+  30 0004 0A68     		ldr	r2, [r1]	@ unaligned
+  31 0006 00EB4507 		add	r7, r0, r5, lsl #1
+  32 000a 5308     		lsrs	r3, r2, #1
+  33 000c 02F05534 		and	r4, r2, #1431655765
+  34 0010 03F05533 		and	r3, r3, #1431655765
+  35 0014 2344     		add	r3, r3, r4
+  36 0016 0224     		movs	r4, #2
+  37              	.L2:
+  38 0018 A21E     		subs	r2, r4, #2
+  39 001a 23FA04F6 		lsr	r6, r3, r4
+  40 001e 23FA02F2 		lsr	r2, r3, r2
+  41 0022 02F00302 		and	r2, r2, #3
+  42 0026 06F00306 		and	r6, r6, #3
+  43 002a 0434     		adds	r4, r4, #4
+  44 002c 921B     		subs	r2, r2, r6
+  45 002e 222C     		cmp	r4, #34
+  46 0030 27F8022B 		strh	r2, [r7], #2	@ movhi
+  47 0034 F0D1     		bne	.L2
+  48 0036 0835     		adds	r5, r5, #8
+  49 0038 B5F5807F 		cmp	r5, #256
+  50 003c 01F10401 		add	r1, r1, #4
+  51 0040 E0D1     		bne	.L3
+  52 0042 F0BD     		pop	{r4, r5, r6, r7, pc}
+  54              		.section	.text.PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta1,"ax",%progbits
+  55              		.align	1
+  56              		.global	PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta1
+  57              		.syntax unified
+  58              		.thumb
+  59              		.thumb_func
+ARM GAS  /tmp/cct70iQv.s 			page 2
+
+
+  60              		.fpu fpv4-sp-d16
+  62              	PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta1:
+  63              		@ args = 0, pretend = 0, frame = 0
+  64              		@ frame_needed = 0, uses_anonymous_args = 0
+  65              		@ link register save eliminated.
+  66 0000 FFF7FEBF 		b	cbd2
+  68              		.section	.text.PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta2,"ax",%progbits
+  69              		.align	1
+  70              		.global	PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta2
+  71              		.syntax unified
+  72              		.thumb
+  73              		.thumb_func
+  74              		.fpu fpv4-sp-d16
+  76              	PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta2:
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79              		@ link register save eliminated.
+  80 0000 FFF7FEBF 		b	cbd2
+  82              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cct70iQv.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 cbd.c
+     /tmp/cct70iQv.s:16     .text.cbd2:0000000000000000 $t
+     /tmp/cct70iQv.s:24     .text.cbd2:0000000000000000 cbd2
+     /tmp/cct70iQv.s:55     .text.PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta1:0000000000000000 $t
+     /tmp/cct70iQv.s:62     .text.PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta1:0000000000000000 PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta1
+     /tmp/cct70iQv.s:69     .text.PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta2:0000000000000000 $t
+     /tmp/cct70iQv.s:76     .text.PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta2:0000000000000000 PQCLEAN_MLKEM768_CLEAN_poly_cbd_eta2
+
+NO UNDEFINED SYMBOLS

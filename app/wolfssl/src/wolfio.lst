@@ -1,0 +1,244 @@
+ARM GAS  /tmp/cc6p4bD3.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"wolfio.c"
+  14              		.text
+  15              		.section	.text.wolfSSL_CTX_SetIORecv,"ax",%progbits
+  16              		.align	1
+  17              		.global	wolfSSL_CTX_SetIORecv
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	wolfSSL_CTX_SetIORecv:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 00B1     		cbz	r0, .L1
+  30 0002 4164     		str	r1, [r0, #68]
+  31              	.L1:
+  32 0004 7047     		bx	lr
+  34              		.section	.text.wolfSSL_CTX_SetIOSend,"ax",%progbits
+  35              		.align	1
+  36              		.global	wolfSSL_CTX_SetIOSend
+  37              		.syntax unified
+  38              		.thumb
+  39              		.thumb_func
+  40              		.fpu fpv4-sp-d16
+  42              	wolfSSL_CTX_SetIOSend:
+  43              		@ args = 0, pretend = 0, frame = 0
+  44              		@ frame_needed = 0, uses_anonymous_args = 0
+  45              		@ link register save eliminated.
+  46 0000 00B1     		cbz	r0, .L6
+  47 0002 8164     		str	r1, [r0, #72]
+  48              	.L6:
+  49 0004 7047     		bx	lr
+  51              		.section	.text.wolfSSL_SSLSetIORecv,"ax",%progbits
+  52              		.align	1
+  53              		.global	wolfSSL_SSLSetIORecv
+  54              		.syntax unified
+  55              		.thumb
+  56              		.thumb_func
+  57              		.fpu fpv4-sp-d16
+  59              	wolfSSL_SSLSetIORecv:
+  60              		@ args = 0, pretend = 0, frame = 0
+  61              		@ frame_needed = 0, uses_anonymous_args = 0
+  62              		@ link register save eliminated.
+ARM GAS  /tmp/cc6p4bD3.s 			page 2
+
+
+  63 0000 08B1     		cbz	r0, .L11
+  64 0002 C0F88C10 		str	r1, [r0, #140]
+  65              	.L11:
+  66 0006 7047     		bx	lr
+  68              		.section	.text.wolfSSL_SSLSetIOSend,"ax",%progbits
+  69              		.align	1
+  70              		.global	wolfSSL_SSLSetIOSend
+  71              		.syntax unified
+  72              		.thumb
+  73              		.thumb_func
+  74              		.fpu fpv4-sp-d16
+  76              	wolfSSL_SSLSetIOSend:
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79              		@ link register save eliminated.
+  80 0000 08B1     		cbz	r0, .L16
+  81 0002 C0F89010 		str	r1, [r0, #144]
+  82              	.L16:
+  83 0006 7047     		bx	lr
+  85              		.section	.text.wolfSSL_SSLDisableRead,"ax",%progbits
+  86              		.align	1
+  87              		.global	wolfSSL_SSLDisableRead
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  91              		.fpu fpv4-sp-d16
+  93              	wolfSSL_SSLDisableRead:
+  94              		@ args = 0, pretend = 0, frame = 0
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96              		@ link register save eliminated.
+  97 0000 28B1     		cbz	r0, .L21
+  98 0002 90F8F332 		ldrb	r3, [r0, #755]	@ zero_extendqisi2
+  99 0006 43F00103 		orr	r3, r3, #1
+ 100 000a 80F8F332 		strb	r3, [r0, #755]
+ 101              	.L21:
+ 102 000e 7047     		bx	lr
+ 104              		.section	.text.wolfSSL_SSLEnableRead,"ax",%progbits
+ 105              		.align	1
+ 106              		.global	wolfSSL_SSLEnableRead
+ 107              		.syntax unified
+ 108              		.thumb
+ 109              		.thumb_func
+ 110              		.fpu fpv4-sp-d16
+ 112              	wolfSSL_SSLEnableRead:
+ 113              		@ args = 0, pretend = 0, frame = 0
+ 114              		@ frame_needed = 0, uses_anonymous_args = 0
+ 115              		@ link register save eliminated.
+ 116 0000 28B1     		cbz	r0, .L26
+ 117 0002 90F8F332 		ldrb	r3, [r0, #755]	@ zero_extendqisi2
+ 118 0006 6FF30003 		bfc	r3, #0, #1
+ 119 000a 80F8F332 		strb	r3, [r0, #755]
+ 120              	.L26:
+ 121 000e 7047     		bx	lr
+ 123              		.section	.text.wolfSSL_SetIOReadCtx,"ax",%progbits
+ 124              		.align	1
+ 125              		.global	wolfSSL_SetIOReadCtx
+ 126              		.syntax unified
+ARM GAS  /tmp/cc6p4bD3.s 			page 3
+
+
+ 127              		.thumb
+ 128              		.thumb_func
+ 129              		.fpu fpv4-sp-d16
+ 131              	wolfSSL_SetIOReadCtx:
+ 132              		@ args = 0, pretend = 0, frame = 0
+ 133              		@ frame_needed = 0, uses_anonymous_args = 0
+ 134              		@ link register save eliminated.
+ 135 0000 00B1     		cbz	r0, .L31
+ 136 0002 4167     		str	r1, [r0, #116]
+ 137              	.L31:
+ 138 0004 7047     		bx	lr
+ 140              		.section	.text.wolfSSL_SetIOWriteCtx,"ax",%progbits
+ 141              		.align	1
+ 142              		.global	wolfSSL_SetIOWriteCtx
+ 143              		.syntax unified
+ 144              		.thumb
+ 145              		.thumb_func
+ 146              		.fpu fpv4-sp-d16
+ 148              	wolfSSL_SetIOWriteCtx:
+ 149              		@ args = 0, pretend = 0, frame = 0
+ 150              		@ frame_needed = 0, uses_anonymous_args = 0
+ 151              		@ link register save eliminated.
+ 152 0000 00B1     		cbz	r0, .L36
+ 153 0002 8167     		str	r1, [r0, #120]
+ 154              	.L36:
+ 155 0004 7047     		bx	lr
+ 157              		.section	.text.wolfSSL_GetIOReadCtx,"ax",%progbits
+ 158              		.align	1
+ 159              		.global	wolfSSL_GetIOReadCtx
+ 160              		.syntax unified
+ 161              		.thumb
+ 162              		.thumb_func
+ 163              		.fpu fpv4-sp-d16
+ 165              	wolfSSL_GetIOReadCtx:
+ 166              		@ args = 0, pretend = 0, frame = 0
+ 167              		@ frame_needed = 0, uses_anonymous_args = 0
+ 168              		@ link register save eliminated.
+ 169 0000 00B1     		cbz	r0, .L42
+ 170 0002 406F     		ldr	r0, [r0, #116]
+ 171              	.L42:
+ 172 0004 7047     		bx	lr
+ 174              		.section	.text.wolfSSL_GetIOWriteCtx,"ax",%progbits
+ 175              		.align	1
+ 176              		.global	wolfSSL_GetIOWriteCtx
+ 177              		.syntax unified
+ 178              		.thumb
+ 179              		.thumb_func
+ 180              		.fpu fpv4-sp-d16
+ 182              	wolfSSL_GetIOWriteCtx:
+ 183              		@ args = 0, pretend = 0, frame = 0
+ 184              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185              		@ link register save eliminated.
+ 186 0000 00B1     		cbz	r0, .L47
+ 187 0002 806F     		ldr	r0, [r0, #120]
+ 188              	.L47:
+ 189 0004 7047     		bx	lr
+ 191              		.section	.text.wolfSSL_SetIOReadFlags,"ax",%progbits
+ARM GAS  /tmp/cc6p4bD3.s 			page 4
+
+
+ 192              		.align	1
+ 193              		.global	wolfSSL_SetIOReadFlags
+ 194              		.syntax unified
+ 195              		.thumb
+ 196              		.thumb_func
+ 197              		.fpu fpv4-sp-d16
+ 199              	wolfSSL_SetIOReadFlags:
+ 200              		@ args = 0, pretend = 0, frame = 0
+ 201              		@ frame_needed = 0, uses_anonymous_args = 0
+ 202              		@ link register save eliminated.
+ 203 0000 08B1     		cbz	r0, .L51
+ 204 0002 C0F87C11 		str	r1, [r0, #380]
+ 205              	.L51:
+ 206 0006 7047     		bx	lr
+ 208              		.section	.text.wolfSSL_SetIOWriteFlags,"ax",%progbits
+ 209              		.align	1
+ 210              		.global	wolfSSL_SetIOWriteFlags
+ 211              		.syntax unified
+ 212              		.thumb
+ 213              		.thumb_func
+ 214              		.fpu fpv4-sp-d16
+ 216              	wolfSSL_SetIOWriteFlags:
+ 217              		@ args = 0, pretend = 0, frame = 0
+ 218              		@ frame_needed = 0, uses_anonymous_args = 0
+ 219              		@ link register save eliminated.
+ 220 0000 08B1     		cbz	r0, .L56
+ 221 0002 C0F88011 		str	r1, [r0, #384]
+ 222              	.L56:
+ 223 0006 7047     		bx	lr
+ 225              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc6p4bD3.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 wolfio.c
+     /tmp/cc6p4bD3.s:16     .text.wolfSSL_CTX_SetIORecv:0000000000000000 $t
+     /tmp/cc6p4bD3.s:25     .text.wolfSSL_CTX_SetIORecv:0000000000000000 wolfSSL_CTX_SetIORecv
+     /tmp/cc6p4bD3.s:35     .text.wolfSSL_CTX_SetIOSend:0000000000000000 $t
+     /tmp/cc6p4bD3.s:42     .text.wolfSSL_CTX_SetIOSend:0000000000000000 wolfSSL_CTX_SetIOSend
+     /tmp/cc6p4bD3.s:52     .text.wolfSSL_SSLSetIORecv:0000000000000000 $t
+     /tmp/cc6p4bD3.s:59     .text.wolfSSL_SSLSetIORecv:0000000000000000 wolfSSL_SSLSetIORecv
+     /tmp/cc6p4bD3.s:69     .text.wolfSSL_SSLSetIOSend:0000000000000000 $t
+     /tmp/cc6p4bD3.s:76     .text.wolfSSL_SSLSetIOSend:0000000000000000 wolfSSL_SSLSetIOSend
+     /tmp/cc6p4bD3.s:86     .text.wolfSSL_SSLDisableRead:0000000000000000 $t
+     /tmp/cc6p4bD3.s:93     .text.wolfSSL_SSLDisableRead:0000000000000000 wolfSSL_SSLDisableRead
+     /tmp/cc6p4bD3.s:105    .text.wolfSSL_SSLEnableRead:0000000000000000 $t
+     /tmp/cc6p4bD3.s:112    .text.wolfSSL_SSLEnableRead:0000000000000000 wolfSSL_SSLEnableRead
+     /tmp/cc6p4bD3.s:124    .text.wolfSSL_SetIOReadCtx:0000000000000000 $t
+     /tmp/cc6p4bD3.s:131    .text.wolfSSL_SetIOReadCtx:0000000000000000 wolfSSL_SetIOReadCtx
+     /tmp/cc6p4bD3.s:141    .text.wolfSSL_SetIOWriteCtx:0000000000000000 $t
+     /tmp/cc6p4bD3.s:148    .text.wolfSSL_SetIOWriteCtx:0000000000000000 wolfSSL_SetIOWriteCtx
+     /tmp/cc6p4bD3.s:158    .text.wolfSSL_GetIOReadCtx:0000000000000000 $t
+     /tmp/cc6p4bD3.s:165    .text.wolfSSL_GetIOReadCtx:0000000000000000 wolfSSL_GetIOReadCtx
+     /tmp/cc6p4bD3.s:175    .text.wolfSSL_GetIOWriteCtx:0000000000000000 $t
+     /tmp/cc6p4bD3.s:182    .text.wolfSSL_GetIOWriteCtx:0000000000000000 wolfSSL_GetIOWriteCtx
+     /tmp/cc6p4bD3.s:192    .text.wolfSSL_SetIOReadFlags:0000000000000000 $t
+     /tmp/cc6p4bD3.s:199    .text.wolfSSL_SetIOReadFlags:0000000000000000 wolfSSL_SetIOReadFlags
+     /tmp/cc6p4bD3.s:209    .text.wolfSSL_SetIOWriteFlags:0000000000000000 $t
+     /tmp/cc6p4bD3.s:216    .text.wolfSSL_SetIOWriteFlags:0000000000000000 wolfSSL_SetIOWriteFlags
+
+NO UNDEFINED SYMBOLS

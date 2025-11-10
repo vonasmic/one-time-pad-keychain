@@ -1,0 +1,341 @@
+ARM GAS  /tmp/cccH82Ff.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"wolfmath.c"
+  14              		.text
+  15              		.section	.text.mp_reverse,"ax",%progbits
+  16              		.align	1
+  17              		.global	mp_reverse
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	mp_reverse:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 30B5     		push	{r4, r5, lr}
+  29 0002 30B1     		cbz	r0, .L1
+  30 0004 0023     		movs	r3, #0
+  31 0006 421E     		subs	r2, r0, #1
+  32 0008 0844     		add	r0, r0, r1
+  33 000a 0139     		subs	r1, r1, #1
+  34              	.L3:
+  35 000c CC1A     		subs	r4, r1, r3
+  36 000e A342     		cmp	r3, r4
+  37 0010 00DB     		blt	.L4
+  38              	.L1:
+  39 0012 30BD     		pop	{r4, r5, pc}
+  40              	.L4:
+  41 0014 12F8014F 		ldrb	r4, [r2, #1]!	@ zero_extendqisi2
+  42 0018 10F8015D 		ldrb	r5, [r0, #-1]!	@ zero_extendqisi2
+  43 001c 0133     		adds	r3, r3, #1
+  44 001e 1570     		strb	r5, [r2]
+  45 0020 0470     		strb	r4, [r0]
+  46 0022 F3E7     		b	.L3
+  48              		.section	.text.mp_get_digit_count,"ax",%progbits
+  49              		.align	1
+  50              		.global	mp_get_digit_count
+  51              		.syntax unified
+  52              		.thumb
+  53              		.thumb_func
+  54              		.fpu fpv4-sp-d16
+  56              	mp_get_digit_count:
+  57              		@ args = 0, pretend = 0, frame = 0
+  58              		@ frame_needed = 0, uses_anonymous_args = 0
+  59              		@ link register save eliminated.
+  60 0000 00B1     		cbz	r0, .L6
+ARM GAS  /tmp/cccH82Ff.s 			page 2
+
+
+  61 0002 0088     		ldrh	r0, [r0]
+  62              	.L6:
+  63 0004 7047     		bx	lr
+  65              		.section	.text.mp_get_digit,"ax",%progbits
+  66              		.align	1
+  67              		.global	mp_get_digit
+  68              		.syntax unified
+  69              		.thumb
+  70              		.thumb_func
+  71              		.fpu fpv4-sp-d16
+  73              	mp_get_digit:
+  74              		@ args = 0, pretend = 0, frame = 0
+  75              		@ frame_needed = 0, uses_anonymous_args = 0
+  76              		@ link register save eliminated.
+  77 0000 48B1     		cbz	r0, .L9
+  78 0002 0029     		cmp	r1, #0
+  79 0004 06DB     		blt	.L13
+  80 0006 0388     		ldrh	r3, [r0]
+  81 0008 8B42     		cmp	r3, r1
+  82 000a 03D9     		bls	.L13
+  83 000c 00EB8100 		add	r0, r0, r1, lsl #2
+  84 0010 4068     		ldr	r0, [r0, #4]
+  85 0012 7047     		bx	lr
+  86              	.L13:
+  87 0014 0020     		movs	r0, #0
+  88              	.L9:
+  89 0016 7047     		bx	lr
+  91              		.section	.text.mp_cond_copy,"ax",%progbits
+  92              		.align	1
+  93              		.global	mp_cond_copy
+  94              		.syntax unified
+  95              		.thumb
+  96              		.thumb_func
+  97              		.fpu fpv4-sp-d16
+  99              	mp_cond_copy:
+ 100              		@ args = 0, pretend = 0, frame = 0
+ 101              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102 0000 2DE9F84F 		push	{r3, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 103 0004 0F46     		mov	r7, r1
+ 104 0006 1446     		mov	r4, r2
+ 105 0008 8046     		mov	r8, r0
+ 106 000a 0028     		cmp	r0, #0
+ 107 000c 41D0     		beq	.L21
+ 108 000e 002A     		cmp	r2, #0
+ 109 0010 3FD0     		beq	.L21
+ 110 0012 0188     		ldrh	r1, [r0]
+ 111 0014 1046     		mov	r0, r2
+ 112 0016 0131     		adds	r1, r1, #1
+ 113 0018 FFF7FEFF 		bl	sp_grow
+ 114 001c 0546     		mov	r5, r0
+ 115 001e A0B9     		cbnz	r0, .L14
+ 116 0020 B8F80060 		ldrh	r6, [r8]
+ 117 0024 0146     		mov	r1, r0
+ 118 0026 B346     		mov	fp, r6
+ 119 0028 7F42     		rsbs	r7, r7, #0
+ 120 002a 04F10409 		add	r9, r4, #4
+ 121              	.L16:
+ARM GAS  /tmp/cccH82Ff.s 			page 3
+
+
+ 122 002e 8E42     		cmp	r6, r1
+ 123 0030 0ED8     		bhi	.L17
+ 124 0032 B4F80090 		ldrh	r9, [r4]
+ 125              	.L18:
+ 126 0036 D945     		cmp	r9, fp
+ 127 0038 0BF1010A 		add	r10, fp, #1
+ 128 003c 18D8     		bhi	.L19
+ 129 003e 86EA0906 		eor	r6, r6, r9
+ 130 0042 3E40     		ands	r6, r6, r7
+ 131 0044 89EA0606 		eor	r6, r9, r6
+ 132 0048 2680     		strh	r6, [r4]	@ movhi
+ 133              	.L14:
+ 134 004a 2846     		mov	r0, r5
+ 135 004c BDE8F88F 		pop	{r3, r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 136              	.L17:
+ 137 0050 4046     		mov	r0, r8
+ 138 0052 FFF7FEFF 		bl	mp_get_digit
+ 139 0056 0246     		mov	r2, r0
+ 140 0058 2046     		mov	r0, r4
+ 141 005a FFF7FEFF 		bl	mp_get_digit
+ 142 005e D9F80030 		ldr	r3, [r9]
+ 143 0062 4240     		eors	r2, r2, r0
+ 144 0064 3A40     		ands	r2, r2, r7
+ 145 0066 5A40     		eors	r2, r2, r3
+ 146 0068 49F8042B 		str	r2, [r9], #4
+ 147 006c 0131     		adds	r1, r1, #1
+ 148 006e DEE7     		b	.L16
+ 149              	.L19:
+ 150 0070 5946     		mov	r1, fp
+ 151 0072 4046     		mov	r0, r8
+ 152 0074 FFF7FEFF 		bl	mp_get_digit
+ 153 0078 0246     		mov	r2, r0
+ 154 007a 2046     		mov	r0, r4
+ 155 007c FFF7FEFF 		bl	mp_get_digit
+ 156 0080 5040     		eors	r0, r0, r2
+ 157 0082 54F82A20 		ldr	r2, [r4, r10, lsl #2]
+ 158 0086 3840     		ands	r0, r0, r7
+ 159 0088 4240     		eors	r2, r2, r0
+ 160 008a D346     		mov	fp, r10
+ 161 008c 44F82A20 		str	r2, [r4, r10, lsl #2]
+ 162 0090 D1E7     		b	.L18
+ 163              	.L21:
+ 164 0092 6FF0AC05 		mvn	r5, #172
+ 165 0096 D8E7     		b	.L14
+ 167              		.section	.text.mp_get_rand_digit,"ax",%progbits
+ 168              		.align	1
+ 169              		.global	mp_get_rand_digit
+ 170              		.syntax unified
+ 171              		.thumb
+ 172              		.thumb_func
+ 173              		.fpu fpv4-sp-d16
+ 175              	mp_get_rand_digit:
+ 176              		@ args = 0, pretend = 0, frame = 0
+ 177              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178              		@ link register save eliminated.
+ 179 0000 0422     		movs	r2, #4
+ 180 0002 FFF7FEBF 		b	wc_RNG_GenerateBlock
+ARM GAS  /tmp/cccH82Ff.s 			page 4
+
+
+ 182              		.section	.text.mp_rand,"ax",%progbits
+ 183              		.align	1
+ 184              		.global	mp_rand
+ 185              		.syntax unified
+ 186              		.thumb
+ 187              		.thumb_func
+ 188              		.fpu fpv4-sp-d16
+ 190              	mp_rand:
+ 191              		@ args = 0, pretend = 0, frame = 0
+ 192              		@ frame_needed = 0, uses_anonymous_args = 0
+ 193 0000 70B5     		push	{r4, r5, r6, lr}
+ 194 0002 0546     		mov	r5, r0
+ 195 0004 1646     		mov	r6, r2
+ 196 0006 EAB1     		cbz	r2, .L27
+ 197 0008 F8B1     		cbz	r0, .L30
+ 198 000a 0029     		cmp	r1, #0
+ 199 000c 1DDD     		ble	.L30
+ 200 000e 4388     		ldrh	r3, [r0, #2]
+ 201 0010 8B42     		cmp	r3, r1
+ 202 0012 1AD3     		bcc	.L30
+ 203 0014 0346     		mov	r3, r0
+ 204 0016 23F8041B 		strh	r1, [r3], #4	@ movhi
+ 205 001a 8A00     		lsls	r2, r1, #2
+ 206 001c 3046     		mov	r0, r6
+ 207 001e 1946     		mov	r1, r3
+ 208 0020 FFF7FEFF 		bl	wc_RNG_GenerateBlock
+ 209 0024 0446     		mov	r4, r0
+ 210 0026 38B1     		cbz	r0, .L25
+ 211              	.L23:
+ 212 0028 2046     		mov	r0, r4
+ 213 002a 70BD     		pop	{r4, r5, r6, pc}
+ 214              	.L26:
+ 215 002c 3046     		mov	r0, r6
+ 216 002e 05EB8101 		add	r1, r5, r1, lsl #2
+ 217 0032 FFF7FEFF 		bl	mp_get_rand_digit
+ 218 0036 58B9     		cbnz	r0, .L31
+ 219              	.L25:
+ 220 0038 2988     		ldrh	r1, [r5]
+ 221 003a 55F82130 		ldr	r3, [r5, r1, lsl #2]
+ 222 003e 002B     		cmp	r3, #0
+ 223 0040 F4D0     		beq	.L26
+ 224 0042 F1E7     		b	.L23
+ 225              	.L27:
+ 226 0044 6FF0EB04 		mvn	r4, #235
+ 227 0048 EEE7     		b	.L23
+ 228              	.L30:
+ 229 004a 6FF0AC04 		mvn	r4, #172
+ 230 004e EBE7     		b	.L23
+ 231              	.L31:
+ 232 0050 0446     		mov	r4, r0
+ 233 0052 E9E7     		b	.L23
+ 235              		.section	.text.wc_export_int,"ax",%progbits
+ 236              		.align	1
+ 237              		.global	wc_export_int
+ 238              		.syntax unified
+ 239              		.thumb
+ 240              		.thumb_func
+ARM GAS  /tmp/cccH82Ff.s 			page 5
+
+
+ 241              		.fpu fpv4-sp-d16
+ 243              	wc_export_int:
+ 244              		@ args = 4, pretend = 0, frame = 8
+ 245              		@ frame_needed = 0, uses_anonymous_args = 0
+ 246 0000 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+ 247 0002 1C46     		mov	r4, r3
+ 248 0004 0F46     		mov	r7, r1
+ 249 0006 1546     		mov	r5, r2
+ 250 0008 0646     		mov	r6, r0
+ 251 000a 089B     		ldr	r3, [sp, #32]
+ 252 000c 60B3     		cbz	r0, .L42
+ 253 000e 59B3     		cbz	r1, .L42
+ 254 0010 52B3     		cbz	r2, .L42
+ 255 0012 012B     		cmp	r3, #1
+ 256 0014 14D1     		bne	.L36
+ 257 0016 0023     		movs	r3, #0
+ 258 0018 1021     		movs	r1, #16
+ 259 001a 01AA     		add	r2, sp, #4
+ 260 001c 0193     		str	r3, [sp, #4]
+ 261 001e FFF7FEFF 		bl	sp_radix_size
+ 262 0022 58B9     		cbnz	r0, .L34
+ 263 0024 019B     		ldr	r3, [sp, #4]
+ 264 0026 2A68     		ldr	r2, [r5]
+ 265 0028 2B60     		str	r3, [r5]
+ 266 002a 9A42     		cmp	r2, r3
+ 267 002c 02D2     		bcs	.L38
+ 268              	.L43:
+ 269 002e 6FF08300 		mvn	r0, #131
+ 270 0032 03E0     		b	.L34
+ 271              	.L38:
+ 272 0034 3946     		mov	r1, r7
+ 273 0036 3046     		mov	r0, r6
+ 274 0038 FFF7FEFF 		bl	sp_tohex
+ 275              	.L34:
+ 276 003c 03B0     		add	sp, sp, #12
+ 277              		@ sp needed
+ 278 003e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 279              	.L36:
+ 280 0040 1368     		ldr	r3, [r2]
+ 281 0042 1460     		str	r4, [r2]
+ 282 0044 A342     		cmp	r3, r4
+ 283 0046 F2D3     		bcc	.L43
+ 284 0048 2246     		mov	r2, r4
+ 285 004a 0021     		movs	r1, #0
+ 286 004c 3846     		mov	r0, r7
+ 287 004e FFF7FEFF 		bl	memset
+ 288 0052 3046     		mov	r0, r6
+ 289 0054 FFF7FEFF 		bl	sp_unsigned_bin_size
+ 290 0058 241A     		subs	r4, r4, r0
+ 291 005a 3046     		mov	r0, r6
+ 292 005c 3919     		adds	r1, r7, r4
+ 293 005e 03B0     		add	sp, sp, #12
+ 294              		@ sp needed
+ 295 0060 BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 296 0064 FFF7FEBF 		b	sp_to_unsigned_bin
+ 297              	.L42:
+ 298 0068 6FF0AC00 		mvn	r0, #172
+ARM GAS  /tmp/cccH82Ff.s 			page 6
+
+
+ 299 006c E6E7     		b	.L34
+ 301              		.global	wc_off_on_addr
+ 302              		.section	.rodata.wc_off_on_addr,"a"
+ 303              		.align	2
+ 306              	wc_off_on_addr:
+ 307 0000 00000000 		.word	0
+ 308 0004 FFFFFFFF 		.word	-1
+ 309              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cccH82Ff.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 wolfmath.c
+     /tmp/cccH82Ff.s:16     .text.mp_reverse:0000000000000000 $t
+     /tmp/cccH82Ff.s:25     .text.mp_reverse:0000000000000000 mp_reverse
+     /tmp/cccH82Ff.s:49     .text.mp_get_digit_count:0000000000000000 $t
+     /tmp/cccH82Ff.s:56     .text.mp_get_digit_count:0000000000000000 mp_get_digit_count
+     /tmp/cccH82Ff.s:66     .text.mp_get_digit:0000000000000000 $t
+     /tmp/cccH82Ff.s:73     .text.mp_get_digit:0000000000000000 mp_get_digit
+     /tmp/cccH82Ff.s:92     .text.mp_cond_copy:0000000000000000 $t
+     /tmp/cccH82Ff.s:99     .text.mp_cond_copy:0000000000000000 mp_cond_copy
+     /tmp/cccH82Ff.s:168    .text.mp_get_rand_digit:0000000000000000 $t
+     /tmp/cccH82Ff.s:175    .text.mp_get_rand_digit:0000000000000000 mp_get_rand_digit
+     /tmp/cccH82Ff.s:183    .text.mp_rand:0000000000000000 $t
+     /tmp/cccH82Ff.s:190    .text.mp_rand:0000000000000000 mp_rand
+     /tmp/cccH82Ff.s:236    .text.wc_export_int:0000000000000000 $t
+     /tmp/cccH82Ff.s:243    .text.wc_export_int:0000000000000000 wc_export_int
+     /tmp/cccH82Ff.s:306    .rodata.wc_off_on_addr:0000000000000000 wc_off_on_addr
+     /tmp/cccH82Ff.s:303    .rodata.wc_off_on_addr:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+sp_grow
+wc_RNG_GenerateBlock
+sp_radix_size
+sp_tohex
+memset
+sp_unsigned_bin_size
+sp_to_unsigned_bin

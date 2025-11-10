@@ -1,0 +1,327 @@
+ARM GAS  /tmp/ccod8Um7.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_ll_usart.c"
+  14              		.text
+  15              		.section	.text.LL_USART_DeInit,"ax",%progbits
+  16              		.align	1
+  17              		.global	LL_USART_DeInit
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	LL_USART_DeInit:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 1A4B     		ldr	r3, .L9
+  30 0002 9842     		cmp	r0, r3
+  31 0004 0AD1     		bne	.L2
+  32 0006 1A4B     		ldr	r3, .L9+4
+  33 0008 DA6F     		ldr	r2, [r3, #124]
+  34 000a 42F48042 		orr	r2, r2, #16384
+  35 000e DA67     		str	r2, [r3, #124]
+  36 0010 DA6F     		ldr	r2, [r3, #124]
+  37 0012 22F48042 		bic	r2, r2, #16384
+  38 0016 DA67     		str	r2, [r3, #124]
+  39              	.L7:
+  40 0018 0020     		movs	r0, #0
+  41 001a 7047     		bx	lr
+  42              	.L2:
+  43 001c 154B     		ldr	r3, .L9+8
+  44 001e 9842     		cmp	r0, r3
+  45 0020 09D1     		bne	.L4
+  46 0022 134B     		ldr	r3, .L9+4
+  47 0024 5A6F     		ldr	r2, [r3, #116]
+  48 0026 42F48022 		orr	r2, r2, #262144
+  49 002a 5A67     		str	r2, [r3, #116]
+  50 002c 5A6F     		ldr	r2, [r3, #116]
+  51 002e 22F48022 		bic	r2, r2, #262144
+  52              	.L8:
+  53 0032 5A67     		str	r2, [r3, #116]
+  54 0034 F0E7     		b	.L7
+  55              	.L4:
+  56 0036 104B     		ldr	r3, .L9+12
+  57 0038 9842     		cmp	r0, r3
+  58 003a 08D1     		bne	.L5
+ARM GAS  /tmp/ccod8Um7.s 			page 2
+
+
+  59 003c 0C4B     		ldr	r3, .L9+4
+  60 003e 5A6F     		ldr	r2, [r3, #116]
+  61 0040 42F40022 		orr	r2, r2, #524288
+  62 0044 5A67     		str	r2, [r3, #116]
+  63 0046 5A6F     		ldr	r2, [r3, #116]
+  64 0048 22F40022 		bic	r2, r2, #524288
+  65 004c F1E7     		b	.L8
+  66              	.L5:
+  67 004e 0B4B     		ldr	r3, .L9+16
+  68 0050 9842     		cmp	r0, r3
+  69 0052 08D1     		bne	.L6
+  70 0054 064B     		ldr	r3, .L9+4
+  71 0056 5A6F     		ldr	r2, [r3, #116]
+  72 0058 42F48012 		orr	r2, r2, #1048576
+  73 005c 5A67     		str	r2, [r3, #116]
+  74 005e 5A6F     		ldr	r2, [r3, #116]
+  75 0060 22F48012 		bic	r2, r2, #1048576
+  76 0064 E5E7     		b	.L8
+  77              	.L6:
+  78 0066 0120     		movs	r0, #1
+  79 0068 7047     		bx	lr
+  80              	.L10:
+  81 006a 00BF     		.align	2
+  82              	.L9:
+  83 006c 00380140 		.word	1073821696
+  84 0070 000C0246 		.word	1174539264
+  85 0074 00480040 		.word	1073760256
+  86 0078 004C0040 		.word	1073761280
+  87 007c 00500040 		.word	1073762304
+  89              		.section	.text.LL_USART_Init,"ax",%progbits
+  90              		.align	1
+  91              		.global	LL_USART_Init
+  92              		.syntax unified
+  93              		.thumb
+  94              		.thumb_func
+  95              		.fpu fpv4-sp-d16
+  97              	LL_USART_Init:
+  98              		@ args = 0, pretend = 0, frame = 0
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+ 100 0000 38B5     		push	{r3, r4, r5, lr}
+ 101 0002 0368     		ldr	r3, [r0]
+ 102 0004 0446     		mov	r4, r0
+ 103 0006 DB07     		lsls	r3, r3, #31
+ 104 0008 0D46     		mov	r5, r1
+ 105 000a 5AD4     		bmi	.L21
+ 106 000c 2A69     		ldr	r2, [r5, #16]
+ 107 000e AB68     		ldr	r3, [r5, #8]
+ 108 0010 0168     		ldr	r1, [r0]
+ 109 0012 1343     		orrs	r3, r3, r2
+ 110 0014 6A69     		ldr	r2, [r5, #20]
+ 111 0016 1343     		orrs	r3, r3, r2
+ 112 0018 EA69     		ldr	r2, [r5, #28]
+ 113 001a 1343     		orrs	r3, r3, r2
+ 114 001c 2A4A     		ldr	r2, .L32
+ 115 001e 0A40     		ands	r2, r2, r1
+ 116 0020 1343     		orrs	r3, r3, r2
+ 117 0022 0360     		str	r3, [r0]
+ARM GAS  /tmp/ccod8Um7.s 			page 3
+
+
+ 118 0024 4368     		ldr	r3, [r0, #4]
+ 119 0026 EA68     		ldr	r2, [r5, #12]
+ 120 0028 23F44053 		bic	r3, r3, #12288
+ 121 002c 1343     		orrs	r3, r3, r2
+ 122 002e 4360     		str	r3, [r0, #4]
+ 123 0030 8368     		ldr	r3, [r0, #8]
+ 124 0032 AA69     		ldr	r2, [r5, #24]
+ 125 0034 23F44073 		bic	r3, r3, #768
+ 126 0038 1343     		orrs	r3, r3, r2
+ 127 003a 8360     		str	r3, [r0, #8]
+ 128 003c 234B     		ldr	r3, .L32+4
+ 129 003e 9842     		cmp	r0, r3
+ 130 0040 20D1     		bne	.L13
+ 131 0042 0320     		movs	r0, #3
+ 132              	.L29:
+ 133 0044 FFF7FEFF 		bl	LL_RCC_GetUSARTClockFreq
+ 134              	.L14:
+ 135 0048 58B3     		cbz	r0, .L19
+ 136 004a 6A68     		ldr	r2, [r5, #4]
+ 137 004c 4AB3     		cbz	r2, .L19
+ 138 004e 2B68     		ldr	r3, [r5]
+ 139 0050 0B2B     		cmp	r3, #11
+ 140 0052 15D8     		bhi	.L22
+ 141 0054 1E49     		ldr	r1, .L32+8
+ 142 0056 51F82330 		ldr	r3, [r1, r3, lsl #2]
+ 143 005a E969     		ldr	r1, [r5, #28]
+ 144 005c B0FBF3F0 		udiv	r0, r0, r3
+ 145 0060 B1F5004F 		cmp	r1, #32768
+ 146 0064 4FEA5203 		lsr	r3, r2, #1
+ 147 0068 26D1     		bne	.L20
+ 148 006a 03EB4003 		add	r3, r3, r0, lsl #1
+ 149 006e B3FBF2F3 		udiv	r3, r3, r2
+ 150 0072 4FF6F072 		movw	r2, #65520
+ 151 0076 1A40     		ands	r2, r2, r3
+ 152 0078 C3F34203 		ubfx	r3, r3, #1, #3
+ 153 007c 1343     		orrs	r3, r3, r2
+ 154              	.L31:
+ 155 007e E360     		str	r3, [r4, #12]
+ 156              	.L22:
+ 157 0080 0020     		movs	r0, #0
+ 158 0082 0FE0     		b	.L18
+ 159              	.L13:
+ 160 0084 134B     		ldr	r3, .L32+12
+ 161 0086 9842     		cmp	r0, r3
+ 162 0088 01D1     		bne	.L15
+ 163 008a 1348     		ldr	r0, .L32+16
+ 164 008c DAE7     		b	.L29
+ 165              	.L15:
+ 166 008e 134B     		ldr	r3, .L32+20
+ 167 0090 9842     		cmp	r0, r3
+ 168 0092 03D1     		bne	.L16
+ 169 0094 C020     		movs	r0, #192
+ 170              	.L30:
+ 171 0096 FFF7FEFF 		bl	LL_RCC_GetUARTClockFreq
+ 172 009a D5E7     		b	.L14
+ 173              	.L16:
+ 174 009c 104B     		ldr	r3, .L32+24
+ARM GAS  /tmp/ccod8Um7.s 			page 4
+
+
+ 175 009e 9842     		cmp	r0, r3
+ 176 00a0 07D0     		beq	.L17
+ 177              	.L19:
+ 178 00a2 0120     		movs	r0, #1
+ 179              	.L18:
+ 180 00a4 E26A     		ldr	r2, [r4, #44]
+ 181 00a6 2B88     		ldrh	r3, [r5]
+ 182 00a8 22F00F02 		bic	r2, r2, #15
+ 183 00ac 1343     		orrs	r3, r3, r2
+ 184 00ae E362     		str	r3, [r4, #44]
+ 185              	.L12:
+ 186 00b0 38BD     		pop	{r3, r4, r5, pc}
+ 187              	.L17:
+ 188 00b2 4FF44070 		mov	r0, #768
+ 189 00b6 EEE7     		b	.L30
+ 190              	.L20:
+ 191 00b8 0344     		add	r3, r3, r0
+ 192 00ba B3FBF2F3 		udiv	r3, r3, r2
+ 193 00be 9BB2     		uxth	r3, r3
+ 194 00c0 DDE7     		b	.L31
+ 195              	.L21:
+ 196 00c2 0120     		movs	r0, #1
+ 197 00c4 F4E7     		b	.L12
+ 198              	.L33:
+ 199 00c6 00BF     		.align	2
+ 200              	.L32:
+ 201 00c8 F369FFEF 		.word	-268473869
+ 202 00cc 00380140 		.word	1073821696
+ 203 00d0 00000000 		.word	.LANCHOR0
+ 204 00d4 00480040 		.word	1073760256
+ 205 00d8 03000400 		.word	262147
+ 206 00dc 004C0040 		.word	1073761280
+ 207 00e0 00500040 		.word	1073762304
+ 209              		.section	.text.LL_USART_StructInit,"ax",%progbits
+ 210              		.align	1
+ 211              		.global	LL_USART_StructInit
+ 212              		.syntax unified
+ 213              		.thumb
+ 214              		.thumb_func
+ 215              		.fpu fpv4-sp-d16
+ 217              	LL_USART_StructInit:
+ 218              		@ args = 0, pretend = 0, frame = 0
+ 219              		@ frame_needed = 0, uses_anonymous_args = 0
+ 220              		@ link register save eliminated.
+ 221 0000 0023     		movs	r3, #0
+ 222 0002 4FF41652 		mov	r2, #9600
+ 223 0006 C0E90032 		strd	r3, r2, [r0]
+ 224 000a 0C22     		movs	r2, #12
+ 225 000c C0E90233 		strd	r3, r3, [r0, #8]
+ 226 0010 C0E90523 		strd	r2, r3, [r0, #20]
+ 227 0014 0361     		str	r3, [r0, #16]
+ 228 0016 C361     		str	r3, [r0, #28]
+ 229 0018 7047     		bx	lr
+ 231              		.section	.text.LL_USART_ClockInit,"ax",%progbits
+ 232              		.align	1
+ 233              		.global	LL_USART_ClockInit
+ 234              		.syntax unified
+ARM GAS  /tmp/ccod8Um7.s 			page 5
+
+
+ 235              		.thumb
+ 236              		.thumb_func
+ 237              		.fpu fpv4-sp-d16
+ 239              	LL_USART_ClockInit:
+ 240              		@ args = 0, pretend = 0, frame = 0
+ 241              		@ frame_needed = 0, uses_anonymous_args = 0
+ 242 0000 0268     		ldr	r2, [r0]
+ 243 0002 30B5     		push	{r4, r5, lr}
+ 244 0004 12F00102 		ands	r2, r2, #1
+ 245 0008 0DD1     		bne	.L37
+ 246 000a D1E90035 		ldrd	r3, r5, [r1]
+ 247 000e 2B43     		orrs	r3, r3, r5
+ 248 0010 8D68     		ldr	r5, [r1, #8]
+ 249 0012 4468     		ldr	r4, [r0, #4]
+ 250 0014 C968     		ldr	r1, [r1, #12]
+ 251 0016 2B43     		orrs	r3, r3, r5
+ 252 0018 0B43     		orrs	r3, r3, r1
+ 253 001a 24F47061 		bic	r1, r4, #3840
+ 254 001e 0B43     		orrs	r3, r3, r1
+ 255 0020 4360     		str	r3, [r0, #4]
+ 256 0022 1046     		mov	r0, r2
+ 257              	.L36:
+ 258 0024 30BD     		pop	{r4, r5, pc}
+ 259              	.L37:
+ 260 0026 0120     		movs	r0, #1
+ 261 0028 FCE7     		b	.L36
+ 263              		.section	.text.LL_USART_ClockStructInit,"ax",%progbits
+ 264              		.align	1
+ 265              		.global	LL_USART_ClockStructInit
+ 266              		.syntax unified
+ 267              		.thumb
+ 268              		.thumb_func
+ 269              		.fpu fpv4-sp-d16
+ 271              	LL_USART_ClockStructInit:
+ 272              		@ args = 0, pretend = 0, frame = 0
+ 273              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274              		@ link register save eliminated.
+ 275 0000 0023     		movs	r3, #0
+ 276 0002 C0E90033 		strd	r3, r3, [r0]
+ 277 0006 C0E90233 		strd	r3, r3, [r0, #8]
+ 278 000a 7047     		bx	lr
+ 280              		.section	.rodata.USART_PRESCALER_TAB,"a"
+ 281              		.align	2
+ 282              		.set	.LANCHOR0,. + 0
+ 285              	USART_PRESCALER_TAB:
+ 286 0000 01000000 		.word	1
+ 287 0004 02000000 		.word	2
+ 288 0008 04000000 		.word	4
+ 289 000c 06000000 		.word	6
+ 290 0010 08000000 		.word	8
+ 291 0014 0A000000 		.word	10
+ 292 0018 0C000000 		.word	12
+ 293 001c 10000000 		.word	16
+ 294 0020 20000000 		.word	32
+ 295 0024 40000000 		.word	64
+ 296 0028 80000000 		.word	128
+ 297 002c 00010000 		.word	256
+ARM GAS  /tmp/ccod8Um7.s 			page 6
+
+
+ 298              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccod8Um7.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_ll_usart.c
+     /tmp/ccod8Um7.s:16     .text.LL_USART_DeInit:0000000000000000 $t
+     /tmp/ccod8Um7.s:25     .text.LL_USART_DeInit:0000000000000000 LL_USART_DeInit
+     /tmp/ccod8Um7.s:83     .text.LL_USART_DeInit:000000000000006c $d
+     /tmp/ccod8Um7.s:90     .text.LL_USART_Init:0000000000000000 $t
+     /tmp/ccod8Um7.s:97     .text.LL_USART_Init:0000000000000000 LL_USART_Init
+     /tmp/ccod8Um7.s:201    .text.LL_USART_Init:00000000000000c8 $d
+     /tmp/ccod8Um7.s:210    .text.LL_USART_StructInit:0000000000000000 $t
+     /tmp/ccod8Um7.s:217    .text.LL_USART_StructInit:0000000000000000 LL_USART_StructInit
+     /tmp/ccod8Um7.s:232    .text.LL_USART_ClockInit:0000000000000000 $t
+     /tmp/ccod8Um7.s:239    .text.LL_USART_ClockInit:0000000000000000 LL_USART_ClockInit
+     /tmp/ccod8Um7.s:264    .text.LL_USART_ClockStructInit:0000000000000000 $t
+     /tmp/ccod8Um7.s:271    .text.LL_USART_ClockStructInit:0000000000000000 LL_USART_ClockStructInit
+     /tmp/ccod8Um7.s:281    .rodata.USART_PRESCALER_TAB:0000000000000000 $d
+     /tmp/ccod8Um7.s:285    .rodata.USART_PRESCALER_TAB:0000000000000000 USART_PRESCALER_TAB
+
+UNDEFINED SYMBOLS
+LL_RCC_GetUSARTClockFreq
+LL_RCC_GetUARTClockFreq

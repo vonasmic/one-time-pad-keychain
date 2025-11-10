@@ -1,0 +1,833 @@
+ARM GAS  /tmp/ccMnnDih.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"sign.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_keypair,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_keypair
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_keypair:
+  26              		@ args = 0, pretend = 0, frame = 59592
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  29 0004 ADF5684D 		sub	sp, sp, #59392
+  30 0008 B6B0     		sub	sp, sp, #216
+  31 000a 0546     		mov	r5, r0
+  32 000c 0E46     		mov	r6, r1
+  33 000e 16A8     		add	r0, sp, #88
+  34 0010 2021     		movs	r1, #32
+  35 0012 FFF7FEFF 		bl	PQCLEAN_randombytes
+  36 0016 0623     		movs	r3, #6
+  37 0018 4FF00508 		mov	r8, #5
+  38 001c 16AA     		add	r2, sp, #88
+  39 001e 1046     		mov	r0, r2
+  40 0020 8DF87830 		strb	r3, [sp, #120]
+  41 0024 8021     		movs	r1, #128
+  42 0026 2223     		movs	r3, #34
+  43 0028 8DF87980 		strb	r8, [sp, #121]
+  44 002c FFF7FEFF 		bl	shake256
+  45 0030 0DF5E140 		add	r0, sp, #28800
+  46 0034 36AC     		add	r4, sp, #216
+  47 0036 16A9     		add	r1, sp, #88
+  48 0038 5830     		adds	r0, r0, #88
+  49 003a 0DF52357 		add	r7, sp, #10432
+  50 003e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand
+  51 0042 1837     		adds	r7, r7, #24
+  52 0044 1EA9     		add	r1, sp, #120
+  53 0046 2046     		mov	r0, r4
+  54 0048 0022     		movs	r2, #0
+  55 004a 0591     		str	r1, [sp, #20]
+  56 004c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta
+  57 0050 4246     		mov	r2, r8
+  58 0052 3846     		mov	r0, r7
+ARM GAS  /tmp/ccMnnDih.s 			page 2
+
+
+  59 0054 0599     		ldr	r1, [sp, #20]
+  60 0056 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta
+  61 005a 0DF5A650 		add	r0, sp, #5312
+  62 005e 2146     		mov	r1, r4
+  63 0060 4FF4A052 		mov	r2, #5120
+  64 0064 1830     		adds	r0, r0, #24
+  65 0066 FFF7FEFF 		bl	memcpy
+  66 006a 0DF5A650 		add	r0, sp, #5312
+  67 006e 1830     		adds	r0, r0, #24
+  68 0070 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+  69 0074 0DF5A652 		add	r2, sp, #5312
+  70 0078 0DF5E141 		add	r1, sp, #28800
+  71 007c 0DF58140 		add	r0, sp, #16512
+  72 0080 1832     		adds	r2, r2, #24
+  73 0082 5831     		adds	r1, r1, #88
+  74 0084 5830     		adds	r0, r0, #88
+  75 0086 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery
+  76 008a 0DF58140 		add	r0, sp, #16512
+  77 008e 5830     		adds	r0, r0, #88
+  78 0090 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+  79 0094 0DF58140 		add	r0, sp, #16512
+  80 0098 5830     		adds	r0, r0, #88
+  81 009a FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+  82 009e 0DF58141 		add	r1, sp, #16512
+  83 00a2 5831     		adds	r1, r1, #88
+  84 00a4 3A46     		mov	r2, r7
+  85 00a6 0846     		mov	r0, r1
+  86 00a8 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_add
+  87 00ac 0DF58140 		add	r0, sp, #16512
+  88 00b0 5830     		adds	r0, r0, #88
+  89 00b2 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_caddq
+  90 00b6 0DF5B148 		add	r8, sp, #22656
+  91 00ba 0DF58142 		add	r2, sp, #16512
+  92 00be 08F15808 		add	r8, r8, #88
+  93 00c2 5832     		adds	r2, r2, #88
+  94 00c4 4146     		mov	r1, r8
+  95 00c6 1046     		mov	r0, r2
+  96 00c8 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_power2round
+  97 00cc 0DF58142 		add	r2, sp, #16512
+  98 00d0 2846     		mov	r0, r5
+  99 00d2 16A9     		add	r1, sp, #88
+ 100 00d4 5832     		adds	r2, r2, #88
+ 101 00d6 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_pack_pk
+ 102 00da 2A46     		mov	r2, r5
+ 103 00dc 06A8     		add	r0, sp, #24
+ 104 00de 4FF4F463 		mov	r3, #1952
+ 105 00e2 4021     		movs	r1, #64
+ 106 00e4 FFF7FEFF 		bl	shake256
+ 107 00e8 3046     		mov	r0, r6
+ 108 00ea CDE90147 		strd	r4, r7, [sp, #4]
+ 109 00ee CDF80080 		str	r8, [sp]
+ 110 00f2 2EAB     		add	r3, sp, #184
+ 111 00f4 06AA     		add	r2, sp, #24
+ 112 00f6 16A9     		add	r1, sp, #88
+ 113 00f8 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_pack_sk
+ 114 00fc 0020     		movs	r0, #0
+ 115 00fe 0DF5684D 		add	sp, sp, #59392
+ARM GAS  /tmp/ccMnnDih.s 			page 3
+
+
+ 116 0102 36B0     		add	sp, sp, #216
+ 117              		@ sp needed
+ 118 0104 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 120              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx,"ax",%progbits
+ 121              		.align	1
+ 122              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx
+ 123              		.syntax unified
+ 124              		.thumb
+ 125              		.thumb_func
+ 126              		.fpu fpv4-sp-d16
+ 128              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx:
+ 129              		@ args = 12, pretend = 0, frame = 78128
+ 130              		@ frame_needed = 0, uses_anonymous_args = 0
+ 131 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 132 0004 ADF5983D 		sub	sp, sp, #77824
+ 133 0008 D1B0     		sub	sp, sp, #324
+ 134 000a 1F46     		mov	r7, r3
+ 135 000c 0DF59833 		add	r3, sp, #77824
+ 136 0010 D3F86C81 		ldr	r8, [r3, #364]
+ 137 0014 03F5B673 		add	r3, r3, #364
+ 138 0018 B8F1FF0F 		cmp	r8, #255
+ 139 001c 0446     		mov	r4, r0
+ 140 001e 1646     		mov	r6, r2
+ 141 0020 0491     		str	r1, [sp, #16]
+ 142 0022 00F24D81 		bhi	.L6
+ 143 0026 0025     		movs	r5, #0
+ 144 0028 50AB     		add	r3, sp, #320
+ 145 002a A3F58071 		sub	r1, r3, #256
+ 146 002e 0DF59833 		add	r3, sp, #77824
+ 147 0032 03F5B873 		add	r3, r3, #368
+ 148 0036 1B68     		ldr	r3, [r3]
+ 149 0038 0DF5B249 		add	r9, sp, #22784
+ 150 003c 09F14009 		add	r9, r9, #64
+ 151 0040 0DF1800B 		add	fp, sp, #128
+ 152 0044 0293     		str	r3, [sp, #8]
+ 153 0046 0DF5A86A 		add	r10, sp, #1344
+ 154 004a 0DF58243 		add	r3, sp, #16640
+ 155 004e 4033     		adds	r3, r3, #64
+ 156 0050 5A46     		mov	r2, fp
+ 157 0052 CDF80490 		str	r9, [sp, #4]
+ 158 0056 08A8     		add	r0, sp, #32
+ 159 0058 CDF800A0 		str	r10, [sp]
+ 160 005c 0591     		str	r1, [sp, #20]
+ 161 005e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_unpack_sk
+ 162 0062 07A8     		add	r0, sp, #28
+ 163 0064 8DF8C180 		strb	r8, [sp, #193]
+ 164 0068 8DF8C050 		strb	r5, [sp, #192]
+ 165 006c FFF7FEFF 		bl	shake256_inc_init
+ 166 0070 4022     		movs	r2, #64
+ 167 0072 0599     		ldr	r1, [sp, #20]
+ 168 0074 07A8     		add	r0, sp, #28
+ 169 0076 FFF7FEFF 		bl	shake256_inc_absorb
+ 170 007a 30AB     		add	r3, sp, #192
+ 171 007c 1946     		mov	r1, r3
+ 172 007e 0222     		movs	r2, #2
+ 173 0080 07A8     		add	r0, sp, #28
+ 174 0082 0593     		str	r3, [sp, #20]
+ARM GAS  /tmp/ccMnnDih.s 			page 4
+
+
+ 175 0084 FFF7FEFF 		bl	shake256_inc_absorb
+ 176 0088 0DF59833 		add	r3, sp, #77824
+ 177 008c D3F86811 		ldr	r1, [r3, #360]
+ 178 0090 4246     		mov	r2, r8
+ 179 0092 07A8     		add	r0, sp, #28
+ 180 0094 03F5B473 		add	r3, r3, #360
+ 181 0098 FFF7FEFF 		bl	shake256_inc_absorb
+ 182 009c 3A46     		mov	r2, r7
+ 183 009e 3146     		mov	r1, r6
+ 184 00a0 07A8     		add	r0, sp, #28
+ 185 00a2 FFF7FEFF 		bl	shake256_inc_absorb
+ 186 00a6 07A8     		add	r0, sp, #28
+ 187 00a8 FFF7FEFF 		bl	shake256_inc_finalize
+ 188 00ac 059B     		ldr	r3, [sp, #20]
+ 189 00ae 07AA     		add	r2, sp, #28
+ 190 00b0 1846     		mov	r0, r3
+ 191 00b2 4021     		movs	r1, #64
+ 192 00b4 FFF7FEFF 		bl	shake256_inc_squeeze
+ 193 00b8 07A8     		add	r0, sp, #28
+ 194 00ba FFF7FEFF 		bl	shake256_inc_ctx_release
+ 195 00be 2021     		movs	r1, #32
+ 196 00c0 28A8     		add	r0, sp, #160
+ 197 00c2 FFF7FEFF 		bl	PQCLEAN_randombytes
+ 198 00c6 8023     		movs	r3, #128
+ 199 00c8 5A46     		mov	r2, fp
+ 200 00ca 4021     		movs	r1, #64
+ 201 00cc 40A8     		add	r0, sp, #256
+ 202 00ce FFF7FEFF 		bl	shake256
+ 203 00d2 0DF53940 		add	r0, sp, #47360
+ 204 00d6 08A9     		add	r1, sp, #32
+ 205 00d8 4030     		adds	r0, r0, #64
+ 206 00da FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand
+ 207 00de 5046     		mov	r0, r10
+ 208 00e0 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+ 209 00e4 4846     		mov	r0, r9
+ 210 00e6 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_ntt
+ 211 00ea 0DF58240 		add	r0, sp, #16640
+ 212 00ee 4030     		adds	r0, r0, #64
+ 213 00f0 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_ntt
+ 214 00f4 744F     		ldr	r7, .L7
+ 215 00f6 DFF8D481 		ldr	r8, .L7+4
+ 216 00fa DFF8D491 		ldr	r9, .L7+8
+ 217              	.L4:
+ 218 00fe AAB2     		uxth	r2, r5
+ 219 0100 40A9     		add	r1, sp, #256
+ 220 0102 0DF5CA50 		add	r0, sp, #6464
+ 221 0106 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1
+ 222 010a 4FF4A052 		mov	r2, #5120
+ 223 010e 0DF5CA51 		add	r1, sp, #6464
+ 224 0112 0DF53550 		add	r0, sp, #11584
+ 225 0116 FFF7FEFF 		bl	memcpy
+ 226 011a 0DF53550 		add	r0, sp, #11584
+ 227 011e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+ 228 0122 0DF53941 		add	r1, sp, #47360
+ 229 0126 0DF5E240 		add	r0, sp, #28928
+ 230 012a 0DF53552 		add	r2, sp, #11584
+ 231 012e 4031     		adds	r1, r1, #64
+ARM GAS  /tmp/ccMnnDih.s 			page 5
+
+
+ 232 0130 4030     		adds	r0, r0, #64
+ 233 0132 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery
+ 234 0136 0DF5E240 		add	r0, sp, #28928
+ 235 013a 4030     		adds	r0, r0, #64
+ 236 013c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+ 237 0140 0DF5E240 		add	r0, sp, #28928
+ 238 0144 4030     		adds	r0, r0, #64
+ 239 0146 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+ 240 014a 0DF5E240 		add	r0, sp, #28928
+ 241 014e 4030     		adds	r0, r0, #64
+ 242 0150 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_caddq
+ 243 0154 0DF5E242 		add	r2, sp, #28928
+ 244 0158 4032     		adds	r2, r2, #64
+ 245 015a 0DF50941 		add	r1, sp, #35072
+ 246 015e 1046     		mov	r0, r2
+ 247 0160 4031     		adds	r1, r1, #64
+ 248 0162 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_decompose
+ 249 0166 0DF5E241 		add	r1, sp, #28928
+ 250 016a 4031     		adds	r1, r1, #64
+ 251 016c 2046     		mov	r0, r4
+ 252 016e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1
+ 253 0172 07A8     		add	r0, sp, #28
+ 254 0174 FFF7FEFF 		bl	shake256_inc_init
+ 255 0178 4022     		movs	r2, #64
+ 256 017a 30A9     		add	r1, sp, #192
+ 257 017c 07A8     		add	r0, sp, #28
+ 258 017e FFF7FEFF 		bl	shake256_inc_absorb
+ 259 0182 4FF44072 		mov	r2, #768
+ 260 0186 2146     		mov	r1, r4
+ 261 0188 07A8     		add	r0, sp, #28
+ 262 018a FFF7FEFF 		bl	shake256_inc_absorb
+ 263 018e 07A8     		add	r0, sp, #28
+ 264 0190 FFF7FEFF 		bl	shake256_inc_finalize
+ 265 0194 07AA     		add	r2, sp, #28
+ 266 0196 3021     		movs	r1, #48
+ 267 0198 2046     		mov	r0, r4
+ 268 019a FFF7FEFF 		bl	shake256_inc_squeeze
+ 269 019e 07A8     		add	r0, sp, #28
+ 270 01a0 FFF7FEFF 		bl	shake256_inc_ctx_release
+ 271 01a4 2146     		mov	r1, r4
+ 272 01a6 50A8     		add	r0, sp, #320
+ 273 01a8 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_challenge
+ 274 01ac 50A8     		add	r0, sp, #320
+ 275 01ae FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_ntt
+ 276 01b2 0DF5A862 		add	r2, sp, #1344
+ 277 01b6 50A9     		add	r1, sp, #320
+ 278 01b8 0DF53550 		add	r0, sp, #11584
+ 279 01bc FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery
+ 280 01c0 0DF53550 		add	r0, sp, #11584
+ 281 01c4 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont
+ 282 01c8 0DF53551 		add	r1, sp, #11584
+ 283 01cc 0846     		mov	r0, r1
+ 284 01ce 0DF5CA52 		add	r2, sp, #6464
+ 285 01d2 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_add
+ 286 01d6 0DF53550 		add	r0, sp, #11584
+ 287 01da FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce
+ 288 01de 3946     		mov	r1, r7
+ARM GAS  /tmp/ccMnnDih.s 			page 6
+
+
+ 289 01e0 0DF53550 		add	r0, sp, #11584
+ 290 01e4 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm
+ 291 01e8 0028     		cmp	r0, #0
+ 292 01ea 67D1     		bne	.L5
+ 293 01ec 0DF5B242 		add	r2, sp, #22784
+ 294 01f0 0DF52140 		add	r0, sp, #41216
+ 295 01f4 4032     		adds	r2, r2, #64
+ 296 01f6 50A9     		add	r1, sp, #320
+ 297 01f8 4030     		adds	r0, r0, #64
+ 298 01fa FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery
+ 299 01fe 0DF52140 		add	r0, sp, #41216
+ 300 0202 4030     		adds	r0, r0, #64
+ 301 0204 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+ 302 0208 0DF50941 		add	r1, sp, #35072
+ 303 020c 4031     		adds	r1, r1, #64
+ 304 020e 0DF52142 		add	r2, sp, #41216
+ 305 0212 0846     		mov	r0, r1
+ 306 0214 4032     		adds	r2, r2, #64
+ 307 0216 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_sub
+ 308 021a 0DF50940 		add	r0, sp, #35072
+ 309 021e 4030     		adds	r0, r0, #64
+ 310 0220 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+ 311 0224 0DF50940 		add	r0, sp, #35072
+ 312 0228 4146     		mov	r1, r8
+ 313 022a 4030     		adds	r0, r0, #64
+ 314 022c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm
+ 315 0230 0028     		cmp	r0, #0
+ 316 0232 43D1     		bne	.L5
+ 317 0234 0DF58242 		add	r2, sp, #16640
+ 318 0238 0DF52140 		add	r0, sp, #41216
+ 319 023c 4032     		adds	r2, r2, #64
+ 320 023e 50A9     		add	r1, sp, #320
+ 321 0240 4030     		adds	r0, r0, #64
+ 322 0242 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery
+ 323 0246 0DF52140 		add	r0, sp, #41216
+ 324 024a 4030     		adds	r0, r0, #64
+ 325 024c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+ 326 0250 0DF52140 		add	r0, sp, #41216
+ 327 0254 4030     		adds	r0, r0, #64
+ 328 0256 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+ 329 025a 0DF52140 		add	r0, sp, #41216
+ 330 025e 4946     		mov	r1, r9
+ 331 0260 4030     		adds	r0, r0, #64
+ 332 0262 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm
+ 333 0266 0646     		mov	r6, r0
+ 334 0268 40BB     		cbnz	r0, .L5
+ 335 026a 0DF50941 		add	r1, sp, #35072
+ 336 026e 4031     		adds	r1, r1, #64
+ 337 0270 0DF52142 		add	r2, sp, #41216
+ 338 0274 0846     		mov	r0, r1
+ 339 0276 4032     		adds	r2, r2, #64
+ 340 0278 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_add
+ 341 027c 0DF5E242 		add	r2, sp, #28928
+ 342 0280 0DF50941 		add	r1, sp, #35072
+ 343 0284 0DF52140 		add	r0, sp, #41216
+ 344 0288 4032     		adds	r2, r2, #64
+ 345 028a 4031     		adds	r1, r1, #64
+ARM GAS  /tmp/ccMnnDih.s 			page 7
+
+
+ 346 028c 4030     		adds	r0, r0, #64
+ 347 028e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint
+ 348 0292 3728     		cmp	r0, #55
+ 349 0294 12D8     		bhi	.L5
+ 350 0296 0DF52143 		add	r3, sp, #41216
+ 351 029a 4033     		adds	r3, r3, #64
+ 352 029c 0DF53552 		add	r2, sp, #11584
+ 353 02a0 2146     		mov	r1, r4
+ 354 02a2 2046     		mov	r0, r4
+ 355 02a4 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_pack_sig
+ 356 02a8 40F6ED43 		movw	r3, #3309
+ 357 02ac 049A     		ldr	r2, [sp, #16]
+ 358 02ae 1360     		str	r3, [r2]
+ 359              	.L2:
+ 360 02b0 3046     		mov	r0, r6
+ 361 02b2 0DF5983D 		add	sp, sp, #77824
+ 362 02b6 51B0     		add	sp, sp, #324
+ 363              		@ sp needed
+ 364 02b8 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 365              	.L5:
+ 366 02bc 0135     		adds	r5, r5, #1
+ 367 02be 1EE7     		b	.L4
+ 368              	.L6:
+ 369 02c0 4FF0FF36 		mov	r6, #-1
+ 370 02c4 F4E7     		b	.L2
+ 371              	.L8:
+ 372 02c6 00BF     		.align	2
+ 373              	.L7:
+ 374 02c8 3CFF0700 		.word	524092
+ 375 02cc 3CFE0300 		.word	261692
+ 376 02d0 00FF0300 		.word	261888
+ 378              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx,"ax",%progbits
+ 379              		.align	1
+ 380              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx
+ 381              		.syntax unified
+ 382              		.thumb
+ 383              		.thumb_func
+ 384              		.fpu fpv4-sp-d16
+ 386              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx:
+ 387              		@ args = 12, pretend = 0, frame = 0
+ 388              		@ frame_needed = 0, uses_anonymous_args = 0
+ 389 0000 7FB5     		push	{r0, r1, r2, r3, r4, r5, r6, lr}
+ 390 0002 0D46     		mov	r5, r1
+ 391 0004 1C46     		mov	r4, r3
+ 392 0006 D118     		adds	r1, r2, r3
+ 393 0008 03F6ED43 		addw	r3, r3, #3309
+ 394 000c 0344     		add	r3, r3, r0
+ 395              	.L10:
+ 396 000e 9142     		cmp	r1, r2
+ 397 0010 10D1     		bne	.L11
+ 398 0012 0A9B     		ldr	r3, [sp, #40]
+ 399 0014 2946     		mov	r1, r5
+ 400 0016 0293     		str	r3, [sp, #8]
+ 401 0018 099B     		ldr	r3, [sp, #36]
+ 402 001a 00F6ED42 		addw	r2, r0, #3309
+ 403 001e 0193     		str	r3, [sp, #4]
+ 404 0020 089B     		ldr	r3, [sp, #32]
+ARM GAS  /tmp/ccMnnDih.s 			page 8
+
+
+ 405 0022 0093     		str	r3, [sp]
+ 406 0024 2346     		mov	r3, r4
+ 407 0026 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx
+ 408 002a 2B68     		ldr	r3, [r5]
+ 409 002c 2344     		add	r3, r3, r4
+ 410 002e 2B60     		str	r3, [r5]
+ 411 0030 04B0     		add	sp, sp, #16
+ 412              		@ sp needed
+ 413 0032 70BD     		pop	{r4, r5, r6, pc}
+ 414              	.L11:
+ 415 0034 11F8016D 		ldrb	r6, [r1, #-1]!	@ zero_extendqisi2
+ 416 0038 03F8016D 		strb	r6, [r3, #-1]!
+ 417 003c E7E7     		b	.L10
+ 419              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx,"ax",%progbits
+ 420              		.align	1
+ 421              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx
+ 422              		.syntax unified
+ 423              		.thumb
+ 424              		.thumb_func
+ 425              		.fpu fpv4-sp-d16
+ 427              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx:
+ 428              		@ args = 12, pretend = 0, frame = 56272
+ 429              		@ frame_needed = 0, uses_anonymous_args = 0
+ 430 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 431 0004 ADF55B4D 		sub	sp, sp, #56064
+ 432 0008 B4B0     		sub	sp, sp, #208
+ 433 000a 1E46     		mov	r6, r3
+ 434 000c 0DF55B43 		add	r3, sp, #56064
+ 435 0010 D3F8EC70 		ldr	r7, [r3, #236]
+ 436 0014 EC33     		adds	r3, r3, #236
+ 437 0016 0DF55B43 		add	r3, sp, #56064
+ 438 001a FF2F     		cmp	r7, #255
+ 439 001c 03F1F003 		add	r3, r3, #240
+ 440 0020 0446     		mov	r4, r0
+ 441 0022 1546     		mov	r5, r2
+ 442 0024 D3F80080 		ldr	r8, [r3]
+ 443 0028 00F2D280 		bhi	.L13
+ 444 002c 40F6ED43 		movw	r3, #3309
+ 445 0030 9942     		cmp	r1, r3
+ 446 0032 40F0CD80 		bne	.L13
+ 447 0036 0DF5DE51 		add	r1, sp, #7104
+ 448 003a 4246     		mov	r2, r8
+ 449 003c 1031     		adds	r1, r1, #16
+ 450 003e 04A8     		add	r0, sp, #16
+ 451 0040 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_unpack_pk
+ 452 0044 0DF59742 		add	r2, sp, #19328
+ 453 0048 2346     		mov	r3, r4
+ 454 004a 5032     		adds	r2, r2, #80
+ 455 004c 0DF5FA61 		add	r1, sp, #2000
+ 456 0050 0CA8     		add	r0, sp, #48
+ 457 0052 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_unpack_sig
+ 458 0056 0028     		cmp	r0, #0
+ 459 0058 40F0BA80 		bne	.L13
+ 460 005c 5E49     		ldr	r1, .L17
+ 461 005e 0DF5FA60 		add	r0, sp, #2000
+ 462 0062 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm
+ 463 0066 0446     		mov	r4, r0
+ARM GAS  /tmp/ccMnnDih.s 			page 9
+
+
+ 464 0068 0028     		cmp	r0, #0
+ 465 006a 40F0B180 		bne	.L13
+ 466 006e 4FF4F463 		mov	r3, #1952
+ 467 0072 4246     		mov	r2, r8
+ 468 0074 4021     		movs	r1, #64
+ 469 0076 24A8     		add	r0, sp, #144
+ 470 0078 FFF7FEFF 		bl	shake256
+ 471 007c 03A8     		add	r0, sp, #12
+ 472 007e FFF7FEFF 		bl	shake256_inc_init
+ 473 0082 4022     		movs	r2, #64
+ 474 0084 24A9     		add	r1, sp, #144
+ 475 0086 03A8     		add	r0, sp, #12
+ 476 0088 FFF7FEFF 		bl	shake256_inc_absorb
+ 477 008c 0222     		movs	r2, #2
+ 478 008e 24A9     		add	r1, sp, #144
+ 479 0090 03A8     		add	r0, sp, #12
+ 480 0092 8DF89040 		strb	r4, [sp, #144]
+ 481 0096 8DF89170 		strb	r7, [sp, #145]
+ 482 009a FFF7FEFF 		bl	shake256_inc_absorb
+ 483 009e 0DF55B43 		add	r3, sp, #56064
+ 484 00a2 D3F8E810 		ldr	r1, [r3, #232]
+ 485 00a6 3A46     		mov	r2, r7
+ 486 00a8 03A8     		add	r0, sp, #12
+ 487 00aa E833     		adds	r3, r3, #232
+ 488 00ac FFF7FEFF 		bl	shake256_inc_absorb
+ 489 00b0 3246     		mov	r2, r6
+ 490 00b2 2946     		mov	r1, r5
+ 491 00b4 03A8     		add	r0, sp, #12
+ 492 00b6 FFF7FEFF 		bl	shake256_inc_absorb
+ 493 00ba 03A8     		add	r0, sp, #12
+ 494 00bc FFF7FEFF 		bl	shake256_inc_finalize
+ 495 00c0 03AA     		add	r2, sp, #12
+ 496 00c2 4021     		movs	r1, #64
+ 497 00c4 24A8     		add	r0, sp, #144
+ 498 00c6 FFF7FEFF 		bl	shake256_inc_squeeze
+ 499 00ca 03A8     		add	r0, sp, #12
+ 500 00cc FFF7FEFF 		bl	shake256_inc_ctx_release
+ 501 00d0 0CA9     		add	r1, sp, #48
+ 502 00d2 F4A8     		add	r0, sp, #976
+ 503 00d4 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_challenge
+ 504 00d8 0DF5C740 		add	r0, sp, #25472
+ 505 00dc 04A9     		add	r1, sp, #16
+ 506 00de 5030     		adds	r0, r0, #80
+ 507 00e0 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand
+ 508 00e4 0DF5FA60 		add	r0, sp, #2000
+ 509 00e8 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+ 510 00ec 0DF5C741 		add	r1, sp, #25472
+ 511 00f0 0DF54F50 		add	r0, sp, #13248
+ 512 00f4 0DF5FA62 		add	r2, sp, #2000
+ 513 00f8 5031     		adds	r1, r1, #80
+ 514 00fa 1030     		adds	r0, r0, #16
+ 515 00fc FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery
+ 516 0100 F4A8     		add	r0, sp, #976
+ 517 0102 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_ntt
+ 518 0106 0DF5DE50 		add	r0, sp, #7104
+ 519 010a 1030     		adds	r0, r0, #16
+ 520 010c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl
+ARM GAS  /tmp/ccMnnDih.s 			page 10
+
+
+ 521 0110 0DF5DE50 		add	r0, sp, #7104
+ 522 0114 1030     		adds	r0, r0, #16
+ 523 0116 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_ntt
+ 524 011a 0DF5DE52 		add	r2, sp, #7104
+ 525 011e 1032     		adds	r2, r2, #16
+ 526 0120 1046     		mov	r0, r2
+ 527 0122 F4A9     		add	r1, sp, #976
+ 528 0124 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery
+ 529 0128 0DF54F51 		add	r1, sp, #13248
+ 530 012c 1031     		adds	r1, r1, #16
+ 531 012e 0DF5DE52 		add	r2, sp, #7104
+ 532 0132 0846     		mov	r0, r1
+ 533 0134 1032     		adds	r2, r2, #16
+ 534 0136 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_sub
+ 535 013a 0DF54F50 		add	r0, sp, #13248
+ 536 013e 1030     		adds	r0, r0, #16
+ 537 0140 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+ 538 0144 0DF54F50 		add	r0, sp, #13248
+ 539 0148 1030     		adds	r0, r0, #16
+ 540 014a FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+ 541 014e 0DF54F50 		add	r0, sp, #13248
+ 542 0152 1030     		adds	r0, r0, #16
+ 543 0154 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_caddq
+ 544 0158 0DF54F51 		add	r1, sp, #13248
+ 545 015c 1031     		adds	r1, r1, #16
+ 546 015e 0DF59742 		add	r2, sp, #19328
+ 547 0162 5032     		adds	r2, r2, #80
+ 548 0164 0846     		mov	r0, r1
+ 549 0166 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint
+ 550 016a 0DF54F51 		add	r1, sp, #13248
+ 551 016e 1031     		adds	r1, r1, #16
+ 552 0170 34A8     		add	r0, sp, #208
+ 553 0172 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1
+ 554 0176 03A8     		add	r0, sp, #12
+ 555 0178 FFF7FEFF 		bl	shake256_inc_init
+ 556 017c 4022     		movs	r2, #64
+ 557 017e 24A9     		add	r1, sp, #144
+ 558 0180 03A8     		add	r0, sp, #12
+ 559 0182 FFF7FEFF 		bl	shake256_inc_absorb
+ 560 0186 4FF44072 		mov	r2, #768
+ 561 018a 34A9     		add	r1, sp, #208
+ 562 018c 03A8     		add	r0, sp, #12
+ 563 018e FFF7FEFF 		bl	shake256_inc_absorb
+ 564 0192 03A8     		add	r0, sp, #12
+ 565 0194 FFF7FEFF 		bl	shake256_inc_finalize
+ 566 0198 18AB     		add	r3, sp, #96
+ 567 019a 1846     		mov	r0, r3
+ 568 019c 3021     		movs	r1, #48
+ 569 019e 03AA     		add	r2, sp, #12
+ 570 01a0 0193     		str	r3, [sp, #4]
+ 571 01a2 FFF7FEFF 		bl	shake256_inc_squeeze
+ 572 01a6 03A8     		add	r0, sp, #12
+ 573 01a8 FFF7FEFF 		bl	shake256_inc_ctx_release
+ 574 01ac 2146     		mov	r1, r4
+ 575 01ae 019A     		ldr	r2, [sp, #4]
+ 576 01b0 0CAB     		add	r3, sp, #48
+ 577              	.L14:
+ARM GAS  /tmp/ccMnnDih.s 			page 11
+
+
+ 578 01b2 13F8015B 		ldrb	r5, [r3], #1	@ zero_extendqisi2
+ 579 01b6 12F8010B 		ldrb	r0, [r2], #1	@ zero_extendqisi2
+ 580 01ba 8542     		cmp	r5, r0
+ 581 01bc 08D1     		bne	.L13
+ 582 01be 0131     		adds	r1, r1, #1
+ 583 01c0 3029     		cmp	r1, #48
+ 584 01c2 F6D1     		bne	.L14
+ 585              	.L12:
+ 586 01c4 2046     		mov	r0, r4
+ 587 01c6 0DF55B4D 		add	sp, sp, #56064
+ 588 01ca 34B0     		add	sp, sp, #208
+ 589              		@ sp needed
+ 590 01cc BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 591              	.L13:
+ 592 01d0 4FF0FF34 		mov	r4, #-1
+ 593 01d4 F6E7     		b	.L12
+ 594              	.L18:
+ 595 01d6 00BF     		.align	2
+ 596              	.L17:
+ 597 01d8 3CFF0700 		.word	524092
+ 599              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx,"ax",%progbits
+ 600              		.align	1
+ 601              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx
+ 602              		.syntax unified
+ 603              		.thumb
+ 604              		.thumb_func
+ 605              		.fpu fpv4-sp-d16
+ 607              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx:
+ 608              		@ args = 12, pretend = 0, frame = 0
+ 609              		@ frame_needed = 0, uses_anonymous_args = 0
+ 610 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 611 0002 1D46     		mov	r5, r3
+ 612 0004 40F6EC43 		movw	r3, #3308
+ 613 0008 9D42     		cmp	r5, r3
+ 614 000a 0746     		mov	r7, r0
+ 615 000c 0E46     		mov	r6, r1
+ 616 000e 1446     		mov	r4, r2
+ 617 0010 85B0     		sub	sp, sp, #20
+ 618 0012 1DD9     		bls	.L20
+ 619 0014 0C9A     		ldr	r2, [sp, #48]
+ 620 0016 A5F6ED43 		subw	r3, r5, #3309
+ 621 001a 0B60     		str	r3, [r1]
+ 622 001c 0292     		str	r2, [sp, #8]
+ 623 001e 0B9A     		ldr	r2, [sp, #44]
+ 624 0020 40F6ED41 		movw	r1, #3309
+ 625 0024 0192     		str	r2, [sp, #4]
+ 626 0026 0A9A     		ldr	r2, [sp, #40]
+ 627 0028 2046     		mov	r0, r4
+ 628 002a 0092     		str	r2, [sp]
+ 629 002c 04F6ED42 		addw	r2, r4, #3309
+ 630 0030 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx
+ 631 0034 60B9     		cbnz	r0, .L20
+ 632 0036 0346     		mov	r3, r0
+ 633 0038 04F6EC44 		addw	r4, r4, #3308
+ 634              	.L21:
+ 635 003c 3268     		ldr	r2, [r6]
+ 636 003e 9A42     		cmp	r2, r3
+ARM GAS  /tmp/ccMnnDih.s 			page 12
+
+
+ 637 0040 01D8     		bhi	.L22
+ 638              	.L19:
+ 639 0042 05B0     		add	sp, sp, #20
+ 640              		@ sp needed
+ 641 0044 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 642              	.L22:
+ 643 0046 14F8012F 		ldrb	r2, [r4, #1]!	@ zero_extendqisi2
+ 644 004a FA54     		strb	r2, [r7, r3]
+ 645 004c 0133     		adds	r3, r3, #1
+ 646 004e F5E7     		b	.L21
+ 647              	.L20:
+ 648 0050 0021     		movs	r1, #0
+ 649 0052 2A46     		mov	r2, r5
+ 650 0054 3846     		mov	r0, r7
+ 651 0056 3160     		str	r1, [r6]
+ 652 0058 FFF7FEFF 		bl	memset
+ 653 005c 4FF0FF30 		mov	r0, #-1
+ 654 0060 EFE7     		b	.L19
+ 656              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature,"ax",%progbits
+ 657              		.align	1
+ 658              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature
+ 659              		.syntax unified
+ 660              		.thumb
+ 661              		.thumb_func
+ 662              		.fpu fpv4-sp-d16
+ 664              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature:
+ 665              		@ args = 4, pretend = 0, frame = 0
+ 666              		@ frame_needed = 0, uses_anonymous_args = 0
+ 667 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 668 0002 069C     		ldr	r4, [sp, #24]
+ 669 0004 0294     		str	r4, [sp, #8]
+ 670 0006 0024     		movs	r4, #0
+ 671 0008 CDE90044 		strd	r4, r4, [sp]
+ 672 000c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx
+ 673 0010 04B0     		add	sp, sp, #16
+ 674              		@ sp needed
+ 675 0012 10BD     		pop	{r4, pc}
+ 677              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign,"ax",%progbits
+ 678              		.align	1
+ 679              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign
+ 680              		.syntax unified
+ 681              		.thumb
+ 682              		.thumb_func
+ 683              		.fpu fpv4-sp-d16
+ 685              	PQCLEAN_MLDSA65_CLEAN_crypto_sign:
+ 686              		@ args = 4, pretend = 0, frame = 0
+ 687              		@ frame_needed = 0, uses_anonymous_args = 0
+ 688 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 689 0002 069C     		ldr	r4, [sp, #24]
+ 690 0004 0294     		str	r4, [sp, #8]
+ 691 0006 0024     		movs	r4, #0
+ 692 0008 CDE90044 		strd	r4, r4, [sp]
+ 693 000c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx
+ 694 0010 04B0     		add	sp, sp, #16
+ 695              		@ sp needed
+ 696 0012 10BD     		pop	{r4, pc}
+ 698              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify,"ax",%progbits
+ARM GAS  /tmp/ccMnnDih.s 			page 13
+
+
+ 699              		.align	1
+ 700              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify
+ 701              		.syntax unified
+ 702              		.thumb
+ 703              		.thumb_func
+ 704              		.fpu fpv4-sp-d16
+ 706              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify:
+ 707              		@ args = 4, pretend = 0, frame = 0
+ 708              		@ frame_needed = 0, uses_anonymous_args = 0
+ 709 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 710 0002 069C     		ldr	r4, [sp, #24]
+ 711 0004 0294     		str	r4, [sp, #8]
+ 712 0006 0024     		movs	r4, #0
+ 713 0008 CDE90044 		strd	r4, r4, [sp]
+ 714 000c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx
+ 715 0010 04B0     		add	sp, sp, #16
+ 716              		@ sp needed
+ 717 0012 10BD     		pop	{r4, pc}
+ 719              		.section	.text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_open,"ax",%progbits
+ 720              		.align	1
+ 721              		.global	PQCLEAN_MLDSA65_CLEAN_crypto_sign_open
+ 722              		.syntax unified
+ 723              		.thumb
+ 724              		.thumb_func
+ 725              		.fpu fpv4-sp-d16
+ 727              	PQCLEAN_MLDSA65_CLEAN_crypto_sign_open:
+ 728              		@ args = 4, pretend = 0, frame = 0
+ 729              		@ frame_needed = 0, uses_anonymous_args = 0
+ 730 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 731 0002 069C     		ldr	r4, [sp, #24]
+ 732 0004 0294     		str	r4, [sp, #8]
+ 733 0006 0024     		movs	r4, #0
+ 734 0008 CDE90044 		strd	r4, r4, [sp]
+ 735 000c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx
+ 736 0010 04B0     		add	sp, sp, #16
+ 737              		@ sp needed
+ 738 0012 10BD     		pop	{r4, pc}
+ 740              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccMnnDih.s 			page 14
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sign.c
+     /tmp/ccMnnDih.s:16     .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_keypair:0000000000000000 $t
+     /tmp/ccMnnDih.s:25     .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_keypair:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_keypair
+     /tmp/ccMnnDih.s:121    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx:0000000000000000 $t
+     /tmp/ccMnnDih.s:128    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx
+     /tmp/ccMnnDih.s:374    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature_ctx:00000000000002c8 $d
+     /tmp/ccMnnDih.s:379    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx:0000000000000000 $t
+     /tmp/ccMnnDih.s:386    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_ctx
+     /tmp/ccMnnDih.s:420    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx:0000000000000000 $t
+     /tmp/ccMnnDih.s:427    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx
+     /tmp/ccMnnDih.s:597    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify_ctx:00000000000001d8 $d
+     /tmp/ccMnnDih.s:600    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx:0000000000000000 $t
+     /tmp/ccMnnDih.s:607    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_open_ctx
+     /tmp/ccMnnDih.s:657    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature:0000000000000000 $t
+     /tmp/ccMnnDih.s:664    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_signature
+     /tmp/ccMnnDih.s:678    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign:0000000000000000 $t
+     /tmp/ccMnnDih.s:685    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign
+     /tmp/ccMnnDih.s:699    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify:0000000000000000 $t
+     /tmp/ccMnnDih.s:706    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_verify
+     /tmp/ccMnnDih.s:720    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_open:0000000000000000 $t
+     /tmp/ccMnnDih.s:727    .text.PQCLEAN_MLDSA65_CLEAN_crypto_sign_open:0000000000000000 PQCLEAN_MLDSA65_CLEAN_crypto_sign_open
+
+UNDEFINED SYMBOLS
+PQCLEAN_randombytes
+shake256
+PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand
+PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta
+PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta
+memcpy
+PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery
+PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+PQCLEAN_MLDSA65_CLEAN_polyveck_add
+PQCLEAN_MLDSA65_CLEAN_polyveck_caddq
+PQCLEAN_MLDSA65_CLEAN_polyveck_power2round
+PQCLEAN_MLDSA65_CLEAN_pack_pk
+PQCLEAN_MLDSA65_CLEAN_pack_sk
+PQCLEAN_MLDSA65_CLEAN_unpack_sk
+shake256_inc_init
+shake256_inc_absorb
+shake256_inc_finalize
+shake256_inc_squeeze
+shake256_inc_ctx_release
+PQCLEAN_MLDSA65_CLEAN_polyveck_ntt
+PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1
+PQCLEAN_MLDSA65_CLEAN_polyveck_decompose
+PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1
+PQCLEAN_MLDSA65_CLEAN_poly_challenge
+PQCLEAN_MLDSA65_CLEAN_poly_ntt
+PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery
+PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont
+PQCLEAN_MLDSA65_CLEAN_polyvecl_add
+PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce
+PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm
+PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery
+ARM GAS  /tmp/ccMnnDih.s 			page 15
+
+
+PQCLEAN_MLDSA65_CLEAN_polyveck_sub
+PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm
+PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint
+PQCLEAN_MLDSA65_CLEAN_pack_sig
+PQCLEAN_MLDSA65_CLEAN_unpack_pk
+PQCLEAN_MLDSA65_CLEAN_unpack_sig
+PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl
+PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint
+memset

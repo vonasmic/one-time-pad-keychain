@@ -1,0 +1,405 @@
+ARM GAS  /tmp/ccwyCtRc.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"utils.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29              	.L4:
+  30 0000 0139     		subs	r1, r1, #1
+  31 0002 0029     		cmp	r1, #0
+  32 0004 00DA     		bge	.L3
+  33 0006 7047     		bx	lr
+  34              	.L3:
+  35 0008 4254     		strb	r2, [r0, r1]
+  36 000a 120A     		lsrs	r2, r2, #8
+  37 000c 42EA0362 		orr	r2, r2, r3, lsl #24
+  38 0010 1B0A     		lsrs	r3, r3, #8
+  39 0012 F5E7     		b	.L4
+  41              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes,"ax",%progbits
+  42              		.align	1
+  43              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+  44              		.syntax unified
+  45              		.thumb
+  46              		.thumb_func
+  47              		.fpu fpv4-sp-d16
+  49              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes:
+  50              		@ args = 0, pretend = 0, frame = 0
+  51              		@ frame_needed = 0, uses_anonymous_args = 0
+  52              		@ link register save eliminated.
+  53 0000 0B0E     		lsrs	r3, r1, #24
+  54 0002 0370     		strb	r3, [r0]
+  55 0004 0B0C     		lsrs	r3, r1, #16
+  56 0006 4370     		strb	r3, [r0, #1]
+  57 0008 0B0A     		lsrs	r3, r1, #8
+  58 000a 8370     		strb	r3, [r0, #2]
+  59 000c C170     		strb	r1, [r0, #3]
+  60 000e 7047     		bx	lr
+ARM GAS  /tmp/ccwyCtRc.s 			page 2
+
+
+  62              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull,"ax",%progbits
+  63              		.align	1
+  64              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull
+  65              		.syntax unified
+  66              		.thumb
+  67              		.thumb_func
+  68              		.fpu fpv4-sp-d16
+  70              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull:
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 0, uses_anonymous_args = 0
+  73 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  74 0002 0026     		movs	r6, #0
+  75 0004 CA00     		lsls	r2, r1, #3
+  76 0006 4318     		adds	r3, r0, r1
+  77 0008 3146     		mov	r1, r6
+  78              	.L7:
+  79 000a 9842     		cmp	r0, r3
+  80 000c A2F10802 		sub	r2, r2, #8
+  81 0010 01D1     		bne	.L8
+  82 0012 3046     		mov	r0, r6
+  83 0014 F0BD     		pop	{r4, r5, r6, r7, pc}
+  84              	.L8:
+  85 0016 10F8015B 		ldrb	r5, [r0], #1	@ zero_extendqisi2
+  86 001a A2F12004 		sub	r4, r2, #32
+  87 001e C2F12007 		rsb	r7, r2, #32
+  88 0022 05FA04F4 		lsl	r4, r5, r4
+  89 0026 25FA07F7 		lsr	r7, r5, r7
+  90 002a 3C43     		orrs	r4, r4, r7
+  91 002c 9540     		lsls	r5, r5, r2
+  92 002e 2E43     		orrs	r6, r6, r5
+  93 0030 2143     		orrs	r1, r1, r4
+  94 0032 EAE7     		b	.L7
+  96              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root,"ax",%progbits
+  97              		.align	1
+  98              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root
+  99              		.syntax unified
+ 100              		.thumb
+ 101              		.thumb_func
+ 102              		.fpu fpv4-sp-d16
+ 104              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root:
+ 105              		@ args = 16, pretend = 0, frame = 40
+ 106              		@ frame_needed = 0, uses_anonymous_args = 0
+ 107 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 108 0004 12F0010F 		tst	r2, #1
+ 109 0008 8DB0     		sub	sp, sp, #52
+ 110 000a 1F46     		mov	r7, r3
+ 111 000c DDE918A5 		ldrd	r10, r5, [sp, #96]
+ 112 0010 8146     		mov	r9, r0
+ 113 0012 1646     		mov	r6, r2
+ 114 0014 0B46     		mov	r3, r1
+ 115 0016 169C     		ldr	r4, [sp, #88]
+ 116 0018 01F1100C 		add	ip, r1, #16
+ 117 001c 35D0     		beq	.L10
+ 118 001e 0DF1200E 		add	lr, sp, #32
+ 119              	.L11:
+ 120 0022 7246     		mov	r2, lr
+ 121 0024 1868     		ldr	r0, [r3]	@ unaligned
+ARM GAS  /tmp/ccwyCtRc.s 			page 3
+
+
+ 122 0026 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 123 0028 0833     		adds	r3, r3, #8
+ 124 002a 03C2     		stmia	r2!, {r0, r1}
+ 125 002c 6345     		cmp	r3, ip
+ 126 002e 9646     		mov	lr, r2
+ 127 0030 F7D1     		bne	.L11
+ 128 0032 2346     		mov	r3, r4
+ 129 0034 0DF1100C 		add	ip, sp, #16
+ 130 0038 04F1100E 		add	lr, r4, #16
+ 131              	.L12:
+ 132 003c 6246     		mov	r2, ip
+ 133 003e 1868     		ldr	r0, [r3]	@ unaligned
+ 134 0040 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 135 0042 0833     		adds	r3, r3, #8
+ 136 0044 03C2     		stmia	r2!, {r0, r1}
+ 137 0046 7345     		cmp	r3, lr
+ 138 0048 9446     		mov	ip, r2
+ 139 004a F7D1     		bne	.L12
+ 140              	.L13:
+ 141 004c 4FF00008 		mov	r8, #0
+ 142 0050 179B     		ldr	r3, [sp, #92]
+ 143 0052 1034     		adds	r4, r4, #16
+ 144 0054 013B     		subs	r3, r3, #1
+ 145 0056 0393     		str	r3, [sp, #12]
+ 146              	.L16:
+ 147 0058 039B     		ldr	r3, [sp, #12]
+ 148 005a 7608     		lsrs	r6, r6, #1
+ 149 005c 7F08     		lsrs	r7, r7, #1
+ 150 005e 4345     		cmp	r3, r8
+ 151 0060 06EB070B 		add	fp, r6, r7
+ 152 0064 29D8     		bhi	.L21
+ 153 0066 2846     		mov	r0, r5
+ 154 0068 1799     		ldr	r1, [sp, #92]
+ 155 006a FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_height
+ 156 006e 5946     		mov	r1, fp
+ 157 0070 2846     		mov	r0, r5
+ 158 0072 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_index
+ 159 0076 5346     		mov	r3, r10
+ 160 0078 0222     		movs	r2, #2
+ 161 007a 4846     		mov	r0, r9
+ 162 007c 0095     		str	r5, [sp]
+ 163 007e 04A9     		add	r1, sp, #16
+ 164 0080 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 165 0084 0DB0     		add	sp, sp, #52
+ 166              		@ sp needed
+ 167 0086 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 168              	.L10:
+ 169 008a 0DF1100E 		add	lr, sp, #16
+ 170              	.L14:
+ 171 008e 7246     		mov	r2, lr
+ 172 0090 1868     		ldr	r0, [r3]	@ unaligned
+ 173 0092 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 174 0094 0833     		adds	r3, r3, #8
+ 175 0096 03C2     		stmia	r2!, {r0, r1}
+ 176 0098 6345     		cmp	r3, ip
+ 177 009a 9646     		mov	lr, r2
+ 178 009c F7D1     		bne	.L14
+ARM GAS  /tmp/ccwyCtRc.s 			page 4
+
+
+ 179 009e 2346     		mov	r3, r4
+ 180 00a0 0DF1200C 		add	ip, sp, #32
+ 181 00a4 04F1100E 		add	lr, r4, #16
+ 182              	.L15:
+ 183 00a8 6246     		mov	r2, ip
+ 184 00aa 1868     		ldr	r0, [r3]	@ unaligned
+ 185 00ac 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 186 00ae 0833     		adds	r3, r3, #8
+ 187 00b0 03C2     		stmia	r2!, {r0, r1}
+ 188 00b2 7345     		cmp	r3, lr
+ 189 00b4 9446     		mov	ip, r2
+ 190 00b6 F7D1     		bne	.L15
+ 191 00b8 C8E7     		b	.L13
+ 192              	.L21:
+ 193 00ba 08F10108 		add	r8, r8, #1
+ 194 00be 4146     		mov	r1, r8
+ 195 00c0 2846     		mov	r0, r5
+ 196 00c2 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_height
+ 197 00c6 5946     		mov	r1, fp
+ 198 00c8 2846     		mov	r0, r5
+ 199 00ca FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_index
+ 200 00ce F007     		lsls	r0, r6, #31
+ 201 00d0 5346     		mov	r3, r10
+ 202 00d2 4FF00202 		mov	r2, #2
+ 203 00d6 0095     		str	r5, [sp]
+ 204 00d8 04A9     		add	r1, sp, #16
+ 205 00da 11D5     		bpl	.L17
+ 206 00dc 08A8     		add	r0, sp, #32
+ 207 00de FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 208 00e2 2346     		mov	r3, r4
+ 209 00e4 0DF1100C 		add	ip, sp, #16
+ 210 00e8 04F1100E 		add	lr, r4, #16
+ 211              	.L18:
+ 212 00ec 6246     		mov	r2, ip
+ 213 00ee 1868     		ldr	r0, [r3]	@ unaligned
+ 214 00f0 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 215 00f2 0833     		adds	r3, r3, #8
+ 216 00f4 03C2     		stmia	r2!, {r0, r1}
+ 217 00f6 7345     		cmp	r3, lr
+ 218 00f8 9446     		mov	ip, r2
+ 219 00fa F7D1     		bne	.L18
+ 220              	.L19:
+ 221 00fc 1034     		adds	r4, r4, #16
+ 222 00fe ABE7     		b	.L16
+ 223              	.L17:
+ 224 0100 0846     		mov	r0, r1
+ 225 0102 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 226 0106 2346     		mov	r3, r4
+ 227 0108 0DF1200C 		add	ip, sp, #32
+ 228 010c 04F1100E 		add	lr, r4, #16
+ 229              	.L20:
+ 230 0110 6246     		mov	r2, ip
+ 231 0112 1868     		ldr	r0, [r3]	@ unaligned
+ 232 0114 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 233 0116 0833     		adds	r3, r3, #8
+ 234 0118 03C2     		stmia	r2!, {r0, r1}
+ 235 011a 7345     		cmp	r3, lr
+ARM GAS  /tmp/ccwyCtRc.s 			page 5
+
+
+ 236 011c 9446     		mov	ip, r2
+ 237 011e F7D1     		bne	.L20
+ 238 0120 ECE7     		b	.L19
+ 240              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehash,"ax",%progbits
+ 241              		.align	1
+ 242              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehash
+ 243              		.syntax unified
+ 244              		.thumb
+ 245              		.thumb_func
+ 246              		.fpu fpv4-sp-d16
+ 248              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehash:
+ 249              		@ args = 16, pretend = 0, frame = 32
+ 250              		@ frame_needed = 1, uses_anonymous_args = 0
+ 251 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 252 0004 8BB0     		sub	sp, sp, #44
+ 253 0006 02AF     		add	r7, sp, #8
+ 254 0008 7961     		str	r1, [r7, #20]
+ 255 000a 6946     		mov	r1, sp
+ 256 000c 9246     		mov	r10, r2
+ 257 000e FA6C     		ldr	r2, [r7, #76]
+ 258 0010 3B61     		str	r3, [r7, #16]
+ 259 0012 531C     		adds	r3, r2, #1
+ 260 0014 A1EB0311 		sub	r1, r1, r3, lsl #4
+ 261 0018 8D46     		mov	sp, r1
+ 262 001a 0025     		movs	r5, #0
+ 263 001c 9B00     		lsls	r3, r3, #2
+ 264 001e 0733     		adds	r3, r3, #7
+ 265 0020 23F00703 		bic	r3, r3, #7
+ 266 0024 02AE     		add	r6, sp, #8
+ 267 0026 ADEB030D 		sub	sp, sp, r3
+ 268 002a 02AB     		add	r3, sp, #8
+ 269 002c BB61     		str	r3, [r7, #24]
+ 270 002e 0123     		movs	r3, #1
+ 271 0030 AB46     		mov	fp, r5
+ 272 0032 9340     		lsls	r3, r3, r2
+ 273 0034 FB60     		str	r3, [r7, #12]
+ 274 0036 D7F85480 		ldr	r8, [r7, #84]
+ 275 003a A6F11003 		sub	r3, r6, #16
+ 276 003e B860     		str	r0, [r7, #8]
+ 277 0040 7B60     		str	r3, [r7, #4]
+ 278              	.L29:
+ 279 0042 FB68     		ldr	r3, [r7, #12]
+ 280 0044 9D42     		cmp	r5, r3
+ 281 0046 0DD1     		bne	.L38
+ 282 0048 3346     		mov	r3, r6
+ 283 004a B868     		ldr	r0, [r7, #8]
+ 284 004c 06F11002 		add	r2, r6, #16
+ 285              	.L39:
+ 286 0050 53F8041B 		ldr	r1, [r3], #4	@ unaligned
+ 287 0054 9342     		cmp	r3, r2
+ 288 0056 40F8041B 		str	r1, [r0], #4	@ unaligned
+ 289 005a F9D1     		bne	.L39
+ 290 005c 2437     		adds	r7, r7, #36
+ 291 005e BD46     		mov	sp, r7
+ 292              		@ sp needed
+ 293 0060 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 294              	.L38:
+ARM GAS  /tmp/ccwyCtRc.s 			page 6
+
+
+ 295 0064 BA6C     		ldr	r2, [r7, #72]
+ 296 0066 06EB0B19 		add	r9, r6, fp, lsl #4
+ 297 006a 4346     		mov	r3, r8
+ 298 006c 5146     		mov	r1, r10
+ 299 006e AA18     		adds	r2, r5, r2
+ 300 0070 4846     		mov	r0, r9
+ 301 0072 3C6D     		ldr	r4, [r7, #80]
+ 302 0074 A047     		blx	r4
+ 303 0076 0021     		movs	r1, #0
+ 304 0078 BB69     		ldr	r3, [r7, #24]
+ 305 007a 0BF10102 		add	r2, fp, #1
+ 306 007e 43F82B10 		str	r1, [r3, fp, lsl #2]
+ 307 0082 3B69     		ldr	r3, [r7, #16]
+ 308 0084 83F00103 		eor	r3, r3, #1
+ 309 0088 9D42     		cmp	r5, r3
+ 310 008a 09D1     		bne	.L30
+ 311 008c 4846     		mov	r0, r9
+ 312 008e 7B69     		ldr	r3, [r7, #20]
+ 313 0090 09F11001 		add	r1, r9, #16
+ 314              	.L31:
+ 315 0094 50F8044B 		ldr	r4, [r0], #4	@ unaligned
+ 316 0098 8842     		cmp	r0, r1
+ 317 009a 43F8044B 		str	r4, [r3], #4	@ unaligned
+ 318 009e F9D1     		bne	.L31
+ 319              	.L30:
+ 320 00a0 BB69     		ldr	r3, [r7, #24]
+ 321 00a2 03EB8B09 		add	r9, r3, fp, lsl #2
+ 322 00a6 9346     		mov	fp, r2
+ 323              	.L32:
+ 324 00a8 BBF1010F 		cmp	fp, #1
+ 325 00ac 01D8     		bhi	.L35
+ 326              	.L37:
+ 327 00ae 0135     		adds	r5, r5, #1
+ 328 00b0 C7E7     		b	.L29
+ 329              	.L35:
+ 330 00b2 0BF1FF33 		add	r3, fp, #-1
+ 331 00b6 D9F80040 		ldr	r4, [r9]
+ 332 00ba FB61     		str	r3, [r7, #28]
+ 333 00bc 59F8043D 		ldr	r3, [r9, #-4]!
+ 334 00c0 9C42     		cmp	r4, r3
+ 335 00c2 F4D1     		bne	.L37
+ 336 00c4 0134     		adds	r4, r4, #1
+ 337 00c6 2146     		mov	r1, r4
+ 338 00c8 4046     		mov	r0, r8
+ 339 00ca FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_height
+ 340 00ce BB6C     		ldr	r3, [r7, #72]
+ 341 00d0 25FA04FB 		lsr	fp, r5, r4
+ 342 00d4 23FA04F1 		lsr	r1, r3, r4
+ 343 00d8 4046     		mov	r0, r8
+ 344 00da 5944     		add	r1, r1, fp
+ 345 00dc FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_index
+ 346 00e0 7B68     		ldr	r3, [r7, #4]
+ 347 00e2 FA69     		ldr	r2, [r7, #28]
+ 348 00e4 CDF80080 		str	r8, [sp]
+ 349 00e8 03EB0211 		add	r1, r3, r2, lsl #4
+ 350 00ec 0846     		mov	r0, r1
+ 351 00ee 5346     		mov	r3, r10
+ARM GAS  /tmp/ccwyCtRc.s 			page 7
+
+
+ 352 00f0 3960     		str	r1, [r7]
+ 353 00f2 0222     		movs	r2, #2
+ 354 00f4 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 355 00f8 3B69     		ldr	r3, [r7, #16]
+ 356 00fa 3968     		ldr	r1, [r7]
+ 357 00fc E340     		lsrs	r3, r3, r4
+ 358 00fe 83F00103 		eor	r3, r3, #1
+ 359 0102 5B45     		cmp	r3, fp
+ 360 0104 C9F80040 		str	r4, [r9]
+ 361 0108 0AD1     		bne	.L33
+ 362 010a 7B69     		ldr	r3, [r7, #20]
+ 363 010c 03EB0414 		add	r4, r3, r4, lsl #4
+ 364 0110 01F11003 		add	r3, r1, #16
+ 365              	.L34:
+ 366 0114 51F8042B 		ldr	r2, [r1], #4	@ unaligned
+ 367 0118 9942     		cmp	r1, r3
+ 368 011a 44F8042B 		str	r2, [r4], #4	@ unaligned
+ 369 011e F9D1     		bne	.L34
+ 370              	.L33:
+ 371 0120 D7F81CB0 		ldr	fp, [r7, #28]
+ 372 0124 C0E7     		b	.L32
+ 374              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccwyCtRc.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 utils.c
+     /tmp/ccwyCtRc.s:16     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes:0000000000000000 $t
+     /tmp/ccwyCtRc.s:25     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes
+     /tmp/ccwyCtRc.s:42     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes:0000000000000000 $t
+     /tmp/ccwyCtRc.s:49     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+     /tmp/ccwyCtRc.s:63     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull:0000000000000000 $t
+     /tmp/ccwyCtRc.s:70     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull
+     /tmp/ccwyCtRc.s:97     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root:0000000000000000 $t
+     /tmp/ccwyCtRc.s:104    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root
+     /tmp/ccwyCtRc.s:241    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehash:0000000000000000 $t
+     /tmp/ccwyCtRc.s:248    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehash:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehash
+
+UNDEFINED SYMBOLS
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_height
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_index
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash

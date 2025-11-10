@@ -1,0 +1,249 @@
+ARM GAS  /tmp/cc7LBERJ.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_hal_rng_ex.c"
+  14              		.text
+  15              		.section	.text.HAL_RNGEx_SetConfig,"ax",%progbits
+  16              		.align	1
+  17              		.global	HAL_RNGEx_SetConfig
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	HAL_RNGEx_SetConfig:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 70B5     		push	{r4, r5, r6, lr}
+  29 0002 0446     		mov	r4, r0
+  30 0004 0028     		cmp	r0, #0
+  31 0006 4AD0     		beq	.L7
+  32 0008 0029     		cmp	r1, #0
+  33 000a 48D0     		beq	.L7
+  34 000c 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+  35 000e 012B     		cmp	r3, #1
+  36 0010 DDB2     		uxtb	r5, r3
+  37 0012 42D1     		bne	.L3
+  38 0014 0223     		movs	r3, #2
+  39 0016 0268     		ldr	r2, [r0]
+  40 0018 4372     		strb	r3, [r0, #9]
+  41 001a 1368     		ldr	r3, [r2]
+  42 001c 23F00403 		bic	r3, r3, #4
+  43 0020 1360     		str	r3, [r2]
+  44 0022 1668     		ldr	r6, [r2]
+  45 0024 D1E90330 		ldrd	r3, r0, [r1, #12]
+  46 0028 0343     		orrs	r3, r3, r0
+  47 002a 1E48     		ldr	r0, .L11
+  48 002c 3040     		ands	r0, r0, r6
+  49 002e 0343     		orrs	r3, r3, r0
+  50 0030 4869     		ldr	r0, [r1, #20]
+  51 0032 0343     		orrs	r3, r3, r0
+  52 0034 0868     		ldr	r0, [r1]
+  53 0036 43EA0053 		orr	r3, r3, r0, lsl #20
+  54 003a 4868     		ldr	r0, [r1, #4]
+  55 003c 43EA4033 		orr	r3, r3, r0, lsl #13
+  56 0040 8868     		ldr	r0, [r1, #8]
+  57 0042 43EA0023 		orr	r3, r3, r0, lsl #8
+  58 0046 43F08043 		orr	r3, r3, #1073741824
+ARM GAS  /tmp/cc7LBERJ.s 			page 2
+
+
+  59 004a 1360     		str	r3, [r2]
+  60 004c 8B69     		ldr	r3, [r1, #24]
+  61 004e 1361     		str	r3, [r2, #16]
+  62 0050 CB69     		ldr	r3, [r1, #28]
+  63 0052 D360     		str	r3, [r2, #12]
+  64 0054 1368     		ldr	r3, [r2]
+  65 0056 23F08043 		bic	r3, r3, #1073741824
+  66 005a 1360     		str	r3, [r2]
+  67 005c FFF7FEFF 		bl	HAL_GetTick
+  68 0060 0646     		mov	r6, r0
+  69              	.L9:
+  70 0062 2268     		ldr	r2, [r4]
+  71 0064 1368     		ldr	r3, [r2]
+  72 0066 13F08043 		ands	r3, r3, #1073741824
+  73 006a 07D1     		bne	.L5
+  74 006c 1168     		ldr	r1, [r2]
+  75 006e 1D46     		mov	r5, r3
+  76 0070 41F00401 		orr	r1, r1, #4
+  77 0074 1160     		str	r1, [r2]
+  78 0076 0122     		movs	r2, #1
+  79 0078 6272     		strb	r2, [r4, #9]
+  80 007a 0CE0     		b	.L2
+  81              	.L5:
+  82 007c FFF7FEFF 		bl	HAL_GetTick
+  83 0080 801B     		subs	r0, r0, r6
+  84 0082 0228     		cmp	r0, #2
+  85 0084 EDD9     		bls	.L9
+  86 0086 2368     		ldr	r3, [r4]
+  87 0088 1B68     		ldr	r3, [r3]
+  88 008a 5B00     		lsls	r3, r3, #1
+  89 008c E9D5     		bpl	.L9
+  90 008e 0123     		movs	r3, #1
+  91 0090 6372     		strb	r3, [r4, #9]
+  92 0092 0223     		movs	r3, #2
+  93 0094 E360     		str	r3, [r4, #12]
+  94              	.L2:
+  95 0096 2846     		mov	r0, r5
+  96 0098 70BD     		pop	{r4, r5, r6, pc}
+  97              	.L3:
+  98 009a 0423     		movs	r3, #4
+  99 009c C360     		str	r3, [r0, #12]
+ 100              	.L7:
+ 101 009e 0125     		movs	r5, #1
+ 102 00a0 F9E7     		b	.L2
+ 103              	.L12:
+ 104 00a2 00BF     		.align	2
+ 105              	.L11:
+ 106 00a4 7F0000FC 		.word	-67108737
+ 108              		.section	.text.HAL_RNGEx_GetConfig,"ax",%progbits
+ 109              		.align	1
+ 110              		.global	HAL_RNGEx_GetConfig
+ 111              		.syntax unified
+ 112              		.thumb
+ 113              		.thumb_func
+ 114              		.fpu fpv4-sp-d16
+ 116              	HAL_RNGEx_GetConfig:
+ 117              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  /tmp/cc7LBERJ.s 			page 3
+
+
+ 118              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119 0000 10B5     		push	{r4, lr}
+ 120 0002 40B3     		cbz	r0, .L17
+ 121 0004 39B3     		cbz	r1, .L17
+ 122 0006 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ 123 0008 012B     		cmp	r3, #1
+ 124 000a DCB2     		uxtb	r4, r3
+ 125 000c 1FD1     		bne	.L15
+ 126 000e 0223     		movs	r3, #2
+ 127 0010 4372     		strb	r3, [r0, #9]
+ 128 0012 0368     		ldr	r3, [r0]
+ 129 0014 1A68     		ldr	r2, [r3]
+ 130 0016 C2F30552 		ubfx	r2, r2, #20, #6
+ 131 001a 0A60     		str	r2, [r1]
+ 132 001c 1A68     		ldr	r2, [r3]
+ 133 001e C2F34232 		ubfx	r2, r2, #13, #3
+ 134 0022 4A60     		str	r2, [r1, #4]
+ 135 0024 1A68     		ldr	r2, [r3]
+ 136 0026 C2F30322 		ubfx	r2, r2, #8, #4
+ 137 002a 8A60     		str	r2, [r1, #8]
+ 138 002c 1A68     		ldr	r2, [r3]
+ 139 002e 02F47022 		and	r2, r2, #983040
+ 140 0032 CA60     		str	r2, [r1, #12]
+ 141 0034 1A68     		ldr	r2, [r3]
+ 142 0036 02F48052 		and	r2, r2, #4096
+ 143 003a 0A61     		str	r2, [r1, #16]
+ 144 003c 1A68     		ldr	r2, [r3]
+ 145 003e 1B69     		ldr	r3, [r3, #16]
+ 146 0040 02F08002 		and	r2, r2, #128
+ 147 0044 4A61     		str	r2, [r1, #20]
+ 148 0046 8B61     		str	r3, [r1, #24]
+ 149 0048 4472     		strb	r4, [r0, #9]
+ 150 004a 0020     		movs	r0, #0
+ 151              	.L14:
+ 152 004c 10BD     		pop	{r4, pc}
+ 153              	.L15:
+ 154 004e C368     		ldr	r3, [r0, #12]
+ 155 0050 43F00403 		orr	r3, r3, #4
+ 156 0054 C360     		str	r3, [r0, #12]
+ 157              	.L17:
+ 158 0056 0120     		movs	r0, #1
+ 159 0058 F8E7     		b	.L14
+ 161              		.section	.text.HAL_RNGEx_LockConfig,"ax",%progbits
+ 162              		.align	1
+ 163              		.global	HAL_RNGEx_LockConfig
+ 164              		.syntax unified
+ 165              		.thumb
+ 166              		.thumb_func
+ 167              		.fpu fpv4-sp-d16
+ 169              	HAL_RNGEx_LockConfig:
+ 170              		@ args = 0, pretend = 0, frame = 0
+ 171              		@ frame_needed = 0, uses_anonymous_args = 0
+ 172              		@ link register save eliminated.
+ 173 0000 78B1     		cbz	r0, .L21
+ 174 0002 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ 175 0004 012B     		cmp	r3, #1
+ 176 0006 D9B2     		uxtb	r1, r3
+ARM GAS  /tmp/cc7LBERJ.s 			page 4
+
+
+ 177 0008 09D1     		bne	.L20
+ 178 000a 0223     		movs	r3, #2
+ 179 000c 0268     		ldr	r2, [r0]
+ 180 000e 4372     		strb	r3, [r0, #9]
+ 181 0010 1368     		ldr	r3, [r2]
+ 182 0012 43F00043 		orr	r3, r3, #-2147483648
+ 183 0016 1360     		str	r3, [r2]
+ 184 0018 4172     		strb	r1, [r0, #9]
+ 185 001a 0020     		movs	r0, #0
+ 186 001c 7047     		bx	lr
+ 187              	.L20:
+ 188 001e 0423     		movs	r3, #4
+ 189 0020 C360     		str	r3, [r0, #12]
+ 190              	.L21:
+ 191 0022 0120     		movs	r0, #1
+ 192 0024 7047     		bx	lr
+ 194              		.section	.text.HAL_RNGEx_RecoverSeedError,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	HAL_RNGEx_RecoverSeedError
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 200              		.fpu fpv4-sp-d16
+ 202              	HAL_RNGEx_RecoverSeedError:
+ 203              		@ args = 0, pretend = 0, frame = 0
+ 204              		@ frame_needed = 0, uses_anonymous_args = 0
+ 205 0000 10B5     		push	{r4, lr}
+ 206 0002 0446     		mov	r4, r0
+ 207 0004 68B1     		cbz	r0, .L25
+ 208 0006 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+ 209 0008 012B     		cmp	r3, #1
+ 210 000a 08D1     		bne	.L24
+ 211 000c 0223     		movs	r3, #2
+ 212 000e 4372     		strb	r3, [r0, #9]
+ 213 0010 FFF7FEFF 		bl	RNG_RecoverSeedError
+ 214 0014 0128     		cmp	r0, #1
+ 215 0016 01D1     		bne	.L23
+ 216 0018 2023     		movs	r3, #32
+ 217 001a E360     		str	r3, [r4, #12]
+ 218              	.L23:
+ 219 001c 10BD     		pop	{r4, pc}
+ 220              	.L24:
+ 221 001e 0423     		movs	r3, #4
+ 222 0020 C360     		str	r3, [r0, #12]
+ 223              	.L25:
+ 224 0022 0120     		movs	r0, #1
+ 225 0024 FAE7     		b	.L23
+ 227              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc7LBERJ.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_hal_rng_ex.c
+     /tmp/cc7LBERJ.s:16     .text.HAL_RNGEx_SetConfig:0000000000000000 $t
+     /tmp/cc7LBERJ.s:25     .text.HAL_RNGEx_SetConfig:0000000000000000 HAL_RNGEx_SetConfig
+     /tmp/cc7LBERJ.s:106    .text.HAL_RNGEx_SetConfig:00000000000000a4 $d
+     /tmp/cc7LBERJ.s:109    .text.HAL_RNGEx_GetConfig:0000000000000000 $t
+     /tmp/cc7LBERJ.s:116    .text.HAL_RNGEx_GetConfig:0000000000000000 HAL_RNGEx_GetConfig
+     /tmp/cc7LBERJ.s:162    .text.HAL_RNGEx_LockConfig:0000000000000000 $t
+     /tmp/cc7LBERJ.s:169    .text.HAL_RNGEx_LockConfig:0000000000000000 HAL_RNGEx_LockConfig
+     /tmp/cc7LBERJ.s:195    .text.HAL_RNGEx_RecoverSeedError:0000000000000000 $t
+     /tmp/cc7LBERJ.s:202    .text.HAL_RNGEx_RecoverSeedError:0000000000000000 HAL_RNGEx_RecoverSeedError
+
+UNDEFINED SYMBOLS
+HAL_GetTick
+RNG_RecoverSeedError

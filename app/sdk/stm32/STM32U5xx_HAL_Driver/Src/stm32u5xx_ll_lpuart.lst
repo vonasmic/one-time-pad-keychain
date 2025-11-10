@@ -1,0 +1,193 @@
+ARM GAS  /tmp/ccAmWz0e.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_ll_lpuart.c"
+  14              		.text
+  15              		.section	.text.LL_LPUART_DeInit,"ax",%progbits
+  16              		.align	1
+  17              		.global	LL_LPUART_DeInit
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	LL_LPUART_DeInit:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 0A4B     		ldr	r3, .L4
+  30 0002 9842     		cmp	r0, r3
+  31 0004 0FD1     		bne	.L3
+  32 0006 03F5F433 		add	r3, r3, #124928
+  33 000a D3F88020 		ldr	r2, [r3, #128]
+  34 000e 0020     		movs	r0, #0
+  35 0010 42F04002 		orr	r2, r2, #64
+  36 0014 C3F88020 		str	r2, [r3, #128]
+  37 0018 D3F88020 		ldr	r2, [r3, #128]
+  38 001c 22F04002 		bic	r2, r2, #64
+  39 0020 C3F88020 		str	r2, [r3, #128]
+  40 0024 7047     		bx	lr
+  41              	.L3:
+  42 0026 0120     		movs	r0, #1
+  43 0028 7047     		bx	lr
+  44              	.L5:
+  45 002a 00BF     		.align	2
+  46              	.L4:
+  47 002c 00240046 		.word	1174414336
+  49              		.global	__aeabi_uldivmod
+  50              		.global	__aeabi_ldivmod
+  51              		.section	.text.LL_LPUART_Init,"ax",%progbits
+  52              		.align	1
+  53              		.global	LL_LPUART_Init
+  54              		.syntax unified
+  55              		.thumb
+  56              		.thumb_func
+  57              		.fpu fpv4-sp-d16
+  59              	LL_LPUART_Init:
+  60              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  /tmp/ccAmWz0e.s 			page 2
+
+
+  61              		@ frame_needed = 0, uses_anonymous_args = 0
+  62 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  63 0002 0468     		ldr	r4, [r0]
+  64 0004 0546     		mov	r5, r0
+  65 0006 14F00104 		ands	r4, r4, #1
+  66 000a 0F46     		mov	r7, r1
+  67 000c 3ED1     		bne	.L9
+  68 000e 3A69     		ldr	r2, [r7, #16]
+  69 0010 BB68     		ldr	r3, [r7, #8]
+  70 0012 0168     		ldr	r1, [r0]
+  71 0014 1343     		orrs	r3, r3, r2
+  72 0016 7A69     		ldr	r2, [r7, #20]
+  73 0018 1343     		orrs	r3, r3, r2
+  74 001a 1D4A     		ldr	r2, .L12
+  75 001c 0A40     		ands	r2, r2, r1
+  76 001e 1343     		orrs	r3, r3, r2
+  77 0020 0360     		str	r3, [r0]
+  78 0022 4368     		ldr	r3, [r0, #4]
+  79 0024 FA68     		ldr	r2, [r7, #12]
+  80 0026 23F44053 		bic	r3, r3, #12288
+  81 002a 1343     		orrs	r3, r3, r2
+  82 002c 4360     		str	r3, [r0, #4]
+  83 002e 8368     		ldr	r3, [r0, #8]
+  84 0030 BA69     		ldr	r2, [r7, #24]
+  85 0032 23F44073 		bic	r3, r3, #768
+  86 0036 1343     		orrs	r3, r3, r2
+  87 0038 8360     		str	r3, [r0, #8]
+  88 003a 0720     		movs	r0, #7
+  89 003c FFF7FEFF 		bl	LL_RCC_GetLPUARTClockFreq
+  90 0040 3E68     		ldr	r6, [r7]
+  91 0042 08B3     		cbz	r0, .L11
+  92 0044 7F68     		ldr	r7, [r7, #4]
+  93 0046 FFB1     		cbz	r7, .L11
+  94 0048 124A     		ldr	r2, .L12+4
+  95 004a B3B2     		uxth	r3, r6
+  96 004c 32F81320 		ldrh	r2, [r2, r3, lsl #1]
+  97 0050 2146     		mov	r1, r4
+  98 0052 2346     		mov	r3, r4
+  99 0054 FFF7FEFF 		bl	__aeabi_uldivmod
+ 100 0058 0346     		mov	r3, r0
+ 101 005a 0902     		lsls	r1, r1, #8
+ 102 005c 41EA1361 		orr	r1, r1, r3, lsr #24
+ 103 0060 7808     		lsrs	r0, r7, #1
+ 104 0062 1B02     		lsls	r3, r3, #8
+ 105 0064 1818     		adds	r0, r3, r0
+ 106 0066 3A46     		mov	r2, r7
+ 107 0068 2346     		mov	r3, r4
+ 108 006a 41F10001 		adc	r1, r1, #0
+ 109 006e FFF7FEFF 		bl	__aeabi_uldivmod
+ 110 0072 C0F31300 		ubfx	r0, r0, #0, #20
+ 111 0076 E860     		str	r0, [r5, #12]
+ 112 0078 2046     		mov	r0, r4
+ 113              	.L8:
+ 114 007a EB6A     		ldr	r3, [r5, #44]
+ 115 007c B6B2     		uxth	r6, r6
+ 116 007e 23F00F03 		bic	r3, r3, #15
+ 117 0082 1E43     		orrs	r6, r6, r3
+ARM GAS  /tmp/ccAmWz0e.s 			page 3
+
+
+ 118 0084 EE62     		str	r6, [r5, #44]
+ 119              	.L7:
+ 120 0086 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 121              	.L11:
+ 122 0088 0120     		movs	r0, #1
+ 123 008a F6E7     		b	.L8
+ 124              	.L9:
+ 125 008c 0120     		movs	r0, #1
+ 126 008e FAE7     		b	.L7
+ 127              	.L13:
+ 128              		.align	2
+ 129              	.L12:
+ 130 0090 F3E9FFEF 		.word	-268441101
+ 131 0094 00000000 		.word	.LANCHOR0
+ 133              		.section	.text.LL_LPUART_StructInit,"ax",%progbits
+ 134              		.align	1
+ 135              		.global	LL_LPUART_StructInit
+ 136              		.syntax unified
+ 137              		.thumb
+ 138              		.thumb_func
+ 139              		.fpu fpv4-sp-d16
+ 141              	LL_LPUART_StructInit:
+ 142              		@ args = 0, pretend = 0, frame = 0
+ 143              		@ frame_needed = 0, uses_anonymous_args = 0
+ 144              		@ link register save eliminated.
+ 145 0000 0023     		movs	r3, #0
+ 146 0002 4FF41652 		mov	r2, #9600
+ 147 0006 C0E90032 		strd	r3, r2, [r0]
+ 148 000a 0C22     		movs	r2, #12
+ 149 000c C0E90233 		strd	r3, r3, [r0, #8]
+ 150 0010 C0E90523 		strd	r2, r3, [r0, #20]
+ 151 0014 0361     		str	r3, [r0, #16]
+ 152 0016 7047     		bx	lr
+ 154              		.section	.rodata.LPUART_PRESCALER_TAB,"a"
+ 155              		.align	1
+ 156              		.set	.LANCHOR0,. + 0
+ 159              	LPUART_PRESCALER_TAB:
+ 160 0000 0100     		.short	1
+ 161 0002 0200     		.short	2
+ 162 0004 0400     		.short	4
+ 163 0006 0600     		.short	6
+ 164 0008 0800     		.short	8
+ 165 000a 0A00     		.short	10
+ 166 000c 0C00     		.short	12
+ 167 000e 1000     		.short	16
+ 168 0010 2000     		.short	32
+ 169 0012 4000     		.short	64
+ 170 0014 8000     		.short	128
+ 171 0016 0001     		.short	256
+ 172              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccAmWz0e.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_ll_lpuart.c
+     /tmp/ccAmWz0e.s:16     .text.LL_LPUART_DeInit:0000000000000000 $t
+     /tmp/ccAmWz0e.s:25     .text.LL_LPUART_DeInit:0000000000000000 LL_LPUART_DeInit
+     /tmp/ccAmWz0e.s:47     .text.LL_LPUART_DeInit:000000000000002c $d
+     /tmp/ccAmWz0e.s:52     .text.LL_LPUART_Init:0000000000000000 $t
+     /tmp/ccAmWz0e.s:59     .text.LL_LPUART_Init:0000000000000000 LL_LPUART_Init
+     /tmp/ccAmWz0e.s:130    .text.LL_LPUART_Init:0000000000000090 $d
+     /tmp/ccAmWz0e.s:134    .text.LL_LPUART_StructInit:0000000000000000 $t
+     /tmp/ccAmWz0e.s:141    .text.LL_LPUART_StructInit:0000000000000000 LL_LPUART_StructInit
+     /tmp/ccAmWz0e.s:155    .rodata.LPUART_PRESCALER_TAB:0000000000000000 $d
+     /tmp/ccAmWz0e.s:159    .rodata.LPUART_PRESCALER_TAB:0000000000000000 LPUART_PRESCALER_TAB
+
+UNDEFINED SYMBOLS
+__aeabi_uldivmod
+__aeabi_ldivmod
+LL_RCC_GetLPUARTClockFreq

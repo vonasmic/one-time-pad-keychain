@@ -1,0 +1,84 @@
+ARM GAS  /tmp/cc94hWK1.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_interface_get.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_interface_get,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_interface_get
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_interface_get:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 124B     		ldr	r3, .L6
+  29 0002 0146     		mov	r1, r0
+  30 0004 1868     		ldr	r0, [r3]
+  31 0006 10B5     		push	{r4, lr}
+  32 0008 436A     		ldr	r3, [r0, #36]
+  33 000a 00F13C02 		add	r2, r0, #60
+  34 000e 032B     		cmp	r3, #3
+  35 0010 02D1     		bne	.L2
+  36 0012 D0F8B430 		ldr	r3, [r0, #180]
+  37              	.L3:
+  38 0016 23B9     		cbnz	r3, .L5
+  39              	.L2:
+  40 0018 1421     		movs	r1, #20
+  41 001a 8369     		ldr	r3, [r0, #24]
+  42 001c 9847     		blx	r3
+  43 001e FF20     		movs	r0, #255
+  44 0020 10BD     		pop	{r4, pc}
+  45              	.L5:
+  46 0022 9C7B     		ldrb	r4, [r3, #14]	@ zero_extendqisi2
+  47 0024 8C42     		cmp	r4, r1
+  48 0026 0ED1     		bne	.L4
+  49 0028 DB7B     		ldrb	r3, [r3, #15]	@ zero_extendqisi2
+  50 002a 826E     		ldr	r2, [r0, #104]
+  51 002c 0C21     		movs	r1, #12
+  52 002e 1370     		strb	r3, [r2]
+  53 0030 0123     		movs	r3, #1
+  54 0032 BDE81040 		pop	{r4, lr}
+  55 0036 0367     		str	r3, [r0, #112]
+  56 0038 0323     		movs	r3, #3
+  57 003a 00F15C02 		add	r2, r0, #92
+  58 003e C0F88430 		str	r3, [r0, #132]
+ARM GAS  /tmp/cc94hWK1.s 			page 2
+
+
+  59 0042 8369     		ldr	r3, [r0, #24]
+  60 0044 1847     		bx	r3
+  61              	.L4:
+  62 0046 9B69     		ldr	r3, [r3, #24]
+  63 0048 E5E7     		b	.L3
+  64              	.L7:
+  65 004a 00BF     		.align	2
+  66              	.L6:
+  67 004c 00000000 		.word	_ux_system_slave
+  69              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc94hWK1.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_interface_get.c
+     /tmp/cc94hWK1.s:16     .text._ux_device_stack_interface_get:0000000000000000 $t
+     /tmp/cc94hWK1.s:25     .text._ux_device_stack_interface_get:0000000000000000 _ux_device_stack_interface_get
+     /tmp/cc94hWK1.s:67     .text._ux_device_stack_interface_get:000000000000004c $d
+
+UNDEFINED SYMBOLS
+_ux_system_slave

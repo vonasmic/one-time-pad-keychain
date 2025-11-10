@@ -1,0 +1,409 @@
+ARM GAS  /tmp/ccwVH5Ra.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"packing.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLDSA65_CLEAN_pack_pk,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLDSA65_CLEAN_pack_pk
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLDSA65_CLEAN_pack_pk:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 70B5     		push	{r4, r5, r6, lr}
+  29 0002 4B1E     		subs	r3, r1, #1
+  30 0004 441E     		subs	r4, r0, #1
+  31 0006 1F31     		adds	r1, r1, #31
+  32              	.L2:
+  33 0008 13F8015F 		ldrb	r5, [r3, #1]!	@ zero_extendqisi2
+  34 000c 8B42     		cmp	r3, r1
+  35 000e 04F8015F 		strb	r5, [r4, #1]!
+  36 0012 F9D1     		bne	.L2
+  37 0014 1546     		mov	r5, r2
+  38 0016 00F12006 		add	r6, r0, #32
+  39 001a 00F5F464 		add	r4, r0, #1952
+  40              	.L3:
+  41 001e 2946     		mov	r1, r5
+  42 0020 3046     		mov	r0, r6
+  43 0022 06F5A076 		add	r6, r6, #320
+  44 0026 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyt1_pack
+  45 002a A642     		cmp	r6, r4
+  46 002c 05F58065 		add	r5, r5, #1024
+  47 0030 F5D1     		bne	.L3
+  48 0032 70BD     		pop	{r4, r5, r6, pc}
+  50              		.section	.text.PQCLEAN_MLDSA65_CLEAN_unpack_pk,"ax",%progbits
+  51              		.align	1
+  52              		.global	PQCLEAN_MLDSA65_CLEAN_unpack_pk
+  53              		.syntax unified
+  54              		.thumb
+  55              		.thumb_func
+  56              		.fpu fpv4-sp-d16
+  58              	PQCLEAN_MLDSA65_CLEAN_unpack_pk:
+  59              		@ args = 0, pretend = 0, frame = 0
+  60              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/ccwVH5Ra.s 			page 2
+
+
+  61 0000 70B5     		push	{r4, r5, r6, lr}
+  62 0002 531E     		subs	r3, r2, #1
+  63 0004 0138     		subs	r0, r0, #1
+  64 0006 02F11F04 		add	r4, r2, #31
+  65              	.L7:
+  66 000a 13F8015F 		ldrb	r5, [r3, #1]!	@ zero_extendqisi2
+  67 000e A342     		cmp	r3, r4
+  68 0010 00F8015F 		strb	r5, [r0, #1]!
+  69 0014 F9D1     		bne	.L7
+  70 0016 0D46     		mov	r5, r1
+  71 0018 02F12006 		add	r6, r2, #32
+  72 001c 02F5F464 		add	r4, r2, #1952
+  73              	.L8:
+  74 0020 3146     		mov	r1, r6
+  75 0022 2846     		mov	r0, r5
+  76 0024 06F5A076 		add	r6, r6, #320
+  77 0028 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyt1_unpack
+  78 002c A642     		cmp	r6, r4
+  79 002e 05F58065 		add	r5, r5, #1024
+  80 0032 F5D1     		bne	.L8
+  81 0034 70BD     		pop	{r4, r5, r6, pc}
+  83              		.section	.text.PQCLEAN_MLDSA65_CLEAN_pack_sk,"ax",%progbits
+  84              		.align	1
+  85              		.global	PQCLEAN_MLDSA65_CLEAN_pack_sk
+  86              		.syntax unified
+  87              		.thumb
+  88              		.thumb_func
+  89              		.fpu fpv4-sp-d16
+  91              	PQCLEAN_MLDSA65_CLEAN_pack_sk:
+  92              		@ args = 12, pretend = 0, frame = 0
+  93              		@ frame_needed = 0, uses_anonymous_args = 0
+  94 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  95 0002 0546     		mov	r5, r0
+  96 0004 481E     		subs	r0, r1, #1
+  97 0006 6C1E     		subs	r4, r5, #1
+  98 0008 1F31     		adds	r1, r1, #31
+  99              	.L12:
+ 100 000a 10F8016F 		ldrb	r6, [r0, #1]!	@ zero_extendqisi2
+ 101 000e 8842     		cmp	r0, r1
+ 102 0010 04F8016F 		strb	r6, [r4, #1]!
+ 103 0014 F9D1     		bne	.L12
+ 104 0016 591E     		subs	r1, r3, #1
+ 105 0018 05F11F00 		add	r0, r5, #31
+ 106 001c 1F33     		adds	r3, r3, #31
+ 107              	.L13:
+ 108 001e 11F8014F 		ldrb	r4, [r1, #1]!	@ zero_extendqisi2
+ 109 0022 9942     		cmp	r1, r3
+ 110 0024 00F8014F 		strb	r4, [r0, #1]!
+ 111 0028 F9D1     		bne	.L13
+ 112 002a 531E     		subs	r3, r2, #1
+ 113 002c 05F13F01 		add	r1, r5, #63
+ 114 0030 3F32     		adds	r2, r2, #63
+ 115              	.L14:
+ 116 0032 13F8010F 		ldrb	r0, [r3, #1]!	@ zero_extendqisi2
+ 117 0036 9342     		cmp	r3, r2
+ 118 0038 01F8010F 		strb	r0, [r1, #1]!
+ 119 003c F9D1     		bne	.L14
+ARM GAS  /tmp/ccwVH5Ra.s 			page 3
+
+
+ 120 003e 079E     		ldr	r6, [sp, #28]
+ 121 0040 05F18004 		add	r4, r5, #128
+ 122 0044 05F54077 		add	r7, r5, #768
+ 123              	.L15:
+ 124 0048 3146     		mov	r1, r6
+ 125 004a 2046     		mov	r0, r4
+ 126 004c 8034     		adds	r4, r4, #128
+ 127 004e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyeta_pack
+ 128 0052 BC42     		cmp	r4, r7
+ 129 0054 06F58066 		add	r6, r6, #1024
+ 130 0058 F6D1     		bne	.L15
+ 131 005a 089E     		ldr	r6, [sp, #32]
+ 132 005c 05F5C067 		add	r7, r5, #1536
+ 133              	.L16:
+ 134 0060 3146     		mov	r1, r6
+ 135 0062 2046     		mov	r0, r4
+ 136 0064 8034     		adds	r4, r4, #128
+ 137 0066 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyeta_pack
+ 138 006a BC42     		cmp	r4, r7
+ 139 006c 06F58066 		add	r6, r6, #1024
+ 140 0070 F6D1     		bne	.L16
+ 141 0072 069E     		ldr	r6, [sp, #24]
+ 142 0074 05F57C65 		add	r5, r5, #4032
+ 143              	.L17:
+ 144 0078 3146     		mov	r1, r6
+ 145 007a 2046     		mov	r0, r4
+ 146 007c 04F5D074 		add	r4, r4, #416
+ 147 0080 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyt0_pack
+ 148 0084 AC42     		cmp	r4, r5
+ 149 0086 06F58066 		add	r6, r6, #1024
+ 150 008a F5D1     		bne	.L17
+ 151 008c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 153              		.section	.text.PQCLEAN_MLDSA65_CLEAN_unpack_sk,"ax",%progbits
+ 154              		.align	1
+ 155              		.global	PQCLEAN_MLDSA65_CLEAN_unpack_sk
+ 156              		.syntax unified
+ 157              		.thumb
+ 158              		.thumb_func
+ 159              		.fpu fpv4-sp-d16
+ 161              	PQCLEAN_MLDSA65_CLEAN_unpack_sk:
+ 162              		@ args = 12, pretend = 0, frame = 0
+ 163              		@ frame_needed = 0, uses_anonymous_args = 0
+ 164 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 165 0004 089D     		ldr	r5, [sp, #32]
+ 166 0006 1E46     		mov	r6, r3
+ 167 0008 6C1E     		subs	r4, r5, #1
+ 168 000a 0138     		subs	r0, r0, #1
+ 169 000c 05F11F03 		add	r3, r5, #31
+ 170              	.L25:
+ 171 0010 14F8017F 		ldrb	r7, [r4, #1]!	@ zero_extendqisi2
+ 172 0014 9C42     		cmp	r4, r3
+ 173 0016 00F8017F 		strb	r7, [r0, #1]!
+ 174 001a F9D1     		bne	.L25
+ 175 001c 013A     		subs	r2, r2, #1
+ 176 001e 05F13F03 		add	r3, r5, #63
+ 177              	.L26:
+ 178 0022 14F8010F 		ldrb	r0, [r4, #1]!	@ zero_extendqisi2
+ARM GAS  /tmp/ccwVH5Ra.s 			page 4
+
+
+ 179 0026 9C42     		cmp	r4, r3
+ 180 0028 02F8010F 		strb	r0, [r2, #1]!
+ 181 002c F9D1     		bne	.L26
+ 182 002e 0139     		subs	r1, r1, #1
+ 183 0030 05F17F03 		add	r3, r5, #127
+ 184              	.L27:
+ 185 0034 14F8012F 		ldrb	r2, [r4, #1]!	@ zero_extendqisi2
+ 186 0038 9C42     		cmp	r4, r3
+ 187 003a 01F8012F 		strb	r2, [r1, #1]!
+ 188 003e F9D1     		bne	.L27
+ 189 0040 069C     		ldr	r4, [sp, #24]
+ 190 0042 05F18007 		add	r7, r5, #128
+ 191 0046 04F5A058 		add	r8, r4, #5120
+ 192              	.L28:
+ 193 004a 3946     		mov	r1, r7
+ 194 004c 2046     		mov	r0, r4
+ 195 004e 04F58064 		add	r4, r4, #1024
+ 196 0052 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyeta_unpack
+ 197 0056 4445     		cmp	r4, r8
+ 198 0058 07F18007 		add	r7, r7, #128
+ 199 005c F5D1     		bne	.L28
+ 200 005e 079C     		ldr	r4, [sp, #28]
+ 201 0060 05F54077 		add	r7, r5, #768
+ 202 0064 04F5C058 		add	r8, r4, #6144
+ 203              	.L29:
+ 204 0068 3946     		mov	r1, r7
+ 205 006a 2046     		mov	r0, r4
+ 206 006c 04F58064 		add	r4, r4, #1024
+ 207 0070 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyeta_unpack
+ 208 0074 4445     		cmp	r4, r8
+ 209 0076 07F18007 		add	r7, r7, #128
+ 210 007a F5D1     		bne	.L29
+ 211 007c 3446     		mov	r4, r6
+ 212 007e 05F5C066 		add	r6, r5, #1536
+ 213 0082 05F57C65 		add	r5, r5, #4032
+ 214              	.L30:
+ 215 0086 3146     		mov	r1, r6
+ 216 0088 2046     		mov	r0, r4
+ 217 008a 06F5D076 		add	r6, r6, #416
+ 218 008e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyt0_unpack
+ 219 0092 AE42     		cmp	r6, r5
+ 220 0094 04F58064 		add	r4, r4, #1024
+ 221 0098 F5D1     		bne	.L30
+ 222 009a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 224              		.section	.text.PQCLEAN_MLDSA65_CLEAN_pack_sig,"ax",%progbits
+ 225              		.align	1
+ 226              		.global	PQCLEAN_MLDSA65_CLEAN_pack_sig
+ 227              		.syntax unified
+ 228              		.thumb
+ 229              		.thumb_func
+ 230              		.fpu fpv4-sp-d16
+ 232              	PQCLEAN_MLDSA65_CLEAN_pack_sig:
+ 233              		@ args = 0, pretend = 0, frame = 0
+ 234              		@ frame_needed = 0, uses_anonymous_args = 0
+ 235 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 236 0004 0446     		mov	r4, r0
+ 237 0006 1E46     		mov	r6, r3
+ARM GAS  /tmp/ccwVH5Ra.s 			page 5
+
+
+ 238 0008 0138     		subs	r0, r0, #1
+ 239 000a 4B1E     		subs	r3, r1, #1
+ 240 000c 2F31     		adds	r1, r1, #47
+ 241              	.L38:
+ 242 000e 13F8015F 		ldrb	r5, [r3, #1]!	@ zero_extendqisi2
+ 243 0012 8B42     		cmp	r3, r1
+ 244 0014 00F8015F 		strb	r5, [r0, #1]!
+ 245 0018 F9D1     		bne	.L38
+ 246 001a 1546     		mov	r5, r2
+ 247 001c 04F13007 		add	r7, r4, #48
+ 248 0020 04F54B68 		add	r8, r4, #3248
+ 249              	.L39:
+ 250 0024 2946     		mov	r1, r5
+ 251 0026 3846     		mov	r0, r7
+ 252 0028 07F52077 		add	r7, r7, #640
+ 253 002c FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyz_pack
+ 254 0030 4745     		cmp	r7, r8
+ 255 0032 05F58065 		add	r5, r5, #1024
+ 256 0036 F5D1     		bne	.L39
+ 257 0038 0021     		movs	r1, #0
+ 258 003a 3D22     		movs	r2, #61
+ 259 003c 4046     		mov	r0, r8
+ 260 003e FFF7FEFF 		bl	memset
+ 261 0042 3346     		mov	r3, r6
+ 262 0044 0021     		movs	r1, #0
+ 263 0046 04F6E640 		addw	r0, r4, #3302
+ 264 004a 04F6EC44 		addw	r4, r4, #3308
+ 265              	.L40:
+ 266 004e 1D46     		mov	r5, r3
+ 267 0050 0022     		movs	r2, #0
+ 268              	.L42:
+ 269 0052 55F8046B 		ldr	r6, [r5], #4
+ 270 0056 16B1     		cbz	r6, .L41
+ 271 0058 08F80120 		strb	r2, [r8, r1]
+ 272 005c 0131     		adds	r1, r1, #1
+ 273              	.L41:
+ 274 005e 0132     		adds	r2, r2, #1
+ 275 0060 B2F5807F 		cmp	r2, #256
+ 276 0064 F5D1     		bne	.L42
+ 277 0066 00F8011F 		strb	r1, [r0, #1]!
+ 278 006a A042     		cmp	r0, r4
+ 279 006c 03F58063 		add	r3, r3, #1024
+ 280 0070 EDD1     		bne	.L40
+ 281 0072 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 283              		.section	.text.PQCLEAN_MLDSA65_CLEAN_unpack_sig,"ax",%progbits
+ 284              		.align	1
+ 285              		.global	PQCLEAN_MLDSA65_CLEAN_unpack_sig
+ 286              		.syntax unified
+ 287              		.thumb
+ 288              		.thumb_func
+ 289              		.fpu fpv4-sp-d16
+ 291              	PQCLEAN_MLDSA65_CLEAN_unpack_sig:
+ 292              		@ args = 0, pretend = 0, frame = 0
+ 293              		@ frame_needed = 0, uses_anonymous_args = 0
+ 294 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 295 0004 1C46     		mov	r4, r3
+ 296 0006 1746     		mov	r7, r2
+ARM GAS  /tmp/ccwVH5Ra.s 			page 6
+
+
+ 297 0008 013B     		subs	r3, r3, #1
+ 298 000a 0138     		subs	r0, r0, #1
+ 299 000c 04F12F02 		add	r2, r4, #47
+ 300              	.L51:
+ 301 0010 13F8015F 		ldrb	r5, [r3, #1]!	@ zero_extendqisi2
+ 302 0014 9342     		cmp	r3, r2
+ 303 0016 00F8015F 		strb	r5, [r0, #1]!
+ 304 001a F9D1     		bne	.L51
+ 305 001c 0D46     		mov	r5, r1
+ 306 001e 04F13006 		add	r6, r4, #48
+ 307 0022 04F54B68 		add	r8, r4, #3248
+ 308              	.L52:
+ 309 0026 3146     		mov	r1, r6
+ 310 0028 2846     		mov	r0, r5
+ 311 002a 06F52076 		add	r6, r6, #640
+ 312 002e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyz_unpack
+ 313 0032 4645     		cmp	r6, r8
+ 314 0034 05F58065 		add	r5, r5, #1024
+ 315 0038 F5D1     		bne	.L52
+ 316 003a 0025     		movs	r5, #0
+ 317 003c 4FF0010A 		mov	r10, #1
+ 318 0040 2E46     		mov	r6, r5
+ 319 0042 04F6E649 		addw	r9, r4, #3302
+ 320              	.L53:
+ 321 0046 4FF48062 		mov	r2, #1024
+ 322 004a 0021     		movs	r1, #0
+ 323 004c 07EB8620 		add	r0, r7, r6, lsl #10
+ 324 0050 FFF7FEFF 		bl	memset
+ 325 0054 19F8013F 		ldrb	r3, [r9, #1]!	@ zero_extendqisi2
+ 326 0058 AB42     		cmp	r3, r5
+ 327 005a 02D2     		bcs	.L66
+ 328              	.L55:
+ 329 005c 0120     		movs	r0, #1
+ 330              	.L50:
+ 331 005e BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 332              	.L66:
+ 333 0062 372B     		cmp	r3, #55
+ 334 0064 FAD8     		bhi	.L55
+ 335 0066 2A46     		mov	r2, r5
+ 336 0068 05F6AF41 		addw	r1, r5, #3247
+ 337 006c 2144     		add	r1, r1, r4
+ 338 006e 3002     		lsls	r0, r6, #8
+ 339              	.L56:
+ 340 0070 99F80030 		ldrb	r3, [r9]	@ zero_extendqisi2
+ 341 0074 9342     		cmp	r3, r2
+ 342 0076 04D8     		bhi	.L58
+ 343 0078 0136     		adds	r6, r6, #1
+ 344 007a 062E     		cmp	r6, #6
+ 345 007c 14D0     		beq	.L59
+ 346 007e 1D46     		mov	r5, r3
+ 347 0080 E1E7     		b	.L53
+ 348              	.L58:
+ 349 0082 AA42     		cmp	r2, r5
+ 350 0084 04D9     		bls	.L57
+ 351 0086 91F800C0 		ldrb	ip, [r1]	@ zero_extendqisi2
+ 352 008a 4B78     		ldrb	r3, [r1, #1]	@ zero_extendqisi2
+ 353 008c 9C45     		cmp	ip, r3
+ARM GAS  /tmp/ccwVH5Ra.s 			page 7
+
+
+ 354 008e E5D2     		bcs	.L55
+ 355              	.L57:
+ 356 0090 11F8013F 		ldrb	r3, [r1, #1]!	@ zero_extendqisi2
+ 357 0094 0132     		adds	r2, r2, #1
+ 358 0096 0344     		add	r3, r3, r0
+ 359 0098 47F823A0 		str	r10, [r7, r3, lsl #2]
+ 360 009c E8E7     		b	.L56
+ 361              	.L61:
+ 362 009e 18F80320 		ldrb	r2, [r8, r3]	@ zero_extendqisi2
+ 363 00a2 002A     		cmp	r2, #0
+ 364 00a4 DAD1     		bne	.L55
+ 365 00a6 0133     		adds	r3, r3, #1
+ 366              	.L59:
+ 367 00a8 362B     		cmp	r3, #54
+ 368 00aa F8D9     		bls	.L61
+ 369 00ac 0020     		movs	r0, #0
+ 370 00ae D6E7     		b	.L50
+ 372              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccwVH5Ra.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 packing.c
+     /tmp/ccwVH5Ra.s:16     .text.PQCLEAN_MLDSA65_CLEAN_pack_pk:0000000000000000 $t
+     /tmp/ccwVH5Ra.s:25     .text.PQCLEAN_MLDSA65_CLEAN_pack_pk:0000000000000000 PQCLEAN_MLDSA65_CLEAN_pack_pk
+     /tmp/ccwVH5Ra.s:51     .text.PQCLEAN_MLDSA65_CLEAN_unpack_pk:0000000000000000 $t
+     /tmp/ccwVH5Ra.s:58     .text.PQCLEAN_MLDSA65_CLEAN_unpack_pk:0000000000000000 PQCLEAN_MLDSA65_CLEAN_unpack_pk
+     /tmp/ccwVH5Ra.s:84     .text.PQCLEAN_MLDSA65_CLEAN_pack_sk:0000000000000000 $t
+     /tmp/ccwVH5Ra.s:91     .text.PQCLEAN_MLDSA65_CLEAN_pack_sk:0000000000000000 PQCLEAN_MLDSA65_CLEAN_pack_sk
+     /tmp/ccwVH5Ra.s:154    .text.PQCLEAN_MLDSA65_CLEAN_unpack_sk:0000000000000000 $t
+     /tmp/ccwVH5Ra.s:161    .text.PQCLEAN_MLDSA65_CLEAN_unpack_sk:0000000000000000 PQCLEAN_MLDSA65_CLEAN_unpack_sk
+     /tmp/ccwVH5Ra.s:225    .text.PQCLEAN_MLDSA65_CLEAN_pack_sig:0000000000000000 $t
+     /tmp/ccwVH5Ra.s:232    .text.PQCLEAN_MLDSA65_CLEAN_pack_sig:0000000000000000 PQCLEAN_MLDSA65_CLEAN_pack_sig
+     /tmp/ccwVH5Ra.s:284    .text.PQCLEAN_MLDSA65_CLEAN_unpack_sig:0000000000000000 $t
+     /tmp/ccwVH5Ra.s:291    .text.PQCLEAN_MLDSA65_CLEAN_unpack_sig:0000000000000000 PQCLEAN_MLDSA65_CLEAN_unpack_sig
+
+UNDEFINED SYMBOLS
+PQCLEAN_MLDSA65_CLEAN_polyt1_pack
+PQCLEAN_MLDSA65_CLEAN_polyt1_unpack
+PQCLEAN_MLDSA65_CLEAN_polyeta_pack
+PQCLEAN_MLDSA65_CLEAN_polyt0_pack
+PQCLEAN_MLDSA65_CLEAN_polyeta_unpack
+PQCLEAN_MLDSA65_CLEAN_polyt0_unpack
+PQCLEAN_MLDSA65_CLEAN_polyz_pack
+memset
+PQCLEAN_MLDSA65_CLEAN_polyz_unpack

@@ -1,0 +1,87 @@
+ARM GAS  /tmp/cclSd8mb.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"irq.c"
+  14              		.text
+  15              		.section	.text.irq_enable,"ax",%progbits
+  16              		.align	1
+  17              		.global	irq_enable
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	irq_enable:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 174B     		ldr	r3, .L6
+  29 0002 30B5     		push	{r4, r5, lr}
+  30 0004 DB68     		ldr	r3, [r3, #12]
+  31 0006 4FF0FF34 		mov	r4, #-1
+  32 000a C3F30223 		ubfx	r3, r3, #8, #3
+  33 000e C3F10705 		rsb	r5, r3, #7
+  34 0012 042D     		cmp	r5, #4
+  35 0014 03F10402 		add	r2, r3, #4
+  36 0018 28BF     		it	cs
+  37 001a 0425     		movcs	r5, #4
+  38 001c 062A     		cmp	r2, #6
+  39 001e 98BF     		it	ls
+  40 0020 0023     		movls	r3, #0
+  41 0022 04FA05F4 		lsl	r4, r4, r5
+  42 0026 88BF     		it	hi
+  43 0028 033B     		subhi	r3, r3, #3
+  44 002a 21EA0401 		bic	r1, r1, r4
+  45 002e 01FA03F3 		lsl	r3, r1, r3
+  46 0032 1B01     		lsls	r3, r3, #4
+  47 0034 0028     		cmp	r0, #0
+  48 0036 C2B2     		uxtb	r2, r0
+  49 0038 DBB2     		uxtb	r3, r3
+  50 003a 0CDB     		blt	.L3
+  51 003c 0949     		ldr	r1, .L6+4
+  52 003e 0C18     		adds	r4, r1, r0
+  53 0040 84F80033 		strb	r3, [r4, #768]
+  54 0044 0123     		movs	r3, #1
+  55 0046 02F01F02 		and	r2, r2, #31
+  56 004a 4009     		lsrs	r0, r0, #5
+  57 004c 03FA02F2 		lsl	r2, r3, r2
+  58 0050 41F82020 		str	r2, [r1, r0, lsl #2]
+ARM GAS  /tmp/cclSd8mb.s 			page 2
+
+
+  59              	.L1:
+  60 0054 30BD     		pop	{r4, r5, pc}
+  61              	.L3:
+  62 0056 0449     		ldr	r1, .L6+8
+  63 0058 02F00F02 		and	r2, r2, #15
+  64 005c 8B54     		strb	r3, [r1, r2]
+  65 005e F9E7     		b	.L1
+  66              	.L7:
+  67              		.align	2
+  68              	.L6:
+  69 0060 00ED00E0 		.word	-536810240
+  70 0064 00E100E0 		.word	-536813312
+  71 0068 14ED00E0 		.word	-536810220
+  73              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cclSd8mb.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 irq.c
+     /tmp/cclSd8mb.s:16     .text.irq_enable:0000000000000000 $t
+     /tmp/cclSd8mb.s:25     .text.irq_enable:0000000000000000 irq_enable
+     /tmp/cclSd8mb.s:69     .text.irq_enable:0000000000000060 $d
+
+NO UNDEFINED SYMBOLS

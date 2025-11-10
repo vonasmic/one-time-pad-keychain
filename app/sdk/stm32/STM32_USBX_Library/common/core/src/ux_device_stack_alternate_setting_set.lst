@@ -1,0 +1,287 @@
+ARM GAS  /tmp/ccnyKOVE.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_alternate_setting_set.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_alternate_setting_set,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_alternate_setting_set
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_alternate_setting_set:
+  26              		@ args = 0, pretend = 0, frame = 80
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  29 0004 DFF8E8A1 		ldr	r10, .L43+8
+  30 0008 8146     		mov	r9, r0
+  31 000a DAF80070 		ldr	r7, [r10]
+  32 000e 0D46     		mov	r5, r1
+  33 0010 7B6A     		ldr	r3, [r7, #36]
+  34 0012 95B0     		sub	sp, sp, #84
+  35 0014 032B     		cmp	r3, #3
+  36 0016 40F0DD80 		bne	.L28
+  37 001a D7F8B460 		ldr	r6, [r7, #180]
+  38              	.L3:
+  39 001e 36B9     		cbnz	r6, .L5
+  40 0020 0220     		movs	r0, #2
+  41 0022 5222     		movs	r2, #82
+  42 0024 0721     		movs	r1, #7
+  43 0026 FFF7FEFF 		bl	_ux_system_error_handler
+  44 002a 5220     		movs	r0, #82
+  45 002c 8AE0     		b	.L1
+  46              	.L5:
+  47 002e B37B     		ldrb	r3, [r6, #14]	@ zero_extendqisi2
+  48 0030 4B45     		cmp	r3, r9
+  49 0032 00F0D380 		beq	.L4
+  50 0036 B669     		ldr	r6, [r6, #24]
+  51 0038 F1E7     		b	.L3
+  52              	.L42:
+  53 003a 6B49     		ldr	r1, .L43
+  54 003c D7E93348 		ldrd	r4, r8, [r7, #204]
+  55              	.L7:
+  56 0040 B8F1000F 		cmp	r8, #0
+  57 0044 18D0     		beq	.L26
+  58 0046 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ARM GAS  /tmp/ccnyKOVE.s 			page 2
+
+
+  59 0048 94F800B0 		ldrb	fp, [r4]	@ zero_extendqisi2
+  60 004c 022B     		cmp	r3, #2
+  61 004e 40F0BD80 		bne	.L8
+  62 0052 0822     		movs	r2, #8
+  63 0054 03AB     		add	r3, sp, #12
+  64 0056 2046     		mov	r0, r4
+  65 0058 FFF7FEFF 		bl	_ux_utility_descriptor_parse
+  66 005c 9DF81120 		ldrb	r2, [sp, #17]	@ zero_extendqisi2
+  67 0060 D7F8A430 		ldr	r3, [r7, #164]
+  68 0064 6049     		ldr	r1, .L43
+  69 0066 9A42     		cmp	r2, r3
+  70 0068 40F0B080 		bne	.L8
+  71 006c BDF80E80 		ldrh	r8, [sp, #14]
+  72 0070 5E49     		ldr	r1, .L43+4
+  73              	.L9:
+  74 0072 B8F1000F 		cmp	r8, #0
+  75 0076 01D1     		bne	.L24
+  76              	.L26:
+  77 0078 FF20     		movs	r0, #255
+  78 007a 63E0     		b	.L1
+  79              	.L24:
+  80 007c 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+  81 007e 94F800B0 		ldrb	fp, [r4]	@ zero_extendqisi2
+  82 0082 042B     		cmp	r3, #4
+  83 0084 40F09E80 		bne	.L10
+  84 0088 06AB     		add	r3, sp, #24
+  85 008a 0922     		movs	r2, #9
+  86 008c 2046     		mov	r0, r4
+  87 008e FFF7FEFF 		bl	_ux_utility_descriptor_parse
+  88 0092 9DF81A30 		ldrb	r3, [sp, #26]	@ zero_extendqisi2
+  89 0096 5549     		ldr	r1, .L43+4
+  90 0098 4B45     		cmp	r3, r9
+  91 009a 40F09380 		bne	.L10
+  92 009e 9DF81B30 		ldrb	r3, [sp, #27]	@ zero_extendqisi2
+  93 00a2 AB42     		cmp	r3, r5
+  94 00a4 40F08E80 		bne	.L10
+  95 00a8 4FF00009 		mov	r9, #0
+  96 00ac F569     		ldr	r5, [r6, #28]
+  97              	.L11:
+  98 00ae 2DBB     		cbnz	r5, .L12
+  99 00b0 07F12403 		add	r3, r7, #36
+ 100 00b4 F561     		str	r5, [r6, #28]
+ 101 00b6 0193     		str	r3, [sp, #4]
+ 102 00b8 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 103 00ba DFF838B1 		ldr	fp, .L43+12
+ 104 00be A8EB0308 		sub	r8, r8, r3
+ 105 00c2 1C44     		add	r4, r4, r3
+ 106              	.L13:
+ 107 00c4 B8F1000F 		cmp	r8, #0
+ 108 00c8 2AD1     		bne	.L23
+ 109 00ca 0C22     		movs	r2, #12
+ 110 00cc 06A9     		add	r1, sp, #24
+ 111 00ce B018     		adds	r0, r6, r2
+ 112 00d0 FFF7FEFF 		bl	_ux_utility_memory_copy
+ 113 00d4 B37B     		ldrb	r3, [r6, #14]	@ zero_extendqisi2
+ 114 00d6 DAF80020 		ldr	r2, [r10]
+ 115 00da 4033     		adds	r3, r3, #64
+ARM GAS  /tmp/ccnyKOVE.s 			page 3
+
+
+ 116 00dc 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 117 00e0 002B     		cmp	r3, #0
+ 118 00e2 79D0     		beq	.L31
+ 119 00e4 1A6C     		ldr	r2, [r3, #64]
+ 120 00e6 002A     		cmp	r2, #0
+ 121 00e8 76D0     		beq	.L31
+ 122 00ea 0622     		movs	r2, #6
+ 123 00ec 1193     		str	r3, [sp, #68]
+ 124 00ee 1E66     		str	r6, [r3, #96]
+ 125 00f0 0992     		str	r2, [sp, #36]
+ 126 00f2 5B6C     		ldr	r3, [r3, #68]
+ 127 00f4 0B96     		str	r6, [sp, #44]
+ 128 00f6 09A8     		add	r0, sp, #36
+ 129 00f8 9847     		blx	r3
+ 130 00fa 23E0     		b	.L1
+ 131              	.L12:
+ 132 00fc 2621     		movs	r1, #38
+ 133 00fe 2846     		mov	r0, r5
+ 134 0100 FFF7FEFF 		bl	_ux_device_stack_transfer_all_request_abort
+ 135 0104 2A46     		mov	r2, r5
+ 136 0106 BB69     		ldr	r3, [r7, #24]
+ 137 0108 0F21     		movs	r1, #15
+ 138 010a 3846     		mov	r0, r7
+ 139 010c 9847     		blx	r3
+ 140 010e 6B69     		ldr	r3, [r5, #20]
+ 141 0110 C5E90099 		strd	r9, r9, [r5]
+ 142 0114 C5E90599 		strd	r9, r9, [r5, #20]
+ 143 0118 C5F81C90 		str	r9, [r5, #28]
+ 144 011c 1D46     		mov	r5, r3
+ 145 011e C6E7     		b	.L11
+ 146              	.L23:
+ 147 0120 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 148 0122 94F80090 		ldrb	r9, [r4]	@ zero_extendqisi2
+ 149 0126 042B     		cmp	r3, #4
+ 150 0128 4AD0     		beq	.L29
+ 151 012a 052B     		cmp	r3, #5
+ 152 012c 06D0     		beq	.L15
+ 153 012e 022B     		cmp	r3, #2
+ 154 0130 08BF     		it	eq
+ 155 0132 C846     		moveq	r8, r9
+ 156              	.L14:
+ 157 0134 A8EB0908 		sub	r8, r8, r9
+ 158 0138 4C44     		add	r4, r4, r9
+ 159 013a C3E7     		b	.L13
+ 160              	.L15:
+ 161 013c D7E93053 		ldrd	r5, r3, [r7, #192]
+ 162              	.L16:
+ 163 0140 1BB9     		cbnz	r3, .L20
+ 164 0142 1220     		movs	r0, #18
+ 165              	.L1:
+ 166 0144 15B0     		add	sp, sp, #84
+ 167              		@ sp needed
+ 168 0146 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 169              	.L20:
+ 170 014a 2A68     		ldr	r2, [r5]
+ 171 014c 5ABB     		cbnz	r2, .L17
+ 172 014e 2B46     		mov	r3, r5
+ARM GAS  /tmp/ccnyKOVE.s 			page 4
+
+
+ 173 0150 0122     		movs	r2, #1
+ 174 0152 5946     		mov	r1, fp
+ 175 0154 43F80C2B 		str	r2, [r3], #12
+ 176 0158 2046     		mov	r0, r4
+ 177 015a 0622     		movs	r2, #6
+ 178 015c FFF7FEFF 		bl	_ux_utility_descriptor_parse
+ 179 0160 DAF80010 		ldr	r1, [r10]
+ 180 0164 2B8A     		ldrh	r3, [r5, #16]
+ 181 0166 D1F84011 		ldr	r1, [r1, #320]
+ 182 016a C3F30A02 		ubfx	r2, r3, #0, #11
+ 183 016e 0229     		cmp	r1, #2
+ 184 0170 08D1     		bne	.L19
+ 185 0172 E97B     		ldrb	r1, [r5, #15]	@ zero_extendqisi2
+ 186 0174 C907     		lsls	r1, r1, #31
+ 187 0176 05D5     		bpl	.L19
+ 188 0178 13F4C053 		ands	r3, r3, #6144
+ 189 017c 1CBF     		itt	ne
+ 190 017e DB0A     		lsrne	r3, r3, #11
+ 191 0180 03FB0222 		mlane	r2, r3, r2, r2
+ 192              	.L19:
+ 193 0184 4FF0FF33 		mov	r3, #-1
+ 194 0188 6B65     		str	r3, [r5, #84]
+ 195 018a 019B     		ldr	r3, [sp, #4]
+ 196 018c 2A64     		str	r2, [r5, #64]
+ 197 018e EB61     		str	r3, [r5, #28]
+ 198 0190 2A46     		mov	r2, r5
+ 199 0192 0E21     		movs	r1, #14
+ 200 0194 3846     		mov	r0, r7
+ 201 0196 BB69     		ldr	r3, [r7, #24]
+ 202 0198 AD62     		str	r5, [r5, #40]
+ 203 019a AE61     		str	r6, [r5, #24]
+ 204 019c 9847     		blx	r3
+ 205 019e 28B1     		cbz	r0, .L21
+ 206 01a0 0023     		movs	r3, #0
+ 207 01a2 2B60     		str	r3, [r5]
+ 208 01a4 CEE7     		b	.L1
+ 209              	.L17:
+ 210 01a6 6835     		adds	r5, r5, #104
+ 211 01a8 013B     		subs	r3, r3, #1
+ 212 01aa C9E7     		b	.L16
+ 213              	.L21:
+ 214 01ac F369     		ldr	r3, [r6, #28]
+ 215 01ae 0BB9     		cbnz	r3, .L22
+ 216 01b0 F561     		str	r5, [r6, #28]
+ 217 01b2 BFE7     		b	.L14
+ 218              	.L22:
+ 219 01b4 1A46     		mov	r2, r3
+ 220 01b6 5B69     		ldr	r3, [r3, #20]
+ 221 01b8 002B     		cmp	r3, #0
+ 222 01ba FBD1     		bne	.L22
+ 223 01bc 5561     		str	r5, [r2, #20]
+ 224 01be B9E7     		b	.L14
+ 225              	.L29:
+ 226 01c0 C846     		mov	r8, r9
+ 227 01c2 B7E7     		b	.L14
+ 228              	.L10:
+ 229 01c4 A8EB0B08 		sub	r8, r8, fp
+ARM GAS  /tmp/ccnyKOVE.s 			page 5
+
+
+ 230 01c8 5C44     		add	r4, r4, fp
+ 231 01ca 52E7     		b	.L9
+ 232              	.L8:
+ 233 01cc A8EB0B08 		sub	r8, r8, fp
+ 234 01d0 5C44     		add	r4, r4, fp
+ 235 01d2 35E7     		b	.L7
+ 236              	.L28:
+ 237 01d4 5420     		movs	r0, #84
+ 238 01d6 B5E7     		b	.L1
+ 239              	.L31:
+ 240 01d8 5720     		movs	r0, #87
+ 241 01da B3E7     		b	.L1
+ 242              	.L4:
+ 243 01dc F37B     		ldrb	r3, [r6, #15]	@ zero_extendqisi2
+ 244 01de AB42     		cmp	r3, r5
+ 245 01e0 7FF42BAF 		bne	.L42
+ 246 01e4 0020     		movs	r0, #0
+ 247 01e6 ADE7     		b	.L1
+ 248              	.L44:
+ 249              		.align	2
+ 250              	.L43:
+ 251 01e8 00000000 		.word	_ux_system_configuration_descriptor_structure
+ 252 01ec 00000000 		.word	_ux_system_interface_descriptor_structure
+ 253 01f0 00000000 		.word	_ux_system_slave
+ 254 01f4 00000000 		.word	_ux_system_endpoint_descriptor_structure
+ 256              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccnyKOVE.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_alternate_setting_set.c
+     /tmp/ccnyKOVE.s:16     .text._ux_device_stack_alternate_setting_set:0000000000000000 $t
+     /tmp/ccnyKOVE.s:25     .text._ux_device_stack_alternate_setting_set:0000000000000000 _ux_device_stack_alternate_setting_set
+     /tmp/ccnyKOVE.s:251    .text._ux_device_stack_alternate_setting_set:00000000000001e8 $d
+
+UNDEFINED SYMBOLS
+_ux_system_error_handler
+_ux_utility_descriptor_parse
+_ux_utility_memory_copy
+_ux_device_stack_transfer_all_request_abort
+_ux_system_configuration_descriptor_structure
+_ux_system_interface_descriptor_structure
+_ux_system_slave
+_ux_system_endpoint_descriptor_structure

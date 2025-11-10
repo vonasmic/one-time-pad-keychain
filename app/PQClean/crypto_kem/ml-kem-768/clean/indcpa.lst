@@ -1,0 +1,475 @@
+ARM GAS  /tmp/cciZp7aE.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"indcpa.c"
+  14              		.text
+  15              		.section	.text.rej_uniform,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	rej_uniform:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  28 0002 0746     		mov	r7, r0
+  29 0004 0020     		movs	r0, #0
+  30 0006 C2F1030C 		rsb	ip, r2, #3
+  31              	.L2:
+  32 000a 0CEB0204 		add	r4, ip, r2
+  33 000e A342     		cmp	r3, r4
+  34 0010 12D3     		bcc	.L1
+  35 0012 5478     		ldrb	r4, [r2, #1]	@ zero_extendqisi2
+  36 0014 1578     		ldrb	r5, [r2]	@ zero_extendqisi2
+  37 0016 9678     		ldrb	r6, [r2, #2]	@ zero_extendqisi2
+  38 0018 45EA0425 		orr	r5, r5, r4, lsl #8
+  39 001c C5F30B05 		ubfx	r5, r5, #0, #12
+  40 0020 2409     		lsrs	r4, r4, #4
+  41 0022 B5F5506F 		cmp	r5, #3328
+  42 0026 44EA0614 		orr	r4, r4, r6, lsl #4
+  43 002a 06D8     		bhi	.L3
+  44 002c 461C     		adds	r6, r0, #1
+  45 002e B142     		cmp	r1, r6
+  46 0030 27F81050 		strh	r5, [r7, r0, lsl #1]	@ movhi
+  47 0034 3046     		mov	r0, r6
+  48 0036 0AD8     		bhi	.L4
+  49              	.L1:
+  50 0038 F0BD     		pop	{r4, r5, r6, r7, pc}
+  51              	.L3:
+  52 003a B4F5506F 		cmp	r4, #3328
+  53 003e 02DC     		bgt	.L6
+  54              	.L8:
+  55 0040 27F81040 		strh	r4, [r7, r0, lsl #1]	@ movhi
+  56 0044 0130     		adds	r0, r0, #1
+  57              	.L6:
+  58 0046 8842     		cmp	r0, r1
+ARM GAS  /tmp/cciZp7aE.s 			page 2
+
+
+  59 0048 F6D2     		bcs	.L1
+  60              	.L9:
+  61 004a 0332     		adds	r2, r2, #3
+  62 004c DDE7     		b	.L2
+  63              	.L4:
+  64 004e B4F5506F 		cmp	r4, #3328
+  65 0052 F5DD     		ble	.L8
+  66 0054 F9E7     		b	.L9
+  68              		.section	.text.PQCLEAN_MLKEM768_CLEAN_gen_matrix,"ax",%progbits
+  69              		.align	1
+  70              		.global	PQCLEAN_MLKEM768_CLEAN_gen_matrix
+  71              		.syntax unified
+  72              		.thumb
+  73              		.thumb_func
+  74              		.fpu fpv4-sp-d16
+  76              	PQCLEAN_MLKEM768_CLEAN_gen_matrix:
+  77              		@ args = 0, pretend = 0, frame = 520
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  80 0004 0F46     		mov	r7, r1
+  81 0006 0025     		movs	r5, #0
+  82 0008 4FF4C06B 		mov	fp, #1536
+  83 000c ADF5037D 		sub	sp, sp, #524
+  84 0010 0090     		str	r0, [sp]
+  85 0012 0192     		str	r2, [sp, #4]
+  86              	.L12:
+  87 0014 0026     		movs	r6, #0
+  88 0016 009B     		ldr	r3, [sp]
+  89 0018 5FFA85F9 		uxtb	r9, r5
+  90 001c 0BFB0538 		mla	r8, fp, r5, r3
+  91              	.L17:
+  92 0020 019B     		ldr	r3, [sp, #4]
+  93 0022 F2B2     		uxtb	r2, r6
+  94 0024 23B3     		cbz	r3, .L13
+  95 0026 1346     		mov	r3, r2
+  96 0028 4A46     		mov	r2, r9
+  97              	.L20:
+  98 002a 3946     		mov	r1, r7
+  99 002c 03A8     		add	r0, sp, #12
+ 100 002e FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb
+ 101 0032 08EB462A 		add	r10, r8, r6, lsl #9
+ 102 0036 0321     		movs	r1, #3
+ 103 0038 03AA     		add	r2, sp, #12
+ 104 003a 04A8     		add	r0, sp, #16
+ 105 003c FFF7FEFF 		bl	shake128_squeezeblocks
+ 106 0040 4FF4FC73 		mov	r3, #504
+ 107 0044 4FF48071 		mov	r1, #256
+ 108 0048 5046     		mov	r0, r10
+ 109 004a 04AA     		add	r2, sp, #16
+ 110 004c FFF7FEFF 		bl	rej_uniform
+ 111 0050 0446     		mov	r4, r0
+ 112              	.L15:
+ 113 0052 FF2C     		cmp	r4, #255
+ 114 0054 0ED9     		bls	.L16
+ 115 0056 03A8     		add	r0, sp, #12
+ 116 0058 0136     		adds	r6, r6, #1
+ 117 005a FFF7FEFF 		bl	shake128_ctx_release
+ARM GAS  /tmp/cciZp7aE.s 			page 3
+
+
+ 118 005e 032E     		cmp	r6, #3
+ 119 0060 DED1     		bne	.L17
+ 120 0062 0135     		adds	r5, r5, #1
+ 121 0064 032D     		cmp	r5, #3
+ 122 0066 D5D1     		bne	.L12
+ 123 0068 0DF5037D 		add	sp, sp, #524
+ 124              		@ sp needed
+ 125 006c BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 126              	.L13:
+ 127 0070 4B46     		mov	r3, r9
+ 128 0072 DAE7     		b	.L20
+ 129              	.L16:
+ 130 0074 0121     		movs	r1, #1
+ 131 0076 03AA     		add	r2, sp, #12
+ 132 0078 04A8     		add	r0, sp, #16
+ 133 007a FFF7FEFF 		bl	shake128_squeezeblocks
+ 134 007e C4F58071 		rsb	r1, r4, #256
+ 135 0082 0AEB4400 		add	r0, r10, r4, lsl #1
+ 136 0086 A823     		movs	r3, #168
+ 137 0088 04AA     		add	r2, sp, #16
+ 138 008a FFF7FEFF 		bl	rej_uniform
+ 139 008e 0444     		add	r4, r4, r0
+ 140 0090 DFE7     		b	.L15
+ 142              		.section	.text.PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand,"ax",%progbits
+ 143              		.align	1
+ 144              		.global	PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand
+ 145              		.syntax unified
+ 146              		.thumb
+ 147              		.thumb_func
+ 148              		.fpu fpv4-sp-d16
+ 150              	PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand:
+ 151              		@ args = 0, pretend = 0, frame = 9288
+ 152              		@ frame_needed = 0, uses_anonymous_args = 0
+ 153 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 154 0004 0446     		mov	r4, r0
+ 155 0006 8846     		mov	r8, r1
+ 156 0008 ADF5115D 		sub	sp, sp, #9280
+ 157 000c 83B0     		sub	sp, sp, #12
+ 158 000e 02AD     		add	r5, sp, #8
+ 159 0010 02F12006 		add	r6, r2, #32
+ 160              	.L22:
+ 161 0014 2B46     		mov	r3, r5
+ 162 0016 1068     		ldr	r0, [r2]	@ unaligned
+ 163 0018 5168     		ldr	r1, [r2, #4]	@ unaligned
+ 164 001a 0832     		adds	r2, r2, #8
+ 165 001c 03C3     		stmia	r3!, {r0, r1}
+ 166 001e B242     		cmp	r2, r6
+ 167 0020 1D46     		mov	r5, r3
+ 168 0022 F7D1     		bne	.L22
+ 169 0024 0325     		movs	r5, #3
+ 170 0026 02A9     		add	r1, sp, #8
+ 171 0028 0846     		mov	r0, r1
+ 172 002a 2122     		movs	r2, #33
+ 173 002c 8DF82850 		strb	r5, [sp, #40]
+ 174 0030 FFF7FEFF 		bl	sha3_512
+ 175 0034 0DF59250 		add	r0, sp, #4672
+ 176 0038 0022     		movs	r2, #0
+ARM GAS  /tmp/cciZp7aE.s 			page 4
+
+
+ 177 003a 02A9     		add	r1, sp, #8
+ 178 003c 0830     		adds	r0, r0, #8
+ 179 003e FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_gen_matrix
+ 180 0042 0AA9     		add	r1, sp, #40
+ 181 0044 0022     		movs	r2, #0
+ 182 0046 0DF64840 		addw	r0, sp, #3144
+ 183 004a 0191     		str	r1, [sp, #4]
+ 184 004c FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 185 0050 0122     		movs	r2, #1
+ 186 0052 0199     		ldr	r1, [sp, #4]
+ 187 0054 0DF64860 		addw	r0, sp, #3656
+ 188 0058 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 189 005c 0DF58250 		add	r0, sp, #4160
+ 190 0060 0222     		movs	r2, #2
+ 191 0062 0199     		ldr	r1, [sp, #4]
+ 192 0064 0830     		adds	r0, r0, #8
+ 193 0066 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 194 006a 2A46     		mov	r2, r5
+ 195 006c 0199     		ldr	r1, [sp, #4]
+ 196 006e 12A8     		add	r0, sp, #72
+ 197 0070 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 198 0074 0422     		movs	r2, #4
+ 199 0076 0199     		ldr	r1, [sp, #4]
+ 200 0078 92A8     		add	r0, sp, #584
+ 201 007a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 202 007e 0522     		movs	r2, #5
+ 203 0080 0199     		ldr	r1, [sp, #4]
+ 204 0082 0DF58960 		add	r0, sp, #1096
+ 205 0086 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 206 008a 0DF64840 		addw	r0, sp, #3144
+ 207 008e FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_ntt
+ 208 0092 0DF5C966 		add	r6, sp, #1608
+ 209 0096 12A8     		add	r0, sp, #72
+ 210 0098 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_ntt
+ 211 009c 4FF00009 		mov	r9, #0
+ 212 00a0 3746     		mov	r7, r6
+ 213 00a2 0DF59255 		add	r5, sp, #4672
+ 214 00a6 0835     		adds	r5, r5, #8
+ 215              	.L23:
+ 216 00a8 2946     		mov	r1, r5
+ 217 00aa 3046     		mov	r0, r6
+ 218 00ac 0DF64842 		addw	r2, sp, #3144
+ 219 00b0 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+ 220 00b4 09F10109 		add	r9, r9, #1
+ 221 00b8 3046     		mov	r0, r6
+ 222 00ba FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_tomont
+ 223 00be B9F1030F 		cmp	r9, #3
+ 224 00c2 06F50076 		add	r6, r6, #512
+ 225 00c6 05F5C065 		add	r5, r5, #1536
+ 226 00ca EDD1     		bne	.L23
+ 227 00cc 12AA     		add	r2, sp, #72
+ 228 00ce 3946     		mov	r1, r7
+ 229 00d0 3846     		mov	r0, r7
+ 230 00d2 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_add
+ 231 00d6 3846     		mov	r0, r7
+ 232 00d8 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_reduce
+ 233 00dc 4046     		mov	r0, r8
+ARM GAS  /tmp/cciZp7aE.s 			page 5
+
+
+ 234 00de 0DF64841 		addw	r1, sp, #3144
+ 235 00e2 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_tobytes
+ 236 00e6 3946     		mov	r1, r7
+ 237 00e8 2046     		mov	r0, r4
+ 238 00ea FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_tobytes
+ 239 00ee 0AAD     		add	r5, sp, #40
+ 240 00f0 02AB     		add	r3, sp, #8
+ 241 00f2 04F59062 		add	r2, r4, #1152
+ 242              	.L24:
+ 243 00f6 1C46     		mov	r4, r3
+ 244 00f8 03CC     		ldmia	r4!, {r0, r1}
+ 245 00fa AC42     		cmp	r4, r5
+ 246 00fc 1060     		str	r0, [r2]	@ unaligned
+ 247 00fe 5160     		str	r1, [r2, #4]	@ unaligned
+ 248 0100 2346     		mov	r3, r4
+ 249 0102 02F10802 		add	r2, r2, #8
+ 250 0106 F6D1     		bne	.L24
+ 251 0108 0DF5115D 		add	sp, sp, #9280
+ 252 010c 03B0     		add	sp, sp, #12
+ 253              		@ sp needed
+ 254 010e BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 256              		.section	.text.PQCLEAN_MLKEM768_CLEAN_indcpa_enc,"ax",%progbits
+ 257              		.align	1
+ 258              		.global	PQCLEAN_MLKEM768_CLEAN_indcpa_enc
+ 259              		.syntax unified
+ 260              		.thumb
+ 261              		.thumb_func
+ 262              		.fpu fpv4-sp-d16
+ 264              	PQCLEAN_MLKEM768_CLEAN_indcpa_enc:
+ 265              		@ args = 0, pretend = 0, frame = 12320
+ 266              		@ frame_needed = 0, uses_anonymous_args = 0
+ 267 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 268 0002 ADF5405D 		sub	sp, sp, #12288
+ 269 0006 89B0     		sub	sp, sp, #36
+ 270 0008 1546     		mov	r5, r2
+ 271 000a 0646     		mov	r6, r0
+ 272 000c 0F46     		mov	r7, r1
+ 273 000e 0DF54260 		add	r0, sp, #3104
+ 274 0012 1146     		mov	r1, r2
+ 275 0014 1C46     		mov	r4, r3
+ 276 0016 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_frombytes
+ 277 001a EC46     		mov	ip, sp
+ 278 001c 05F59063 		add	r3, r5, #1152
+ 279 0020 05F59465 		add	r5, r5, #1184
+ 280              	.L29:
+ 281 0024 6246     		mov	r2, ip
+ 282 0026 1868     		ldr	r0, [r3]	@ unaligned
+ 283 0028 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 284 002a 0833     		adds	r3, r3, #8
+ 285 002c 03C2     		stmia	r2!, {r0, r1}
+ 286 002e AB42     		cmp	r3, r5
+ 287 0030 9446     		mov	ip, r2
+ 288 0032 F7D1     		bne	.L29
+ 289 0034 3946     		mov	r1, r7
+ 290 0036 88A8     		add	r0, sp, #544
+ 291 0038 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_frommsg
+ 292 003c 6946     		mov	r1, sp
+ARM GAS  /tmp/cciZp7aE.s 			page 6
+
+
+ 293 003e 0DF5F150 		add	r0, sp, #7712
+ 294 0042 0122     		movs	r2, #1
+ 295 0044 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_gen_matrix
+ 296 0048 2146     		mov	r1, r4
+ 297 004a 0DF5C460 		add	r0, sp, #1568
+ 298 004e 0022     		movs	r2, #0
+ 299 0050 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 300 0054 2146     		mov	r1, r4
+ 301 0056 0DF50260 		add	r0, sp, #2080
+ 302 005a 0122     		movs	r2, #1
+ 303 005c FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 304 0060 2146     		mov	r1, r4
+ 305 0062 0DF52260 		add	r0, sp, #2592
+ 306 0066 0222     		movs	r2, #2
+ 307 0068 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+ 308 006c 2146     		mov	r1, r4
+ 309 006e 0DF59150 		add	r0, sp, #4640
+ 310 0072 0322     		movs	r2, #3
+ 311 0074 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta2
+ 312 0078 2146     		mov	r1, r4
+ 313 007a 0DF5A150 		add	r0, sp, #5152
+ 314 007e 0422     		movs	r2, #4
+ 315 0080 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta2
+ 316 0084 2146     		mov	r1, r4
+ 317 0086 0DF5B150 		add	r0, sp, #5664
+ 318 008a 0522     		movs	r2, #5
+ 319 008c FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta2
+ 320 0090 2146     		mov	r1, r4
+ 321 0092 0622     		movs	r2, #6
+ 322 0094 0DF58460 		add	r0, sp, #1056
+ 323 0098 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta2
+ 324 009c 0DF5C460 		add	r0, sp, #1568
+ 325 00a0 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_ntt
+ 326 00a4 0DF5C462 		add	r2, sp, #1568
+ 327 00a8 0DF5F151 		add	r1, sp, #7712
+ 328 00ac 0DF5C150 		add	r0, sp, #6176
+ 329 00b0 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+ 330 00b4 0DF51051 		add	r1, sp, #9216
+ 331 00b8 0DF5C462 		add	r2, sp, #1568
+ 332 00bc 0DF5D150 		add	r0, sp, #6688
+ 333 00c0 2031     		adds	r1, r1, #32
+ 334 00c2 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+ 335 00c6 0DF52851 		add	r1, sp, #10752
+ 336 00ca 0DF5C462 		add	r2, sp, #1568
+ 337 00ce 0DF5E150 		add	r0, sp, #7200
+ 338 00d2 2031     		adds	r1, r1, #32
+ 339 00d4 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+ 340 00d8 0DF5C462 		add	r2, sp, #1568
+ 341 00dc 0DF54261 		add	r1, sp, #3104
+ 342 00e0 08A8     		add	r0, sp, #32
+ 343 00e2 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+ 344 00e6 0DF5C150 		add	r0, sp, #6176
+ 345 00ea FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_invntt_tomont
+ 346 00ee 08A8     		add	r0, sp, #32
+ 347 00f0 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_invntt_tomont
+ 348 00f4 0DF5C151 		add	r1, sp, #6176
+ 349 00f8 0846     		mov	r0, r1
+ARM GAS  /tmp/cciZp7aE.s 			page 7
+
+
+ 350 00fa 0DF59152 		add	r2, sp, #4640
+ 351 00fe FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_add
+ 352 0102 08A9     		add	r1, sp, #32
+ 353 0104 0846     		mov	r0, r1
+ 354 0106 0DF58462 		add	r2, sp, #1056
+ 355 010a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_add
+ 356 010e 08A9     		add	r1, sp, #32
+ 357 0110 88AA     		add	r2, sp, #544
+ 358 0112 0846     		mov	r0, r1
+ 359 0114 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_add
+ 360 0118 0DF5C150 		add	r0, sp, #6176
+ 361 011c FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_reduce
+ 362 0120 08A8     		add	r0, sp, #32
+ 363 0122 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_reduce
+ 364 0126 3046     		mov	r0, r6
+ 365 0128 0DF5C151 		add	r1, sp, #6176
+ 366 012c FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_compress
+ 367 0130 08A9     		add	r1, sp, #32
+ 368 0132 06F57070 		add	r0, r6, #960
+ 369 0136 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_compress
+ 370 013a 0DF5405D 		add	sp, sp, #12288
+ 371 013e 09B0     		add	sp, sp, #36
+ 372              		@ sp needed
+ 373 0140 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 375              		.section	.text.PQCLEAN_MLKEM768_CLEAN_indcpa_dec,"ax",%progbits
+ 376              		.align	1
+ 377              		.global	PQCLEAN_MLKEM768_CLEAN_indcpa_dec
+ 378              		.syntax unified
+ 379              		.thumb
+ 380              		.thumb_func
+ 381              		.fpu fpv4-sp-d16
+ 383              	PQCLEAN_MLKEM768_CLEAN_indcpa_dec:
+ 384              		@ args = 0, pretend = 0, frame = 4096
+ 385              		@ frame_needed = 0, uses_anonymous_args = 0
+ 386 0000 70B5     		push	{r4, r5, r6, lr}
+ 387 0002 0E46     		mov	r6, r1
+ 388 0004 1546     		mov	r5, r2
+ 389 0006 0446     		mov	r4, r0
+ 390 0008 ADF5805D 		sub	sp, sp, #4096
+ 391 000c 0DF58060 		add	r0, sp, #1024
+ 392 0010 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_decompress
+ 393 0014 6846     		mov	r0, sp
+ 394 0016 06F57071 		add	r1, r6, #960
+ 395 001a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_decompress
+ 396 001e 2946     		mov	r1, r5
+ 397 0020 0DF52060 		add	r0, sp, #2560
+ 398 0024 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_frombytes
+ 399 0028 0DF58060 		add	r0, sp, #1024
+ 400 002c FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_ntt
+ 401 0030 0DF58062 		add	r2, sp, #1024
+ 402 0034 0DF52061 		add	r1, sp, #2560
+ 403 0038 80A8     		add	r0, sp, #512
+ 404 003a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+ 405 003e 80A8     		add	r0, sp, #512
+ 406 0040 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_invntt_tomont
+ 407 0044 80AA     		add	r2, sp, #512
+ 408 0046 1046     		mov	r0, r2
+ARM GAS  /tmp/cciZp7aE.s 			page 8
+
+
+ 409 0048 6946     		mov	r1, sp
+ 410 004a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_sub
+ 411 004e 80A8     		add	r0, sp, #512
+ 412 0050 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_reduce
+ 413 0054 2046     		mov	r0, r4
+ 414 0056 80A9     		add	r1, sp, #512
+ 415 0058 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_poly_tomsg
+ 416 005c 0DF5805D 		add	sp, sp, #4096
+ 417              		@ sp needed
+ 418 0060 70BD     		pop	{r4, r5, r6, pc}
+ 420              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cciZp7aE.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 indcpa.c
+     /tmp/cciZp7aE.s:16     .text.rej_uniform:0000000000000000 $t
+     /tmp/cciZp7aE.s:24     .text.rej_uniform:0000000000000000 rej_uniform
+     /tmp/cciZp7aE.s:69     .text.PQCLEAN_MLKEM768_CLEAN_gen_matrix:0000000000000000 $t
+     /tmp/cciZp7aE.s:76     .text.PQCLEAN_MLKEM768_CLEAN_gen_matrix:0000000000000000 PQCLEAN_MLKEM768_CLEAN_gen_matrix
+     /tmp/cciZp7aE.s:143    .text.PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand:0000000000000000 $t
+     /tmp/cciZp7aE.s:150    .text.PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand:0000000000000000 PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand
+     /tmp/cciZp7aE.s:257    .text.PQCLEAN_MLKEM768_CLEAN_indcpa_enc:0000000000000000 $t
+     /tmp/cciZp7aE.s:264    .text.PQCLEAN_MLKEM768_CLEAN_indcpa_enc:0000000000000000 PQCLEAN_MLKEM768_CLEAN_indcpa_enc
+     /tmp/cciZp7aE.s:376    .text.PQCLEAN_MLKEM768_CLEAN_indcpa_dec:0000000000000000 $t
+     /tmp/cciZp7aE.s:383    .text.PQCLEAN_MLKEM768_CLEAN_indcpa_dec:0000000000000000 PQCLEAN_MLKEM768_CLEAN_indcpa_dec
+
+UNDEFINED SYMBOLS
+PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb
+shake128_squeezeblocks
+shake128_ctx_release
+sha3_512
+PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta1
+PQCLEAN_MLKEM768_CLEAN_polyvec_ntt
+PQCLEAN_MLKEM768_CLEAN_polyvec_basemul_acc_montgomery
+PQCLEAN_MLKEM768_CLEAN_poly_tomont
+PQCLEAN_MLKEM768_CLEAN_polyvec_add
+PQCLEAN_MLKEM768_CLEAN_polyvec_reduce
+PQCLEAN_MLKEM768_CLEAN_polyvec_tobytes
+PQCLEAN_MLKEM768_CLEAN_polyvec_frombytes
+PQCLEAN_MLKEM768_CLEAN_poly_frommsg
+PQCLEAN_MLKEM768_CLEAN_poly_getnoise_eta2
+PQCLEAN_MLKEM768_CLEAN_polyvec_invntt_tomont
+PQCLEAN_MLKEM768_CLEAN_poly_invntt_tomont
+PQCLEAN_MLKEM768_CLEAN_poly_add
+PQCLEAN_MLKEM768_CLEAN_poly_reduce
+PQCLEAN_MLKEM768_CLEAN_polyvec_compress
+PQCLEAN_MLKEM768_CLEAN_poly_compress
+PQCLEAN_MLKEM768_CLEAN_polyvec_decompress
+PQCLEAN_MLKEM768_CLEAN_poly_decompress
+PQCLEAN_MLKEM768_CLEAN_poly_sub
+PQCLEAN_MLKEM768_CLEAN_poly_tomsg

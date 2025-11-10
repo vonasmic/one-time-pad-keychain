@@ -1,0 +1,135 @@
+ARM GAS  /tmp/ccHCmsJJ.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_dcd_stm32_function.c"
+  14              		.text
+  15              		.section	.text._ux_dcd_stm32_function,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_dcd_stm32_function
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_dcd_stm32_function:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 08B5     		push	{r3, lr}
+  29 0002 0B46     		mov	r3, r1
+  30 0004 1146     		mov	r1, r2
+  31 0006 0268     		ldr	r2, [r0]
+  32 0008 32B9     		cbnz	r2, .L2
+  33 000a 0221     		movs	r1, #2
+  34 000c 5522     		movs	r2, #85
+  35 000e 0846     		mov	r0, r1
+  36 0010 FFF7FEFF 		bl	_ux_system_error_handler
+  37 0014 5520     		movs	r0, #85
+  38              	.L1:
+  39 0016 08BD     		pop	{r3, pc}
+  40              	.L2:
+  41 0018 0A3B     		subs	r3, r3, #10
+  42 001a C069     		ldr	r0, [r0, #28]
+  43 001c 0B2B     		cmp	r3, #11
+  44 001e 38D8     		bhi	.L4
+  45 0020 DFE803F0 		tbb	[pc, r3]
+  46              	.L6:
+  47 0024 06       		.byte	(.L16-.L6)/2
+  48 0025 37       		.byte	(.L4-.L6)/2
+  49 0026 0A       		.byte	(.L15-.L6)/2
+  50 0027 0E       		.byte	(.L14-.L6)/2
+  51 0028 12       		.byte	(.L13-.L6)/2
+  52 0029 16       		.byte	(.L12-.L6)/2
+  53 002a 1A       		.byte	(.L11-.L6)/2
+  54 002b 22       		.byte	(.L10-.L6)/2
+  55 002c 33       		.byte	(.L9-.L6)/2
+  56 002d 28       		.byte	(.L8-.L6)/2
+  57 002e 1E       		.byte	(.L7-.L6)/2
+  58 002f 2F       		.byte	(.L5-.L6)/2
+ARM GAS  /tmp/ccHCmsJJ.s 			page 2
+
+
+  59              		.p2align 1
+  60              	.L16:
+  61 0030 BDE80840 		pop	{r3, lr}
+  62 0034 FFF7FEBF 		b	_ux_dcd_stm32_frame_number_get
+  63              	.L15:
+  64 0038 BDE80840 		pop	{r3, lr}
+  65 003c FFF7FEBF 		b	_ux_dcd_stm32_transfer_run
+  66              	.L14:
+  67 0040 BDE80840 		pop	{r3, lr}
+  68 0044 FFF7FEBF 		b	_ux_dcd_stm32_transfer_abort
+  69              	.L13:
+  70 0048 BDE80840 		pop	{r3, lr}
+  71 004c FFF7FEBF 		b	_ux_dcd_stm32_endpoint_create
+  72              	.L12:
+  73 0050 BDE80840 		pop	{r3, lr}
+  74 0054 FFF7FEBF 		b	_ux_dcd_stm32_endpoint_destroy
+  75              	.L11:
+  76 0058 BDE80840 		pop	{r3, lr}
+  77 005c FFF7FEBF 		b	_ux_dcd_stm32_endpoint_reset
+  78              	.L7:
+  79 0060 BDE80840 		pop	{r3, lr}
+  80 0064 FFF7FEBF 		b	_ux_dcd_stm32_endpoint_stall
+  81              	.L10:
+  82 0068 C9B2     		uxtb	r1, r1
+  83 006a D0F8C400 		ldr	r0, [r0, #196]
+  84 006e FFF7FEFF 		bl	HAL_PCD_SetAddress
+  85 0072 D0E7     		b	.L1
+  86              	.L8:
+  87 0074 0B29     		cmp	r1, #11
+  88 0076 0AD1     		bne	.L17
+  89 0078 D0F8C400 		ldr	r0, [r0, #196]
+  90 007c FFF7FEFF 		bl	HAL_PCD_Stop
+  91 0080 C9E7     		b	.L1
+  92              	.L5:
+  93 0082 BDE80840 		pop	{r3, lr}
+  94 0086 FFF7FEBF 		b	_ux_dcd_stm32_endpoint_status
+  95              	.L9:
+  96 008a FFF7FEFF 		bl	_ux_dcd_stm32_setup_isr_pending
+  97              	.L17:
+  98 008e 0020     		movs	r0, #0
+  99 0090 C1E7     		b	.L1
+ 100              	.L4:
+ 101 0092 0221     		movs	r1, #2
+ 102 0094 5422     		movs	r2, #84
+ 103 0096 0846     		mov	r0, r1
+ 104 0098 FFF7FEFF 		bl	_ux_system_error_handler
+ 105 009c 5420     		movs	r0, #84
+ 106 009e BAE7     		b	.L1
+ 108              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccHCmsJJ.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_dcd_stm32_function.c
+     /tmp/ccHCmsJJ.s:16     .text._ux_dcd_stm32_function:0000000000000000 $t
+     /tmp/ccHCmsJJ.s:25     .text._ux_dcd_stm32_function:0000000000000000 _ux_dcd_stm32_function
+     /tmp/ccHCmsJJ.s:47     .text._ux_dcd_stm32_function:0000000000000024 $d
+     /tmp/ccHCmsJJ.s:59     .text._ux_dcd_stm32_function:0000000000000030 $t
+
+UNDEFINED SYMBOLS
+_ux_system_error_handler
+_ux_dcd_stm32_frame_number_get
+_ux_dcd_stm32_transfer_run
+_ux_dcd_stm32_transfer_abort
+_ux_dcd_stm32_endpoint_create
+_ux_dcd_stm32_endpoint_destroy
+_ux_dcd_stm32_endpoint_reset
+_ux_dcd_stm32_endpoint_stall
+HAL_PCD_SetAddress
+HAL_PCD_Stop
+_ux_dcd_stm32_endpoint_status
+_ux_dcd_stm32_setup_isr_pending

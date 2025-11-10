@@ -1,0 +1,171 @@
+ARM GAS  /tmp/ccOxwsaZ.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"utilsx1.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehashx1,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehashx1
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehashx1:
+  26              		@ args = 20, pretend = 0, frame = 56
+  27              		@ frame_needed = 1, uses_anonymous_args = 0
+  28 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  29 0004 91B0     		sub	sp, sp, #68
+  30 0006 9146     		mov	r9, r2
+  31 0008 6A46     		mov	r2, sp
+  32 000a 02AF     		add	r7, sp, #8
+  33 000c 7B60     		str	r3, [r7, #4]
+  34 000e 7B6E     		ldr	r3, [r7, #100]
+  35 0010 0024     		movs	r4, #0
+  36 0012 A2EB0313 		sub	r3, r2, r3, lsl #4
+  37 0016 9D46     		mov	sp, r3
+  38 0018 02AB     		add	r3, sp, #8
+  39 001a 7B61     		str	r3, [r7, #20]
+  40 001c 0123     		movs	r3, #1
+  41 001e 7A6E     		ldr	r2, [r7, #100]
+  42 0020 C7E90210 		strd	r1, r0, [r7, #8]
+  43 0024 9340     		lsls	r3, r3, r2
+  44 0026 013B     		subs	r3, r3, #1
+  45 0028 3B61     		str	r3, [r7, #16]
+  46              	.L11:
+  47 002a 3A6E     		ldr	r2, [r7, #96]
+  48 002c BD6E     		ldr	r5, [r7, #104]
+  49 002e 4946     		mov	r1, r9
+  50 0030 3B6F     		ldr	r3, [r7, #112]
+  51 0032 A218     		adds	r2, r4, r2
+  52 0034 07F12800 		add	r0, r7, #40
+  53 0038 A847     		blx	r5
+  54 003a 4FF00008 		mov	r8, #0
+  55 003e 2546     		mov	r5, r4
+  56 0040 D7F814A0 		ldr	r10, [r7, #20]
+  57 0044 D7F804B0 		ldr	fp, [r7, #4]
+  58 0048 3E6E     		ldr	r6, [r7, #96]
+ARM GAS  /tmp/ccOxwsaZ.s 			page 2
+
+
+  59              	.L9:
+  60 004a 7B6E     		ldr	r3, [r7, #100]
+  61 004c 9845     		cmp	r8, r3
+  62 004e 11D1     		bne	.L2
+  63 0050 FA68     		ldr	r2, [r7, #12]
+  64 0052 07F12804 		add	r4, r7, #40
+  65 0056 07F13805 		add	r5, r7, #56
+  66              	.L3:
+  67 005a 2346     		mov	r3, r4
+  68 005c 03CB     		ldmia	r3!, {r0, r1}
+  69 005e AB42     		cmp	r3, r5
+  70 0060 1060     		str	r0, [r2]	@ unaligned
+  71 0062 5160     		str	r1, [r2, #4]	@ unaligned
+  72 0064 1C46     		mov	r4, r3
+  73 0066 02F10802 		add	r2, r2, #8
+  74 006a F6D1     		bne	.L3
+  75 006c 3C37     		adds	r7, r7, #60
+  76 006e BD46     		mov	sp, r7
+  77              		@ sp needed
+  78 0070 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+  79              	.L2:
+  80 0074 85EA0B02 		eor	r2, r5, fp
+  81 0078 012A     		cmp	r2, #1
+  82 007a 4FEA0813 		lsl	r3, r8, #4
+  83 007e 11D1     		bne	.L4
+  84 0080 BA68     		ldr	r2, [r7, #8]
+  85 0082 07F1280E 		add	lr, r7, #40
+  86 0086 02EB030C 		add	ip, r2, r3
+  87              	.L5:
+  88 008a 7246     		mov	r2, lr
+  89 008c 03CA     		ldmia	r2!, {r0, r1}
+  90 008e CCF80410 		str	r1, [ip, #4]	@ unaligned
+  91 0092 07F13801 		add	r1, r7, #56
+  92 0096 8A42     		cmp	r2, r1
+  93 0098 CCF80000 		str	r0, [ip]	@ unaligned
+  94 009c 9646     		mov	lr, r2
+  95 009e 0CF1080C 		add	ip, ip, #8
+  96 00a2 F2D1     		bne	.L5
+  97              	.L4:
+  98 00a4 EA07     		lsls	r2, r5, #31
+  99 00a6 02D4     		bmi	.L6
+ 100 00a8 3A69     		ldr	r2, [r7, #16]
+ 101 00aa 9442     		cmp	r4, r2
+ 102 00ac 27D3     		bcc	.L7
+ 103              	.L6:
+ 104 00ae 08F10108 		add	r8, r8, #1
+ 105 00b2 4146     		mov	r1, r8
+ 106 00b4 F86E     		ldr	r0, [r7, #108]
+ 107 00b6 7608     		lsrs	r6, r6, #1
+ 108 00b8 6D08     		lsrs	r5, r5, #1
+ 109 00ba FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_height
+ 110 00be F86E     		ldr	r0, [r7, #108]
+ 111 00c0 A919     		adds	r1, r5, r6
+ 112 00c2 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_index
+ 113 00c6 5346     		mov	r3, r10
+ 114 00c8 07F1180C 		add	ip, r7, #24
+ 115 00cc 0AF1100E 		add	lr, r10, #16
+ARM GAS  /tmp/ccOxwsaZ.s 			page 3
+
+
+ 116              	.L8:
+ 117 00d0 6246     		mov	r2, ip
+ 118 00d2 1868     		ldr	r0, [r3]	@ unaligned
+ 119 00d4 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 120 00d6 0833     		adds	r3, r3, #8
+ 121 00d8 03C2     		stmia	r2!, {r0, r1}
+ 122 00da 7345     		cmp	r3, lr
+ 123 00dc 9446     		mov	ip, r2
+ 124 00de F7D1     		bne	.L8
+ 125 00e0 FB6E     		ldr	r3, [r7, #108]
+ 126 00e2 0222     		movs	r2, #2
+ 127 00e4 0093     		str	r3, [sp]
+ 128 00e6 07F11801 		add	r1, r7, #24
+ 129 00ea 4B46     		mov	r3, r9
+ 130 00ec 07F12800 		add	r0, r7, #40
+ 131 00f0 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 132 00f4 4FEA5B0B 		lsr	fp, fp, #1
+ 133 00f8 0AF1100A 		add	r10, r10, #16
+ 134 00fc A5E7     		b	.L9
+ 135              	.L7:
+ 136 00fe 7A69     		ldr	r2, [r7, #20]
+ 137 0100 07F12805 		add	r5, r7, #40
+ 138 0104 1344     		add	r3, r3, r2
+ 139              	.L10:
+ 140 0106 2A46     		mov	r2, r5
+ 141 0108 03CA     		ldmia	r2!, {r0, r1}
+ 142 010a 5960     		str	r1, [r3, #4]	@ unaligned
+ 143 010c 07F13801 		add	r1, r7, #56
+ 144 0110 8A42     		cmp	r2, r1
+ 145 0112 1860     		str	r0, [r3]	@ unaligned
+ 146 0114 1546     		mov	r5, r2
+ 147 0116 03F10803 		add	r3, r3, #8
+ 148 011a F4D1     		bne	.L10
+ 149 011c 0134     		adds	r4, r4, #1
+ 150 011e 84E7     		b	.L11
+ 152              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccOxwsaZ.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 utilsx1.c
+     /tmp/ccOxwsaZ.s:16     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehashx1:0000000000000000 $t
+     /tmp/ccOxwsaZ.s:25     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehashx1:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_treehashx1
+
+UNDEFINED SYMBOLS
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_height
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_index
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash

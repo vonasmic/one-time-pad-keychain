@@ -1,0 +1,253 @@
+ARM GAS  /tmp/cc7jXMX1.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"kem.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 70B5     		push	{r4, r5, r6, lr}
+  29 0002 0C46     		mov	r4, r1
+  30 0004 0646     		mov	r6, r0
+  31 0006 1546     		mov	r5, r2
+  32 0008 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand
+  33 000c 4FF49462 		mov	r2, #1184
+  34 0010 3146     		mov	r1, r6
+  35 0012 04F59060 		add	r0, r4, #1152
+  36 0016 FFF7FEFF 		bl	memcpy
+  37 001a 04F51260 		add	r0, r4, #2336
+  38 001e 4FF49462 		mov	r2, #1184
+  39 0022 3146     		mov	r1, r6
+  40 0024 FFF7FEFF 		bl	sha3_256
+  41 0028 04F51464 		add	r4, r4, #2368
+  42 002c 05F12003 		add	r3, r5, #32
+  43 0030 4035     		adds	r5, r5, #64
+  44              	.L2:
+  45 0032 53F8042B 		ldr	r2, [r3], #4	@ unaligned
+  46 0036 AB42     		cmp	r3, r5
+  47 0038 44F8042B 		str	r2, [r4], #4	@ unaligned
+  48 003c F9D1     		bne	.L2
+  49 003e 0020     		movs	r0, #0
+  50 0040 70BD     		pop	{r4, r5, r6, pc}
+  52              		.section	.text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair,"ax",%progbits
+  53              		.align	1
+  54              		.global	PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  58              		.fpu fpv4-sp-d16
+  60              	PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair:
+ARM GAS  /tmp/cc7jXMX1.s 			page 2
+
+
+  61              		@ args = 0, pretend = 0, frame = 64
+  62              		@ frame_needed = 0, uses_anonymous_args = 0
+  63 0000 30B5     		push	{r4, r5, lr}
+  64 0002 0446     		mov	r4, r0
+  65 0004 0D46     		mov	r5, r1
+  66 0006 91B0     		sub	sp, sp, #68
+  67 0008 4021     		movs	r1, #64
+  68 000a 6846     		mov	r0, sp
+  69 000c FFF7FEFF 		bl	PQCLEAN_randombytes
+  70 0010 6A46     		mov	r2, sp
+  71 0012 2946     		mov	r1, r5
+  72 0014 2046     		mov	r0, r4
+  73 0016 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand
+  74 001a 0020     		movs	r0, #0
+  75 001c 11B0     		add	sp, sp, #68
+  76              		@ sp needed
+  77 001e 30BD     		pop	{r4, r5, pc}
+  79              		.section	.text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand,"ax",%progbits
+  80              		.align	1
+  81              		.global	PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand
+  82              		.syntax unified
+  83              		.thumb
+  84              		.thumb_func
+  85              		.fpu fpv4-sp-d16
+  87              	PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand:
+  88              		@ args = 0, pretend = 0, frame = 128
+  89              		@ frame_needed = 0, uses_anonymous_args = 0
+  90 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  91 0002 A1B0     		sub	sp, sp, #132
+  92 0004 0646     		mov	r6, r0
+  93 0006 0C46     		mov	r4, r1
+  94 0008 1546     		mov	r5, r2
+  95 000a 6F46     		mov	r7, sp
+  96 000c 03F1200C 		add	ip, r3, #32
+  97              	.L6:
+  98 0010 3A46     		mov	r2, r7
+  99 0012 1868     		ldr	r0, [r3]	@ unaligned
+ 100 0014 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 101 0016 0833     		adds	r3, r3, #8
+ 102 0018 03C2     		stmia	r2!, {r0, r1}
+ 103 001a 6345     		cmp	r3, ip
+ 104 001c 1746     		mov	r7, r2
+ 105 001e F7D1     		bne	.L6
+ 106 0020 2946     		mov	r1, r5
+ 107 0022 4FF49462 		mov	r2, #1184
+ 108 0026 08A8     		add	r0, sp, #32
+ 109 0028 FFF7FEFF 		bl	sha3_256
+ 110 002c 4022     		movs	r2, #64
+ 111 002e 6946     		mov	r1, sp
+ 112 0030 0DEB0200 		add	r0, sp, r2
+ 113 0034 18AF     		add	r7, sp, #96
+ 114 0036 FFF7FEFF 		bl	sha3_512
+ 115 003a 2A46     		mov	r2, r5
+ 116 003c 3B46     		mov	r3, r7
+ 117 003e 6946     		mov	r1, sp
+ 118 0040 3046     		mov	r0, r6
+ 119 0042 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_indcpa_enc
+ARM GAS  /tmp/cc7jXMX1.s 			page 3
+
+
+ 120 0046 2246     		mov	r2, r4
+ 121 0048 10AD     		add	r5, sp, #64
+ 122              	.L7:
+ 123 004a 2C46     		mov	r4, r5
+ 124 004c 03CC     		ldmia	r4!, {r0, r1}
+ 125 004e BC42     		cmp	r4, r7
+ 126 0050 1060     		str	r0, [r2]	@ unaligned
+ 127 0052 5160     		str	r1, [r2, #4]	@ unaligned
+ 128 0054 2546     		mov	r5, r4
+ 129 0056 02F10802 		add	r2, r2, #8
+ 130 005a F6D1     		bne	.L7
+ 131 005c 0020     		movs	r0, #0
+ 132 005e 21B0     		add	sp, sp, #132
+ 133              		@ sp needed
+ 134 0060 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 136              		.section	.text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc,"ax",%progbits
+ 137              		.align	1
+ 138              		.global	PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc
+ 139              		.syntax unified
+ 140              		.thumb
+ 141              		.thumb_func
+ 142              		.fpu fpv4-sp-d16
+ 144              	PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc:
+ 145              		@ args = 0, pretend = 0, frame = 40
+ 146              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147 0000 30B5     		push	{r4, r5, lr}
+ 148 0002 0446     		mov	r4, r0
+ 149 0004 0D46     		mov	r5, r1
+ 150 0006 8BB0     		sub	sp, sp, #44
+ 151 0008 2021     		movs	r1, #32
+ 152 000a 02A8     		add	r0, sp, #8
+ 153 000c 0192     		str	r2, [sp, #4]
+ 154 000e FFF7FEFF 		bl	PQCLEAN_randombytes
+ 155 0012 2946     		mov	r1, r5
+ 156 0014 2046     		mov	r0, r4
+ 157 0016 019A     		ldr	r2, [sp, #4]
+ 158 0018 02AB     		add	r3, sp, #8
+ 159 001a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand
+ 160 001e 0020     		movs	r0, #0
+ 161 0020 0BB0     		add	sp, sp, #44
+ 162              		@ sp needed
+ 163 0022 30BD     		pop	{r4, r5, pc}
+ 165              		.section	.text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_dec,"ax",%progbits
+ 166              		.align	1
+ 167              		.global	PQCLEAN_MLKEM768_CLEAN_crypto_kem_dec
+ 168              		.syntax unified
+ 169              		.thumb
+ 170              		.thumb_func
+ 171              		.fpu fpv4-sp-d16
+ 173              	PQCLEAN_MLKEM768_CLEAN_crypto_kem_dec:
+ 174              		@ args = 0, pretend = 0, frame = 1248
+ 175              		@ frame_needed = 0, uses_anonymous_args = 0
+ 176 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 177 0002 1546     		mov	r5, r2
+ 178 0004 ADF2E44D 		subw	sp, sp, #1252
+ 179 0008 0646     		mov	r6, r0
+ 180 000a 6846     		mov	r0, sp
+ARM GAS  /tmp/cc7jXMX1.s 			page 4
+
+
+ 181 000c 0F46     		mov	r7, r1
+ 182 000e 05F51264 		add	r4, r5, #2336
+ 183 0012 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_indcpa_dec
+ 184 0016 08AA     		add	r2, sp, #32
+ 185 0018 05F5146C 		add	ip, r5, #2368
+ 186              	.L12:
+ 187 001c 1346     		mov	r3, r2
+ 188 001e 2068     		ldr	r0, [r4]	@ unaligned
+ 189 0020 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 190 0022 0834     		adds	r4, r4, #8
+ 191 0024 03C3     		stmia	r3!, {r0, r1}
+ 192 0026 6445     		cmp	r4, ip
+ 193 0028 1A46     		mov	r2, r3
+ 194 002a F7D1     		bne	.L12
+ 195 002c 4022     		movs	r2, #64
+ 196 002e 6946     		mov	r1, sp
+ 197 0030 0DEB0200 		add	r0, sp, r2
+ 198 0034 FFF7FEFF 		bl	sha3_512
+ 199 0038 18AB     		add	r3, sp, #96
+ 200 003a 6946     		mov	r1, sp
+ 201 003c 05F59062 		add	r2, r5, #1152
+ 202 0040 20A8     		add	r0, sp, #128
+ 203 0042 FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_indcpa_enc
+ 204 0046 20A9     		add	r1, sp, #128
+ 205 0048 4FF48862 		mov	r2, #1088
+ 206 004c 3846     		mov	r0, r7
+ 207 004e FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_verify
+ 208 0052 0546     		mov	r5, r0
+ 209 0054 3A46     		mov	r2, r7
+ 210 0056 2146     		mov	r1, r4
+ 211 0058 3046     		mov	r0, r6
+ 212 005a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf
+ 213 005e C5F10103 		rsb	r3, r5, #1
+ 214 0062 3046     		mov	r0, r6
+ 215 0064 2022     		movs	r2, #32
+ 216 0066 DBB2     		uxtb	r3, r3
+ 217 0068 10A9     		add	r1, sp, #64
+ 218 006a FFF7FEFF 		bl	PQCLEAN_MLKEM768_CLEAN_cmov
+ 219 006e 0020     		movs	r0, #0
+ 220 0070 0DF2E44D 		addw	sp, sp, #1252
+ 221              		@ sp needed
+ 222 0074 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 224              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc7jXMX1.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 kem.c
+     /tmp/cc7jXMX1.s:16     .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand:0000000000000000 $t
+     /tmp/cc7jXMX1.s:25     .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand:0000000000000000 PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair_derand
+     /tmp/cc7jXMX1.s:53     .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair:0000000000000000 $t
+     /tmp/cc7jXMX1.s:60     .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair:0000000000000000 PQCLEAN_MLKEM768_CLEAN_crypto_kem_keypair
+     /tmp/cc7jXMX1.s:80     .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand:0000000000000000 $t
+     /tmp/cc7jXMX1.s:87     .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand:0000000000000000 PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc_derand
+     /tmp/cc7jXMX1.s:137    .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc:0000000000000000 $t
+     /tmp/cc7jXMX1.s:144    .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc:0000000000000000 PQCLEAN_MLKEM768_CLEAN_crypto_kem_enc
+     /tmp/cc7jXMX1.s:166    .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_dec:0000000000000000 $t
+     /tmp/cc7jXMX1.s:173    .text.PQCLEAN_MLKEM768_CLEAN_crypto_kem_dec:0000000000000000 PQCLEAN_MLKEM768_CLEAN_crypto_kem_dec
+
+UNDEFINED SYMBOLS
+PQCLEAN_MLKEM768_CLEAN_indcpa_keypair_derand
+memcpy
+sha3_256
+PQCLEAN_randombytes
+sha3_512
+PQCLEAN_MLKEM768_CLEAN_indcpa_enc
+PQCLEAN_MLKEM768_CLEAN_indcpa_dec
+PQCLEAN_MLKEM768_CLEAN_verify
+PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf
+PQCLEAN_MLKEM768_CLEAN_cmov

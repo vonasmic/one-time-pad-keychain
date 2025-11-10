@@ -1,0 +1,592 @@
+ARM GAS  /tmp/cckMzTS1.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"kdf.c"
+  14              		.text
+  15              		.section	.text.ForceZero,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	ForceZero:
+  25              		@ args = 0, pretend = 0, frame = 8
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+  28 0002 0346     		mov	r3, r0
+  29 0004 0C46     		mov	r4, r1
+  30 0006 BFF35B8F 		dmb	ish
+  31 000a 0022     		movs	r2, #0
+  32              	.L2:
+  33 000c 13F00301 		ands	r1, r3, #3
+  34 0010 13D1     		bne	.L4
+  35 0012 24F00305 		bic	r5, r4, #3
+  36 0016 2A46     		mov	r2, r5
+  37 0018 1846     		mov	r0, r3
+  38 001a 0191     		str	r1, [sp, #4]
+  39 001c FFF7FEFF 		bl	memset
+  40 0020 6FF00302 		mvn	r2, #3
+  41 0024 A608     		lsrs	r6, r4, #2
+  42 0026 02FB0642 		mla	r2, r2, r6, r4
+  43 002a 0199     		ldr	r1, [sp, #4]
+  44 002c 2844     		add	r0, r0, r5
+  45 002e FFF7FEFF 		bl	memset
+  46 0032 BFF35B8F 		dmb	ish
+  47              	.L1:
+  48 0036 02B0     		add	sp, sp, #8
+  49              		@ sp needed
+  50 0038 70BD     		pop	{r4, r5, r6, pc}
+  51              	.L4:
+  52 003a 002C     		cmp	r4, #0
+  53 003c FBD0     		beq	.L1
+  54 003e 03F8012B 		strb	r2, [r3], #1
+  55 0042 013C     		subs	r4, r4, #1
+  56 0044 E2E7     		b	.L2
+  58              		.section	.text.wc_PRF,"ax",%progbits
+  59              		.align	1
+ARM GAS  /tmp/cckMzTS1.s 			page 2
+
+
+  60              		.global	wc_PRF
+  61              		.syntax unified
+  62              		.thumb
+  63              		.thumb_func
+  64              		.fpu fpv4-sp-d16
+  66              	wc_PRF:
+  67              		@ args = 20, pretend = 0, frame = 16
+  68              		@ frame_needed = 0, uses_anonymous_args = 0
+  69 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  70 0004 85B0     		sub	sp, sp, #20
+  71 0006 9146     		mov	r9, r2
+  72 0008 109A     		ldr	r2, [sp, #64]
+  73 000a 0090     		str	r0, [sp]
+  74 000c 022A     		cmp	r2, #2
+  75 000e 1FD0     		beq	.L22
+  76 0010 042A     		cmp	r2, #4
+  77 0012 40F0A880 		bne	.L23
+  78 0016 2027     		movs	r7, #32
+  79 0018 4FF0060A 		mov	r10, #6
+  80              	.L10:
+  81 001c B1FBF7F8 		udiv	r8, r1, r7
+  82 0020 07FB181B 		mls	fp, r7, r8, r1
+  83 0024 BBF1000F 		cmp	fp, #0
+  84 0028 16D0     		beq	.L12
+  85 002a 08F10108 		add	r8, r8, #1
+  86              	.L13:
+  87 002e 2020     		movs	r0, #32
+  88 0030 0193     		str	r3, [sp, #4]
+  89 0032 FFF7FEFF 		bl	wolfSSL_Malloc
+  90 0036 0646     		mov	r6, r0
+  91 0038 4FF44070 		mov	r0, #768
+  92 003c FFF7FEFF 		bl	wolfSSL_Malloc
+  93 0040 0546     		mov	r5, r0
+  94 0042 76B1     		cbz	r6, .L14
+  95 0044 019B     		ldr	r3, [sp, #4]
+  96 0046 88B9     		cbnz	r0, .L15
+  97 0048 3046     		mov	r0, r6
+  98              	.L31:
+  99 004a FFF7FEFF 		bl	wolfSSL_Free
+ 100 004e 0AE0     		b	.L25
+ 101              	.L22:
+ 102 0050 1427     		movs	r7, #20
+ 103 0052 4FF0040A 		mov	r10, #4
+ 104 0056 E1E7     		b	.L10
+ 105              	.L12:
+ 106 0058 8F42     		cmp	r7, r1
+ 107 005a E8D9     		bls	.L13
+ 108 005c 6FF0AC04 		mvn	r4, #172
+ 109 0060 7DE0     		b	.L9
+ 110              	.L14:
+ 111 0062 0028     		cmp	r0, #0
+ 112 0064 F1D1     		bne	.L31
+ 113              	.L25:
+ 114 0066 6FF07C04 		mvn	r4, #124
+ 115 006a 78E0     		b	.L9
+ 116              	.L15:
+ 117 006c DDE91112 		ldrd	r1, r2, [sp, #68]
+ARM GAS  /tmp/cckMzTS1.s 			page 3
+
+
+ 118 0070 0193     		str	r3, [sp, #4]
+ 119 0072 FFF7FEFF 		bl	wc_HmacInit
+ 120 0076 019B     		ldr	r3, [sp, #4]
+ 121 0078 0446     		mov	r4, r0
+ 122 007a 0028     		cmp	r0, #0
+ 123 007c 60D1     		bne	.L16
+ 124 007e 4A46     		mov	r2, r9
+ 125 0080 5146     		mov	r1, r10
+ 126 0082 2846     		mov	r0, r5
+ 127 0084 FFF7FEFF 		bl	wc_HmacSetKey
+ 128 0088 0446     		mov	r4, r0
+ 129 008a 0028     		cmp	r0, #0
+ 130 008c 55D1     		bne	.L17
+ 131 008e DDE90E12 		ldrd	r1, r2, [sp, #56]
+ 132 0092 2846     		mov	r0, r5
+ 133 0094 FFF7FEFF 		bl	wc_HmacUpdate
+ 134 0098 0446     		mov	r4, r0
+ 135 009a 0028     		cmp	r0, #0
+ 136 009c 4DD1     		bne	.L17
+ 137 009e 3146     		mov	r1, r6
+ 138 00a0 2846     		mov	r0, r5
+ 139 00a2 FFF7FEFF 		bl	wc_HmacFinal
+ 140 00a6 0446     		mov	r4, r0
+ 141 00a8 0028     		cmp	r0, #0
+ 142 00aa 46D1     		bne	.L17
+ 143 00ac 8146     		mov	r9, r0
+ 144 00ae 8246     		mov	r10, r0
+ 145 00b0 08F1FF33 		add	r3, r8, #-1
+ 146 00b4 0193     		str	r3, [sp, #4]
+ 147              	.L21:
+ 148 00b6 3A46     		mov	r2, r7
+ 149 00b8 3146     		mov	r1, r6
+ 150 00ba 2846     		mov	r0, r5
+ 151 00bc FFF7FEFF 		bl	wc_HmacUpdate
+ 152 00c0 0446     		mov	r4, r0
+ 153 00c2 0028     		cmp	r0, #0
+ 154 00c4 39D1     		bne	.L17
+ 155 00c6 DDE90E12 		ldrd	r1, r2, [sp, #56]
+ 156 00ca 2846     		mov	r0, r5
+ 157 00cc FFF7FEFF 		bl	wc_HmacUpdate
+ 158 00d0 0446     		mov	r4, r0
+ 159 00d2 90BB     		cbnz	r0, .L17
+ 160 00d4 019B     		ldr	r3, [sp, #4]
+ 161 00d6 5345     		cmp	r3, r10
+ 162 00d8 02D1     		bne	.L18
+ 163 00da BBF1000F 		cmp	fp, #0
+ 164 00de 14D1     		bne	.L19
+ 165              	.L18:
+ 166 00e0 009B     		ldr	r3, [sp]
+ 167 00e2 2846     		mov	r0, r5
+ 168 00e4 03EB0901 		add	r1, r3, r9
+ 169 00e8 FFF7FEFF 		bl	wc_HmacFinal
+ 170 00ec 58B9     		cbnz	r0, .L29
+ 171 00ee 3A46     		mov	r2, r7
+ 172 00f0 3146     		mov	r1, r6
+ 173 00f2 2846     		mov	r0, r5
+ 174 00f4 B944     		add	r9, r9, r7
+ARM GAS  /tmp/cckMzTS1.s 			page 4
+
+
+ 175 00f6 FFF7FEFF 		bl	wc_HmacUpdate
+ 176 00fa 20B9     		cbnz	r0, .L29
+ 177 00fc 3146     		mov	r1, r6
+ 178 00fe 2846     		mov	r0, r5
+ 179 0100 FFF7FEFF 		bl	wc_HmacFinal
+ 180 0104 A8B1     		cbz	r0, .L20
+ 181              	.L29:
+ 182 0106 0446     		mov	r4, r0
+ 183 0108 17E0     		b	.L17
+ 184              	.L19:
+ 185 010a 3146     		mov	r1, r6
+ 186 010c 2846     		mov	r0, r5
+ 187 010e FFF7FEFF 		bl	wc_HmacFinal
+ 188 0112 0028     		cmp	r0, #0
+ 189 0114 F7D1     		bne	.L29
+ 190 0116 0394     		str	r4, [sp, #12]
+ 191 0118 039A     		ldr	r2, [sp, #12]
+ 192 011a 039B     		ldr	r3, [sp, #12]
+ 193 011c 2BEA0202 		bic	r2, fp, r2
+ 194 0120 03F02003 		and	r3, r3, #32
+ 195 0124 1A43     		orrs	r2, r2, r3
+ 196 0126 009B     		ldr	r3, [sp]
+ 197 0128 3146     		mov	r1, r6
+ 198 012a 03EB0900 		add	r0, r3, r9
+ 199 012e FFF7FEFF 		bl	memcpy
+ 200              	.L20:
+ 201 0132 0AF1010A 		add	r10, r10, #1
+ 202 0136 C245     		cmp	r10, r8
+ 203 0138 BDD3     		bcc	.L21
+ 204              	.L17:
+ 205 013a 2846     		mov	r0, r5
+ 206 013c FFF7FEFF 		bl	wc_HmacFree
+ 207              	.L16:
+ 208 0140 2021     		movs	r1, #32
+ 209 0142 3046     		mov	r0, r6
+ 210 0144 FFF7FEFF 		bl	ForceZero
+ 211 0148 4FF44071 		mov	r1, #768
+ 212 014c 2846     		mov	r0, r5
+ 213 014e FFF7FEFF 		bl	ForceZero
+ 214 0152 3046     		mov	r0, r6
+ 215 0154 FFF7FEFF 		bl	wolfSSL_Free
+ 216 0158 2846     		mov	r0, r5
+ 217 015a FFF7FEFF 		bl	wolfSSL_Free
+ 218              	.L9:
+ 219 015e 2046     		mov	r0, r4
+ 220 0160 05B0     		add	sp, sp, #20
+ 221              		@ sp needed
+ 222 0162 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 223              	.L23:
+ 224 0166 6FF0E704 		mvn	r4, #231
+ 225 016a F8E7     		b	.L9
+ 227              		.section	.text.wc_PRF_TLSv1,"ax",%progbits
+ 228              		.align	1
+ 229              		.global	wc_PRF_TLSv1
+ 230              		.syntax unified
+ 231              		.thumb
+ 232              		.thumb_func
+ARM GAS  /tmp/cckMzTS1.s 			page 5
+
+
+ 233              		.fpu fpv4-sp-d16
+ 235              	wc_PRF_TLSv1:
+ 236              		@ args = 24, pretend = 0, frame = 0
+ 237              		@ frame_needed = 0, uses_anonymous_args = 0
+ 238 0000 40F20922 		movw	r2, #521
+ 239 0004 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 240 0006 0133     		adds	r3, r3, #1
+ 241 0008 9342     		cmp	r3, r2
+ 242 000a 079E     		ldr	r6, [sp, #28]
+ 243 000c 099F     		ldr	r7, [sp, #36]
+ 244 000e 29D8     		bhi	.L38
+ 245 0010 F319     		adds	r3, r6, r7
+ 246 0012 802B     		cmp	r3, #128
+ 247 0014 26D8     		bhi	.L38
+ 248 0016 E029     		cmp	r1, #224
+ 249 0018 24D8     		bhi	.L38
+ 250 001a E020     		movs	r0, #224
+ 251 001c FFF7FEFF 		bl	wolfSSL_Malloc
+ 252 0020 0546     		mov	r5, r0
+ 253 0022 8020     		movs	r0, #128
+ 254 0024 FFF7FEFF 		bl	wolfSSL_Malloc
+ 255 0028 0446     		mov	r4, r0
+ 256 002a 25B1     		cbz	r5, .L34
+ 257 002c 40B9     		cbnz	r0, .L35
+ 258 002e 2846     		mov	r0, r5
+ 259              	.L40:
+ 260 0030 FFF7FEFF 		bl	wolfSSL_Free
+ 261 0034 01E0     		b	.L39
+ 262              	.L34:
+ 263 0036 0028     		cmp	r0, #0
+ 264 0038 FAD1     		bne	.L40
+ 265              	.L39:
+ 266 003a 6FF07C00 		mvn	r0, #124
+ 267 003e 10E0     		b	.L32
+ 268              	.L35:
+ 269 0040 3246     		mov	r2, r6
+ 270 0042 0699     		ldr	r1, [sp, #24]
+ 271 0044 FFF7FEFF 		bl	memcpy
+ 272 0048 3A46     		mov	r2, r7
+ 273 004a 0899     		ldr	r1, [sp, #32]
+ 274 004c A019     		adds	r0, r4, r6
+ 275 004e FFF7FEFF 		bl	memcpy
+ 276 0052 2846     		mov	r0, r5
+ 277 0054 FFF7FEFF 		bl	wolfSSL_Free
+ 278 0058 2046     		mov	r0, r4
+ 279 005a FFF7FEFF 		bl	wolfSSL_Free
+ 280 005e 6FF0E700 		mvn	r0, #231
+ 281              	.L32:
+ 282 0062 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 283              	.L38:
+ 284 0064 6FF08300 		mvn	r0, #131
+ 285 0068 FBE7     		b	.L32
+ 287              		.section	.text.wc_PRF_TLS,"ax",%progbits
+ 288              		.align	1
+ 289              		.global	wc_PRF_TLS
+ 290              		.syntax unified
+ 291              		.thumb
+ARM GAS  /tmp/cckMzTS1.s 			page 6
+
+
+ 292              		.thumb_func
+ 293              		.fpu fpv4-sp-d16
+ 295              	wc_PRF_TLS:
+ 296              		@ args = 32, pretend = 0, frame = 8
+ 297              		@ frame_needed = 0, uses_anonymous_args = 0
+ 298 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 299 0004 89B0     		sub	sp, sp, #36
+ 300 0006 9046     		mov	r8, r2
+ 301 0008 DDE915B2 		ldrd	fp, r2, [sp, #84]
+ 302 000c 0646     		mov	r6, r0
+ 303 000e 0F46     		mov	r7, r1
+ 304 0010 DDF84C90 		ldr	r9, [sp, #76]
+ 305 0014 179C     		ldr	r4, [sp, #92]
+ 306 0016 0793     		str	r3, [sp, #28]
+ 307 0018 7AB3     		cbz	r2, .L44
+ 308 001a 09EB0B0A 		add	r10, r9, fp
+ 309 001e BAF1800F 		cmp	r10, #128
+ 310 0022 2DD8     		bhi	.L45
+ 311 0024 8020     		movs	r0, #128
+ 312 0026 FFF7FEFF 		bl	wolfSSL_Malloc
+ 313 002a 0546     		mov	r5, r0
+ 314 002c 58B3     		cbz	r0, .L46
+ 315 002e 4A46     		mov	r2, r9
+ 316 0030 1299     		ldr	r1, [sp, #72]
+ 317 0032 FFF7FEFF 		bl	memcpy
+ 318 0036 5A46     		mov	r2, fp
+ 319 0038 1499     		ldr	r1, [sp, #80]
+ 320 003a 05EB0900 		add	r0, r5, r9
+ 321 003e FFF7FEFF 		bl	memcpy
+ 322 0042 032C     		cmp	r4, #3
+ 323 0044 079B     		ldr	r3, [sp, #28]
+ 324 0046 16DD     		ble	.L47
+ 325 0048 082C     		cmp	r4, #8
+ 326 004a 08BF     		it	eq
+ 327 004c 0424     		moveq	r4, #4
+ 328              	.L43:
+ 329 004e 199A     		ldr	r2, [sp, #100]
+ 330 0050 3946     		mov	r1, r7
+ 331 0052 0492     		str	r2, [sp, #16]
+ 332 0054 189A     		ldr	r2, [sp, #96]
+ 333 0056 3046     		mov	r0, r6
+ 334 0058 CDE90242 		strd	r4, r2, [sp, #8]
+ 335 005c CDE9005A 		strd	r5, r10, [sp]
+ 336 0060 4246     		mov	r2, r8
+ 337 0062 FFF7FEFF 		bl	wc_PRF
+ 338 0066 0446     		mov	r4, r0
+ 339 0068 2846     		mov	r0, r5
+ 340 006a FFF7FEFF 		bl	wolfSSL_Free
+ 341              	.L41:
+ 342 006e 2046     		mov	r0, r4
+ 343 0070 09B0     		add	sp, sp, #36
+ 344              		@ sp needed
+ 345 0072 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 346              	.L47:
+ 347 0076 0424     		movs	r4, #4
+ 348 0078 E9E7     		b	.L43
+ 349              	.L44:
+ARM GAS  /tmp/cckMzTS1.s 			page 7
+
+
+ 350 007a 6FF0AC04 		mvn	r4, #172
+ 351 007e F6E7     		b	.L41
+ 352              	.L45:
+ 353 0080 6FF08304 		mvn	r4, #131
+ 354 0084 F3E7     		b	.L41
+ 355              	.L46:
+ 356 0086 6FF07C04 		mvn	r4, #124
+ 357 008a F0E7     		b	.L41
+ 359              		.section	.text.wc_Tls13_HKDF_Extract_ex,"ax",%progbits
+ 360              		.align	1
+ 361              		.global	wc_Tls13_HKDF_Extract_ex
+ 362              		.syntax unified
+ 363              		.thumb
+ 364              		.thumb_func
+ 365              		.fpu fpv4-sp-d16
+ 367              	wc_Tls13_HKDF_Extract_ex:
+ 368              		@ args = 16, pretend = 0, frame = 0
+ 369              		@ frame_needed = 0, uses_anonymous_args = 0
+ 370 0000 2DE9F042 		push	{r4, r5, r6, r7, r9, lr}
+ 371 0004 0D46     		mov	r5, r1
+ 372 0006 06A9     		add	r1, sp, #24
+ 373 0008 1646     		mov	r6, r2
+ 374 000a 91E81602 		ldm	r1, {r1, r2, r4, r9}
+ 375 000e 062A     		cmp	r2, #6
+ 376 0010 0746     		mov	r7, r0
+ 377 0012 11D1     		bne	.L49
+ 378 0014 29B9     		cbnz	r1, .L50
+ 379 0016 1846     		mov	r0, r3
+ 380 0018 2022     		movs	r2, #32
+ 381 001a FFF7FEFF 		bl	memset
+ 382 001e 2021     		movs	r1, #32
+ 383 0020 0346     		mov	r3, r0
+ 384              	.L50:
+ 385 0022 CDE90617 		strd	r1, r7, [sp, #24]
+ 386 0026 3246     		mov	r2, r6
+ 387 0028 2946     		mov	r1, r5
+ 388 002a CDE90849 		strd	r4, r9, [sp, #32]
+ 389 002e BDE8F042 		pop	{r4, r5, r6, r7, r9, lr}
+ 390 0032 0620     		movs	r0, #6
+ 391 0034 FFF7FEBF 		b	wc_HKDF_Extract_ex
+ 392              	.L49:
+ 393 0038 6FF0AC00 		mvn	r0, #172
+ 394 003c BDE8F082 		pop	{r4, r5, r6, r7, r9, pc}
+ 396              		.section	.text.wc_Tls13_HKDF_Extract,"ax",%progbits
+ 397              		.align	1
+ 398              		.global	wc_Tls13_HKDF_Extract
+ 399              		.syntax unified
+ 400              		.thumb
+ 401              		.thumb_func
+ 402              		.fpu fpv4-sp-d16
+ 404              	wc_Tls13_HKDF_Extract:
+ 405              		@ args = 8, pretend = 0, frame = 0
+ 406              		@ frame_needed = 0, uses_anonymous_args = 0
+ 407 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 408 0002 6FF0010C 		mvn	ip, #1
+ 409 0006 0024     		movs	r4, #0
+ 410 0008 CDE9024C 		strd	r4, ip, [sp, #8]
+ARM GAS  /tmp/cckMzTS1.s 			page 8
+
+
+ 411 000c 079C     		ldr	r4, [sp, #28]
+ 412 000e 0194     		str	r4, [sp, #4]
+ 413 0010 069C     		ldr	r4, [sp, #24]
+ 414 0012 0094     		str	r4, [sp]
+ 415 0014 FFF7FEFF 		bl	wc_Tls13_HKDF_Extract_ex
+ 416 0018 04B0     		add	sp, sp, #16
+ 417              		@ sp needed
+ 418 001a 10BD     		pop	{r4, pc}
+ 420              		.section	.text.wc_Tls13_HKDF_Expand_Label_ex,"ax",%progbits
+ 421              		.align	1
+ 422              		.global	wc_Tls13_HKDF_Expand_Label_ex
+ 423              		.syntax unified
+ 424              		.thumb
+ 425              		.thumb_func
+ 426              		.fpu fpv4-sp-d16
+ 428              	wc_Tls13_HKDF_Expand_Label_ex:
+ 429              		@ args = 36, pretend = 0, frame = 0
+ 430              		@ frame_needed = 0, uses_anonymous_args = 0
+ 431 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 432 0004 87B0     		sub	sp, sp, #28
+ 433 0006 159F     		ldr	r7, [sp, #84]
+ 434 0008 DDF84C80 		ldr	r8, [sp, #76]
+ 435 000c 8346     		mov	fp, r0
+ 436 000e 119D     		ldr	r5, [sp, #68]
+ 437 0010 381D     		adds	r0, r7, #4
+ 438 0012 4044     		add	r0, r0, r8
+ 439 0014 2844     		add	r0, r0, r5
+ 440 0016 6F28     		cmp	r0, #111
+ 441 0018 0E46     		mov	r6, r1
+ 442 001a 9146     		mov	r9, r2
+ 443 001c 9A46     		mov	r10, r3
+ 444 001e 40D8     		bhi	.L57
+ 445 0020 FFF7FEFF 		bl	wolfSSL_Malloc
+ 446 0024 0446     		mov	r4, r0
+ 447 0026 0028     		cmp	r0, #0
+ 448 0028 3ED0     		beq	.L58
+ 449 002a 330A     		lsrs	r3, r6, #8
+ 450 002c 0370     		strb	r3, [r0]
+ 451 002e 05EB0803 		add	r3, r5, r8
+ 452 0032 4670     		strb	r6, [r0, #1]
+ 453 0034 8370     		strb	r3, [r0, #2]
+ 454 0036 95B3     		cbz	r5, .L59
+ 455 0038 2A46     		mov	r2, r5
+ 456 003a 1099     		ldr	r1, [sp, #64]
+ 457 003c 0330     		adds	r0, r0, #3
+ 458 003e FFF7FEFF 		bl	memcpy
+ 459 0042 0335     		adds	r5, r5, #3
+ 460              	.L54:
+ 461 0044 B8F1000F 		cmp	r8, #0
+ 462 0048 05D0     		beq	.L55
+ 463 004a 6019     		adds	r0, r4, r5
+ 464 004c 4246     		mov	r2, r8
+ 465 004e 1299     		ldr	r1, [sp, #72]
+ 466 0050 FFF7FEFF 		bl	memcpy
+ 467 0054 4544     		add	r5, r5, r8
+ 468              	.L55:
+ 469 0056 05F10108 		add	r8, r5, #1
+ARM GAS  /tmp/cckMzTS1.s 			page 9
+
+
+ 470 005a 6755     		strb	r7, [r4, r5]
+ 471 005c 37B1     		cbz	r7, .L56
+ 472 005e 04EB0800 		add	r0, r4, r8
+ 473 0062 3A46     		mov	r2, r7
+ 474 0064 1499     		ldr	r1, [sp, #80]
+ 475 0066 FFF7FEFF 		bl	memcpy
+ 476 006a B844     		add	r8, r8, r7
+ 477              	.L56:
+ 478 006c 189B     		ldr	r3, [sp, #96]
+ 479 006e 5246     		mov	r2, r10
+ 480 0070 0493     		str	r3, [sp, #16]
+ 481 0072 179B     		ldr	r3, [sp, #92]
+ 482 0074 4946     		mov	r1, r9
+ 483 0076 CDE90263 		strd	r6, r3, [sp, #8]
+ 484 007a CDE9008B 		strd	r8, fp, [sp]
+ 485 007e 2346     		mov	r3, r4
+ 486 0080 1698     		ldr	r0, [sp, #88]
+ 487 0082 FFF7FEFF 		bl	wc_HKDF_Expand_ex
+ 488 0086 4146     		mov	r1, r8
+ 489 0088 0546     		mov	r5, r0
+ 490 008a 2046     		mov	r0, r4
+ 491 008c FFF7FEFF 		bl	ForceZero
+ 492 0090 2046     		mov	r0, r4
+ 493 0092 FFF7FEFF 		bl	wolfSSL_Free
+ 494              	.L52:
+ 495 0096 2846     		mov	r0, r5
+ 496 0098 07B0     		add	sp, sp, #28
+ 497              		@ sp needed
+ 498 009a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 499              	.L59:
+ 500 009e 0325     		movs	r5, #3
+ 501 00a0 D0E7     		b	.L54
+ 502              	.L57:
+ 503 00a2 6FF08305 		mvn	r5, #131
+ 504 00a6 F6E7     		b	.L52
+ 505              	.L58:
+ 506 00a8 6FF07C05 		mvn	r5, #124
+ 507 00ac F3E7     		b	.L52
+ 509              		.section	.text.wc_Tls13_HKDF_Expand_Label,"ax",%progbits
+ 510              		.align	1
+ 511              		.global	wc_Tls13_HKDF_Expand_Label
+ 512              		.syntax unified
+ 513              		.thumb
+ 514              		.thumb_func
+ 515              		.fpu fpv4-sp-d16
+ 517              	wc_Tls13_HKDF_Expand_Label:
+ 518              		@ args = 28, pretend = 0, frame = 0
+ 519              		@ frame_needed = 0, uses_anonymous_args = 0
+ 520 0000 10B5     		push	{r4, lr}
+ 521 0002 6FF0010C 		mvn	ip, #1
+ 522 0006 0024     		movs	r4, #0
+ 523 0008 8AB0     		sub	sp, sp, #40
+ 524 000a CDE9074C 		strd	r4, ip, [sp, #28]
+ 525 000e 129C     		ldr	r4, [sp, #72]
+ 526 0010 0694     		str	r4, [sp, #24]
+ 527 0012 119C     		ldr	r4, [sp, #68]
+ 528 0014 0594     		str	r4, [sp, #20]
+ARM GAS  /tmp/cckMzTS1.s 			page 10
+
+
+ 529 0016 109C     		ldr	r4, [sp, #64]
+ 530 0018 0494     		str	r4, [sp, #16]
+ 531 001a 0F9C     		ldr	r4, [sp, #60]
+ 532 001c 0394     		str	r4, [sp, #12]
+ 533 001e 0E9C     		ldr	r4, [sp, #56]
+ 534 0020 0294     		str	r4, [sp, #8]
+ 535 0022 0D9C     		ldr	r4, [sp, #52]
+ 536 0024 0194     		str	r4, [sp, #4]
+ 537 0026 0C9C     		ldr	r4, [sp, #48]
+ 538 0028 0094     		str	r4, [sp]
+ 539 002a FFF7FEFF 		bl	wc_Tls13_HKDF_Expand_Label_ex
+ 540 002e 0AB0     		add	sp, sp, #40
+ 541              		@ sp needed
+ 542 0030 10BD     		pop	{r4, pc}
+ 544              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cckMzTS1.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 kdf.c
+     /tmp/cckMzTS1.s:16     .text.ForceZero:0000000000000000 $t
+     /tmp/cckMzTS1.s:24     .text.ForceZero:0000000000000000 ForceZero
+     /tmp/cckMzTS1.s:59     .text.wc_PRF:0000000000000000 $t
+     /tmp/cckMzTS1.s:66     .text.wc_PRF:0000000000000000 wc_PRF
+     /tmp/cckMzTS1.s:228    .text.wc_PRF_TLSv1:0000000000000000 $t
+     /tmp/cckMzTS1.s:235    .text.wc_PRF_TLSv1:0000000000000000 wc_PRF_TLSv1
+     /tmp/cckMzTS1.s:288    .text.wc_PRF_TLS:0000000000000000 $t
+     /tmp/cckMzTS1.s:295    .text.wc_PRF_TLS:0000000000000000 wc_PRF_TLS
+     /tmp/cckMzTS1.s:360    .text.wc_Tls13_HKDF_Extract_ex:0000000000000000 $t
+     /tmp/cckMzTS1.s:367    .text.wc_Tls13_HKDF_Extract_ex:0000000000000000 wc_Tls13_HKDF_Extract_ex
+     /tmp/cckMzTS1.s:397    .text.wc_Tls13_HKDF_Extract:0000000000000000 $t
+     /tmp/cckMzTS1.s:404    .text.wc_Tls13_HKDF_Extract:0000000000000000 wc_Tls13_HKDF_Extract
+     /tmp/cckMzTS1.s:421    .text.wc_Tls13_HKDF_Expand_Label_ex:0000000000000000 $t
+     /tmp/cckMzTS1.s:428    .text.wc_Tls13_HKDF_Expand_Label_ex:0000000000000000 wc_Tls13_HKDF_Expand_Label_ex
+     /tmp/cckMzTS1.s:510    .text.wc_Tls13_HKDF_Expand_Label:0000000000000000 $t
+     /tmp/cckMzTS1.s:517    .text.wc_Tls13_HKDF_Expand_Label:0000000000000000 wc_Tls13_HKDF_Expand_Label
+
+UNDEFINED SYMBOLS
+memset
+wolfSSL_Malloc
+wolfSSL_Free
+wc_HmacInit
+wc_HmacSetKey
+wc_HmacUpdate
+wc_HmacFinal
+memcpy
+wc_HmacFree
+wc_HKDF_Extract_ex
+wc_HKDF_Expand_ex

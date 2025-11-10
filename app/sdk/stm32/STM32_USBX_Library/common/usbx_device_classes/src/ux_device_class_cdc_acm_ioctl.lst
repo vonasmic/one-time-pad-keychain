@@ -1,0 +1,181 @@
+ARM GAS  /tmp/ccvp4TKm.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_class_cdc_acm_ioctl.c"
+  14              		.text
+  15              		.section	.text._ux_device_class_cdc_acm_ioctl,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_class_cdc_acm_ioctl
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_class_cdc_acm_ioctl:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 4B1E     		subs	r3, r1, #1
+  29 0002 70B5     		push	{r4, r5, r6, lr}
+  30 0004 0546     		mov	r5, r0
+  31 0006 1446     		mov	r4, r2
+  32 0008 082B     		cmp	r3, #8
+  33 000a 5CD8     		bhi	.L2
+  34 000c DFE803F0 		tbb	[pc, r3]
+  35              	.L4:
+  36 0010 05       		.byte	(.L9-.L4)/2
+  37 0011 12       		.byte	(.L8-.L4)/2
+  38 0012 1E       		.byte	(.L7-.L4)/2
+  39 0013 2C       		.byte	(.L6-.L4)/2
+  40 0014 25       		.byte	(.L5-.L4)/2
+  41 0015 5B       		.byte	(.L2-.L4)/2
+  42 0016 5B       		.byte	(.L2-.L4)/2
+  43 0017 4A       		.byte	(.L3-.L4)/2
+  44 0018 4A       		.byte	(.L3-.L4)/2
+  45 0019 00       		.p2align 1
+  46              	.L9:
+  47 001a 2368     		ldr	r3, [r4]
+  48 001c 4364     		str	r3, [r0, #68]
+  49 001e 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+  50 0020 80F84830 		strb	r3, [r0, #72]
+  51 0024 6379     		ldrb	r3, [r4, #5]	@ zero_extendqisi2
+  52 0026 80F84930 		strb	r3, [r0, #73]
+  53 002a A379     		ldrb	r3, [r4, #6]	@ zero_extendqisi2
+  54 002c 80F84A30 		strb	r3, [r0, #74]
+  55              	.L21:
+  56 0030 0026     		movs	r6, #0
+  57 0032 29E0     		b	.L1
+  58              	.L8:
+ARM GAS  /tmp/ccvp4TKm.s 			page 2
+
+
+  59 0034 436C     		ldr	r3, [r0, #68]
+  60 0036 2360     		str	r3, [r4]
+  61 0038 90F84830 		ldrb	r3, [r0, #72]	@ zero_extendqisi2
+  62 003c 2371     		strb	r3, [r4, #4]
+  63 003e 90F84930 		ldrb	r3, [r0, #73]	@ zero_extendqisi2
+  64 0042 6371     		strb	r3, [r4, #5]
+  65 0044 90F84A30 		ldrb	r3, [r0, #74]	@ zero_extendqisi2
+  66 0048 A371     		strb	r3, [r4, #6]
+  67 004a F1E7     		b	.L21
+  68              	.L7:
+  69 004c 90F84C30 		ldrb	r3, [r0, #76]	@ zero_extendqisi2
+  70 0050 2370     		strb	r3, [r4]
+  71 0052 90F84B30 		ldrb	r3, [r0, #75]	@ zero_extendqisi2
+  72 0056 6370     		strb	r3, [r4, #1]
+  73 0058 EAE7     		b	.L21
+  74              	.L5:
+  75 005a 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+  76 005c 80F84C30 		strb	r3, [r0, #76]
+  77 0060 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+  78 0062 80F84B30 		strb	r3, [r0, #75]
+  79 0066 E3E7     		b	.L21
+  80              	.L6:
+  81 0068 0368     		ldr	r3, [r0]
+  82 006a 012C     		cmp	r4, #1
+  83 006c D869     		ldr	r0, [r3, #28]
+  84 006e 0DD0     		beq	.L11
+  85 0070 022C     		cmp	r4, #2
+  86 0072 11D0     		beq	.L12
+  87 0074 5326     		movs	r6, #83
+  88              	.L13:
+  89 0076 0421     		movs	r1, #4
+  90 0078 2030     		adds	r0, r0, #32
+  91 007a FFF7FEFF 		bl	_ux_device_stack_transfer_abort
+  92 007e 0023     		movs	r3, #0
+  93 0080 012C     		cmp	r4, #1
+  94 0082 0CBF     		ite	eq
+  95 0084 2B64     		streq	r3, [r5, #64]
+  96 0086 2B62     		strne	r3, [r5, #32]
+  97              	.L1:
+  98 0088 3046     		mov	r0, r6
+  99 008a 70BD     		pop	{r4, r5, r6, pc}
+ 100              	.L11:
+ 101 008c 90F90E30 		ldrsb	r3, [r0, #14]
+ 102 0090 002B     		cmp	r3, #0
+ 103 0092 05DB     		blt	.L18
+ 104              	.L22:
+ 105 0094 4069     		ldr	r0, [r0, #20]
+ 106 0096 03E0     		b	.L18
+ 107              	.L12:
+ 108 0098 90F90E30 		ldrsb	r3, [r0, #14]
+ 109 009c 002B     		cmp	r3, #0
+ 110 009e F9DB     		blt	.L22
+ 111              	.L18:
+ 112 00a0 0026     		movs	r6, #0
+ 113 00a2 E8E7     		b	.L13
+ 114              	.L3:
+ 115 00a4 0829     		cmp	r1, #8
+ARM GAS  /tmp/ccvp4TKm.s 			page 3
+
+
+ 116 00a6 0CBF     		ite	eq
+ 117 00a8 0021     		moveq	r1, #0
+ 118 00aa 8021     		movne	r1, #128
+ 119 00ac 0368     		ldr	r3, [r0]
+ 120 00ae DB69     		ldr	r3, [r3, #28]
+ 121 00b0 9A7B     		ldrb	r2, [r3, #14]	@ zero_extendqisi2
+ 122 00b2 02F08002 		and	r2, r2, #128
+ 123 00b6 8A42     		cmp	r2, r1
+ 124 00b8 18BF     		it	ne
+ 125 00ba 5B69     		ldrne	r3, [r3, #20]
+ 126 00bc 1A6A     		ldr	r2, [r3, #32]
+ 127 00be 012A     		cmp	r2, #1
+ 128 00c0 08D0     		beq	.L20
+ 129 00c2 5C65     		str	r4, [r3, #84]
+ 130 00c4 B4E7     		b	.L21
+ 131              	.L2:
+ 132 00c6 5422     		movs	r2, #84
+ 133 00c8 0721     		movs	r1, #7
+ 134 00ca 0220     		movs	r0, #2
+ 135 00cc FFF7FEFF 		bl	_ux_system_error_handler
+ 136 00d0 5426     		movs	r6, #84
+ 137 00d2 D9E7     		b	.L1
+ 138              	.L20:
+ 139 00d4 FF26     		movs	r6, #255
+ 140 00d6 D7E7     		b	.L1
+ 142              		.section	.text._uxe_device_class_cdc_acm_ioctl,"ax",%progbits
+ 143              		.align	1
+ 144              		.global	_uxe_device_class_cdc_acm_ioctl
+ 145              		.syntax unified
+ 146              		.thumb
+ 147              		.thumb_func
+ 148              		.fpu fpv4-sp-d16
+ 150              	_uxe_device_class_cdc_acm_ioctl:
+ 151              		@ args = 0, pretend = 0, frame = 0
+ 152              		@ frame_needed = 0, uses_anonymous_args = 0
+ 153              		@ link register save eliminated.
+ 154 0000 08B1     		cbz	r0, .L24
+ 155 0002 FFF7FEBF 		b	_ux_device_class_cdc_acm_ioctl
+ 156              	.L24:
+ 157 0006 FA20     		movs	r0, #250
+ 158 0008 7047     		bx	lr
+ 160              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccvp4TKm.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_class_cdc_acm_ioctl.c
+     /tmp/ccvp4TKm.s:16     .text._ux_device_class_cdc_acm_ioctl:0000000000000000 $t
+     /tmp/ccvp4TKm.s:25     .text._ux_device_class_cdc_acm_ioctl:0000000000000000 _ux_device_class_cdc_acm_ioctl
+     /tmp/ccvp4TKm.s:36     .text._ux_device_class_cdc_acm_ioctl:0000000000000010 $d
+     /tmp/ccvp4TKm.s:143    .text._uxe_device_class_cdc_acm_ioctl:0000000000000000 $t
+     /tmp/ccvp4TKm.s:150    .text._uxe_device_class_cdc_acm_ioctl:0000000000000000 _uxe_device_class_cdc_acm_ioctl
+     /tmp/ccvp4TKm.s:45     .text._ux_device_class_cdc_acm_ioctl:0000000000000019 $d
+     /tmp/ccvp4TKm.s:45     .text._ux_device_class_cdc_acm_ioctl:000000000000001a $t
+
+UNDEFINED SYMBOLS
+_ux_device_stack_transfer_abort
+_ux_system_error_handler

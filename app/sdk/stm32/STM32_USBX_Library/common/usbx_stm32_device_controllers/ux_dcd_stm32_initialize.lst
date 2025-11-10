@@ -1,0 +1,72 @@
+ARM GAS  /tmp/ccIrftHI.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_dcd_stm32_initialize.c"
+  14              		.text
+  15              		.section	.text._ux_dcd_stm32_initialize,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_dcd_stm32_initialize
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_dcd_stm32_initialize:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 38B5     		push	{r3, r4, r5, lr}
+  29 0002 0B4B     		ldr	r3, .L4
+  30 0004 0D46     		mov	r5, r1
+  31 0006 1C68     		ldr	r4, [r3]
+  32 0008 0021     		movs	r1, #0
+  33 000a 8023     		movs	r3, #128
+  34 000c C822     		movs	r2, #200
+  35 000e 0846     		mov	r0, r1
+  36 0010 6360     		str	r3, [r4, #4]
+  37 0012 FFF7FEFF 		bl	_ux_utility_memory_allocate
+  38 0016 48B1     		cbz	r0, .L3
+  39 0018 064B     		ldr	r3, .L4+4
+  40 001a E061     		str	r0, [r4, #28]
+  41 001c 0460     		str	r4, [r0]
+  42 001e A361     		str	r3, [r4, #24]
+  43 0020 0123     		movs	r3, #1
+  44 0022 C0F8C450 		str	r5, [r0, #196]
+  45 0026 0020     		movs	r0, #0
+  46 0028 2360     		str	r3, [r4]
+  47              	.L1:
+  48 002a 38BD     		pop	{r3, r4, r5, pc}
+  49              	.L3:
+  50 002c 1220     		movs	r0, #18
+  51 002e FCE7     		b	.L1
+  52              	.L5:
+  53              		.align	2
+  54              	.L4:
+  55 0030 00000000 		.word	_ux_system_slave
+  56 0034 00000000 		.word	_ux_dcd_stm32_function
+  58              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccIrftHI.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_dcd_stm32_initialize.c
+     /tmp/ccIrftHI.s:16     .text._ux_dcd_stm32_initialize:0000000000000000 $t
+     /tmp/ccIrftHI.s:25     .text._ux_dcd_stm32_initialize:0000000000000000 _ux_dcd_stm32_initialize
+     /tmp/ccIrftHI.s:55     .text._ux_dcd_stm32_initialize:0000000000000030 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_memory_allocate
+_ux_system_slave
+_ux_dcd_stm32_function

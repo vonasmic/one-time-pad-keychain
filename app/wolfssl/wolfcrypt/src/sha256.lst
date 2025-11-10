@@ -1,0 +1,316 @@
+ARM GAS  /tmp/cckgNrlE.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"sha256.c"
+  14              		.text
+  15              		.section	.text.ForceZero,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	ForceZero:
+  25              		@ args = 0, pretend = 0, frame = 8
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+  28 0002 0346     		mov	r3, r0
+  29 0004 0C46     		mov	r4, r1
+  30 0006 BFF35B8F 		dmb	ish
+  31 000a 0022     		movs	r2, #0
+  32              	.L2:
+  33 000c 13F00301 		ands	r1, r3, #3
+  34 0010 13D1     		bne	.L4
+  35 0012 24F00305 		bic	r5, r4, #3
+  36 0016 2A46     		mov	r2, r5
+  37 0018 1846     		mov	r0, r3
+  38 001a 0191     		str	r1, [sp, #4]
+  39 001c FFF7FEFF 		bl	memset
+  40 0020 6FF00302 		mvn	r2, #3
+  41 0024 A608     		lsrs	r6, r4, #2
+  42 0026 02FB0642 		mla	r2, r2, r6, r4
+  43 002a 0199     		ldr	r1, [sp, #4]
+  44 002c 2844     		add	r0, r0, r5
+  45 002e FFF7FEFF 		bl	memset
+  46 0032 BFF35B8F 		dmb	ish
+  47              	.L1:
+  48 0036 02B0     		add	sp, sp, #8
+  49              		@ sp needed
+  50 0038 70BD     		pop	{r4, r5, r6, pc}
+  51              	.L4:
+  52 003a 002C     		cmp	r4, #0
+  53 003c FBD0     		beq	.L1
+  54 003e 03F8012B 		strb	r2, [r3], #1
+  55 0042 013C     		subs	r4, r4, #1
+  56 0044 E2E7     		b	.L2
+  58              		.section	.text.wc_InitSha256_ex,"ax",%progbits
+  59              		.align	1
+ARM GAS  /tmp/cckgNrlE.s 			page 2
+
+
+  60              		.global	wc_InitSha256_ex
+  61              		.syntax unified
+  62              		.thumb
+  63              		.thumb_func
+  64              		.fpu fpv4-sp-d16
+  66              	wc_InitSha256_ex:
+  67              		@ args = 0, pretend = 0, frame = 0
+  68              		@ frame_needed = 0, uses_anonymous_args = 0
+  69 0000 10B5     		push	{r4, lr}
+  70 0002 0446     		mov	r4, r0
+  71 0004 48B1     		cbz	r0, .L11
+  72 0006 4FF49E72 		mov	r2, #316
+  73 000a 0021     		movs	r1, #0
+  74 000c FFF7FEFF 		bl	memset
+  75 0010 2046     		mov	r0, r4
+  76 0012 FFF7FEFF 		bl	wc_Stm32_Hash_Init
+  77 0016 0020     		movs	r0, #0
+  78              	.L9:
+  79 0018 10BD     		pop	{r4, pc}
+  80              	.L11:
+  81 001a 6FF0AC00 		mvn	r0, #172
+  82 001e FBE7     		b	.L9
+  84              		.section	.text.wc_Sha256Update,"ax",%progbits
+  85              		.align	1
+  86              		.global	wc_Sha256Update
+  87              		.syntax unified
+  88              		.thumb
+  89              		.thumb_func
+  90              		.fpu fpv4-sp-d16
+  92              	wc_Sha256Update:
+  93              		@ args = 0, pretend = 0, frame = 0
+  94              		@ frame_needed = 0, uses_anonymous_args = 0
+  95 0000 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+  96 0002 0E46     		mov	r6, r1
+  97 0004 1746     		mov	r7, r2
+  98 0006 0546     		mov	r5, r0
+  99 0008 D0B1     		cbz	r0, .L15
+ 100 000a 39B9     		cbnz	r1, .L14
+ 101 000c 002A     		cmp	r2, #0
+ 102 000e 14BF     		ite	ne
+ 103 0010 6FF0AC04 		mvnne	r4, #172
+ 104 0014 0024     		moveq	r4, #0
+ 105              	.L12:
+ 106 0016 2046     		mov	r0, r4
+ 107 0018 03B0     		add	sp, sp, #12
+ 108              		@ sp needed
+ 109 001a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 110              	.L14:
+ 111 001c FFF7FEFF 		bl	wolfSSL_CryptHwMutexLock
+ 112 0020 0446     		mov	r4, r0
+ 113 0022 0028     		cmp	r0, #0
+ 114 0024 F7D1     		bne	.L12
+ 115 0026 4023     		movs	r3, #64
+ 116 0028 3246     		mov	r2, r6
+ 117 002a 0093     		str	r3, [sp]
+ 118 002c 4FF4C021 		mov	r1, #393216
+ 119 0030 3B46     		mov	r3, r7
+ARM GAS  /tmp/cckgNrlE.s 			page 3
+
+
+ 120 0032 2846     		mov	r0, r5
+ 121 0034 FFF7FEFF 		bl	wc_Stm32_Hash_Update
+ 122 0038 0446     		mov	r4, r0
+ 123 003a FFF7FEFF 		bl	wolfSSL_CryptHwMutexUnLock
+ 124 003e EAE7     		b	.L12
+ 125              	.L15:
+ 126 0040 6FF0AC04 		mvn	r4, #172
+ 127 0044 E7E7     		b	.L12
+ 129              		.section	.text.wc_InitSha256,"ax",%progbits
+ 130              		.align	1
+ 131              		.global	wc_InitSha256
+ 132              		.syntax unified
+ 133              		.thumb
+ 134              		.thumb_func
+ 135              		.fpu fpv4-sp-d16
+ 137              	wc_InitSha256:
+ 138              		@ args = 0, pretend = 0, frame = 0
+ 139              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140              		@ link register save eliminated.
+ 141 0000 6FF00102 		mvn	r2, #1
+ 142 0004 0021     		movs	r1, #0
+ 143 0006 FFF7FEBF 		b	wc_InitSha256_ex
+ 145              		.section	.text.wc_Sha256Final,"ax",%progbits
+ 146              		.align	1
+ 147              		.global	wc_Sha256Final
+ 148              		.syntax unified
+ 149              		.thumb
+ 150              		.thumb_func
+ 151              		.fpu fpv4-sp-d16
+ 153              	wc_Sha256Final:
+ 154              		@ args = 0, pretend = 0, frame = 0
+ 155              		@ frame_needed = 0, uses_anonymous_args = 0
+ 156 0000 70B5     		push	{r4, r5, r6, lr}
+ 157 0002 0E46     		mov	r6, r1
+ 158 0004 0546     		mov	r5, r0
+ 159 0006 98B1     		cbz	r0, .L22
+ 160 0008 91B1     		cbz	r1, .L22
+ 161 000a FFF7FEFF 		bl	wolfSSL_CryptHwMutexLock
+ 162 000e 0446     		mov	r4, r0
+ 163 0010 48B9     		cbnz	r0, .L20
+ 164 0012 2023     		movs	r3, #32
+ 165 0014 3246     		mov	r2, r6
+ 166 0016 4FF4C021 		mov	r1, #393216
+ 167 001a 2846     		mov	r0, r5
+ 168 001c FFF7FEFF 		bl	wc_Stm32_Hash_Final
+ 169 0020 0446     		mov	r4, r0
+ 170 0022 FFF7FEFF 		bl	wolfSSL_CryptHwMutexUnLock
+ 171              	.L20:
+ 172 0026 2846     		mov	r0, r5
+ 173 0028 FFF7FEFF 		bl	wc_InitSha256
+ 174              	.L18:
+ 175 002c 2046     		mov	r0, r4
+ 176 002e 70BD     		pop	{r4, r5, r6, pc}
+ 177              	.L22:
+ 178 0030 6FF0AC04 		mvn	r4, #172
+ 179 0034 FAE7     		b	.L18
+ 181              		.section	.text.wc_Sha256Free,"ax",%progbits
+ARM GAS  /tmp/cckgNrlE.s 			page 4
+
+
+ 182              		.align	1
+ 183              		.global	wc_Sha256Free
+ 184              		.syntax unified
+ 185              		.thumb
+ 186              		.thumb_func
+ 187              		.fpu fpv4-sp-d16
+ 189              	wc_Sha256Free:
+ 190              		@ args = 0, pretend = 0, frame = 0
+ 191              		@ frame_needed = 0, uses_anonymous_args = 0
+ 192 0000 10B5     		push	{r4, lr}
+ 193 0002 0446     		mov	r4, r0
+ 194 0004 A8B1     		cbz	r0, .L23
+ 195 0006 D0F83801 		ldr	r0, [r0, #312]
+ 196 000a 58B1     		cbz	r0, .L25
+ 197 000c 4FF48071 		mov	r1, #256
+ 198 0010 FFF7FEFF 		bl	ForceZero
+ 199 0014 D4F83801 		ldr	r0, [r4, #312]
+ 200 0018 08B1     		cbz	r0, .L26
+ 201 001a FFF7FEFF 		bl	wolfSSL_Free
+ 202              	.L26:
+ 203 001e 0023     		movs	r3, #0
+ 204 0020 C4F83831 		str	r3, [r4, #312]
+ 205              	.L25:
+ 206 0024 2046     		mov	r0, r4
+ 207 0026 BDE81040 		pop	{r4, lr}
+ 208 002a 4FF49E71 		mov	r1, #316
+ 209 002e FFF7FEBF 		b	ForceZero
+ 210              	.L23:
+ 211 0032 10BD     		pop	{r4, pc}
+ 213              		.section	.text.wc_Sha256Copy,"ax",%progbits
+ 214              		.align	1
+ 215              		.global	wc_Sha256Copy
+ 216              		.syntax unified
+ 217              		.thumb
+ 218              		.thumb_func
+ 219              		.fpu fpv4-sp-d16
+ 221              	wc_Sha256Copy:
+ 222              		@ args = 0, pretend = 0, frame = 0
+ 223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 224 0000 08B5     		push	{r3, lr}
+ 225 0002 0B46     		mov	r3, r1
+ 226 0004 0146     		mov	r1, r0
+ 227 0006 50B1     		cbz	r0, .L36
+ 228 0008 4BB1     		cbz	r3, .L36
+ 229 000a 1846     		mov	r0, r3
+ 230 000c 4FF49E72 		mov	r2, #316
+ 231 0010 FFF7FEFF 		bl	memcpy
+ 232 0014 0346     		mov	r3, r0
+ 233 0016 0020     		movs	r0, #0
+ 234 0018 C3F83801 		str	r0, [r3, #312]
+ 235              	.L33:
+ 236 001c 08BD     		pop	{r3, pc}
+ 237              	.L36:
+ 238 001e 6FF0AC00 		mvn	r0, #172
+ 239 0022 FBE7     		b	.L33
+ 241              		.section	.text.wc_Sha256GetHash,"ax",%progbits
+ 242              		.align	1
+ARM GAS  /tmp/cckgNrlE.s 			page 5
+
+
+ 243              		.global	wc_Sha256GetHash
+ 244              		.syntax unified
+ 245              		.thumb
+ 246              		.thumb_func
+ 247              		.fpu fpv4-sp-d16
+ 249              	wc_Sha256GetHash:
+ 250              		@ args = 0, pretend = 0, frame = 0
+ 251              		@ frame_needed = 0, uses_anonymous_args = 0
+ 252 0000 70B5     		push	{r4, r5, r6, lr}
+ 253 0002 0E46     		mov	r6, r1
+ 254 0004 0446     		mov	r4, r0
+ 255 0006 C8B1     		cbz	r0, .L41
+ 256 0008 C1B1     		cbz	r1, .L41
+ 257 000a 4FF49E70 		mov	r0, #316
+ 258 000e FFF7FEFF 		bl	wolfSSL_Malloc
+ 259 0012 0546     		mov	r5, r0
+ 260 0014 A8B1     		cbz	r0, .L42
+ 261 0016 0146     		mov	r1, r0
+ 262 0018 2046     		mov	r0, r4
+ 263 001a FFF7FEFF 		bl	wc_Sha256Copy
+ 264 001e 0446     		mov	r4, r0
+ 265 0020 38B9     		cbnz	r0, .L39
+ 266 0022 3146     		mov	r1, r6
+ 267 0024 2846     		mov	r0, r5
+ 268 0026 FFF7FEFF 		bl	wc_Sha256Final
+ 269 002a 0446     		mov	r4, r0
+ 270 002c 2846     		mov	r0, r5
+ 271 002e FFF7FEFF 		bl	wc_Sha256Free
+ 272              	.L39:
+ 273 0032 2846     		mov	r0, r5
+ 274 0034 FFF7FEFF 		bl	wolfSSL_Free
+ 275              	.L37:
+ 276 0038 2046     		mov	r0, r4
+ 277 003a 70BD     		pop	{r4, r5, r6, pc}
+ 278              	.L41:
+ 279 003c 6FF0AC04 		mvn	r4, #172
+ 280 0040 FAE7     		b	.L37
+ 281              	.L42:
+ 282 0042 6FF07C04 		mvn	r4, #124
+ 283 0046 F7E7     		b	.L37
+ 285              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cckgNrlE.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sha256.c
+     /tmp/cckgNrlE.s:16     .text.ForceZero:0000000000000000 $t
+     /tmp/cckgNrlE.s:24     .text.ForceZero:0000000000000000 ForceZero
+     /tmp/cckgNrlE.s:59     .text.wc_InitSha256_ex:0000000000000000 $t
+     /tmp/cckgNrlE.s:66     .text.wc_InitSha256_ex:0000000000000000 wc_InitSha256_ex
+     /tmp/cckgNrlE.s:85     .text.wc_Sha256Update:0000000000000000 $t
+     /tmp/cckgNrlE.s:92     .text.wc_Sha256Update:0000000000000000 wc_Sha256Update
+     /tmp/cckgNrlE.s:130    .text.wc_InitSha256:0000000000000000 $t
+     /tmp/cckgNrlE.s:137    .text.wc_InitSha256:0000000000000000 wc_InitSha256
+     /tmp/cckgNrlE.s:146    .text.wc_Sha256Final:0000000000000000 $t
+     /tmp/cckgNrlE.s:153    .text.wc_Sha256Final:0000000000000000 wc_Sha256Final
+     /tmp/cckgNrlE.s:182    .text.wc_Sha256Free:0000000000000000 $t
+     /tmp/cckgNrlE.s:189    .text.wc_Sha256Free:0000000000000000 wc_Sha256Free
+     /tmp/cckgNrlE.s:214    .text.wc_Sha256Copy:0000000000000000 $t
+     /tmp/cckgNrlE.s:221    .text.wc_Sha256Copy:0000000000000000 wc_Sha256Copy
+     /tmp/cckgNrlE.s:242    .text.wc_Sha256GetHash:0000000000000000 $t
+     /tmp/cckgNrlE.s:249    .text.wc_Sha256GetHash:0000000000000000 wc_Sha256GetHash
+
+UNDEFINED SYMBOLS
+memset
+wc_Stm32_Hash_Init
+wolfSSL_CryptHwMutexLock
+wc_Stm32_Hash_Update
+wolfSSL_CryptHwMutexUnLock
+wc_Stm32_Hash_Final
+wolfSSL_Free
+memcpy
+wolfSSL_Malloc

@@ -1,0 +1,408 @@
+ARM GAS  /tmp/ccAK1NMR.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"uart.c"
+  14              		.text
+  15              		.section	.text.uart1_getchar,"ax",%progbits
+  16              		.align	1
+  17              		.global	uart1_getchar
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	uart1_getchar:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 0B4B     		ldr	r3, .L5
+  30 0002 1969     		ldr	r1, [r3, #16]
+  31 0004 9A68     		ldr	r2, [r3, #8]
+  32 0006 9142     		cmp	r1, r2
+  33 0008 0ED0     		beq	.L4
+  34 000a DA68     		ldr	r2, [r3, #12]
+  35 000c 1968     		ldr	r1, [r3]
+  36 000e 885C     		ldrb	r0, [r1, r2]	@ zero_extendqisi2
+  37 0010 DA68     		ldr	r2, [r3, #12]
+  38 0012 0132     		adds	r2, r2, #1
+  39 0014 B2F5007F 		cmp	r2, #512
+  40 0018 DA60     		str	r2, [r3, #12]
+  41 001a 24BF     		itt	cs
+  42 001c 0022     		movcs	r2, #0
+  43 001e DA60     		strcs	r2, [r3, #12]
+  44 0020 1A69     		ldr	r2, [r3, #16]
+  45 0022 0132     		adds	r2, r2, #1
+  46 0024 1A61     		str	r2, [r3, #16]
+  47 0026 7047     		bx	lr
+  48              	.L4:
+  49 0028 4FF0FF30 		mov	r0, #-1
+  50 002c 7047     		bx	lr
+  51              	.L6:
+  52 002e 00BF     		.align	2
+  53              	.L5:
+  54 0030 00000000 		.word	.LANCHOR0
+  56              		.section	.text.uart1_putchar,"ax",%progbits
+  57              		.align	1
+  58              		.global	uart1_putchar
+  59              		.syntax unified
+ARM GAS  /tmp/ccAK1NMR.s 			page 2
+
+
+  60              		.thumb
+  61              		.thumb_func
+  62              		.fpu fpv4-sp-d16
+  64              	uart1_putchar:
+  65              		@ args = 0, pretend = 0, frame = 0
+  66              		@ frame_needed = 0, uses_anonymous_args = 0
+  67              		@ link register save eliminated.
+  68 0000 104B     		ldr	r3, .L12
+  69 0002 1A6A     		ldr	r2, [r3, #32]
+  70 0004 996A     		ldr	r1, [r3, #40]
+  71 0006 521A     		subs	r2, r2, r1
+  72 0008 B2F5806F 		cmp	r2, #1024
+  73 000c 17D2     		bcs	.L10
+  74 000e DA69     		ldr	r2, [r3, #28]
+  75 0010 9969     		ldr	r1, [r3, #24]
+  76 0012 8854     		strb	r0, [r1, r2]
+  77 0014 DA69     		ldr	r2, [r3, #28]
+  78 0016 0120     		movs	r0, #1
+  79 0018 0132     		adds	r2, r2, #1
+  80 001a B2F5806F 		cmp	r2, #1024
+  81 001e DA61     		str	r2, [r3, #28]
+  82 0020 24BF     		itt	cs
+  83 0022 0022     		movcs	r2, #0
+  84 0024 DA61     		strcs	r2, [r3, #28]
+  85 0026 1A6A     		ldr	r2, [r3, #32]
+  86 0028 0132     		adds	r2, r2, #1
+  87 002a 1A62     		str	r2, [r3, #32]
+  88 002c DA6A     		ldr	r2, [r3, #44]
+  89 002e 3AB9     		cbnz	r2, .L7
+  90 0030 054A     		ldr	r2, .L12+4
+  91 0032 D862     		str	r0, [r3, #44]
+  92 0034 1368     		ldr	r3, [r2]
+  93 0036 43F08003 		orr	r3, r3, #128
+  94 003a 1360     		str	r3, [r2]
+  95 003c 7047     		bx	lr
+  96              	.L10:
+  97 003e 0020     		movs	r0, #0
+  98              	.L7:
+  99 0040 7047     		bx	lr
+ 100              	.L13:
+ 101 0042 00BF     		.align	2
+ 102              	.L12:
+ 103 0044 00000000 		.word	.LANCHOR0
+ 104 0048 00240046 		.word	1174414336
+ 106              		.section	.text.LPUART1_IRQHandler,"ax",%progbits
+ 107              		.align	1
+ 108              		.global	LPUART1_IRQHandler
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 112              		.fpu fpv4-sp-d16
+ 114              	LPUART1_IRQHandler:
+ 115              		@ args = 0, pretend = 0, frame = 0
+ 116              		@ frame_needed = 0, uses_anonymous_args = 0
+ 117 0000 224A     		ldr	r2, .L33
+ 118 0002 10B5     		push	{r4, lr}
+ 119 0004 D169     		ldr	r1, [r2, #28]
+ARM GAS  /tmp/ccAK1NMR.s 			page 3
+
+
+ 120 0006 0C06     		lsls	r4, r1, #24
+ 121 0008 0DD5     		bpl	.L15
+ 122 000a 1368     		ldr	r3, [r2]
+ 123 000c 1806     		lsls	r0, r3, #24
+ 124 000e 0AD5     		bpl	.L15
+ 125 0010 1F4B     		ldr	r3, .L33+4
+ 126 0012 1C6A     		ldr	r4, [r3, #32]
+ 127 0014 986A     		ldr	r0, [r3, #40]
+ 128 0016 8442     		cmp	r4, r0
+ 129 0018 26D1     		bne	.L16
+ 130 001a 1068     		ldr	r0, [r2]
+ 131 001c 20F08000 		bic	r0, r0, #128
+ 132 0020 1060     		str	r0, [r2]
+ 133 0022 0022     		movs	r2, #0
+ 134 0024 DA62     		str	r2, [r3, #44]
+ 135              	.L15:
+ 136 0026 8B06     		lsls	r3, r1, #26
+ 137 0028 16D5     		bpl	.L18
+ 138 002a 184B     		ldr	r3, .L33
+ 139 002c 5C6A     		ldr	r4, [r3, #36]
+ 140 002e 184B     		ldr	r3, .L33+4
+ 141 0030 9A68     		ldr	r2, [r3, #8]
+ 142 0032 1869     		ldr	r0, [r3, #16]
+ 143 0034 121A     		subs	r2, r2, r0
+ 144 0036 B2F5007F 		cmp	r2, #512
+ 145 003a 0DD2     		bcs	.L18
+ 146 003c 5A68     		ldr	r2, [r3, #4]
+ 147 003e 1868     		ldr	r0, [r3]
+ 148 0040 8454     		strb	r4, [r0, r2]
+ 149 0042 5A68     		ldr	r2, [r3, #4]
+ 150 0044 0132     		adds	r2, r2, #1
+ 151 0046 B2F5007F 		cmp	r2, #512
+ 152 004a 5A60     		str	r2, [r3, #4]
+ 153 004c 24BF     		itt	cs
+ 154 004e 0022     		movcs	r2, #0
+ 155 0050 5A60     		strcs	r2, [r3, #4]
+ 156 0052 9A68     		ldr	r2, [r3, #8]
+ 157 0054 0132     		adds	r2, r2, #1
+ 158 0056 9A60     		str	r2, [r3, #8]
+ 159              	.L18:
+ 160 0058 11F00B0F 		tst	r1, #11
+ 161 005c 1FBF     		itttt	ne
+ 162 005e 0B4B     		ldrne	r3, .L33
+ 163 0060 5A6A     		ldrne	r2, [r3, #36]
+ 164 0062 0B22     		movne	r2, #11
+ 165 0064 1A62     		strne	r2, [r3, #32]
+ 166 0066 10BD     		pop	{r4, pc}
+ 167              	.L16:
+ 168 0068 5A6A     		ldr	r2, [r3, #36]
+ 169 006a 9869     		ldr	r0, [r3, #24]
+ 170 006c 805C     		ldrb	r0, [r0, r2]	@ zero_extendqisi2
+ 171 006e 5A6A     		ldr	r2, [r3, #36]
+ 172 0070 0132     		adds	r2, r2, #1
+ 173 0072 B2F5806F 		cmp	r2, #1024
+ 174 0076 5A62     		str	r2, [r3, #36]
+ 175 0078 24BF     		itt	cs
+ 176 007a 0022     		movcs	r2, #0
+ARM GAS  /tmp/ccAK1NMR.s 			page 4
+
+
+ 177 007c 5A62     		strcs	r2, [r3, #36]
+ 178 007e 9A6A     		ldr	r2, [r3, #40]
+ 179 0080 0132     		adds	r2, r2, #1
+ 180 0082 9A62     		str	r2, [r3, #40]
+ 181 0084 014B     		ldr	r3, .L33
+ 182 0086 9862     		str	r0, [r3, #40]
+ 183 0088 CDE7     		b	.L15
+ 184              	.L34:
+ 185 008a 00BF     		.align	2
+ 186              	.L33:
+ 187 008c 00240046 		.word	1174414336
+ 188 0090 00000000 		.word	.LANCHOR0
+ 190              		.section	.text.uart1_init,"ax",%progbits
+ 191              		.align	1
+ 192              		.global	uart1_init
+ 193              		.syntax unified
+ 194              		.thumb
+ 195              		.thumb_func
+ 196              		.fpu fpv4-sp-d16
+ 198              	uart1_init:
+ 199              		@ args = 0, pretend = 0, frame = 64
+ 200              		@ frame_needed = 0, uses_anonymous_args = 0
+ 201 0000 30B5     		push	{r4, r5, lr}
+ 202 0002 0024     		movs	r4, #0
+ 203 0004 91B0     		sub	sp, sp, #68
+ 204 0006 364D     		ldr	r5, .L40
+ 205 0008 1C22     		movs	r2, #28
+ 206 000a 2146     		mov	r1, r4
+ 207 000c 09A8     		add	r0, sp, #36
+ 208 000e CDE90544 		strd	r4, r4, [sp, #20]
+ 209 0012 0794     		str	r4, [sp, #28]
+ 210 0014 FFF7FEFF 		bl	memset
+ 211 0018 2C22     		movs	r2, #44
+ 212 001a 2146     		mov	r1, r4
+ 213 001c 281D     		adds	r0, r5, #4
+ 214 001e FFF7FEFF 		bl	memset
+ 215 0022 304B     		ldr	r3, .L40+4
+ 216 0024 3048     		ldr	r0, .L40+8
+ 217 0026 2B60     		str	r3, [r5]
+ 218 0028 304B     		ldr	r3, .L40+12
+ 219 002a AB61     		str	r3, [r5, #24]
+ 220 002c 304B     		ldr	r3, .L40+16
+ 221 002e 0C25     		movs	r5, #12
+ 222 0030 D3F8E820 		ldr	r2, [r3, #232]
+ 223 0034 0DEB0501 		add	r1, sp, r5
+ 224 0038 22F00702 		bic	r2, r2, #7
+ 225 003c C3F8E820 		str	r2, [r3, #232]
+ 226 0040 D3F8A820 		ldr	r2, [r3, #168]
+ 227 0044 42F04002 		orr	r2, r2, #64
+ 228 0048 C3F8A820 		str	r2, [r3, #168]
+ 229 004c D3F8A820 		ldr	r2, [r3, #168]
+ 230 0050 02F04002 		and	r2, r2, #64
+ 231 0054 0292     		str	r2, [sp, #8]
+ 232 0056 029A     		ldr	r2, [sp, #8]
+ 233 0058 D3F88C20 		ldr	r2, [r3, #140]
+ 234 005c 42F00102 		orr	r2, r2, #1
+ 235 0060 C3F88C20 		str	r2, [r3, #140]
+ARM GAS  /tmp/ccAK1NMR.s 			page 5
+
+
+ 236 0064 D3F88C30 		ldr	r3, [r3, #140]
+ 237 0068 03F00103 		and	r3, r3, #1
+ 238 006c 0193     		str	r3, [sp, #4]
+ 239 006e 019B     		ldr	r3, [sp, #4]
+ 240 0070 0223     		movs	r3, #2
+ 241 0072 CDE90353 		strd	r5, r3, [sp, #12]
+ 242 0076 0823     		movs	r3, #8
+ 243 0078 0893     		str	r3, [sp, #32]
+ 244 007a FFF7FEFF 		bl	LL_GPIO_Init
+ 245 007e 4FF4E133 		mov	r3, #115200
+ 246 0082 1C48     		ldr	r0, .L40+20
+ 247 0084 09A9     		add	r1, sp, #36
+ 248 0086 CDE90A34 		strd	r3, r4, [sp, #40]
+ 249 008a CDE90C44 		strd	r4, r4, [sp, #48]
+ 250 008e CDE90E54 		strd	r5, r4, [sp, #56]
+ 251 0092 0994     		str	r4, [sp, #36]
+ 252 0094 FFF7FEFF 		bl	LL_LPUART_Init
+ 253 0098 174A     		ldr	r2, .L40+24
+ 254              	.L36:
+ 255              		.syntax unified
+ 256              	@ 480 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 257 009a 52E8003F 		ldrex r3, [r2]
+ 258              	@ 0 "" 2
+ 259              		.thumb
+ 260              		.syntax unified
+ 261 009e 23F06043 		bic	r3, r3, #-536870912
+ 262              		.syntax unified
+ 263              	@ 531 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 264 00a2 42E80031 		strex r1, r3, [r2]
+ 265              	@ 0 "" 2
+ 266              		.thumb
+ 267              		.syntax unified
+ 268 00a6 0029     		cmp	r1, #0
+ 269 00a8 F7D1     		bne	.L36
+ 270              	.L37:
+ 271              		.syntax unified
+ 272              	@ 480 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 273 00aa 52E8003F 		ldrex r3, [r2]
+ 274              	@ 0 "" 2
+ 275              		.thumb
+ 276              		.syntax unified
+ 277 00ae 23F06063 		bic	r3, r3, #234881024
+ 278              		.syntax unified
+ 279              	@ 531 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 280 00b2 42E80031 		strex r1, r3, [r2]
+ 281              	@ 0 "" 2
+ 282              		.thumb
+ 283              		.syntax unified
+ 284 00b6 0029     		cmp	r1, #0
+ 285 00b8 F7D1     		bne	.L37
+ 286 00ba 0E4C     		ldr	r4, .L40+20
+ 287 00bc 0721     		movs	r1, #7
+ 288 00be 2368     		ldr	r3, [r4]
+ 289 00c0 4220     		movs	r0, #66
+ 290 00c2 23F00053 		bic	r3, r3, #536870912
+ 291 00c6 2360     		str	r3, [r4]
+ 292 00c8 2368     		ldr	r3, [r4]
+ARM GAS  /tmp/ccAK1NMR.s 			page 6
+
+
+ 293 00ca 43F00103 		orr	r3, r3, #1
+ 294 00ce 2360     		str	r3, [r4]
+ 295 00d0 FFF7FEFF 		bl	irq_enable
+ 296 00d4 2368     		ldr	r3, [r4]
+ 297 00d6 43F02003 		orr	r3, r3, #32
+ 298 00da 2360     		str	r3, [r4]
+ 299 00dc 11B0     		add	sp, sp, #68
+ 300              		@ sp needed
+ 301 00de 30BD     		pop	{r4, r5, pc}
+ 302              	.L41:
+ 303              		.align	2
+ 304              	.L40:
+ 305 00e0 00000000 		.word	.LANCHOR0
+ 306 00e4 00000000 		.word	.LANCHOR1
+ 307 00e8 00000242 		.word	1107427328
+ 308 00ec 00000000 		.word	.LANCHOR2
+ 309 00f0 000C0246 		.word	1174539264
+ 310 00f4 00240046 		.word	1174414336
+ 311 00f8 08240046 		.word	1174414344
+ 313              		.section	.text.uart1_set_state,"ax",%progbits
+ 314              		.align	1
+ 315              		.global	uart1_set_state
+ 316              		.syntax unified
+ 317              		.thumb
+ 318              		.thumb_func
+ 319              		.fpu fpv4-sp-d16
+ 321              	uart1_set_state:
+ 322              		@ args = 0, pretend = 0, frame = 0
+ 323              		@ frame_needed = 0, uses_anonymous_args = 0
+ 324              		@ link register save eliminated.
+ 325 0000 054B     		ldr	r3, .L46
+ 326 0002 D3F8A420 		ldr	r2, [r3, #164]
+ 327 0006 20B1     		cbz	r0, .L43
+ 328 0008 42F48042 		orr	r2, r2, #16384
+ 329              	.L45:
+ 330 000c C3F8A420 		str	r2, [r3, #164]
+ 331 0010 7047     		bx	lr
+ 332              	.L43:
+ 333 0012 22F48042 		bic	r2, r2, #16384
+ 334 0016 F9E7     		b	.L45
+ 335              	.L47:
+ 336              		.align	2
+ 337              	.L46:
+ 338 0018 000C0246 		.word	1174539264
+ 340              		.section	.bss.u1,"aw",%nobits
+ 341              		.align	2
+ 342              		.set	.LANCHOR0,. + 0
+ 345              	u1:
+ 346 0000 00000000 		.space	48
+ 346      00000000 
+ 346      00000000 
+ 346      00000000 
+ 346      00000000 
+ 347              		.section	.bss.u1_rx_buf,"aw",%nobits
+ 348              		.set	.LANCHOR1,. + 0
+ 351              	u1_rx_buf:
+ 352 0000 00000000 		.space	512
+ARM GAS  /tmp/ccAK1NMR.s 			page 7
+
+
+ 352      00000000 
+ 352      00000000 
+ 352      00000000 
+ 352      00000000 
+ 353              		.section	.bss.u1_tx_buf,"aw",%nobits
+ 354              		.set	.LANCHOR2,. + 0
+ 357              	u1_tx_buf:
+ 358 0000 00000000 		.space	1024
+ 358      00000000 
+ 358      00000000 
+ 358      00000000 
+ 358      00000000 
+ 359              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccAK1NMR.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 uart.c
+     /tmp/ccAK1NMR.s:16     .text.uart1_getchar:0000000000000000 $t
+     /tmp/ccAK1NMR.s:25     .text.uart1_getchar:0000000000000000 uart1_getchar
+     /tmp/ccAK1NMR.s:54     .text.uart1_getchar:0000000000000030 $d
+     /tmp/ccAK1NMR.s:57     .text.uart1_putchar:0000000000000000 $t
+     /tmp/ccAK1NMR.s:64     .text.uart1_putchar:0000000000000000 uart1_putchar
+     /tmp/ccAK1NMR.s:103    .text.uart1_putchar:0000000000000044 $d
+     /tmp/ccAK1NMR.s:107    .text.LPUART1_IRQHandler:0000000000000000 $t
+     /tmp/ccAK1NMR.s:114    .text.LPUART1_IRQHandler:0000000000000000 LPUART1_IRQHandler
+     /tmp/ccAK1NMR.s:187    .text.LPUART1_IRQHandler:000000000000008c $d
+     /tmp/ccAK1NMR.s:191    .text.uart1_init:0000000000000000 $t
+     /tmp/ccAK1NMR.s:198    .text.uart1_init:0000000000000000 uart1_init
+     /tmp/ccAK1NMR.s:305    .text.uart1_init:00000000000000e0 $d
+     /tmp/ccAK1NMR.s:314    .text.uart1_set_state:0000000000000000 $t
+     /tmp/ccAK1NMR.s:321    .text.uart1_set_state:0000000000000000 uart1_set_state
+     /tmp/ccAK1NMR.s:338    .text.uart1_set_state:0000000000000018 $d
+     /tmp/ccAK1NMR.s:341    .bss.u1:0000000000000000 $d
+     /tmp/ccAK1NMR.s:345    .bss.u1:0000000000000000 u1
+     /tmp/ccAK1NMR.s:351    .bss.u1_rx_buf:0000000000000000 u1_rx_buf
+     /tmp/ccAK1NMR.s:352    .bss.u1_rx_buf:0000000000000000 $d
+     /tmp/ccAK1NMR.s:357    .bss.u1_tx_buf:0000000000000000 u1_tx_buf
+     /tmp/ccAK1NMR.s:358    .bss.u1_tx_buf:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+memset
+LL_GPIO_Init
+LL_LPUART_Init
+irq_enable

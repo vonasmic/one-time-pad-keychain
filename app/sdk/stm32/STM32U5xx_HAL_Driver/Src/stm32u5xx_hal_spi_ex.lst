@@ -1,0 +1,334 @@
+ARM GAS  /tmp/ccACc699.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_hal_spi_ex.c"
+  14              		.text
+  15              		.section	.text.HAL_SPIEx_FlushRxFifo,"ax",%progbits
+  16              		.align	1
+  17              		.global	HAL_SPIEx_FlushRxFifo
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	HAL_SPIEx_FlushRxFifo:
+  26              		@ args = 0, pretend = 0, frame = 8
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+  29 0002 0022     		movs	r2, #0
+  30 0004 0368     		ldr	r3, [r0]
+  31 0006 104C     		ldr	r4, .L12
+  32 0008 5969     		ldr	r1, [r3, #20]
+  33 000a 104D     		ldr	r5, .L12+4
+  34 000c 104E     		ldr	r6, .L12+8
+  35 000e 114F     		ldr	r7, .L12+12
+  36 0010 01F40041 		and	r1, r1, #32768
+  37              	.L9:
+  38 0014 5869     		ldr	r0, [r3, #20]
+  39 0016 00F4C040 		and	r0, r0, #24576
+  40 001a 0843     		orrs	r0, r0, r1
+  41 001c 01D1     		bne	.L6
+  42              	.L5:
+  43 001e 03B0     		add	sp, sp, #12
+  44              		@ sp needed
+  45 0020 F0BD     		pop	{r4, r5, r6, r7, pc}
+  46              	.L6:
+  47 0022 186B     		ldr	r0, [r3, #48]
+  48 0024 0432     		adds	r2, r2, #4
+  49 0026 0190     		str	r0, [sp, #4]
+  50 0028 A342     		cmp	r3, r4
+  51 002a 0198     		ldr	r0, [sp, #4]
+  52 002c D2B2     		uxtb	r2, r2
+  53 002e 05D0     		beq	.L3
+  54 0030 AB42     		cmp	r3, r5
+  55 0032 03D0     		beq	.L3
+  56 0034 B342     		cmp	r3, r6
+  57 0036 01D0     		beq	.L3
+  58 0038 BB42     		cmp	r3, r7
+ARM GAS  /tmp/ccACc699.s 			page 2
+
+
+  59 003a 03D1     		bne	.L4
+  60              	.L3:
+  61 003c 102A     		cmp	r2, #16
+  62              	.L11:
+  63 003e E9D9     		bls	.L9
+  64 0040 0320     		movs	r0, #3
+  65 0042 ECE7     		b	.L5
+  66              	.L4:
+  67 0044 082A     		cmp	r2, #8
+  68 0046 FAE7     		b	.L11
+  69              	.L13:
+  70              		.align	2
+  71              	.L12:
+  72 0048 00300140 		.word	1073819648
+  73 004c 00300150 		.word	1342255104
+  74 0050 00380040 		.word	1073756160
+  75 0054 00380050 		.word	1342191616
+  77              		.section	.text.HAL_SPIEx_EnableLockConfiguration,"ax",%progbits
+  78              		.align	1
+  79              		.global	HAL_SPIEx_EnableLockConfiguration
+  80              		.syntax unified
+  81              		.thumb
+  82              		.thumb_func
+  83              		.fpu fpv4-sp-d16
+  85              	HAL_SPIEx_EnableLockConfiguration:
+  86              		@ args = 0, pretend = 0, frame = 0
+  87              		@ frame_needed = 0, uses_anonymous_args = 0
+  88              		@ link register save eliminated.
+  89 0000 90F88830 		ldrb	r3, [r0, #136]	@ zero_extendqisi2
+  90 0004 012B     		cmp	r3, #1
+  91 0006 0BD0     		beq	.L19
+  92 0008 0123     		movs	r3, #1
+  93 000a 90F88920 		ldrb	r2, [r0, #137]	@ zero_extendqisi2
+  94 000e 80F88830 		strb	r3, [r0, #136]
+  95 0012 9A42     		cmp	r2, r3
+  96 0014 06D0     		beq	.L16
+  97 0016 80F88930 		strb	r3, [r0, #137]
+  98 001a 0023     		movs	r3, #0
+  99 001c 80F88830 		strb	r3, [r0, #136]
+ 100              	.L19:
+ 101 0020 0220     		movs	r0, #2
+ 102 0022 7047     		bx	lr
+ 103              	.L16:
+ 104 0024 0368     		ldr	r3, [r0]
+ 105 0026 1A68     		ldr	r2, [r3]
+ 106 0028 12F0010F 		tst	r2, #1
+ 107 002c 1A68     		ldr	r2, [r3]
+ 108 002e 1DBF     		ittte	ne
+ 109 0030 22F00102 		bicne	r2, r2, #1
+ 110 0034 1A60     		strne	r2, [r3]
+ 111 0036 1A68     		ldrne	r2, [r3]
+ 112 0038 42F48032 		orreq	r2, r2, #65536
+ 113 003c 1FBF     		itttt	ne
+ 114 003e 42F48032 		orrne	r2, r2, #65536
+ 115 0042 1A60     		strne	r2, [r3]
+ 116 0044 1A68     		ldrne	r2, [r3]
+ 117 0046 42F00102 		orrne	r2, r2, #1
+ARM GAS  /tmp/ccACc699.s 			page 3
+
+
+ 118 004a 1A60     		str	r2, [r3]
+ 119 004c 0123     		movs	r3, #1
+ 120 004e 80F88930 		strb	r3, [r0, #137]
+ 121 0052 0023     		movs	r3, #0
+ 122 0054 80F88830 		strb	r3, [r0, #136]
+ 123 0058 1846     		mov	r0, r3
+ 124 005a 7047     		bx	lr
+ 126              		.section	.text.HAL_SPIEx_ConfigureUnderrun,"ax",%progbits
+ 127              		.align	1
+ 128              		.global	HAL_SPIEx_ConfigureUnderrun
+ 129              		.syntax unified
+ 130              		.thumb
+ 131              		.thumb_func
+ 132              		.fpu fpv4-sp-d16
+ 134              	HAL_SPIEx_ConfigureUnderrun:
+ 135              		@ args = 0, pretend = 0, frame = 0
+ 136              		@ frame_needed = 0, uses_anonymous_args = 0
+ 137              		@ link register save eliminated.
+ 138 0000 90F88830 		ldrb	r3, [r0, #136]	@ zero_extendqisi2
+ 139 0004 012B     		cmp	r3, #1
+ 140 0006 0DD0     		beq	.L27
+ 141 0008 0123     		movs	r3, #1
+ 142 000a 90F88910 		ldrb	r1, [r0, #137]	@ zero_extendqisi2
+ 143 000e 80F88830 		strb	r3, [r0, #136]
+ 144 0012 9942     		cmp	r1, r3
+ 145 0014 01D1     		bne	.L23
+ 146 0016 4168     		ldr	r1, [r0, #4]
+ 147 0018 31B1     		cbz	r1, .L24
+ 148              	.L23:
+ 149 001a 80F88930 		strb	r3, [r0, #137]
+ 150 001e 0023     		movs	r3, #0
+ 151 0020 80F88830 		strb	r3, [r0, #136]
+ 152              	.L27:
+ 153 0024 0220     		movs	r0, #2
+ 154 0026 7047     		bx	lr
+ 155              	.L24:
+ 156 0028 0368     		ldr	r3, [r0]
+ 157 002a 1968     		ldr	r1, [r3]
+ 158 002c C907     		lsls	r1, r1, #31
+ 159 002e 0CD4     		bmi	.L25
+ 160 0030 9968     		ldr	r1, [r3, #8]
+ 161 0032 21F40071 		bic	r1, r1, #512
+ 162 0036 0A43     		orrs	r2, r2, r1
+ 163 0038 9A60     		str	r2, [r3, #8]
+ 164              	.L26:
+ 165 003a 0123     		movs	r3, #1
+ 166 003c 80F88930 		strb	r3, [r0, #137]
+ 167 0040 0023     		movs	r3, #0
+ 168 0042 80F88830 		strb	r3, [r0, #136]
+ 169 0046 1846     		mov	r0, r3
+ 170 0048 7047     		bx	lr
+ 171              	.L25:
+ 172 004a 1968     		ldr	r1, [r3]
+ 173 004c 21F00101 		bic	r1, r1, #1
+ 174 0050 1960     		str	r1, [r3]
+ 175 0052 9968     		ldr	r1, [r3, #8]
+ 176 0054 21F40071 		bic	r1, r1, #512
+ARM GAS  /tmp/ccACc699.s 			page 4
+
+
+ 177 0058 0A43     		orrs	r2, r2, r1
+ 178 005a 9A60     		str	r2, [r3, #8]
+ 179 005c 1A68     		ldr	r2, [r3]
+ 180 005e 42F00102 		orr	r2, r2, #1
+ 181 0062 1A60     		str	r2, [r3]
+ 182 0064 E9E7     		b	.L26
+ 184              		.section	.text.HAL_SPIEx_SetConfigAutonomousMode,"ax",%progbits
+ 185              		.align	1
+ 186              		.global	HAL_SPIEx_SetConfigAutonomousMode
+ 187              		.syntax unified
+ 188              		.thumb
+ 189              		.thumb_func
+ 190              		.fpu fpv4-sp-d16
+ 192              	HAL_SPIEx_SetConfigAutonomousMode:
+ 193              		@ args = 0, pretend = 0, frame = 0
+ 194              		@ frame_needed = 0, uses_anonymous_args = 0
+ 195 0000 30B5     		push	{r4, r5, lr}
+ 196 0002 90F88930 		ldrb	r3, [r0, #137]	@ zero_extendqisi2
+ 197 0006 012B     		cmp	r3, #1
+ 198 0008 DCB2     		uxtb	r4, r3
+ 199 000a 1BD1     		bne	.L30
+ 200 000c 90F88830 		ldrb	r3, [r0, #136]	@ zero_extendqisi2
+ 201 0010 012B     		cmp	r3, #1
+ 202 0012 4FF00203 		mov	r3, #2
+ 203 0016 13D0     		beq	.L31
+ 204 0018 0268     		ldr	r2, [r0]
+ 205 001a 80F88930 		strb	r3, [r0, #137]
+ 206 001e 1368     		ldr	r3, [r2]
+ 207 0020 8D68     		ldr	r5, [r1, #8]
+ 208 0022 23F00103 		bic	r3, r3, #1
+ 209 0026 1360     		str	r3, [r2]
+ 210 0028 0B68     		ldr	r3, [r1]
+ 211 002a 4968     		ldr	r1, [r1, #4]
+ 212 002c 2B43     		orrs	r3, r3, r5
+ 213 002e 01F47021 		and	r1, r1, #983040
+ 214 0032 0B43     		orrs	r3, r3, r1
+ 215 0034 D361     		str	r3, [r2, #28]
+ 216 0036 0023     		movs	r3, #0
+ 217 0038 80F88940 		strb	r4, [r0, #137]
+ 218 003c 80F88830 		strb	r3, [r0, #136]
+ 219              	.L31:
+ 220 0040 1846     		mov	r0, r3
+ 221 0042 00E0     		b	.L29
+ 222              	.L30:
+ 223 0044 0120     		movs	r0, #1
+ 224              	.L29:
+ 225 0046 30BD     		pop	{r4, r5, pc}
+ 227              		.section	.text.HAL_SPIEx_GetConfigAutonomousMode,"ax",%progbits
+ 228              		.align	1
+ 229              		.global	HAL_SPIEx_GetConfigAutonomousMode
+ 230              		.syntax unified
+ 231              		.thumb
+ 232              		.thumb_func
+ 233              		.fpu fpv4-sp-d16
+ 235              	HAL_SPIEx_GetConfigAutonomousMode:
+ 236              		@ args = 0, pretend = 0, frame = 0
+ 237              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/ccACc699.s 			page 5
+
+
+ 238 0000 0068     		ldr	r0, [r0]
+ 239 0002 10B5     		push	{r4, lr}
+ 240 0004 C369     		ldr	r3, [r0, #28]
+ 241 0006 03F40012 		and	r2, r3, #2097152
+ 242 000a 0A60     		str	r2, [r1]
+ 243 000c 094A     		ldr	r2, .L36
+ 244 000e 9042     		cmp	r0, r2
+ 245 0010 03F47022 		and	r2, r3, #983040
+ 246 0014 02D0     		beq	.L33
+ 247 0016 084C     		ldr	r4, .L36+4
+ 248 0018 A042     		cmp	r0, r4
+ 249 001a 07D1     		bne	.L34
+ 250              	.L33:
+ 251 001c 42F00052 		orr	r2, r2, #536870912
+ 252              	.L35:
+ 253 0020 03F48013 		and	r3, r3, #1048576
+ 254 0024 0020     		movs	r0, #0
+ 255 0026 4A60     		str	r2, [r1, #4]
+ 256 0028 8B60     		str	r3, [r1, #8]
+ 257 002a 10BD     		pop	{r4, pc}
+ 258              	.L34:
+ 259 002c 42F08052 		orr	r2, r2, #268435456
+ 260 0030 F6E7     		b	.L35
+ 261              	.L37:
+ 262 0032 00BF     		.align	2
+ 263              	.L36:
+ 264 0034 00200046 		.word	1174413312
+ 265 0038 00200056 		.word	1442848768
+ 267              		.section	.text.HAL_SPIEx_ClearConfigAutonomousMode,"ax",%progbits
+ 268              		.align	1
+ 269              		.global	HAL_SPIEx_ClearConfigAutonomousMode
+ 270              		.syntax unified
+ 271              		.thumb
+ 272              		.thumb_func
+ 273              		.fpu fpv4-sp-d16
+ 275              	HAL_SPIEx_ClearConfigAutonomousMode:
+ 276              		@ args = 0, pretend = 0, frame = 0
+ 277              		@ frame_needed = 0, uses_anonymous_args = 0
+ 278 0000 10B5     		push	{r4, lr}
+ 279 0002 90F88930 		ldrb	r3, [r0, #137]	@ zero_extendqisi2
+ 280 0006 012B     		cmp	r3, #1
+ 281 0008 DCB2     		uxtb	r4, r3
+ 282 000a 18D1     		bne	.L40
+ 283 000c 90F88830 		ldrb	r3, [r0, #136]	@ zero_extendqisi2
+ 284 0010 012B     		cmp	r3, #1
+ 285 0012 4FF00203 		mov	r3, #2
+ 286 0016 10D0     		beq	.L41
+ 287 0018 0268     		ldr	r2, [r0]
+ 288 001a 80F88930 		strb	r3, [r0, #137]
+ 289 001e 1368     		ldr	r3, [r2]
+ 290 0020 23F00103 		bic	r3, r3, #1
+ 291 0024 1360     		str	r3, [r2]
+ 292 0026 0023     		movs	r3, #0
+ 293 0028 D361     		str	r3, [r2, #28]
+ 294 002a 1168     		ldr	r1, [r2]
+ 295 002c 41F00101 		orr	r1, r1, #1
+ 296 0030 1160     		str	r1, [r2]
+ARM GAS  /tmp/ccACc699.s 			page 6
+
+
+ 297 0032 80F88940 		strb	r4, [r0, #137]
+ 298 0036 80F88830 		strb	r3, [r0, #136]
+ 299              	.L41:
+ 300 003a 1846     		mov	r0, r3
+ 301 003c 00E0     		b	.L39
+ 302              	.L40:
+ 303 003e 0120     		movs	r0, #1
+ 304              	.L39:
+ 305 0040 10BD     		pop	{r4, pc}
+ 307              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccACc699.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_hal_spi_ex.c
+     /tmp/ccACc699.s:16     .text.HAL_SPIEx_FlushRxFifo:0000000000000000 $t
+     /tmp/ccACc699.s:25     .text.HAL_SPIEx_FlushRxFifo:0000000000000000 HAL_SPIEx_FlushRxFifo
+     /tmp/ccACc699.s:72     .text.HAL_SPIEx_FlushRxFifo:0000000000000048 $d
+     /tmp/ccACc699.s:78     .text.HAL_SPIEx_EnableLockConfiguration:0000000000000000 $t
+     /tmp/ccACc699.s:85     .text.HAL_SPIEx_EnableLockConfiguration:0000000000000000 HAL_SPIEx_EnableLockConfiguration
+     /tmp/ccACc699.s:127    .text.HAL_SPIEx_ConfigureUnderrun:0000000000000000 $t
+     /tmp/ccACc699.s:134    .text.HAL_SPIEx_ConfigureUnderrun:0000000000000000 HAL_SPIEx_ConfigureUnderrun
+     /tmp/ccACc699.s:185    .text.HAL_SPIEx_SetConfigAutonomousMode:0000000000000000 $t
+     /tmp/ccACc699.s:192    .text.HAL_SPIEx_SetConfigAutonomousMode:0000000000000000 HAL_SPIEx_SetConfigAutonomousMode
+     /tmp/ccACc699.s:228    .text.HAL_SPIEx_GetConfigAutonomousMode:0000000000000000 $t
+     /tmp/ccACc699.s:235    .text.HAL_SPIEx_GetConfigAutonomousMode:0000000000000000 HAL_SPIEx_GetConfigAutonomousMode
+     /tmp/ccACc699.s:264    .text.HAL_SPIEx_GetConfigAutonomousMode:0000000000000034 $d
+     /tmp/ccACc699.s:268    .text.HAL_SPIEx_ClearConfigAutonomousMode:0000000000000000 $t
+     /tmp/ccACc699.s:275    .text.HAL_SPIEx_ClearConfigAutonomousMode:0000000000000000 HAL_SPIEx_ClearConfigAutonomousMode
+
+NO UNDEFINED SYMBOLS

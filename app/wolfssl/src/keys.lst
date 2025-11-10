@@ -1,0 +1,562 @@
+ARM GAS  /tmp/cc9ivCvP.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"keys.c"
+  14              		.text
+  15              		.section	.text.GetCipherSpec,"ax",%progbits
+  16              		.align	1
+  17              		.global	GetCipherSpec
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	GetCipherSpec:
+  26              		@ args = 4, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  29 0004 069D     		ldr	r5, [sp, #24]
+  30 0006 0646     		mov	r6, r0
+  31 0008 0F46     		mov	r7, r1
+  32 000a 9046     		mov	r8, r2
+  33 000c 1C46     		mov	r4, r3
+  34 000e 75B1     		cbz	r5, .L17
+  35 0010 2B7F     		ldrb	r3, [r5, #28]	@ zero_extendqisi2
+  36 0012 03F00100 		and	r0, r3, #1
+  37              	.L2:
+  38 0016 012E     		cmp	r6, #1
+  39 0018 0BD0     		beq	.L3
+  40              	.L6:
+  41 001a 1026     		movs	r6, #16
+  42 001c 0021     		movs	r1, #0
+  43 001e 3246     		mov	r2, r6
+  44 0020 2046     		mov	r0, r4
+  45 0022 FFF7FEFF 		bl	memset
+  46 0026 CC2F     		cmp	r7, #204
+  47 0028 0AD1     		bne	.L29
+  48              	.L18:
+  49 002a 3548     		ldr	r0, .L31
+  50 002c 42E0     		b	.L1
+  51              	.L17:
+  52 002e 2846     		mov	r0, r5
+  53 0030 F1E7     		b	.L2
+  54              	.L3:
+  55 0032 4246     		mov	r2, r8
+  56 0034 3946     		mov	r1, r7
+  57 0036 FFF7FEFF 		bl	VerifyClientSuite
+  58 003a 0128     		cmp	r0, #1
+ARM GAS  /tmp/cc9ivCvP.s 			page 2
+
+
+  59 003c EDD0     		beq	.L6
+  60 003e F4E7     		b	.L18
+  61              	.L29:
+  62 0040 C02F     		cmp	r7, #192
+  63 0042 58D1     		bne	.L8
+  64 0044 B8F1230F 		cmp	r8, #35
+  65 0048 36D0     		beq	.L9
+  66 004a 13D8     		bhi	.L10
+  67 004c B8F1090F 		cmp	r8, #9
+  68 0050 42D0     		beq	.L11
+  69 0052 B8F10A0F 		cmp	r8, #10
+  70 0056 E8D1     		bne	.L18
+  71 0058 4FF48373 		mov	r3, #262
+  72 005c 2381     		strh	r3, [r4, #8]	@ movhi
+  73 005e 40F20273 		movw	r3, #1794
+  74 0062 6381     		strh	r3, [r4, #10]	@ movhi
+  75 0064 41F20343 		movw	r3, #5123
+  76 0068 A381     		strh	r3, [r4, #12]	@ movhi
+  77 006a 2823     		movs	r3, #40
+  78 006c A373     		strb	r3, [r4, #14]
+  79 006e 2023     		movs	r3, #32
+  80 0070 2380     		strh	r3, [r4]	@ movhi
+  81 0072 3DE0     		b	.L30
+  82              	.L10:
+  83 0074 B8F1370F 		cmp	r8, #55
+  84 0078 D7D1     		bne	.L18
+  85 007a 4FF48373 		mov	r3, #262
+  86 007e 2381     		strh	r3, [r4, #8]	@ movhi
+  87 0080 40F20463 		movw	r3, #1540
+  88 0084 6381     		strh	r3, [r4, #10]	@ movhi
+  89 0086 2023     		movs	r3, #32
+  90 0088 6373     		strb	r3, [r4, #13]
+  91 008a 2823     		movs	r3, #40
+  92 008c 2680     		strh	r6, [r4]	@ movhi
+  93 008e A373     		strb	r3, [r4, #14]
+  94 0090 A680     		strh	r6, [r4, #4]	@ movhi
+  95 0092 6680     		strh	r6, [r4, #2]	@ movhi
+  96 0094 2DB1     		cbz	r5, .L13
+  97 0096 95F82030 		ldrb	r3, [r5, #32]	@ zero_extendqisi2
+  98 009a 43F00203 		orr	r3, r3, #2
+  99 009e 85F82030 		strb	r3, [r5, #32]
+ 100              	.L13:
+ 101 00a2 207B     		ldrb	r0, [r4, #12]	@ zero_extendqisi2
+ 102 00a4 B0B9     		cbnz	r0, .L14
+ 103 00a6 ADB1     		cbz	r5, .L14
+ 104 00a8 95F82230 		ldrb	r3, [r5, #34]	@ zero_extendqisi2
+ 105 00ac 43F00403 		orr	r3, r3, #4
+ 106 00b0 85F82230 		strb	r3, [r5, #34]
+ 107              	.L1:
+ 108 00b4 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 109              	.L9:
+ 110 00b8 4FF48373 		mov	r3, #262
+ 111 00bc 2381     		strh	r3, [r4, #8]	@ movhi
+ 112 00be 40F20473 		movw	r3, #1796
+ 113 00c2 6381     		strh	r3, [r4, #10]	@ movhi
+ 114 00c4 42F20303 		movw	r3, #8195
+ 115 00c8 A381     		strh	r3, [r4, #12]	@ movhi
+ARM GAS  /tmp/cc9ivCvP.s 			page 3
+
+
+ 116 00ca 2823     		movs	r3, #40
+ 117 00cc 2680     		strh	r6, [r4]	@ movhi
+ 118 00ce A373     		strb	r3, [r4, #14]
+ 119 00d0 6680     		strh	r6, [r4, #2]	@ movhi
+ 120 00d2 A680     		strh	r6, [r4, #4]	@ movhi
+ 121              	.L14:
+ 122 00d4 0020     		movs	r0, #0
+ 123 00d6 EDE7     		b	.L1
+ 124              	.L11:
+ 125 00d8 4FF48373 		mov	r3, #262
+ 126 00dc 2381     		strh	r3, [r4, #8]	@ movhi
+ 127 00de 40F20273 		movw	r3, #1794
+ 128 00e2 6381     		strh	r3, [r4, #10]	@ movhi
+ 129 00e4 41F20343 		movw	r3, #5123
+ 130 00e8 A381     		strh	r3, [r4, #12]	@ movhi
+ 131 00ea 2823     		movs	r3, #40
+ 132 00ec 2680     		strh	r6, [r4]	@ movhi
+ 133 00ee A373     		strb	r3, [r4, #14]
+ 134              	.L30:
+ 135 00f0 A680     		strh	r6, [r4, #4]	@ movhi
+ 136 00f2 6680     		strh	r6, [r4, #2]	@ movhi
+ 137 00f4 EEE7     		b	.L14
+ 138              	.L8:
+ 139 00f6 D02F     		cmp	r7, #208
+ 140 00f8 D3D0     		beq	.L13
+ 141 00fa 132F     		cmp	r7, #19
+ 142 00fc D1D0     		beq	.L13
+ 143 00fe 94E7     		b	.L18
+ 144              	.L32:
+ 145              		.align	2
+ 146              	.L31:
+ 147 0100 0CFEFFFF 		.word	-500
+ 149              		.section	.text.SetCipherSpecs,"ax",%progbits
+ 150              		.align	1
+ 151              		.global	SetCipherSpecs
+ 152              		.syntax unified
+ 153              		.thumb
+ 154              		.thumb_func
+ 155              		.fpu fpv4-sp-d16
+ 157              	SetCipherSpecs:
+ 158              		@ args = 0, pretend = 0, frame = 0
+ 159              		@ frame_needed = 0, uses_anonymous_args = 0
+ 160 0000 13B5     		push	{r0, r1, r4, lr}
+ 161 0002 0446     		mov	r4, r0
+ 162 0004 90F8EC02 		ldrb	r0, [r0, #748]	@ zero_extendqisi2
+ 163 0008 04F53473 		add	r3, r4, #720
+ 164 000c 0093     		str	r3, [sp]
+ 165 000e 94F8FA22 		ldrb	r2, [r4, #762]	@ zero_extendqisi2
+ 166 0012 94F8F912 		ldrb	r1, [r4, #761]	@ zero_extendqisi2
+ 167 0016 04F5D173 		add	r3, r4, #418
+ 168 001a C0F34110 		ubfx	r0, r0, #5, #2
+ 169 001e FFF7FEFF 		bl	GetCipherSpec
+ 170 0022 F8B9     		cbnz	r0, .L33
+ 171 0024 94F89E31 		ldrb	r3, [r4, #414]	@ zero_extendqisi2
+ 172 0028 032B     		cmp	r3, #3
+ 173 002a 1BD1     		bne	.L33
+ 174 002c 94F89F31 		ldrb	r3, [r4, #415]	@ zero_extendqisi2
+ARM GAS  /tmp/cc9ivCvP.s 			page 4
+
+
+ 175 0030 C3B1     		cbz	r3, .L33
+ 176 0032 94F8ED22 		ldrb	r2, [r4, #749]	@ zero_extendqisi2
+ 177 0036 012B     		cmp	r3, #1
+ 178 0038 42F08002 		orr	r2, r2, #128
+ 179 003c 84F8ED22 		strb	r2, [r4, #749]
+ 180 0040 094A     		ldr	r2, .L43
+ 181 0042 C4F8B020 		str	r2, [r4, #176]
+ 182 0046 0DD0     		beq	.L33
+ 183 0048 94F8EE22 		ldrb	r2, [r4, #750]	@ zero_extendqisi2
+ 184 004c 032B     		cmp	r3, #3
+ 185 004e 42F00102 		orr	r2, r2, #1
+ 186 0052 84BF     		itt	hi
+ 187 0054 D3B2     		uxtbhi	r3, r2
+ 188 0056 43F00203 		orrhi	r3, r3, #2
+ 189 005a 84F8EE22 		strb	r2, [r4, #750]
+ 190 005e 88BF     		it	hi
+ 191 0060 84F8EE32 		strbhi	r3, [r4, #750]
+ 192              	.L33:
+ 193 0064 02B0     		add	sp, sp, #8
+ 194              		@ sp needed
+ 195 0066 10BD     		pop	{r4, pc}
+ 196              	.L44:
+ 197              		.align	2
+ 198              	.L43:
+ 199 0068 00000000 		.word	TLS_hmac
+ 201              		.section	.text.SetKeys,"ax",%progbits
+ 202              		.align	1
+ 203              		.global	SetKeys
+ 204              		.syntax unified
+ 205              		.thumb
+ 206              		.thumb_func
+ 207              		.fpu fpv4-sp-d16
+ 209              	SetKeys:
+ 210              		@ args = 20, pretend = 0, frame = 0
+ 211              		@ frame_needed = 0, uses_anonymous_args = 0
+ 212 0000 2DE9F347 		push	{r0, r1, r4, r5, r6, r7, r8, r9, r10, lr}
+ 213 0004 1F46     		mov	r7, r3
+ 214 0006 DDE90A89 		ldrd	r8, r9, [sp, #40]
+ 215 000a 1B7A     		ldrb	r3, [r3, #8]	@ zero_extendqisi2
+ 216 000c 0646     		mov	r6, r0
+ 217 000e 062B     		cmp	r3, #6
+ 218 0010 0C46     		mov	r4, r1
+ 219 0012 1546     		mov	r5, r2
+ 220 0014 DDF830A0 		ldr	r10, [sp, #48]
+ 221 0018 40F08C80 		bne	.L46
+ 222 001c 0028     		cmp	r0, #0
+ 223 001e 00F08C80 		beq	.L47
+ 224 0022 0068     		ldr	r0, [r0]
+ 225 0024 50B9     		cbnz	r0, .L48
+ 226 0026 4FF48E70 		mov	r0, #284
+ 227 002a FFF7FEFF 		bl	wolfSSL_Malloc
+ 228 002e 3060     		str	r0, [r6]
+ 229 0030 30B9     		cbnz	r0, .L49
+ 230              	.L53:
+ 231 0032 6FF07C00 		mvn	r0, #124
+ 232              	.L45:
+ 233 0036 02B0     		add	sp, sp, #8
+ARM GAS  /tmp/cc9ivCvP.s 			page 5
+
+
+ 234              		@ sp needed
+ 235 0038 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 236              	.L48:
+ 237 003c FFF7FEFF 		bl	wc_AesFree
+ 238              	.L49:
+ 239 0040 4FF48E72 		mov	r2, #284
+ 240 0044 0021     		movs	r1, #0
+ 241 0046 3068     		ldr	r0, [r6]
+ 242 0048 FFF7FEFF 		bl	memset
+ 243 004c DCB1     		cbz	r4, .L51
+ 244              	.L77:
+ 245 004e 2068     		ldr	r0, [r4]
+ 246 0050 B0B9     		cbnz	r0, .L52
+ 247 0052 4FF48E70 		mov	r0, #284
+ 248 0056 FFF7FEFF 		bl	wolfSSL_Malloc
+ 249 005a 2060     		str	r0, [r4]
+ 250 005c 0028     		cmp	r0, #0
+ 251 005e E8D0     		beq	.L53
+ 252              	.L54:
+ 253 0060 4FF48E72 		mov	r2, #284
+ 254 0064 0021     		movs	r1, #0
+ 255 0066 2068     		ldr	r0, [r4]
+ 256 0068 FFF7FEFF 		bl	memset
+ 257 006c 5EB9     		cbnz	r6, .L51
+ 258              	.L58:
+ 259 006e 5246     		mov	r2, r10
+ 260 0070 4946     		mov	r1, r9
+ 261 0072 2068     		ldr	r0, [r4]
+ 262 0074 FFF7FEFF 		bl	wc_AesInit
+ 263 0078 E8B1     		cbz	r0, .L93
+ 264              	.L55:
+ 265 007a 6FF0B500 		mvn	r0, #181
+ 266 007e DAE7     		b	.L45
+ 267              	.L52:
+ 268 0080 FFF7FEFF 		bl	wc_AesFree
+ 269 0084 ECE7     		b	.L54
+ 270              	.L51:
+ 271 0086 5246     		mov	r2, r10
+ 272 0088 4946     		mov	r1, r9
+ 273 008a 3068     		ldr	r0, [r6]
+ 274 008c FFF7FEFF 		bl	wc_AesInit
+ 275 0090 0028     		cmp	r0, #0
+ 276 0092 F2D1     		bne	.L55
+ 277 0094 002C     		cmp	r4, #0
+ 278 0096 EAD1     		bne	.L58
+ 279 0098 B8F1010F 		cmp	r8, #1
+ 280 009c 0FD0     		beq	.L76
+ 281              	.L68:
+ 282 009e 0023     		movs	r3, #0
+ 283 00a0 3A88     		ldrh	r2, [r7]
+ 284 00a2 0093     		str	r3, [sp]
+ 285 00a4 3068     		ldr	r0, [r6]
+ 286 00a6 05F1D003 		add	r3, r5, #208
+ 287 00aa 05F1A001 		add	r1, r5, #160
+ 288 00ae FFF7FEFF 		bl	wc_AesSetKey
+ 289 00b2 50B3     		cbz	r0, .L70
+ 290 00b4 BFE7     		b	.L45
+ARM GAS  /tmp/cc9ivCvP.s 			page 6
+
+
+ 291              	.L93:
+ 292 00b6 B8F1010F 		cmp	r8, #1
+ 293 00ba 24D1     		bne	.L60
+ 294 00bc A6B1     		cbz	r6, .L61
+ 295              	.L76:
+ 296 00be 0023     		movs	r3, #0
+ 297 00c0 3A88     		ldrh	r2, [r7]
+ 298 00c2 0093     		str	r3, [sp]
+ 299 00c4 3068     		ldr	r0, [r6]
+ 300 00c6 05F1C003 		add	r3, r5, #192
+ 301 00ca 05F18001 		add	r1, r5, #128
+ 302 00ce FFF7FEFF 		bl	wc_AesSetKey
+ 303 00d2 0028     		cmp	r0, #0
+ 304 00d4 AFD1     		bne	.L45
+ 305 00d6 54B9     		cbnz	r4, .L63
+ 306              	.L65:
+ 307 00d8 0123     		movs	r3, #1
+ 308 00da 7372     		strb	r3, [r6, #9]
+ 309 00dc D4B9     		cbnz	r4, .L71
+ 310              	.L72:
+ 311 00de 0023     		movs	r3, #0
+ 312 00e0 C5E94233 		strd	r3, r3, [r5, #264]
+ 313              	.L73:
+ 314 00e4 D4B9     		cbnz	r4, .L74
+ 315 00e6 00E0     		b	.L75
+ 316              	.L61:
+ 317 00e8 0CB9     		cbnz	r4, .L63
+ 318              	.L75:
+ 319 00ea 0020     		movs	r0, #0
+ 320 00ec A3E7     		b	.L45
+ 321              	.L63:
+ 322 00ee 0123     		movs	r3, #1
+ 323 00f0 3A88     		ldrh	r2, [r7]
+ 324 00f2 0093     		str	r3, [sp]
+ 325 00f4 05F1A001 		add	r1, r5, #160
+ 326 00f8 05F1D003 		add	r3, r5, #208
+ 327              	.L98:
+ 328 00fc 2068     		ldr	r0, [r4]
+ 329 00fe FFF7FEFF 		bl	wc_AesSetKey
+ 330 0102 18B1     		cbz	r0, .L67
+ 331 0104 97E7     		b	.L45
+ 332              	.L60:
+ 333 0106 002E     		cmp	r6, #0
+ 334 0108 C9D1     		bne	.L68
+ 335              	.L70:
+ 336 010a 5CB9     		cbnz	r4, .L69
+ 337              	.L67:
+ 338 010c 002E     		cmp	r6, #0
+ 339 010e E3D1     		bne	.L65
+ 340 0110 002C     		cmp	r4, #0
+ 341 0112 EAD0     		beq	.L75
+ 342              	.L71:
+ 343 0114 0123     		movs	r3, #1
+ 344 0116 6372     		strb	r3, [r4, #9]
+ 345 0118 002E     		cmp	r6, #0
+ 346 011a E0D1     		bne	.L72
+ 347              	.L74:
+ARM GAS  /tmp/cc9ivCvP.s 			page 7
+
+
+ 348 011c 0020     		movs	r0, #0
+ 349 011e C5E94000 		strd	r0, r0, [r5, #256]
+ 350 0122 88E7     		b	.L45
+ 351              	.L69:
+ 352 0124 0123     		movs	r3, #1
+ 353 0126 3A88     		ldrh	r2, [r7]
+ 354 0128 0093     		str	r3, [sp]
+ 355 012a 05F18001 		add	r1, r5, #128
+ 356 012e 05F1C003 		add	r3, r5, #192
+ 357 0132 E3E7     		b	.L98
+ 358              	.L46:
+ 359 0134 0028     		cmp	r0, #0
+ 360 0136 D2D1     		bne	.L72
+ 361 0138 D4E7     		b	.L73
+ 362              	.L47:
+ 363 013a 0029     		cmp	r1, #0
+ 364 013c 87D1     		bne	.L77
+ 365 013e D4E7     		b	.L75
+ 367              		.section	.text.SetKeysSide,"ax",%progbits
+ 368              		.align	1
+ 369              		.global	SetKeysSide
+ 370              		.syntax unified
+ 371              		.thumb
+ 372              		.thumb_func
+ 373              		.fpu fpv4-sp-d16
+ 375              	SetKeysSide:
+ 376              		@ args = 0, pretend = 0, frame = 0
+ 377              		@ frame_needed = 0, uses_anonymous_args = 0
+ 378 0000 10B5     		push	{r4, lr}
+ 379 0002 0229     		cmp	r1, #2
+ 380 0004 0346     		mov	r3, r0
+ 381 0006 86B0     		sub	sp, sp, #24
+ 382 0008 00F5DA72 		add	r2, r0, #436
+ 383 000c 1DD0     		beq	.L100
+ 384 000e 0329     		cmp	r1, #3
+ 385 0010 1FD0     		beq	.L101
+ 386 0012 0129     		cmp	r1, #1
+ 387 0014 21D1     		bne	.L104
+ 388 0016 0021     		movs	r1, #0
+ 389 0018 B430     		adds	r0, r0, #180
+ 390              	.L103:
+ 391 001a 93F8EE42 		ldrb	r4, [r3, #750]	@ zero_extendqisi2
+ 392 001e C4F34004 		ubfx	r4, r4, #1, #1
+ 393 0022 0494     		str	r4, [sp, #16]
+ 394 0024 DC6F     		ldr	r4, [r3, #124]
+ 395 0026 0394     		str	r4, [sp, #12]
+ 396 0028 D3F8AC43 		ldr	r4, [r3, #940]
+ 397 002c 0294     		str	r4, [sp, #8]
+ 398 002e D3F88840 		ldr	r4, [r3, #136]
+ 399 0032 03F5D173 		add	r3, r3, #418
+ 400 0036 0194     		str	r4, [sp, #4]
+ 401 0038 93F84A41 		ldrb	r4, [r3, #330]	@ zero_extendqisi2
+ 402 003c C4F34114 		ubfx	r4, r4, #5, #2
+ 403 0040 0094     		str	r4, [sp]
+ 404 0042 FFF7FEFF 		bl	SetKeys
+ 405              	.L99:
+ 406 0046 06B0     		add	sp, sp, #24
+ARM GAS  /tmp/cc9ivCvP.s 			page 8
+
+
+ 407              		@ sp needed
+ 408 0048 10BD     		pop	{r4, pc}
+ 409              	.L100:
+ 410 004a 00F1C001 		add	r1, r0, #192
+ 411 004e 0020     		movs	r0, #0
+ 412 0050 E3E7     		b	.L103
+ 413              	.L101:
+ 414 0052 B430     		adds	r0, r0, #180
+ 415 0054 03F1C001 		add	r1, r3, #192
+ 416 0058 DFE7     		b	.L103
+ 417              	.L104:
+ 418 005a 6FF0AC00 		mvn	r0, #172
+ 419 005e F2E7     		b	.L99
+ 421              		.section	.text.StoreKeys,"ax",%progbits
+ 422              		.align	1
+ 423              		.global	StoreKeys
+ 424              		.syntax unified
+ 425              		.thumb
+ 426              		.thumb_func
+ 427              		.fpu fpv4-sp-d16
+ 429              	StoreKeys:
+ 430              		@ args = 0, pretend = 0, frame = 8
+ 431              		@ frame_needed = 0, uses_anonymous_args = 0
+ 432 0000 2DE9F347 		push	{r0, r1, r4, r5, r6, r7, r8, r9, r10, lr}
+ 433 0004 90F8ABA1 		ldrb	r10, [r0, #427]	@ zero_extendqisi2
+ 434 0008 0546     		mov	r5, r0
+ 435 000a BAF1020F 		cmp	r10, #2
+ 436 000e 0F46     		mov	r7, r1
+ 437 0010 02F00108 		and	r8, r2, #1
+ 438 0014 02F00206 		and	r6, r2, #2
+ 439 0018 49D0     		beq	.L113
+ 440 001a 90F8AF91 		ldrb	r9, [r0, #431]	@ zero_extendqisi2
+ 441 001e B8F1000F 		cmp	r8, #0
+ 442 0022 42D0     		beq	.L114
+ 443 0024 4A46     		mov	r2, r9
+ 444 0026 00F5DA70 		add	r0, r0, #436
+ 445 002a FFF7FEFF 		bl	memcpy
+ 446 002e 4C46     		mov	r4, r9
+ 447              	.L107:
+ 448 0030 36B1     		cbz	r6, .L106
+ 449 0032 3919     		adds	r1, r7, r4
+ 450 0034 4A46     		mov	r2, r9
+ 451 0036 05F5FA70 		add	r0, r5, #500
+ 452 003a FFF7FEFF 		bl	memcpy
+ 453 003e 4C44     		add	r4, r4, r9
+ 454              	.L106:
+ 455 0040 B5F8A291 		ldrh	r9, [r5, #418]
+ 456 0044 B8F1000F 		cmp	r8, #0
+ 457 0048 06D0     		beq	.L108
+ 458 004a 3919     		adds	r1, r7, r4
+ 459 004c 4A46     		mov	r2, r9
+ 460 004e 05F50D70 		add	r0, r5, #564
+ 461 0052 FFF7FEFF 		bl	memcpy
+ 462 0056 4C44     		add	r4, r4, r9
+ 463              	.L108:
+ 464 0058 36B1     		cbz	r6, .L109
+ 465 005a 3919     		adds	r1, r7, r4
+ARM GAS  /tmp/cc9ivCvP.s 			page 9
+
+
+ 466 005c 4A46     		mov	r2, r9
+ 467 005e 05F51570 		add	r0, r5, #596
+ 468 0062 FFF7FEFF 		bl	memcpy
+ 469 0066 4C44     		add	r4, r4, r9
+ 470              	.L109:
+ 471 0068 B5F8A421 		ldrh	r2, [r5, #420]
+ 472 006c B8F1000F 		cmp	r8, #0
+ 473 0070 07D0     		beq	.L110
+ 474 0072 3919     		adds	r1, r7, r4
+ 475 0074 05F51D70 		add	r0, r5, #628
+ 476 0078 0192     		str	r2, [sp, #4]
+ 477 007a FFF7FEFF 		bl	memcpy
+ 478 007e 019A     		ldr	r2, [sp, #4]
+ 479 0080 1444     		add	r4, r4, r2
+ 480              	.L110:
+ 481 0082 26B1     		cbz	r6, .L111
+ 482 0084 3919     		adds	r1, r7, r4
+ 483 0086 05F52170 		add	r0, r5, #644
+ 484 008a FFF7FEFF 		bl	memcpy
+ 485              	.L111:
+ 486 008e BAF1020F 		cmp	r10, #2
+ 487 0092 08BF     		it	eq
+ 488 0094 0023     		moveq	r3, #0
+ 489 0096 4FF00000 		mov	r0, #0
+ 490 009a 04BF     		itt	eq
+ 491 009c C5F89432 		streq	r3, [r5, #660]	@ unaligned
+ 492 00a0 C5F89832 		streq	r3, [r5, #664]	@ unaligned
+ 493 00a4 02B0     		add	sp, sp, #8
+ 494              		@ sp needed
+ 495 00a6 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 496              	.L114:
+ 497 00aa 4446     		mov	r4, r8
+ 498 00ac C0E7     		b	.L107
+ 499              	.L113:
+ 500 00ae 0024     		movs	r4, #0
+ 501 00b0 C6E7     		b	.L106
+ 503              		.section	.text.MakeMasterSecret,"ax",%progbits
+ 504              		.align	1
+ 505              		.global	MakeMasterSecret
+ 506              		.syntax unified
+ 507              		.thumb
+ 508              		.thumb_func
+ 509              		.fpu fpv4-sp-d16
+ 511              	MakeMasterSecret:
+ 512              		@ args = 0, pretend = 0, frame = 0
+ 513              		@ frame_needed = 0, uses_anonymous_args = 0
+ 514              		@ link register save eliminated.
+ 515 0000 FFF7FEBF 		b	MakeTlsMasterSecret
+ 517              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc9ivCvP.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 keys.c
+     /tmp/cc9ivCvP.s:16     .text.GetCipherSpec:0000000000000000 $t
+     /tmp/cc9ivCvP.s:25     .text.GetCipherSpec:0000000000000000 GetCipherSpec
+     /tmp/cc9ivCvP.s:147    .text.GetCipherSpec:0000000000000100 $d
+     /tmp/cc9ivCvP.s:150    .text.SetCipherSpecs:0000000000000000 $t
+     /tmp/cc9ivCvP.s:157    .text.SetCipherSpecs:0000000000000000 SetCipherSpecs
+     /tmp/cc9ivCvP.s:199    .text.SetCipherSpecs:0000000000000068 $d
+     /tmp/cc9ivCvP.s:202    .text.SetKeys:0000000000000000 $t
+     /tmp/cc9ivCvP.s:209    .text.SetKeys:0000000000000000 SetKeys
+     /tmp/cc9ivCvP.s:368    .text.SetKeysSide:0000000000000000 $t
+     /tmp/cc9ivCvP.s:375    .text.SetKeysSide:0000000000000000 SetKeysSide
+     /tmp/cc9ivCvP.s:422    .text.StoreKeys:0000000000000000 $t
+     /tmp/cc9ivCvP.s:429    .text.StoreKeys:0000000000000000 StoreKeys
+     /tmp/cc9ivCvP.s:504    .text.MakeMasterSecret:0000000000000000 $t
+     /tmp/cc9ivCvP.s:511    .text.MakeMasterSecret:0000000000000000 MakeMasterSecret
+
+UNDEFINED SYMBOLS
+memset
+VerifyClientSuite
+TLS_hmac
+wolfSSL_Malloc
+wc_AesFree
+wc_AesInit
+wc_AesSetKey
+memcpy
+MakeTlsMasterSecret

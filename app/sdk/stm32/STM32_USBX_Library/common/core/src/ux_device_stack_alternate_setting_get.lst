@@ -1,0 +1,78 @@
+ARM GAS  /tmp/ccLApRhg.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_alternate_setting_get.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_alternate_setting_get,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_alternate_setting_get
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_alternate_setting_get:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 0D4B     		ldr	r3, .L7
+  30 0002 1B68     		ldr	r3, [r3]
+  31 0004 5A6A     		ldr	r2, [r3, #36]
+  32 0006 032A     		cmp	r2, #3
+  33 0008 02D1     		bne	.L1
+  34 000a D3F8B420 		ldr	r2, [r3, #180]
+  35              	.L3:
+  36 000e 0AB9     		cbnz	r2, .L5
+  37              	.L1:
+  38 0010 FF20     		movs	r0, #255
+  39 0012 7047     		bx	lr
+  40              	.L5:
+  41 0014 917B     		ldrb	r1, [r2, #14]	@ zero_extendqisi2
+  42 0016 8142     		cmp	r1, r0
+  43 0018 0CD1     		bne	.L4
+  44 001a D27B     		ldrb	r2, [r2, #15]	@ zero_extendqisi2
+  45 001c 996E     		ldr	r1, [r3, #104]
+  46 001e 03F15C00 		add	r0, r3, #92
+  47 0022 0A70     		strb	r2, [r1]
+  48 0024 0122     		movs	r2, #1
+  49 0026 0321     		movs	r1, #3
+  50 0028 1A67     		str	r2, [r3, #112]
+  51 002a C3F88410 		str	r1, [r3, #132]
+  52 002e 1146     		mov	r1, r2
+  53 0030 FFF7FEBF 		b	_ux_device_stack_transfer_request
+  54              	.L4:
+  55 0034 9269     		ldr	r2, [r2, #24]
+  56 0036 EAE7     		b	.L3
+  57              	.L8:
+  58              		.align	2
+ARM GAS  /tmp/ccLApRhg.s 			page 2
+
+
+  59              	.L7:
+  60 0038 00000000 		.word	_ux_system_slave
+  62              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccLApRhg.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_alternate_setting_get.c
+     /tmp/ccLApRhg.s:16     .text._ux_device_stack_alternate_setting_get:0000000000000000 $t
+     /tmp/ccLApRhg.s:25     .text._ux_device_stack_alternate_setting_get:0000000000000000 _ux_device_stack_alternate_setting_get
+     /tmp/ccLApRhg.s:60     .text._ux_device_stack_alternate_setting_get:0000000000000038 $d
+
+UNDEFINED SYMBOLS
+_ux_device_stack_transfer_request
+_ux_system_slave

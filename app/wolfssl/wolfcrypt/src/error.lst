@@ -1,0 +1,2446 @@
+ARM GAS  /tmp/ccf14fDY.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"error.c"
+  14              		.text
+  15              		.section	.rodata.wc_GetErrorString.str1.1,"aMS",%progbits,1
+  16              	.LC0:
+  17 0000 756E6B6E 		.ascii	"unknown error number\000"
+  17      6F776E20 
+  17      6572726F 
+  17      72206E75 
+  17      6D626572 
+  18              		.section	.text.wc_GetErrorString,"ax",%progbits
+  19              		.align	1
+  20              		.global	wc_GetErrorString
+  21              		.arch armv8-m.main
+  22              		.arch_extension dsp
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  26              		.fpu fpv4-sp-d16
+  28              	wc_GetErrorString:
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  32 0000 00F57B70 		add	r0, r0, #1004
+  33 0004 80B2     		uxth	r0, r0
+  34 0006 B0F57B7F 		cmp	r0, #1004
+  35 000a 3ABF     		itte	cc
+  36 000c 024B     		ldrcc	r3, .L4
+  37 000e 53F82000 		ldrcc	r0, [r3, r0, lsl #2]
+  38 0012 0248     		ldrcs	r0, .L4+4
+  39 0014 7047     		bx	lr
+  40              	.L5:
+  41 0016 00BF     		.align	2
+  42              	.L4:
+  43 0018 00000000 		.word	.LANCHOR0
+  44 001c 00000000 		.word	.LC0
+  46              		.section	.text.wc_ErrorString,"ax",%progbits
+  47              		.align	1
+  48              		.global	wc_ErrorString
+  49              		.syntax unified
+  50              		.thumb
+  51              		.thumb_func
+  52              		.fpu fpv4-sp-d16
+  54              	wc_ErrorString:
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/ccf14fDY.s 			page 2
+
+
+  57 0000 10B5     		push	{r4, lr}
+  58 0002 FFF7FEFF 		bl	wc_GetErrorString
+  59 0006 0C46     		mov	r4, r1
+  60 0008 5022     		movs	r2, #80
+  61 000a 0146     		mov	r1, r0
+  62 000c 2046     		mov	r0, r4
+  63 000e FFF7FEFF 		bl	strncpy
+  64 0012 0023     		movs	r3, #0
+  65 0014 84F84F30 		strb	r3, [r4, #79]
+  66 0018 10BD     		pop	{r4, pc}
+  68              		.section	.rodata.str1.1,"aMS",%progbits,1
+  69              	.LC1:
+  70 0000 50726F63 		.ascii	"Process interrupted\000"
+  70      65737320 
+  70      696E7465 
+  70      72727570 
+  70      74656400 
+  71              	.LC2:
+  72 0014 42616420 		.ascii	"Bad index\000"
+  72      696E6465 
+  72      7800
+  73              	.LC3:
+  74 001e 43727970 		.ascii	"Crypto acceleration is currently inhibited\000"
+  74      746F2061 
+  74      6363656C 
+  74      65726174 
+  74      696F6E20 
+  75              	.LC4:
+  76 0049 4153434F 		.ascii	"ASCON Authentication check fail\000"
+  76      4E204175 
+  76      7468656E 
+  76      74696361 
+  76      74696F6E 
+  77              	.LC5:
+  78 0069 44656164 		.ascii	"Deadlock averted -- retry the call\000"
+  78      6C6F636B 
+  78      20617665 
+  78      72746564 
+  78      202D2D20 
+  79              	.LC6:
+  80 008c 534D342D 		.ascii	"SM4-CCM Authentication check fail\000"
+  80      43434D20 
+  80      41757468 
+  80      656E7469 
+  80      63617469 
+  81              	.LC7:
+  82 00ae 534D342D 		.ascii	"SM4-GCM Authentication check fail\000"
+  82      47434D20 
+  82      41757468 
+  82      656E7469 
+  82      63617469 
+  83              	.LC8:
+  84 00d0 41534E2E 		.ascii	"ASN.1 length invalid\000"
+  84      31206C65 
+  84      6E677468 
+  84      20696E76 
+  84      616C6964 
+ARM GAS  /tmp/ccf14fDY.s 			page 3
+
+
+  85              	.LC9:
+  86 00e5 496E7661 		.ascii	"Invalid ASN.1 - depth check\000"
+  86      6C696420 
+  86      41534E2E 
+  86      31202D20 
+  86      64657074 
+  87              	.LC10:
+  88 0101 456E7472 		.ascii	"Entropy Adaptive Proportion Test failed\000"
+  88      6F707920 
+  88      41646170 
+  88      74697665 
+  88      2050726F 
+  89              	.LC11:
+  90 0129 456E7472 		.ascii	"Entropy Repetition Test failed\000"
+  90      6F707920 
+  90      52657065 
+  90      74697469 
+  90      6F6E2054 
+  91              	.LC12:
+  92 0148 43616C6C 		.ascii	"Callback indicates that HW has PSK\000"
+  92      6261636B 
+  92      20696E64 
+  92      69636174 
+  92      65732074 
+  93              	.LC13:
+  94 016b 53797374 		.ascii	"System/library call failed\000"
+  94      656D2F6C 
+  94      69627261 
+  94      72792063 
+  94      616C6C20 
+  95              	.LC14:
+  96 0186 496E7075 		.ascii	"Input/output failure\000"
+  96      742F6F75 
+  96      74707574 
+  96      20666169 
+  96      6C757265 
+  97              	.LC15:
+  98 019b 4E6F2076 		.ascii	"No valid device ID set\000"
+  98      616C6964 
+  98      20646576 
+  98      69636520 
+  98      49442073 
+  99              	.LC16:
+ 100 01b2 4145532D 		.ascii	"AES-SIV authentication failure\000"
+ 100      53495620 
+ 100      61757468 
+ 100      656E7469 
+ 100      63617469 
+ 101              	.LC17:
+ 102 01d1 50726F74 		.ascii	"Protocol callback unavailable\000"
+ 102      6F636F6C 
+ 102      2063616C 
+ 102      6C626163 
+ 102      6B20756E 
+ 103              	.LC18:
+ 104 01ef 43616E6E 		.ascii	"Cannot export private key, locked\000"
+ 104      6F742065 
+ARM GAS  /tmp/ccf14fDY.s 			page 4
+
+
+ 104      78706F72 
+ 104      74207072 
+ 104      69766174 
+ 105              	.LC19:
+ 106 0211 776F6C66 		.ascii	"wolfcrypt ECDHE Pairwise Consistency Test Failure\000"
+ 106      63727970 
+ 106      74204543 
+ 106      44484520 
+ 106      50616972 
+ 107              	.LC20:
+ 108 0243 776F6C66 		.ascii	"wolfcrypt DHE Pairwise Consistency Test Failure\000"
+ 108      63727970 
+ 108      74204448 
+ 108      45205061 
+ 108      69727769 
+ 109              	.LC21:
+ 110 0273 776F6C66 		.ascii	"wolfcrypt FIPS SSH KDF Known Answer Test Failure\000"
+ 110      63727970 
+ 110      74204649 
+ 110      50532053 
+ 110      5348204B 
+ 111              	.LC22:
+ 112 02a4 776F6C66 		.ascii	"wolfcrypt FIPS TLSv1.3 KDF Known Answer Test Failur"
+ 112      63727970 
+ 112      74204649 
+ 112      50532054 
+ 112      4C537631 
+ 113 02d7 6500     		.ascii	"e\000"
+ 114              	.LC23:
+ 115 02d9 776F6C66 		.ascii	"wolfcrypt FIPS TLSv1.2 KDF Known Answer Test Failur"
+ 115      63727970 
+ 115      74204649 
+ 115      50532054 
+ 115      4C537631 
+ 116 030c 6500     		.ascii	"e\000"
+ 117              	.LC24:
+ 118 030e 776F6C66 		.ascii	"wolfcrypt FIPS RSA Pairwise Agreement Test Failure\000"
+ 118      63727970 
+ 118      74204649 
+ 118      50532052 
+ 118      53412050 
+ 119              	.LC25:
+ 120 0341 776F6C66 		.ascii	"wolfcrypt FIPS ECDSA Known Answer Test Failure\000"
+ 120      63727970 
+ 120      74204649 
+ 120      50532045 
+ 120      43445341 
+ 121              	.LC26:
+ 122 0370 56616C75 		.ascii	"Value of length parameter is invalid.\000"
+ 122      65206F66 
+ 122      206C656E 
+ 122      67746820 
+ 122      70617261 
+ 123              	.LC27:
+ 124 0396 52657175 		.ascii	"Required key not set\000"
+ 124      69726564 
+ 124      206B6579 
+ARM GAS  /tmp/ccf14fDY.s 			page 5
+
+
+ 124      206E6F74 
+ 124      20736574 
+ 125              	.LC28:
+ 126 03ab 52657175 		.ascii	"Required IV not set\000"
+ 126      69726564 
+ 126      20495620 
+ 126      6E6F7420 
+ 126      73657400 
+ 127              	.LC29:
+ 128 03bf 53414B4B 		.ascii	"SAKKE derivation verification error\000"
+ 128      45206465 
+ 128      72697661 
+ 128      74696F6E 
+ 128      20766572 
+ 129              	.LC30:
+ 130 03e3 41534E20 		.ascii	"ASN self-signed certificate error\000"
+ 130      73656C66 
+ 130      2D736967 
+ 130      6E656420 
+ 130      63657274 
+ 131              	.LC31:
+ 132 0405 776F6C66 		.ascii	"wolfcrypt - ChaCha20_Poly1305 limit overflow 4GB\000"
+ 132      63727970 
+ 132      74202D20 
+ 132      43686143 
+ 132      68613230 
+ 133              	.LC32:
+ 134 0436 50535320 		.ascii	"PSS - Salt length unable to be recovered\000"
+ 134      2D205361 
+ 134      6C74206C 
+ 134      656E6774 
+ 134      6820756E 
+ 135              	.LC33:
+ 136 045f 5369676E 		.ascii	"Signature found but no certificate to verify\000"
+ 136      61747572 
+ 136      6520666F 
+ 136      756E6420 
+ 136      62757420 
+ 137              	.LC34:
+ 138 048c 43727970 		.ascii	"Crypto callback unavailable\000"
+ 138      746F2063 
+ 138      616C6C62 
+ 138      61636B20 
+ 138      756E6176 
+ 139              	.LC35:
+ 140 04a8 504B4353 		.ascii	"PKCS#7 operations wants more input, call again\000"
+ 140      2337206F 
+ 140      70657261 
+ 140      74696F6E 
+ 140      73207761 
+ 141              	.LC36:
+ 142 04d7 4E6F2073 		.ascii	"No signer in PKCS#7 signed data\000"
+ 142      69676E65 
+ 142      7220696E 
+ 142      20504B43 
+ 142      53233720 
+ 143              	.LC37:
+ARM GAS  /tmp/ccf14fDY.s 			page 6
+
+
+ 144 04f7 7A6C6962 		.ascii	"zlib decompress error\000"
+ 144      20646563 
+ 144      6F6D7072 
+ 144      65737320 
+ 144      6572726F 
+ 145              	.LC38:
+ 146 050d 7A6C6962 		.ascii	"zlib compress error\000"
+ 146      20636F6D 
+ 146      70726573 
+ 146      73206572 
+ 146      726F7200 
+ 147              	.LC39:
+ 148 0521 7A6C6962 		.ascii	"zlib init error\000"
+ 148      20696E69 
+ 148      74206572 
+ 148      726F7200 
+ 149              	.LC40:
+ 150 0531 4572726F 		.ascii	"Error with /dev/crypto\000"
+ 150      72207769 
+ 150      7468202F 
+ 150      6465762F 
+ 150      63727970 
+ 151              	.LC41:
+ 152 0548 41465F41 		.ascii	"AF_ALG socket error\000"
+ 152      4C472073 
+ 152      6F636B65 
+ 152      74206572 
+ 152      726F7200 
+ 153              	.LC42:
+ 154 055c 44482043 		.ascii	"DH Check Private Key failure\000"
+ 154      6865636B 
+ 154      20507269 
+ 154      76617465 
+ 154      204B6579 
+ 155              	.LC43:
+ 156 0579 52534120 		.ascii	"RSA Key Pair-Wise Consistency check fail\000"
+ 156      4B657920 
+ 156      50616972 
+ 156      2D576973 
+ 156      6520436F 
+ 157              	.LC44:
+ 158 05a2 4145532D 		.ascii	"AES-CCM invocation counter overflow\000"
+ 158      43434D20 
+ 158      696E766F 
+ 158      63617469 
+ 158      6F6E2063 
+ 159              	.LC45:
+ 160 05c6 4145532D 		.ascii	"AES-GCM invocation counter overflow\000"
+ 160      47434D20 
+ 160      696E766F 
+ 160      63617469 
+ 160      6F6E2063 
+ 161              	.LC46:
+ 162 05ea 776F6C66 		.ascii	"wolfcrypt FIPS ECDHE Known Answer Test Failure\000"
+ 162      63727970 
+ 162      74204649 
+ 162      50532045 
+ARM GAS  /tmp/ccf14fDY.s 			page 7
+
+
+ 162      43444845 
+ 163              	.LC47:
+ 164 0619 5348412D 		.ascii	"SHA-3 Known Answer Test check FIPS error\000"
+ 164      33204B6E 
+ 164      6F776E20 
+ 164      416E7377 
+ 164      65722054 
+ 165              	.LC48:
+ 166 0642 41455343 		.ascii	"AESCCM Known Answer Test check FIPS error\000"
+ 166      434D204B 
+ 166      6E6F776E 
+ 166      20416E73 
+ 166      77657220 
+ 167              	.LC49:
+ 168 066c 776F6C66 		.ascii	"wolfcrypt FIPS DH Known Answer Test Failure\000"
+ 168      63727970 
+ 168      74204649 
+ 168      50532044 
+ 168      48204B6E 
+ 169              	.LC50:
+ 170 0698 776F6C66 		.ascii	"wolfcrypt FIPS ECDSA Pairwise Agreement Test Failur"
+ 170      63727970 
+ 170      74204649 
+ 170      50532045 
+ 170      43445341 
+ 171 06cb 6500     		.ascii	"e\000"
+ 172              	.LC51:
+ 173 06cd 776F6C66 		.ascii	"wolfcrypt FIPS RSA-PSS Pairwise Agreement Test Fail"
+ 173      63727970 
+ 173      74204649 
+ 173      50532052 
+ 173      53412D50 
+ 174 0700 75726500 		.ascii	"ure\000"
+ 175              	.LC52:
+ 176 0704 43697068 		.ascii	"Ciphertext to decrypt is out of range\000"
+ 176      65727465 
+ 176      78742074 
+ 176      6F206465 
+ 176      63727970 
+ 177              	.LC53:
+ 178 072a 556E6162 		.ascii	"Unable to decode an indefinite length encoded messa"
+ 178      6C652074 
+ 178      6F206465 
+ 178      636F6465 
+ 178      20616E20 
+ 179 075d 676500   		.ascii	"ge\000"
+ 180              	.LC54:
+ 181 0760 556E6162 		.ascii	"Unable to find a prime for RSA key\000"
+ 181      6C652074 
+ 181      6F206669 
+ 181      6E642061 
+ 181      20707269 
+ 182              	.LC55:
+ 183 0783 50535320 		.ascii	"PSS - Length of salt is too big for hash algorithm\000"
+ 183      2D204C65 
+ 183      6E677468 
+ 183      206F6620 
+ARM GAS  /tmp/ccf14fDY.s 			page 8
+
+
+ 183      73616C74 
+ 184              	.LC56:
+ 185 07b6 48617264 		.ascii	"Hardware waiting on resource\000"
+ 185      77617265 
+ 185      20776169 
+ 185      74696E67 
+ 185      206F6E20 
+ 186              	.LC57:
+ 187 07d3 4572726F 		.ascii	"Error with hardware crypto use\000"
+ 187      72207769 
+ 187      74682068 
+ 187      61726477 
+ 187      61726520 
+ 188              	.LC58:
+ 189 07f2 45787465 		.ascii	"Extended Key Usage value error\000"
+ 189      6E646564 
+ 189      204B6579 
+ 189      20557361 
+ 189      67652076 
+ 190              	.LC59:
+ 191 0811 496E7661 		.ascii	"Invalid use of private only ECC key\000"
+ 191      6C696420 
+ 191      75736520 
+ 191      6F662070 
+ 191      72697661 
+ 192              	.LC60:
+ 193 0835 4173796E 		.ascii	"Async operation error\000"
+ 193      63206F70 
+ 193      65726174 
+ 193      696F6E20 
+ 193      6572726F 
+ 194              	.LC61:
+ 195 084b 42616420 		.ascii	"Bad path for opendir error\000"
+ 195      70617468 
+ 195      20666F72 
+ 195      206F7065 
+ 195      6E646972 
+ 196              	.LC62:
+ 197 0866 44482043 		.ascii	"DH Check Public Key failure\000"
+ 197      6865636B 
+ 197      20507562 
+ 197      6C696320 
+ 197      4B657920 
+ 198              	.LC63:
+ 199 0882 776F6C66 		.ascii	"wolfcrypt FIPS ECC CDH Known Answer Test Failure\000"
+ 199      63727970 
+ 199      74204649 
+ 199      50532045 
+ 199      43432043 
+ 200              	.LC64:
+ 201 08b3 776F6C66 		.ascii	"wolfcrypt cleanup failed\000"
+ 201      63727970 
+ 201      7420636C 
+ 201      65616E75 
+ 201      70206661 
+ 202              	.LC65:
+ 203 08cc 44656372 		.ascii	"Decrypted AES key wrap IV does not match expected\000"
+ARM GAS  /tmp/ccf14fDY.s 			page 9
+
+
+ 203      79707465 
+ 203      64204145 
+ 203      53206B65 
+ 203      79207772 
+ 204              	.LC66:
+ 205 08fe 556E7375 		.ascii	"Unsupported key wrap algorithm error\000"
+ 205      70706F72 
+ 205      74656420 
+ 205      6B657920 
+ 205      77726170 
+ 206              	.LC67:
+ 207 0923 41534E20 		.ascii	"ASN CA path length larger than signer error\000"
+ 207      43412070 
+ 207      61746820 
+ 207      6C656E67 
+ 207      7468206C 
+ 208              	.LC68:
+ 209 094f 41534E20 		.ascii	"ASN CA path length value too large error\000"
+ 209      43412070 
+ 209      61746820 
+ 209      6C656E67 
+ 209      74682076 
+ 210              	.LC69:
+ 211 0978 524E4720 		.ascii	"RNG required but not provided\000"
+ 211      72657175 
+ 211      69726564 
+ 211      20627574 
+ 211      206E6F74 
+ 212              	.LC70:
+ 213 0996 436F756E 		.ascii	"Country code size error, either too small or large\000"
+ 213      74727920 
+ 213      636F6465 
+ 213      2073697A 
+ 213      65206572 
+ 214              	.LC71:
+ 215 09c9 4B657920 		.ascii	"Key size error, either too small or large\000"
+ 215      73697A65 
+ 215      20657272 
+ 215      6F722C20 
+ 215      65697468 
+ 216              	.LC72:
+ 217 09f3 496E7661 		.ascii	"Invalid FIPS version defined, check length\000"
+ 217      6C696420 
+ 217      46495053 
+ 217      20766572 
+ 217      73696F6E 
+ 218              	.LC73:
+ 219 0a1e 48617368 		.ascii	"Hash type not enabled/available\000"
+ 219      20747970 
+ 219      65206E6F 
+ 219      7420656E 
+ 219      61626C65 
+ 220              	.LC74:
+ 221 0a3e 5369676E 		.ascii	"Signature type not enabled/available\000"
+ 221      61747572 
+ 221      65207479 
+ 221      7065206E 
+ARM GAS  /tmp/ccf14fDY.s 			page 10
+
+
+ 221      6F742065 
+ 222              	.LC75:
+ 223 0a63 42616420 		.ascii	"Bad condition variable operation error\000"
+ 223      636F6E64 
+ 223      6974696F 
+ 223      6E207661 
+ 223      72696162 
+ 224              	.LC76:
+ 225 0a8a 5369676E 		.ascii	"Signature verify error\000"
+ 225      61747572 
+ 225      65207665 
+ 225      72696679 
+ 225      20657272 
+ 226              	.LC77:
+ 227 0aa1 776F6C66 		.ascii	"wolfCrypt Initialize Failure error\000"
+ 227      43727970 
+ 227      7420496E 
+ 227      69746961 
+ 227      6C697A65 
+ 228              	.LC78:
+ 229 0ac4 53657474 		.ascii	"Setting Certificate Policies error\000"
+ 229      696E6720 
+ 229      43657274 
+ 229      69666963 
+ 229      61746520 
+ 230              	.LC79:
+ 231 0ae7 4B657920 		.ascii	"Key Usage value error\000"
+ 231      55736167 
+ 231      65207661 
+ 231      6C756520 
+ 231      6572726F 
+ 232              	.LC80:
+ 233 0afd 53657474 		.ascii	"Setting Authority Key Identifier error\000"
+ 233      696E6720 
+ 233      41757468 
+ 233      6F726974 
+ 233      79204B65 
+ 234              	.LC81:
+ 235 0b24 53657474 		.ascii	"Setting Subject Key Identifier error\000"
+ 235      696E6720 
+ 235      5375626A 
+ 235      65637420 
+ 235      4B657920 
+ 236              	.LC82:
+ 237 0b49 41534E20 		.ascii	"ASN no Key Usage found error\000"
+ 237      6E6F204B 
+ 237      65792055 
+ 237      73616765 
+ 237      20666F75 
+ 238              	.LC83:
+ 239 0b66 41534E20 		.ascii	"ASN no Authority Key Identifier found error\000"
+ 239      6E6F2041 
+ 239      7574686F 
+ 239      72697479 
+ 239      204B6579 
+ 240              	.LC84:
+ 241 0b92 41534E20 		.ascii	"ASN no Subject Key Identifier found error\000"
+ARM GAS  /tmp/ccf14fDY.s 			page 11
+
+
+ 241      6E6F2053 
+ 241      75626A65 
+ 241      6374204B 
+ 241      65792049 
+ 242              	.LC85:
+ 243 0bbc 53525020 		.ascii	"SRP bad key values error\000"
+ 243      62616420 
+ 243      6B657920 
+ 243      76616C75 
+ 243      65732065 
+ 244              	.LC86:
+ 245 0bd5 53525020 		.ascii	"SRP proof verification error\000"
+ 245      70726F6F 
+ 245      66207665 
+ 245      72696669 
+ 245      63617469 
+ 246              	.LC87:
+ 247 0bf2 53525020 		.ascii	"SRP function called in the wrong order error\000"
+ 247      66756E63 
+ 247      74696F6E 
+ 247      2063616C 
+ 247      6C656420 
+ 248              	.LC88:
+ 249 0c1f 45434320 		.ascii	"ECC Qx or Qy out of range error\000"
+ 249      5178206F 
+ 249      72205179 
+ 249      206F7574 
+ 249      206F6620 
+ 250              	.LC89:
+ 251 0c3f 45434320 		.ascii	"ECC private key is not valid error\000"
+ 251      70726976 
+ 251      61746520 
+ 251      6B657920 
+ 251      6973206E 
+ 252              	.LC90:
+ 253 0c62 45434320 		.ascii	"ECC point at infinity error\000"
+ 253      706F696E 
+ 253      74206174 
+ 253      20696E66 
+ 253      696E6974 
+ 254              	.LC91:
+ 255 0c7e 45434320 		.ascii	"ECC is point on curve failed\000"
+ 255      69732070 
+ 255      6F696E74 
+ 255      206F6E20 
+ 255      63757276 
+ 256              	.LC92:
+ 257 0c9b 4D414320 		.ascii	"MAC comparison failed\000"
+ 257      636F6D70 
+ 257      61726973 
+ 257      6F6E2066 
+ 257      61696C65 
+ 258              	.LC93:
+ 259 0cb1 54687265 		.ascii	"Thread Storage Set error\000"
+ 259      61642053 
+ 259      746F7261 
+ 259      67652053 
+ARM GAS  /tmp/ccf14fDY.s 			page 12
+
+
+ 259      65742065 
+ 260              	.LC94:
+ 261 0cca 54687265 		.ascii	"Thread Storage Key Create error\000"
+ 261      61642053 
+ 261      746F7261 
+ 261      6765204B 
+ 261      65792043 
+ 262              	.LC95:
+ 263 0cea 41455347 		.ascii	"AESGCM Known Answer Test check FIPS error\000"
+ 263      434D204B 
+ 263      6E6F776E 
+ 263      20416E73 
+ 263      77657220 
+ 264              	.LC96:
+ 265 0d14 44524247 		.ascii	"DRBG Continuous Test FIPS error\000"
+ 265      20436F6E 
+ 265      74696E75 
+ 265      6F757320 
+ 265      54657374 
+ 266              	.LC97:
+ 267 0d34 44524247 		.ascii	"DRBG Known Answer Test check FIPS error\000"
+ 267      204B6E6F 
+ 267      776E2041 
+ 267      6E737765 
+ 267      72205465 
+ 268              	.LC98:
+ 269 0d5c 52534120 		.ascii	"RSA Known Answer Test check FIPS error\000"
+ 269      4B6E6F77 
+ 269      6E20416E 
+ 269      73776572 
+ 269      20546573 
+ 270              	.LC99:
+ 271 0d83 484D4143 		.ascii	"HMAC Known Answer Test check FIPS error\000"
+ 271      204B6E6F 
+ 271      776E2041 
+ 271      6E737765 
+ 271      72205465 
+ 272              	.LC100:
+ 273 0dab 44455333 		.ascii	"DES3 Known Answer Test check FIPS error\000"
+ 273      204B6E6F 
+ 273      776E2041 
+ 273      6E737765 
+ 273      72205465 
+ 274              	.LC101:
+ 275 0dd3 41455320 		.ascii	"AES Known Answer Test check FIPS error\000"
+ 275      4B6E6F77 
+ 275      6E20416E 
+ 275      73776572 
+ 275      20546573 
+ 276              	.LC102:
+ 277 0dfa 496E2043 		.ascii	"In Core Integrity check FIPS error\000"
+ 277      6F726520 
+ 277      496E7465 
+ 277      67726974 
+ 277      79206368 
+ 278              	.LC103:
+ 279 0e1d 4F757470 		.ascii	"Output length only set, not for other use error\000"
+ARM GAS  /tmp/ccf14fDY.s 			page 13
+
+
+ 279      7574206C 
+ 279      656E6774 
+ 279      68206F6E 
+ 279      6C792073 
+ 280              	.LC104:
+ 281 0e4d 52736120 		.ascii	"Rsa Padding error\000"
+ 281      50616464 
+ 281      696E6720 
+ 281      6572726F 
+ 281      7200
+ 282              	.LC105:
+ 283 0e5f 46495053 		.ascii	"FIPS Mode HMAC Minimum Key Length error\000"
+ 283      204D6F64 
+ 283      6520484D 
+ 283      4143204D 
+ 283      696E696D 
+ 284              	.LC106:
+ 285 0e87 52616E64 		.ascii	"Random Number Generator failed\000"
+ 285      6F6D204E 
+ 285      756D6265 
+ 285      72204765 
+ 285      6E657261 
+ 286              	.LC107:
+ 287 0ea6 4E616D65 		.ascii	"Name Constraint error\000"
+ 287      20436F6E 
+ 287      73747261 
+ 287      696E7420 
+ 287      6572726F 
+ 288              	.LC108:
+ 289 0ebc 46495053 		.ascii	"FIPS mode not allowed error\000"
+ 289      206D6F64 
+ 289      65206E6F 
+ 289      7420616C 
+ 289      6C6F7765 
+ 290              	.LC109:
+ 291 0ed8 504B4353 		.ascii	"PKCS#7 error: no matching recipient found\000"
+ 291      23372065 
+ 291      72726F72 
+ 291      3A206E6F 
+ 291      206D6174 
+ 292              	.LC110:
+ 293 0f02 504B4353 		.ascii	"PKCS#7 error: mismatched OID value\000"
+ 293      23372065 
+ 293      72726F72 
+ 293      3A206D69 
+ 293      736D6174 
+ 294              	.LC111:
+ 295 0f25 53657474 		.ascii	"Setting cert request attributes error\000"
+ 295      696E6720 
+ 295      63657274 
+ 295      20726571 
+ 295      75657374 
+ 296              	.LC112:
+ 297 0f4b 42616420 		.ascii	"Bad padding, message wrong length\000"
+ 297      70616464 
+ 297      696E672C 
+ 297      206D6573 
+ARM GAS  /tmp/ccf14fDY.s 			page 14
+
+
+ 297      73616765 
+ 298              	.LC113:
+ 299 0f6d 42616420 		.ascii	"Bad state operation\000"
+ 299      73746174 
+ 299      65206F70 
+ 299      65726174 
+ 299      696F6E00 
+ 300              	.LC114:
+ 301 0f81 41534E20 		.ascii	"ASN OCSP sig error, confirm failure\000"
+ 301      4F435350 
+ 301      20736967 
+ 301      20657272 
+ 301      6F722C20 
+ 302              	.LC115:
+ 303 0fa5 41534E20 		.ascii	"ASN CRL no signer error to confirm failure\000"
+ 303      43524C20 
+ 303      6E6F2073 
+ 303      69676E65 
+ 303      72206572 
+ 304              	.LC116:
+ 305 0fd0 41534E20 		.ascii	"ASN CRL sig error, confirm failure\000"
+ 305      43524C20 
+ 305      73696720 
+ 305      6572726F 
+ 305      722C2063 
+ 306              	.LC117:
+ 307 0ff3 41534E20 		.ascii	"ASN no signer error to confirm failure\000"
+ 307      6E6F2073 
+ 307      69676E65 
+ 307      72206572 
+ 307      726F7220 
+ 308              	.LC118:
+ 309 101a 42616420 		.ascii	"Bad alignment error, no alloc help\000"
+ 309      616C6967 
+ 309      6E6D656E 
+ 309      74206572 
+ 309      726F722C 
+ 310              	.LC119:
+ 311 103d 4465436F 		.ascii	"DeCompress error\000"
+ 311      6D707265 
+ 311      73732065 
+ 311      72726F72 
+ 311      00
+ 312              	.LC120:
+ 313 104e 4465436F 		.ascii	"DeCompress Init error\000"
+ 313      6D707265 
+ 313      73732049 
+ 313      6E697420 
+ 313      6572726F 
+ 314              	.LC121:
+ 315 1064 436F6D70 		.ascii	"Compress error\000"
+ 315      72657373 
+ 315      20657272 
+ 315      6F7200
+ 316              	.LC122:
+ 317 1073 436F6D70 		.ascii	"Compress Init error\000"
+ 317      72657373 
+ARM GAS  /tmp/ccf14fDY.s 			page 15
+
+
+ 317      20496E69 
+ 317      74206572 
+ 317      726F7200 
+ 318              	.LC123:
+ 319 1087 4173796E 		.ascii	"Async Init error\000"
+ 319      6320496E 
+ 319      69742065 
+ 319      72726F72 
+ 319      00
+ 320              	.LC124:
+ 321 1098 4145532D 		.ascii	"AES-CCM Authentication check fail\000"
+ 321      43434D20 
+ 321      41757468 
+ 321      656E7469 
+ 321      63617469 
+ 322              	.LC125:
+ 323 10ba 4145532D 		.ascii	"AES-GCM Authentication check fail\000"
+ 323      47434D20 
+ 323      41757468 
+ 323      656E7469 
+ 323      63617469 
+ 324              	.LC126:
+ 325 10dc 43524C20 		.ascii	"CRL date error\000"
+ 325      64617465 
+ 325      20657272 
+ 325      6F7200
+ 326              	.LC127:
+ 327 10eb 496E7661 		.ascii	"Invalid OCSP Responder, missing specific key usage "
+ 327      6C696420 
+ 327      4F435350 
+ 327      20526573 
+ 327      706F6E64 
+ 328 111e 65787465 		.ascii	"extensions\000"
+ 328      6E73696F 
+ 328      6E7300
+ 329              	.LC128:
+ 330 1129 416C7420 		.ascii	"Alt Name problem, too big\000"
+ 330      4E616D65 
+ 330      2070726F 
+ 330      626C656D 
+ 330      2C20746F 
+ 331              	.LC129:
+ 332 1143 4E6F2070 		.ascii	"No password provided by user\000"
+ 332      61737377 
+ 332      6F726420 
+ 332      70726F76 
+ 332      69646564 
+ 333              	.LC130:
+ 334 1160 556E6963 		.ascii	"Unicode password too big\000"
+ 334      6F646520 
+ 334      70617373 
+ 334      776F7264 
+ 334      20746F6F 
+ 335              	.LC131:
+ 336 1179 46656174 		.ascii	"Feature not compiled in\000"
+ 336      75726520 
+ 336      6E6F7420 
+ARM GAS  /tmp/ccf14fDY.s 			page 16
+
+
+ 336      636F6D70 
+ 336      696C6564 
+ 337              	.LC132:
+ 338 1191 42616420 		.ascii	"Bad function argument\000"
+ 338      66756E63 
+ 338      74696F6E 
+ 338      20617267 
+ 338      756D656E 
+ 339              	.LC133:
+ 340 11a7 45434320 		.ascii	"ECC curve sum OID unsupported, invalid input\000"
+ 340      63757276 
+ 340      65207375 
+ 340      6D204F49 
+ 340      4420756E 
+ 341              	.LC134:
+ 342 11d4 45434320 		.ascii	"ECC ASN1 bad key data, invalid input\000"
+ 342      41534E31 
+ 342      20626164 
+ 342      206B6579 
+ 342      20646174 
+ 343              	.LC135:
+ 344 11f9 45434320 		.ascii	"ECC input argument wrong type, invalid input\000"
+ 344      696E7075 
+ 344      74206172 
+ 344      67756D65 
+ 344      6E742077 
+ 345              	.LC136:
+ 346 1226 6B657920 		.ascii	"key values mismatch\000"
+ 346      76616C75 
+ 346      6573206D 
+ 346      69736D61 
+ 346      74636800 
+ 347              	.LC137:
+ 348 123a 776F6C66 		.ascii	"wolfCrypt FIPS PBKDF2 Known Answer Test Failure\000"
+ 348      43727970 
+ 348      74204649 
+ 348      50532050 
+ 348      424B4446 
+ 349              	.LC138:
+ 350 126a 776F6C66 		.ascii	"wolfCrypt FIPS Ed448 Known Answer Test Failure\000"
+ 350      43727970 
+ 350      74204649 
+ 350      50532045 
+ 350      64343438 
+ 351              	.LC139:
+ 352 1299 776F6C66 		.ascii	"wolfCrypt FIPS Ed25519 Known Answer Test Failure\000"
+ 352      43727970 
+ 352      74204649 
+ 352      50532045 
+ 352      64323535 
+ 353              	.LC140:
+ 354 12ca 41534E20 		.ascii	"ASN no PEM Header Error\000"
+ 354      6E6F2050 
+ 354      454D2048 
+ 354      65616465 
+ 354      72204572 
+ 355              	.LC141:
+ARM GAS  /tmp/ccf14fDY.s 			page 17
+
+
+ 356 12e2 41534E20 		.ascii	"ASN alternate name error\000"
+ 356      616C7465 
+ 356      726E6174 
+ 356      65206E61 
+ 356      6D652065 
+ 357              	.LC142:
+ 358 12fb 582E3530 		.ascii	"X.509 Critical extension ignored or invalid\000"
+ 358      39204372 
+ 358      69746963 
+ 358      616C2065 
+ 358      7874656E 
+ 359              	.LC143:
+ 360 1327 776F6C66 		.ascii	"wolfCrypt FIPS SRTP-KDF Known Answer Test Failure\000"
+ 360      43727970 
+ 360      74204649 
+ 360      50532053 
+ 360      5254502D 
+ 361              	.LC144:
+ 362 1359 41534E20 		.ascii	"ASN key init error, invalid input\000"
+ 362      6B657920 
+ 362      696E6974 
+ 362      20657272 
+ 362      6F722C20 
+ 363              	.LC145:
+ 364 137b 41534E20 		.ascii	"ASN sig error, unsupported key type\000"
+ 364      73696720 
+ 364      6572726F 
+ 364      722C2075 
+ 364      6E737570 
+ 365              	.LC146:
+ 366 139f 41534E20 		.ascii	"ASN sig error, unsupported hash type\000"
+ 366      73696720 
+ 366      6572726F 
+ 366      722C2075 
+ 366      6E737570 
+ 367              	.LC147:
+ 368 13c4 41534E20 		.ascii	"ASN sig error, confirm failure\000"
+ 368      73696720 
+ 368      6572726F 
+ 368      722C2063 
+ 368      6F6E6669 
+ 369              	.LC148:
+ 370 13e3 41534E20 		.ascii	"ASN input error, not enough data\000"
+ 370      696E7075 
+ 370      74206572 
+ 370      726F722C 
+ 370      206E6F74 
+ 371              	.LC149:
+ 372 1404 41534E20 		.ascii	"ASN time error, unknown time type\000"
+ 372      74696D65 
+ 372      20657272 
+ 372      6F722C20 
+ 372      756E6B6E 
+ 373              	.LC150:
+ 374 1426 41534E20 		.ascii	"ASN signature error, mismatched oid\000"
+ 374      7369676E 
+ 374      61747572 
+ARM GAS  /tmp/ccf14fDY.s 			page 18
+
+
+ 374      65206572 
+ 374      726F722C 
+ 375              	.LC151:
+ 376 144a 41534E20 		.ascii	"ASN date error, current date is after expiration\000"
+ 376      64617465 
+ 376      20657272 
+ 376      6F722C20 
+ 376      63757272 
+ 377              	.LC152:
+ 378 147b 41534E20 		.ascii	"ASN date error, current date is before start of val"
+ 378      64617465 
+ 378      20657272 
+ 378      6F722C20 
+ 378      63757272 
+ 379 14ae 69646974 		.ascii	"idity\000"
+ 379      7900
+ 380              	.LC153:
+ 381 14b4 41534E20 		.ascii	"ASN date error, bad size\000"
+ 381      64617465 
+ 381      20657272 
+ 381      6F722C20 
+ 381      62616420 
+ 382              	.LC154:
+ 383 14cd 41534E20 		.ascii	"ASN oid error, unknown sum id\000"
+ 383      6F696420 
+ 383      6572726F 
+ 383      722C2075 
+ 383      6E6B6E6F 
+ 384              	.LC155:
+ 385 14eb 41534E20 		.ascii	"ASN bit string error, wrong id\000"
+ 385      62697420 
+ 385      73747269 
+ 385      6E672065 
+ 385      72726F72 
+ 386              	.LC156:
+ 387 150a 41534E20 		.ascii	"ASN expect error, not zero\000"
+ 387      65787065 
+ 387      63742065 
+ 387      72726F72 
+ 387      2C206E6F 
+ 388              	.LC157:
+ 389 1525 41534E20 		.ascii	"ASN tag error, not null\000"
+ 389      74616720 
+ 389      6572726F 
+ 389      722C206E 
+ 389      6F74206E 
+ 390              	.LC158:
+ 391 153d 41534E20 		.ascii	"ASN object id error, invalid id\000"
+ 391      6F626A65 
+ 391      63742069 
+ 391      64206572 
+ 391      726F722C 
+ 392              	.LC159:
+ 393 155d 41534E20 		.ascii	"ASN get big int error, invalid data\000"
+ 393      67657420 
+ 393      62696720 
+ 393      696E7420 
+ARM GAS  /tmp/ccf14fDY.s 			page 19
+
+
+ 393      6572726F 
+ 394              	.LC160:
+ 395 1581 41534E20 		.ascii	"ASN version error, invalid number\000"
+ 395      76657273 
+ 395      696F6E20 
+ 395      6572726F 
+ 395      722C2069 
+ 396              	.LC161:
+ 397 15a3 41534E20 		.ascii	"ASN parsing error, invalid input\000"
+ 397      70617273 
+ 397      696E6720 
+ 397      6572726F 
+ 397      722C2069 
+ 398              	.LC162:
+ 399 15c4 53657474 		.ascii	"Setting extensions error\000"
+ 399      696E6720 
+ 399      65787465 
+ 399      6E73696F 
+ 399      6E732065 
+ 400              	.LC163:
+ 401 15dd 53657474 		.ascii	"Setting basic constraint CA true error\000"
+ 401      696E6720 
+ 401      62617369 
+ 401      6320636F 
+ 401      6E737472 
+ 402              	.LC164:
+ 403 1604 53657474 		.ascii	"Setting Cert Issuer name error\000"
+ 403      696E6720 
+ 403      43657274 
+ 403      20497373 
+ 403      75657220 
+ 404              	.LC165:
+ 405 1623 53657474 		.ascii	"Setting Cert Subject name error\000"
+ 405      696E6720 
+ 405      43657274 
+ 405      20537562 
+ 405      6A656374 
+ 406              	.LC166:
+ 407 1643 53657474 		.ascii	"Setting Cert Date validity error\000"
+ 407      696E6720 
+ 407      43657274 
+ 407      20446174 
+ 407      65207661 
+ 408              	.LC167:
+ 409 1664 53657474 		.ascii	"Setting Cert Public Key error\000"
+ 409      696E6720 
+ 409      43657274 
+ 409      20507562 
+ 409      6C696320 
+ 410              	.LC168:
+ 411 1682 53657474 		.ascii	"Setting Cert AlgoID error\000"
+ 411      696E6720 
+ 411      43657274 
+ 411      20416C67 
+ 411      6F494420 
+ 412              	.LC169:
+ 413 169c 42756666 		.ascii	"Buffer error, output too small or input too big\000"
+ARM GAS  /tmp/ccf14fDY.s 			page 20
+
+
+ 413      65722065 
+ 413      72726F72 
+ 413      2C206F75 
+ 413      74707574 
+ 414              	.LC170:
+ 415 16cc 52534120 		.ascii	"RSA buffer error, output too small or input too big"
+ 415      62756666 
+ 415      65722065 
+ 415      72726F72 
+ 415      2C206F75 
+ 416 16ff 00       		.ascii	"\000"
+ 417              	.LC171:
+ 418 1700 52534120 		.ascii	"RSA wrong block type for RSA function\000"
+ 418      77726F6E 
+ 418      6720626C 
+ 418      6F636B20 
+ 418      74797065 
+ 419              	.LC172:
+ 420 1726 46495053 		.ascii	"FIPS Module Data too large adjust MAX_FIPS_DATA_SZ\000"
+ 420      204D6F64 
+ 420      756C6520 
+ 420      44617461 
+ 420      20746F6F 
+ 421              	.LC173:
+ 422 1759 46495053 		.ascii	"FIPS Module Code too large adjust MAX_FIPS_CODE_SZ\000"
+ 422      204D6F64 
+ 422      756C6520 
+ 422      436F6465 
+ 422      20746F6F 
+ 423              	.LC174:
+ 424 178c 46495053 		.ascii	"FIPS module in DEGRADED mode\000"
+ 424      206D6F64 
+ 424      756C6520 
+ 424      696E2044 
+ 424      45475241 
+ 425              	.LC175:
+ 426 17a9 56617269 		.ascii	"Variable state modified by different thread\000"
+ 426      61626C65 
+ 426      20737461 
+ 426      7465206D 
+ 426      6F646966 
+ 427              	.LC176:
+ 428 17d5 6F757420 		.ascii	"out of memory error\000"
+ 428      6F66206D 
+ 428      656D6F72 
+ 428      79206572 
+ 428      726F7200 
+ 429              	.LC177:
+ 430 17e9 4B657920 		.ascii	"Key no longer usable for operation\000"
+ 430      6E6F206C 
+ 430      6F6E6765 
+ 430      72207573 
+ 430      61626C65 
+ 431              	.LC178:
+ 432 180c 4145532D 		.ascii	"AES-EAX Authentication check fail\000"
+ 432      45415820 
+ 432      41757468 
+ARM GAS  /tmp/ccf14fDY.s 			page 21
+
+
+ 432      656E7469 
+ 432      63617469 
+ 433              	.LC179:
+ 434 182e 6D70207A 		.ascii	"mp zero result, not expected\000"
+ 434      65726F20 
+ 434      72657375 
+ 434      6C742C20 
+ 434      6E6F7420 
+ 435              	.LC180:
+ 436 184b 6D705F63 		.ascii	"mp_cmp error state\000"
+ 436      6D702065 
+ 436      72726F72 
+ 436      20737461 
+ 436      746500
+ 437              	.LC181:
+ 438 185e 6D705F69 		.ascii	"mp_invmod error state, can't inv mod\000"
+ 438      6E766D6F 
+ 438      64206572 
+ 438      726F7220 
+ 438      73746174 
+ 439              	.LC182:
+ 440 1883 6D705F6D 		.ascii	"mp_mod error state, can't mod\000"
+ 440      6F642065 
+ 440      72726F72 
+ 440      20737461 
+ 440      74652C20 
+ 441              	.LC183:
+ 442 18a1 6D705F6D 		.ascii	"mp_mulmod error state, can't multiply mod\000"
+ 442      756C6D6F 
+ 442      64206572 
+ 442      726F7220 
+ 442      73746174 
+ 443              	.LC184:
+ 444 18cb 6D705F6D 		.ascii	"mp_mul error state, can't multiply\000"
+ 444      756C2065 
+ 444      72726F72 
+ 444      20737461 
+ 444      74652C20 
+ 445              	.LC185:
+ 446 18ee 6D705F61 		.ascii	"mp_add error state, can't add\000"
+ 446      64642065 
+ 446      72726F72 
+ 446      20737461 
+ 446      74652C20 
+ 447              	.LC186:
+ 448 190c 6D705F73 		.ascii	"mp_sub error state, can't subtract\000"
+ 448      75622065 
+ 448      72726F72 
+ 448      20737461 
+ 448      74652C20 
+ 449              	.LC187:
+ 450 192f 6D705F74 		.ascii	"mp_to_xxx error state, can't convert\000"
+ 450      6F5F7878 
+ 450      78206572 
+ 450      726F7220 
+ 450      73746174 
+ 451              	.LC188:
+ARM GAS  /tmp/ccf14fDY.s 			page 22
+
+
+ 452 1954 6D705F65 		.ascii	"mp_exptmod error state\000"
+ 452      7870746D 
+ 452      6F642065 
+ 452      72726F72 
+ 452      20737461 
+ 453              	.LC189:
+ 454 196b 6D705F72 		.ascii	"mp_read error state\000"
+ 454      65616420 
+ 454      6572726F 
+ 454      72207374 
+ 454      61746500 
+ 455              	.LC190:
+ 456 197f 6D705F69 		.ascii	"mp_init error state\000"
+ 456      6E697420 
+ 456      6572726F 
+ 456      72207374 
+ 456      61746500 
+ 457              	.LC191:
+ 458 1993 776F6C66 		.ascii	"wolfCrypt operation not pending error\000"
+ 458      43727970 
+ 458      74206F70 
+ 458      65726174 
+ 458      696F6E20 
+ 459              	.LC192:
+ 460 19b9 776F6C66 		.ascii	"wolfCrypt Operation Pending (would block / eagain) "
+ 460      43727970 
+ 460      74204F70 
+ 460      65726174 
+ 460      696F6E20 
+ 461 19ec 6572726F 		.ascii	"error\000"
+ 461      7200
+ 462              	.LC193:
+ 463 19f2 54696D65 		.ascii	"Timeout error\000"
+ 463      6F757420 
+ 463      6572726F 
+ 463      7200
+ 464              	.LC194:
+ 465 1a00 42616420 		.ascii	"Bad mutex, operation failed\000"
+ 465      6D757465 
+ 465      782C206F 
+ 465      70657261 
+ 465      74696F6E 
+ 466              	.LC195:
+ 467 1a1c 72616E64 		.ascii	"random device read would block error\000"
+ 467      6F6D2064 
+ 467      65766963 
+ 467      65207265 
+ 467      61642077 
+ 468              	.LC196:
+ 469 1a41 77696E64 		.ascii	"windows crypt generation error\000"
+ 469      6F777320 
+ 469      63727970 
+ 469      74206765 
+ 469      6E657261 
+ 470              	.LC197:
+ 471 1a60 77696E64 		.ascii	"windows crypt init error\000"
+ 471      6F777320 
+ARM GAS  /tmp/ccf14fDY.s 			page 23
+
+
+ 471      63727970 
+ 471      7420696E 
+ 471      69742065 
+ 472              	.LC198:
+ 473 1a79 72656164 		.ascii	"reading random device error\000"
+ 473      696E6720 
+ 473      72616E64 
+ 473      6F6D2064 
+ 473      65766963 
+ 474              	.LC199:
+ 475 1a95 6F70656E 		.ascii	"opening random device error\000"
+ 475      696E6720 
+ 475      72616E64 
+ 475      6F6D2064 
+ 475      65766963 
+ 476              	.LC200:
+ 477 1ab1 4D502070 		.ascii	"MP point not at infinity\000"
+ 477      6F696E74 
+ 477      206E6F74 
+ 477      20617420 
+ 477      696E6669 
+ 478              	.LC201:
+ 479 1aca 4D502069 		.ascii	"MP integer non-blocking operation would block\000"
+ 479      6E746567 
+ 479      6572206E 
+ 479      6F6E2D62 
+ 479      6C6F636B 
+ 480              	.LC202:
+ 481 1af8 4D502069 		.ascii	"MP integer invalid argument\000"
+ 481      6E746567 
+ 481      65722069 
+ 481      6E76616C 
+ 481      69642061 
+ 482              	.LC203:
+ 483 1b14 4D502069 		.ascii	"MP integer dynamic memory allocation failed\000"
+ 483      6E746567 
+ 483      65722064 
+ 483      796E616D 
+ 483      6963206D 
+ 484              	.LC204:
+ 485 1b40 776F6C66 		.ascii	"wolfCrypt generic failure\000"
+ 485      43727970 
+ 485      74206765 
+ 485      6E657269 
+ 485      63206661 
+ 486              		.section	.rodata.CSWTCH.1,"a"
+ 487              		.align	2
+ 488              		.set	.LANCHOR0,. + 0
+ 491              	CSWTCH.1:
+ 492 0000 00000000 		.word	.LC1
+ 493 0004 14000000 		.word	.LC2
+ 494 0008 1E000000 		.word	.LC3
+ 495 000c 49000000 		.word	.LC4
+ 496 0010 69000000 		.word	.LC5
+ 497 0014 00000000 		.word	.LC0
+ 498 0018 00000000 		.word	.LC0
+ 499 001c 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 24
+
+
+ 500 0020 00000000 		.word	.LC0
+ 501 0024 00000000 		.word	.LC0
+ 502 0028 00000000 		.word	.LC0
+ 503 002c 00000000 		.word	.LC0
+ 504 0030 00000000 		.word	.LC0
+ 505 0034 00000000 		.word	.LC0
+ 506 0038 00000000 		.word	.LC0
+ 507 003c 00000000 		.word	.LC0
+ 508 0040 00000000 		.word	.LC0
+ 509 0044 00000000 		.word	.LC0
+ 510 0048 00000000 		.word	.LC0
+ 511 004c 00000000 		.word	.LC0
+ 512 0050 00000000 		.word	.LC0
+ 513 0054 00000000 		.word	.LC0
+ 514 0058 00000000 		.word	.LC0
+ 515 005c 00000000 		.word	.LC0
+ 516 0060 00000000 		.word	.LC0
+ 517 0064 00000000 		.word	.LC0
+ 518 0068 00000000 		.word	.LC0
+ 519 006c 00000000 		.word	.LC0
+ 520 0070 00000000 		.word	.LC0
+ 521 0074 00000000 		.word	.LC0
+ 522 0078 00000000 		.word	.LC0
+ 523 007c 00000000 		.word	.LC0
+ 524 0080 00000000 		.word	.LC0
+ 525 0084 00000000 		.word	.LC0
+ 526 0088 00000000 		.word	.LC0
+ 527 008c 00000000 		.word	.LC0
+ 528 0090 00000000 		.word	.LC0
+ 529 0094 00000000 		.word	.LC0
+ 530 0098 00000000 		.word	.LC0
+ 531 009c 00000000 		.word	.LC0
+ 532 00a0 00000000 		.word	.LC0
+ 533 00a4 00000000 		.word	.LC0
+ 534 00a8 00000000 		.word	.LC0
+ 535 00ac 00000000 		.word	.LC0
+ 536 00b0 00000000 		.word	.LC0
+ 537 00b4 00000000 		.word	.LC0
+ 538 00b8 00000000 		.word	.LC0
+ 539 00bc 00000000 		.word	.LC0
+ 540 00c0 00000000 		.word	.LC0
+ 541 00c4 00000000 		.word	.LC0
+ 542 00c8 00000000 		.word	.LC0
+ 543 00cc 00000000 		.word	.LC0
+ 544 00d0 00000000 		.word	.LC0
+ 545 00d4 00000000 		.word	.LC0
+ 546 00d8 00000000 		.word	.LC0
+ 547 00dc 00000000 		.word	.LC0
+ 548 00e0 00000000 		.word	.LC0
+ 549 00e4 00000000 		.word	.LC0
+ 550 00e8 00000000 		.word	.LC0
+ 551 00ec 00000000 		.word	.LC0
+ 552 00f0 00000000 		.word	.LC0
+ 553 00f4 00000000 		.word	.LC0
+ 554 00f8 00000000 		.word	.LC0
+ 555 00fc 00000000 		.word	.LC0
+ 556 0100 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 25
+
+
+ 557 0104 00000000 		.word	.LC0
+ 558 0108 00000000 		.word	.LC0
+ 559 010c 00000000 		.word	.LC0
+ 560 0110 00000000 		.word	.LC0
+ 561 0114 00000000 		.word	.LC0
+ 562 0118 00000000 		.word	.LC0
+ 563 011c 00000000 		.word	.LC0
+ 564 0120 00000000 		.word	.LC0
+ 565 0124 00000000 		.word	.LC0
+ 566 0128 00000000 		.word	.LC0
+ 567 012c 00000000 		.word	.LC0
+ 568 0130 00000000 		.word	.LC0
+ 569 0134 00000000 		.word	.LC0
+ 570 0138 00000000 		.word	.LC0
+ 571 013c 00000000 		.word	.LC0
+ 572 0140 00000000 		.word	.LC0
+ 573 0144 00000000 		.word	.LC0
+ 574 0148 00000000 		.word	.LC0
+ 575 014c 00000000 		.word	.LC0
+ 576 0150 00000000 		.word	.LC0
+ 577 0154 00000000 		.word	.LC0
+ 578 0158 00000000 		.word	.LC0
+ 579 015c 00000000 		.word	.LC0
+ 580 0160 00000000 		.word	.LC0
+ 581 0164 00000000 		.word	.LC0
+ 582 0168 00000000 		.word	.LC0
+ 583 016c 00000000 		.word	.LC0
+ 584 0170 00000000 		.word	.LC0
+ 585 0174 00000000 		.word	.LC0
+ 586 0178 00000000 		.word	.LC0
+ 587 017c 00000000 		.word	.LC0
+ 588 0180 00000000 		.word	.LC0
+ 589 0184 00000000 		.word	.LC0
+ 590 0188 00000000 		.word	.LC0
+ 591 018c 00000000 		.word	.LC0
+ 592 0190 00000000 		.word	.LC0
+ 593 0194 00000000 		.word	.LC0
+ 594 0198 00000000 		.word	.LC0
+ 595 019c 00000000 		.word	.LC0
+ 596 01a0 00000000 		.word	.LC0
+ 597 01a4 00000000 		.word	.LC0
+ 598 01a8 00000000 		.word	.LC0
+ 599 01ac 00000000 		.word	.LC0
+ 600 01b0 00000000 		.word	.LC0
+ 601 01b4 00000000 		.word	.LC0
+ 602 01b8 00000000 		.word	.LC0
+ 603 01bc 00000000 		.word	.LC0
+ 604 01c0 00000000 		.word	.LC0
+ 605 01c4 00000000 		.word	.LC0
+ 606 01c8 00000000 		.word	.LC0
+ 607 01cc 00000000 		.word	.LC0
+ 608 01d0 00000000 		.word	.LC0
+ 609 01d4 00000000 		.word	.LC0
+ 610 01d8 00000000 		.word	.LC0
+ 611 01dc 00000000 		.word	.LC0
+ 612 01e0 00000000 		.word	.LC0
+ 613 01e4 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 26
+
+
+ 614 01e8 00000000 		.word	.LC0
+ 615 01ec 00000000 		.word	.LC0
+ 616 01f0 00000000 		.word	.LC0
+ 617 01f4 00000000 		.word	.LC0
+ 618 01f8 00000000 		.word	.LC0
+ 619 01fc 00000000 		.word	.LC0
+ 620 0200 00000000 		.word	.LC0
+ 621 0204 00000000 		.word	.LC0
+ 622 0208 00000000 		.word	.LC0
+ 623 020c 00000000 		.word	.LC0
+ 624 0210 00000000 		.word	.LC0
+ 625 0214 00000000 		.word	.LC0
+ 626 0218 00000000 		.word	.LC0
+ 627 021c 00000000 		.word	.LC0
+ 628 0220 00000000 		.word	.LC0
+ 629 0224 00000000 		.word	.LC0
+ 630 0228 00000000 		.word	.LC0
+ 631 022c 00000000 		.word	.LC0
+ 632 0230 00000000 		.word	.LC0
+ 633 0234 00000000 		.word	.LC0
+ 634 0238 00000000 		.word	.LC0
+ 635 023c 00000000 		.word	.LC0
+ 636 0240 00000000 		.word	.LC0
+ 637 0244 00000000 		.word	.LC0
+ 638 0248 00000000 		.word	.LC0
+ 639 024c 00000000 		.word	.LC0
+ 640 0250 00000000 		.word	.LC0
+ 641 0254 00000000 		.word	.LC0
+ 642 0258 00000000 		.word	.LC0
+ 643 025c 00000000 		.word	.LC0
+ 644 0260 00000000 		.word	.LC0
+ 645 0264 00000000 		.word	.LC0
+ 646 0268 00000000 		.word	.LC0
+ 647 026c 00000000 		.word	.LC0
+ 648 0270 00000000 		.word	.LC0
+ 649 0274 00000000 		.word	.LC0
+ 650 0278 00000000 		.word	.LC0
+ 651 027c 00000000 		.word	.LC0
+ 652 0280 00000000 		.word	.LC0
+ 653 0284 00000000 		.word	.LC0
+ 654 0288 00000000 		.word	.LC0
+ 655 028c 00000000 		.word	.LC0
+ 656 0290 00000000 		.word	.LC0
+ 657 0294 00000000 		.word	.LC0
+ 658 0298 00000000 		.word	.LC0
+ 659 029c 00000000 		.word	.LC0
+ 660 02a0 00000000 		.word	.LC0
+ 661 02a4 00000000 		.word	.LC0
+ 662 02a8 00000000 		.word	.LC0
+ 663 02ac 00000000 		.word	.LC0
+ 664 02b0 00000000 		.word	.LC0
+ 665 02b4 00000000 		.word	.LC0
+ 666 02b8 00000000 		.word	.LC0
+ 667 02bc 00000000 		.word	.LC0
+ 668 02c0 00000000 		.word	.LC0
+ 669 02c4 00000000 		.word	.LC0
+ 670 02c8 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 27
+
+
+ 671 02cc 00000000 		.word	.LC0
+ 672 02d0 00000000 		.word	.LC0
+ 673 02d4 00000000 		.word	.LC0
+ 674 02d8 00000000 		.word	.LC0
+ 675 02dc 00000000 		.word	.LC0
+ 676 02e0 00000000 		.word	.LC0
+ 677 02e4 00000000 		.word	.LC0
+ 678 02e8 00000000 		.word	.LC0
+ 679 02ec 00000000 		.word	.LC0
+ 680 02f0 00000000 		.word	.LC0
+ 681 02f4 00000000 		.word	.LC0
+ 682 02f8 00000000 		.word	.LC0
+ 683 02fc 00000000 		.word	.LC0
+ 684 0300 00000000 		.word	.LC0
+ 685 0304 00000000 		.word	.LC0
+ 686 0308 00000000 		.word	.LC0
+ 687 030c 00000000 		.word	.LC0
+ 688 0310 00000000 		.word	.LC0
+ 689 0314 00000000 		.word	.LC0
+ 690 0318 00000000 		.word	.LC0
+ 691 031c 00000000 		.word	.LC0
+ 692 0320 00000000 		.word	.LC0
+ 693 0324 00000000 		.word	.LC0
+ 694 0328 00000000 		.word	.LC0
+ 695 032c 00000000 		.word	.LC0
+ 696 0330 00000000 		.word	.LC0
+ 697 0334 00000000 		.word	.LC0
+ 698 0338 00000000 		.word	.LC0
+ 699 033c 00000000 		.word	.LC0
+ 700 0340 00000000 		.word	.LC0
+ 701 0344 00000000 		.word	.LC0
+ 702 0348 00000000 		.word	.LC0
+ 703 034c 00000000 		.word	.LC0
+ 704 0350 00000000 		.word	.LC0
+ 705 0354 00000000 		.word	.LC0
+ 706 0358 00000000 		.word	.LC0
+ 707 035c 00000000 		.word	.LC0
+ 708 0360 00000000 		.word	.LC0
+ 709 0364 00000000 		.word	.LC0
+ 710 0368 00000000 		.word	.LC0
+ 711 036c 00000000 		.word	.LC0
+ 712 0370 00000000 		.word	.LC0
+ 713 0374 00000000 		.word	.LC0
+ 714 0378 00000000 		.word	.LC0
+ 715 037c 00000000 		.word	.LC0
+ 716 0380 00000000 		.word	.LC0
+ 717 0384 00000000 		.word	.LC0
+ 718 0388 00000000 		.word	.LC0
+ 719 038c 00000000 		.word	.LC0
+ 720 0390 00000000 		.word	.LC0
+ 721 0394 00000000 		.word	.LC0
+ 722 0398 00000000 		.word	.LC0
+ 723 039c 00000000 		.word	.LC0
+ 724 03a0 00000000 		.word	.LC0
+ 725 03a4 00000000 		.word	.LC0
+ 726 03a8 00000000 		.word	.LC0
+ 727 03ac 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 28
+
+
+ 728 03b0 00000000 		.word	.LC0
+ 729 03b4 00000000 		.word	.LC0
+ 730 03b8 00000000 		.word	.LC0
+ 731 03bc 00000000 		.word	.LC0
+ 732 03c0 00000000 		.word	.LC0
+ 733 03c4 00000000 		.word	.LC0
+ 734 03c8 00000000 		.word	.LC0
+ 735 03cc 00000000 		.word	.LC0
+ 736 03d0 00000000 		.word	.LC0
+ 737 03d4 00000000 		.word	.LC0
+ 738 03d8 00000000 		.word	.LC0
+ 739 03dc 00000000 		.word	.LC0
+ 740 03e0 00000000 		.word	.LC0
+ 741 03e4 00000000 		.word	.LC0
+ 742 03e8 00000000 		.word	.LC0
+ 743 03ec 00000000 		.word	.LC0
+ 744 03f0 00000000 		.word	.LC0
+ 745 03f4 00000000 		.word	.LC0
+ 746 03f8 00000000 		.word	.LC0
+ 747 03fc 00000000 		.word	.LC0
+ 748 0400 00000000 		.word	.LC0
+ 749 0404 00000000 		.word	.LC0
+ 750 0408 00000000 		.word	.LC0
+ 751 040c 00000000 		.word	.LC0
+ 752 0410 00000000 		.word	.LC0
+ 753 0414 00000000 		.word	.LC0
+ 754 0418 00000000 		.word	.LC0
+ 755 041c 00000000 		.word	.LC0
+ 756 0420 00000000 		.word	.LC0
+ 757 0424 00000000 		.word	.LC0
+ 758 0428 00000000 		.word	.LC0
+ 759 042c 00000000 		.word	.LC0
+ 760 0430 00000000 		.word	.LC0
+ 761 0434 00000000 		.word	.LC0
+ 762 0438 00000000 		.word	.LC0
+ 763 043c 00000000 		.word	.LC0
+ 764 0440 00000000 		.word	.LC0
+ 765 0444 00000000 		.word	.LC0
+ 766 0448 00000000 		.word	.LC0
+ 767 044c 00000000 		.word	.LC0
+ 768 0450 00000000 		.word	.LC0
+ 769 0454 00000000 		.word	.LC0
+ 770 0458 00000000 		.word	.LC0
+ 771 045c 00000000 		.word	.LC0
+ 772 0460 00000000 		.word	.LC0
+ 773 0464 00000000 		.word	.LC0
+ 774 0468 00000000 		.word	.LC0
+ 775 046c 00000000 		.word	.LC0
+ 776 0470 00000000 		.word	.LC0
+ 777 0474 00000000 		.word	.LC0
+ 778 0478 00000000 		.word	.LC0
+ 779 047c 00000000 		.word	.LC0
+ 780 0480 00000000 		.word	.LC0
+ 781 0484 00000000 		.word	.LC0
+ 782 0488 00000000 		.word	.LC0
+ 783 048c 00000000 		.word	.LC0
+ 784 0490 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 29
+
+
+ 785 0494 00000000 		.word	.LC0
+ 786 0498 00000000 		.word	.LC0
+ 787 049c 00000000 		.word	.LC0
+ 788 04a0 00000000 		.word	.LC0
+ 789 04a4 00000000 		.word	.LC0
+ 790 04a8 00000000 		.word	.LC0
+ 791 04ac 00000000 		.word	.LC0
+ 792 04b0 00000000 		.word	.LC0
+ 793 04b4 00000000 		.word	.LC0
+ 794 04b8 00000000 		.word	.LC0
+ 795 04bc 00000000 		.word	.LC0
+ 796 04c0 00000000 		.word	.LC0
+ 797 04c4 00000000 		.word	.LC0
+ 798 04c8 00000000 		.word	.LC0
+ 799 04cc 00000000 		.word	.LC0
+ 800 04d0 00000000 		.word	.LC0
+ 801 04d4 00000000 		.word	.LC0
+ 802 04d8 00000000 		.word	.LC0
+ 803 04dc 00000000 		.word	.LC0
+ 804 04e0 00000000 		.word	.LC0
+ 805 04e4 00000000 		.word	.LC0
+ 806 04e8 00000000 		.word	.LC0
+ 807 04ec 00000000 		.word	.LC0
+ 808 04f0 00000000 		.word	.LC0
+ 809 04f4 00000000 		.word	.LC0
+ 810 04f8 00000000 		.word	.LC0
+ 811 04fc 00000000 		.word	.LC0
+ 812 0500 00000000 		.word	.LC0
+ 813 0504 00000000 		.word	.LC0
+ 814 0508 00000000 		.word	.LC0
+ 815 050c 00000000 		.word	.LC0
+ 816 0510 00000000 		.word	.LC0
+ 817 0514 00000000 		.word	.LC0
+ 818 0518 00000000 		.word	.LC0
+ 819 051c 00000000 		.word	.LC0
+ 820 0520 00000000 		.word	.LC0
+ 821 0524 00000000 		.word	.LC0
+ 822 0528 00000000 		.word	.LC0
+ 823 052c 00000000 		.word	.LC0
+ 824 0530 00000000 		.word	.LC0
+ 825 0534 00000000 		.word	.LC0
+ 826 0538 00000000 		.word	.LC0
+ 827 053c 00000000 		.word	.LC0
+ 828 0540 00000000 		.word	.LC0
+ 829 0544 00000000 		.word	.LC0
+ 830 0548 00000000 		.word	.LC0
+ 831 054c 00000000 		.word	.LC0
+ 832 0550 00000000 		.word	.LC0
+ 833 0554 00000000 		.word	.LC0
+ 834 0558 00000000 		.word	.LC0
+ 835 055c 00000000 		.word	.LC0
+ 836 0560 00000000 		.word	.LC0
+ 837 0564 00000000 		.word	.LC0
+ 838 0568 00000000 		.word	.LC0
+ 839 056c 00000000 		.word	.LC0
+ 840 0570 00000000 		.word	.LC0
+ 841 0574 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 30
+
+
+ 842 0578 00000000 		.word	.LC0
+ 843 057c 00000000 		.word	.LC0
+ 844 0580 00000000 		.word	.LC0
+ 845 0584 00000000 		.word	.LC0
+ 846 0588 00000000 		.word	.LC0
+ 847 058c 00000000 		.word	.LC0
+ 848 0590 00000000 		.word	.LC0
+ 849 0594 00000000 		.word	.LC0
+ 850 0598 00000000 		.word	.LC0
+ 851 059c 00000000 		.word	.LC0
+ 852 05a0 00000000 		.word	.LC0
+ 853 05a4 00000000 		.word	.LC0
+ 854 05a8 00000000 		.word	.LC0
+ 855 05ac 00000000 		.word	.LC0
+ 856 05b0 00000000 		.word	.LC0
+ 857 05b4 00000000 		.word	.LC0
+ 858 05b8 00000000 		.word	.LC0
+ 859 05bc 00000000 		.word	.LC0
+ 860 05c0 00000000 		.word	.LC0
+ 861 05c4 00000000 		.word	.LC0
+ 862 05c8 00000000 		.word	.LC0
+ 863 05cc 00000000 		.word	.LC0
+ 864 05d0 00000000 		.word	.LC0
+ 865 05d4 00000000 		.word	.LC0
+ 866 05d8 00000000 		.word	.LC0
+ 867 05dc 00000000 		.word	.LC0
+ 868 05e0 00000000 		.word	.LC0
+ 869 05e4 00000000 		.word	.LC0
+ 870 05e8 00000000 		.word	.LC0
+ 871 05ec 00000000 		.word	.LC0
+ 872 05f0 00000000 		.word	.LC0
+ 873 05f4 00000000 		.word	.LC0
+ 874 05f8 00000000 		.word	.LC0
+ 875 05fc 00000000 		.word	.LC0
+ 876 0600 00000000 		.word	.LC0
+ 877 0604 00000000 		.word	.LC0
+ 878 0608 00000000 		.word	.LC0
+ 879 060c 00000000 		.word	.LC0
+ 880 0610 00000000 		.word	.LC0
+ 881 0614 00000000 		.word	.LC0
+ 882 0618 00000000 		.word	.LC0
+ 883 061c 00000000 		.word	.LC0
+ 884 0620 00000000 		.word	.LC0
+ 885 0624 00000000 		.word	.LC0
+ 886 0628 00000000 		.word	.LC0
+ 887 062c 00000000 		.word	.LC0
+ 888 0630 00000000 		.word	.LC0
+ 889 0634 00000000 		.word	.LC0
+ 890 0638 00000000 		.word	.LC0
+ 891 063c 00000000 		.word	.LC0
+ 892 0640 00000000 		.word	.LC0
+ 893 0644 00000000 		.word	.LC0
+ 894 0648 00000000 		.word	.LC0
+ 895 064c 00000000 		.word	.LC0
+ 896 0650 00000000 		.word	.LC0
+ 897 0654 00000000 		.word	.LC0
+ 898 0658 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 31
+
+
+ 899 065c 00000000 		.word	.LC0
+ 900 0660 00000000 		.word	.LC0
+ 901 0664 00000000 		.word	.LC0
+ 902 0668 00000000 		.word	.LC0
+ 903 066c 00000000 		.word	.LC0
+ 904 0670 00000000 		.word	.LC0
+ 905 0674 00000000 		.word	.LC0
+ 906 0678 00000000 		.word	.LC0
+ 907 067c 00000000 		.word	.LC0
+ 908 0680 00000000 		.word	.LC0
+ 909 0684 00000000 		.word	.LC0
+ 910 0688 00000000 		.word	.LC0
+ 911 068c 00000000 		.word	.LC0
+ 912 0690 00000000 		.word	.LC0
+ 913 0694 00000000 		.word	.LC0
+ 914 0698 00000000 		.word	.LC0
+ 915 069c 00000000 		.word	.LC0
+ 916 06a0 00000000 		.word	.LC0
+ 917 06a4 00000000 		.word	.LC0
+ 918 06a8 00000000 		.word	.LC0
+ 919 06ac 00000000 		.word	.LC0
+ 920 06b0 00000000 		.word	.LC0
+ 921 06b4 00000000 		.word	.LC0
+ 922 06b8 00000000 		.word	.LC0
+ 923 06bc 00000000 		.word	.LC0
+ 924 06c0 00000000 		.word	.LC0
+ 925 06c4 00000000 		.word	.LC0
+ 926 06c8 00000000 		.word	.LC0
+ 927 06cc 00000000 		.word	.LC0
+ 928 06d0 00000000 		.word	.LC0
+ 929 06d4 00000000 		.word	.LC0
+ 930 06d8 00000000 		.word	.LC0
+ 931 06dc 00000000 		.word	.LC0
+ 932 06e0 00000000 		.word	.LC0
+ 933 06e4 00000000 		.word	.LC0
+ 934 06e8 00000000 		.word	.LC0
+ 935 06ec 00000000 		.word	.LC0
+ 936 06f0 00000000 		.word	.LC0
+ 937 06f4 00000000 		.word	.LC0
+ 938 06f8 00000000 		.word	.LC0
+ 939 06fc 00000000 		.word	.LC0
+ 940 0700 00000000 		.word	.LC0
+ 941 0704 00000000 		.word	.LC0
+ 942 0708 00000000 		.word	.LC0
+ 943 070c 00000000 		.word	.LC0
+ 944 0710 00000000 		.word	.LC0
+ 945 0714 00000000 		.word	.LC0
+ 946 0718 00000000 		.word	.LC0
+ 947 071c 00000000 		.word	.LC0
+ 948 0720 00000000 		.word	.LC0
+ 949 0724 00000000 		.word	.LC0
+ 950 0728 00000000 		.word	.LC0
+ 951 072c 00000000 		.word	.LC0
+ 952 0730 00000000 		.word	.LC0
+ 953 0734 00000000 		.word	.LC0
+ 954 0738 00000000 		.word	.LC0
+ 955 073c 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 32
+
+
+ 956 0740 00000000 		.word	.LC0
+ 957 0744 00000000 		.word	.LC0
+ 958 0748 00000000 		.word	.LC0
+ 959 074c 00000000 		.word	.LC0
+ 960 0750 00000000 		.word	.LC0
+ 961 0754 00000000 		.word	.LC0
+ 962 0758 00000000 		.word	.LC0
+ 963 075c 00000000 		.word	.LC0
+ 964 0760 00000000 		.word	.LC0
+ 965 0764 00000000 		.word	.LC0
+ 966 0768 00000000 		.word	.LC0
+ 967 076c 00000000 		.word	.LC0
+ 968 0770 00000000 		.word	.LC0
+ 969 0774 00000000 		.word	.LC0
+ 970 0778 00000000 		.word	.LC0
+ 971 077c 00000000 		.word	.LC0
+ 972 0780 00000000 		.word	.LC0
+ 973 0784 00000000 		.word	.LC0
+ 974 0788 00000000 		.word	.LC0
+ 975 078c 00000000 		.word	.LC0
+ 976 0790 00000000 		.word	.LC0
+ 977 0794 00000000 		.word	.LC0
+ 978 0798 00000000 		.word	.LC0
+ 979 079c 00000000 		.word	.LC0
+ 980 07a0 00000000 		.word	.LC0
+ 981 07a4 00000000 		.word	.LC0
+ 982 07a8 00000000 		.word	.LC0
+ 983 07ac 00000000 		.word	.LC0
+ 984 07b0 00000000 		.word	.LC0
+ 985 07b4 00000000 		.word	.LC0
+ 986 07b8 00000000 		.word	.LC0
+ 987 07bc 00000000 		.word	.LC0
+ 988 07c0 00000000 		.word	.LC0
+ 989 07c4 00000000 		.word	.LC0
+ 990 07c8 00000000 		.word	.LC0
+ 991 07cc 00000000 		.word	.LC0
+ 992 07d0 00000000 		.word	.LC0
+ 993 07d4 00000000 		.word	.LC0
+ 994 07d8 00000000 		.word	.LC0
+ 995 07dc 00000000 		.word	.LC0
+ 996 07e0 00000000 		.word	.LC0
+ 997 07e4 00000000 		.word	.LC0
+ 998 07e8 00000000 		.word	.LC0
+ 999 07ec 00000000 		.word	.LC0
+ 1000 07f0 00000000 		.word	.LC0
+ 1001 07f4 00000000 		.word	.LC0
+ 1002 07f8 00000000 		.word	.LC0
+ 1003 07fc 00000000 		.word	.LC0
+ 1004 0800 00000000 		.word	.LC0
+ 1005 0804 00000000 		.word	.LC0
+ 1006 0808 00000000 		.word	.LC0
+ 1007 080c 00000000 		.word	.LC0
+ 1008 0810 00000000 		.word	.LC0
+ 1009 0814 00000000 		.word	.LC0
+ 1010 0818 00000000 		.word	.LC0
+ 1011 081c 00000000 		.word	.LC0
+ 1012 0820 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 33
+
+
+ 1013 0824 00000000 		.word	.LC0
+ 1014 0828 00000000 		.word	.LC0
+ 1015 082c 00000000 		.word	.LC0
+ 1016 0830 00000000 		.word	.LC0
+ 1017 0834 00000000 		.word	.LC0
+ 1018 0838 00000000 		.word	.LC0
+ 1019 083c 00000000 		.word	.LC0
+ 1020 0840 00000000 		.word	.LC0
+ 1021 0844 00000000 		.word	.LC0
+ 1022 0848 00000000 		.word	.LC0
+ 1023 084c 00000000 		.word	.LC0
+ 1024 0850 00000000 		.word	.LC0
+ 1025 0854 00000000 		.word	.LC0
+ 1026 0858 00000000 		.word	.LC0
+ 1027 085c 00000000 		.word	.LC0
+ 1028 0860 00000000 		.word	.LC0
+ 1029 0864 00000000 		.word	.LC0
+ 1030 0868 00000000 		.word	.LC0
+ 1031 086c 00000000 		.word	.LC0
+ 1032 0870 00000000 		.word	.LC0
+ 1033 0874 00000000 		.word	.LC0
+ 1034 0878 00000000 		.word	.LC0
+ 1035 087c 00000000 		.word	.LC0
+ 1036 0880 00000000 		.word	.LC0
+ 1037 0884 00000000 		.word	.LC0
+ 1038 0888 00000000 		.word	.LC0
+ 1039 088c 00000000 		.word	.LC0
+ 1040 0890 00000000 		.word	.LC0
+ 1041 0894 00000000 		.word	.LC0
+ 1042 0898 00000000 		.word	.LC0
+ 1043 089c 00000000 		.word	.LC0
+ 1044 08a0 00000000 		.word	.LC0
+ 1045 08a4 00000000 		.word	.LC0
+ 1046 08a8 00000000 		.word	.LC0
+ 1047 08ac 00000000 		.word	.LC0
+ 1048 08b0 00000000 		.word	.LC0
+ 1049 08b4 00000000 		.word	.LC0
+ 1050 08b8 00000000 		.word	.LC0
+ 1051 08bc 00000000 		.word	.LC0
+ 1052 08c0 00000000 		.word	.LC0
+ 1053 08c4 00000000 		.word	.LC0
+ 1054 08c8 00000000 		.word	.LC0
+ 1055 08cc 00000000 		.word	.LC0
+ 1056 08d0 00000000 		.word	.LC0
+ 1057 08d4 00000000 		.word	.LC0
+ 1058 08d8 00000000 		.word	.LC0
+ 1059 08dc 00000000 		.word	.LC0
+ 1060 08e0 00000000 		.word	.LC0
+ 1061 08e4 00000000 		.word	.LC0
+ 1062 08e8 00000000 		.word	.LC0
+ 1063 08ec 00000000 		.word	.LC0
+ 1064 08f0 00000000 		.word	.LC0
+ 1065 08f4 00000000 		.word	.LC0
+ 1066 08f8 00000000 		.word	.LC0
+ 1067 08fc 00000000 		.word	.LC0
+ 1068 0900 00000000 		.word	.LC0
+ 1069 0904 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 34
+
+
+ 1070 0908 00000000 		.word	.LC0
+ 1071 090c 00000000 		.word	.LC0
+ 1072 0910 00000000 		.word	.LC0
+ 1073 0914 00000000 		.word	.LC0
+ 1074 0918 00000000 		.word	.LC0
+ 1075 091c 00000000 		.word	.LC0
+ 1076 0920 00000000 		.word	.LC0
+ 1077 0924 00000000 		.word	.LC0
+ 1078 0928 00000000 		.word	.LC0
+ 1079 092c 00000000 		.word	.LC0
+ 1080 0930 00000000 		.word	.LC0
+ 1081 0934 00000000 		.word	.LC0
+ 1082 0938 00000000 		.word	.LC0
+ 1083 093c 00000000 		.word	.LC0
+ 1084 0940 00000000 		.word	.LC0
+ 1085 0944 00000000 		.word	.LC0
+ 1086 0948 00000000 		.word	.LC0
+ 1087 094c 00000000 		.word	.LC0
+ 1088 0950 00000000 		.word	.LC0
+ 1089 0954 00000000 		.word	.LC0
+ 1090 0958 00000000 		.word	.LC0
+ 1091 095c 00000000 		.word	.LC0
+ 1092 0960 00000000 		.word	.LC0
+ 1093 0964 00000000 		.word	.LC0
+ 1094 0968 00000000 		.word	.LC0
+ 1095 096c 00000000 		.word	.LC0
+ 1096 0970 00000000 		.word	.LC0
+ 1097 0974 00000000 		.word	.LC0
+ 1098 0978 00000000 		.word	.LC0
+ 1099 097c 00000000 		.word	.LC0
+ 1100 0980 00000000 		.word	.LC0
+ 1101 0984 00000000 		.word	.LC0
+ 1102 0988 00000000 		.word	.LC0
+ 1103 098c 00000000 		.word	.LC0
+ 1104 0990 00000000 		.word	.LC0
+ 1105 0994 00000000 		.word	.LC0
+ 1106 0998 00000000 		.word	.LC0
+ 1107 099c 00000000 		.word	.LC0
+ 1108 09a0 00000000 		.word	.LC0
+ 1109 09a4 00000000 		.word	.LC0
+ 1110 09a8 00000000 		.word	.LC0
+ 1111 09ac 00000000 		.word	.LC0
+ 1112 09b0 00000000 		.word	.LC0
+ 1113 09b4 00000000 		.word	.LC0
+ 1114 09b8 00000000 		.word	.LC0
+ 1115 09bc 00000000 		.word	.LC0
+ 1116 09c0 00000000 		.word	.LC0
+ 1117 09c4 00000000 		.word	.LC0
+ 1118 09c8 00000000 		.word	.LC0
+ 1119 09cc 00000000 		.word	.LC0
+ 1120 09d0 00000000 		.word	.LC0
+ 1121 09d4 00000000 		.word	.LC0
+ 1122 09d8 00000000 		.word	.LC0
+ 1123 09dc 00000000 		.word	.LC0
+ 1124 09e0 00000000 		.word	.LC0
+ 1125 09e4 00000000 		.word	.LC0
+ 1126 09e8 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 35
+
+
+ 1127 09ec 00000000 		.word	.LC0
+ 1128 09f0 00000000 		.word	.LC0
+ 1129 09f4 00000000 		.word	.LC0
+ 1130 09f8 00000000 		.word	.LC0
+ 1131 09fc 00000000 		.word	.LC0
+ 1132 0a00 00000000 		.word	.LC0
+ 1133 0a04 00000000 		.word	.LC0
+ 1134 0a08 00000000 		.word	.LC0
+ 1135 0a0c 00000000 		.word	.LC0
+ 1136 0a10 00000000 		.word	.LC0
+ 1137 0a14 00000000 		.word	.LC0
+ 1138 0a18 00000000 		.word	.LC0
+ 1139 0a1c 00000000 		.word	.LC0
+ 1140 0a20 00000000 		.word	.LC0
+ 1141 0a24 00000000 		.word	.LC0
+ 1142 0a28 00000000 		.word	.LC0
+ 1143 0a2c 00000000 		.word	.LC0
+ 1144 0a30 00000000 		.word	.LC0
+ 1145 0a34 00000000 		.word	.LC0
+ 1146 0a38 00000000 		.word	.LC0
+ 1147 0a3c 00000000 		.word	.LC0
+ 1148 0a40 00000000 		.word	.LC0
+ 1149 0a44 00000000 		.word	.LC0
+ 1150 0a48 00000000 		.word	.LC0
+ 1151 0a4c 00000000 		.word	.LC0
+ 1152 0a50 00000000 		.word	.LC0
+ 1153 0a54 00000000 		.word	.LC0
+ 1154 0a58 00000000 		.word	.LC0
+ 1155 0a5c 00000000 		.word	.LC0
+ 1156 0a60 00000000 		.word	.LC0
+ 1157 0a64 00000000 		.word	.LC0
+ 1158 0a68 00000000 		.word	.LC0
+ 1159 0a6c 00000000 		.word	.LC0
+ 1160 0a70 00000000 		.word	.LC0
+ 1161 0a74 00000000 		.word	.LC0
+ 1162 0a78 00000000 		.word	.LC0
+ 1163 0a7c 00000000 		.word	.LC0
+ 1164 0a80 00000000 		.word	.LC0
+ 1165 0a84 00000000 		.word	.LC0
+ 1166 0a88 00000000 		.word	.LC0
+ 1167 0a8c 00000000 		.word	.LC0
+ 1168 0a90 00000000 		.word	.LC0
+ 1169 0a94 00000000 		.word	.LC0
+ 1170 0a98 00000000 		.word	.LC0
+ 1171 0a9c 00000000 		.word	.LC0
+ 1172 0aa0 00000000 		.word	.LC0
+ 1173 0aa4 00000000 		.word	.LC0
+ 1174 0aa8 00000000 		.word	.LC0
+ 1175 0aac 00000000 		.word	.LC0
+ 1176 0ab0 00000000 		.word	.LC0
+ 1177 0ab4 00000000 		.word	.LC0
+ 1178 0ab8 00000000 		.word	.LC0
+ 1179 0abc 00000000 		.word	.LC0
+ 1180 0ac0 00000000 		.word	.LC0
+ 1181 0ac4 00000000 		.word	.LC0
+ 1182 0ac8 00000000 		.word	.LC0
+ 1183 0acc 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 36
+
+
+ 1184 0ad0 00000000 		.word	.LC0
+ 1185 0ad4 00000000 		.word	.LC0
+ 1186 0ad8 00000000 		.word	.LC0
+ 1187 0adc 00000000 		.word	.LC0
+ 1188 0ae0 00000000 		.word	.LC0
+ 1189 0ae4 00000000 		.word	.LC0
+ 1190 0ae8 00000000 		.word	.LC0
+ 1191 0aec 00000000 		.word	.LC0
+ 1192 0af0 00000000 		.word	.LC0
+ 1193 0af4 00000000 		.word	.LC0
+ 1194 0af8 00000000 		.word	.LC0
+ 1195 0afc 00000000 		.word	.LC0
+ 1196 0b00 00000000 		.word	.LC0
+ 1197 0b04 8C000000 		.word	.LC6
+ 1198 0b08 AE000000 		.word	.LC7
+ 1199 0b0c D0000000 		.word	.LC8
+ 1200 0b10 E5000000 		.word	.LC9
+ 1201 0b14 01010000 		.word	.LC10
+ 1202 0b18 29010000 		.word	.LC11
+ 1203 0b1c 48010000 		.word	.LC12
+ 1204 0b20 6B010000 		.word	.LC13
+ 1205 0b24 86010000 		.word	.LC14
+ 1206 0b28 9B010000 		.word	.LC15
+ 1207 0b2c B2010000 		.word	.LC16
+ 1208 0b30 D1010000 		.word	.LC17
+ 1209 0b34 EF010000 		.word	.LC18
+ 1210 0b38 11020000 		.word	.LC19
+ 1211 0b3c 43020000 		.word	.LC20
+ 1212 0b40 73020000 		.word	.LC21
+ 1213 0b44 A4020000 		.word	.LC22
+ 1214 0b48 D9020000 		.word	.LC23
+ 1215 0b4c 0E030000 		.word	.LC24
+ 1216 0b50 41030000 		.word	.LC25
+ 1217 0b54 70030000 		.word	.LC26
+ 1218 0b58 96030000 		.word	.LC27
+ 1219 0b5c AB030000 		.word	.LC28
+ 1220 0b60 BF030000 		.word	.LC29
+ 1221 0b64 E3030000 		.word	.LC30
+ 1222 0b68 05040000 		.word	.LC31
+ 1223 0b6c 36040000 		.word	.LC32
+ 1224 0b70 5F040000 		.word	.LC33
+ 1225 0b74 8C040000 		.word	.LC34
+ 1226 0b78 A8040000 		.word	.LC35
+ 1227 0b7c D7040000 		.word	.LC36
+ 1228 0b80 F7040000 		.word	.LC37
+ 1229 0b84 0D050000 		.word	.LC38
+ 1230 0b88 21050000 		.word	.LC39
+ 1231 0b8c 31050000 		.word	.LC40
+ 1232 0b90 48050000 		.word	.LC41
+ 1233 0b94 5C050000 		.word	.LC42
+ 1234 0b98 79050000 		.word	.LC43
+ 1235 0b9c A2050000 		.word	.LC44
+ 1236 0ba0 C6050000 		.word	.LC45
+ 1237 0ba4 EA050000 		.word	.LC46
+ 1238 0ba8 19060000 		.word	.LC47
+ 1239 0bac 42060000 		.word	.LC48
+ 1240 0bb0 6C060000 		.word	.LC49
+ARM GAS  /tmp/ccf14fDY.s 			page 37
+
+
+ 1241 0bb4 98060000 		.word	.LC50
+ 1242 0bb8 CD060000 		.word	.LC51
+ 1243 0bbc 04070000 		.word	.LC52
+ 1244 0bc0 2A070000 		.word	.LC53
+ 1245 0bc4 60070000 		.word	.LC54
+ 1246 0bc8 83070000 		.word	.LC55
+ 1247 0bcc B6070000 		.word	.LC56
+ 1248 0bd0 D3070000 		.word	.LC57
+ 1249 0bd4 F2070000 		.word	.LC58
+ 1250 0bd8 11080000 		.word	.LC59
+ 1251 0bdc 35080000 		.word	.LC60
+ 1252 0be0 4B080000 		.word	.LC61
+ 1253 0be4 66080000 		.word	.LC62
+ 1254 0be8 82080000 		.word	.LC63
+ 1255 0bec B3080000 		.word	.LC64
+ 1256 0bf0 CC080000 		.word	.LC65
+ 1257 0bf4 FE080000 		.word	.LC66
+ 1258 0bf8 23090000 		.word	.LC67
+ 1259 0bfc 4F090000 		.word	.LC68
+ 1260 0c00 78090000 		.word	.LC69
+ 1261 0c04 96090000 		.word	.LC70
+ 1262 0c08 C9090000 		.word	.LC71
+ 1263 0c0c F3090000 		.word	.LC72
+ 1264 0c10 1E0A0000 		.word	.LC73
+ 1265 0c14 3E0A0000 		.word	.LC74
+ 1266 0c18 630A0000 		.word	.LC75
+ 1267 0c1c 8A0A0000 		.word	.LC76
+ 1268 0c20 A10A0000 		.word	.LC77
+ 1269 0c24 C40A0000 		.word	.LC78
+ 1270 0c28 E70A0000 		.word	.LC79
+ 1271 0c2c FD0A0000 		.word	.LC80
+ 1272 0c30 240B0000 		.word	.LC81
+ 1273 0c34 490B0000 		.word	.LC82
+ 1274 0c38 660B0000 		.word	.LC83
+ 1275 0c3c 920B0000 		.word	.LC84
+ 1276 0c40 BC0B0000 		.word	.LC85
+ 1277 0c44 D50B0000 		.word	.LC86
+ 1278 0c48 F20B0000 		.word	.LC87
+ 1279 0c4c 1F0C0000 		.word	.LC88
+ 1280 0c50 3F0C0000 		.word	.LC89
+ 1281 0c54 620C0000 		.word	.LC90
+ 1282 0c58 7E0C0000 		.word	.LC91
+ 1283 0c5c 9B0C0000 		.word	.LC92
+ 1284 0c60 B10C0000 		.word	.LC93
+ 1285 0c64 CA0C0000 		.word	.LC94
+ 1286 0c68 EA0C0000 		.word	.LC95
+ 1287 0c6c 140D0000 		.word	.LC96
+ 1288 0c70 340D0000 		.word	.LC97
+ 1289 0c74 5C0D0000 		.word	.LC98
+ 1290 0c78 830D0000 		.word	.LC99
+ 1291 0c7c AB0D0000 		.word	.LC100
+ 1292 0c80 D30D0000 		.word	.LC101
+ 1293 0c84 FA0D0000 		.word	.LC102
+ 1294 0c88 1D0E0000 		.word	.LC103
+ 1295 0c8c 4D0E0000 		.word	.LC104
+ 1296 0c90 5F0E0000 		.word	.LC105
+ 1297 0c94 870E0000 		.word	.LC106
+ARM GAS  /tmp/ccf14fDY.s 			page 38
+
+
+ 1298 0c98 A60E0000 		.word	.LC107
+ 1299 0c9c BC0E0000 		.word	.LC108
+ 1300 0ca0 D80E0000 		.word	.LC109
+ 1301 0ca4 020F0000 		.word	.LC110
+ 1302 0ca8 250F0000 		.word	.LC111
+ 1303 0cac 4B0F0000 		.word	.LC112
+ 1304 0cb0 6D0F0000 		.word	.LC113
+ 1305 0cb4 810F0000 		.word	.LC114
+ 1306 0cb8 A50F0000 		.word	.LC115
+ 1307 0cbc D00F0000 		.word	.LC116
+ 1308 0cc0 F30F0000 		.word	.LC117
+ 1309 0cc4 1A100000 		.word	.LC118
+ 1310 0cc8 3D100000 		.word	.LC119
+ 1311 0ccc 4E100000 		.word	.LC120
+ 1312 0cd0 64100000 		.word	.LC121
+ 1313 0cd4 73100000 		.word	.LC122
+ 1314 0cd8 87100000 		.word	.LC123
+ 1315 0cdc 98100000 		.word	.LC124
+ 1316 0ce0 BA100000 		.word	.LC125
+ 1317 0ce4 DC100000 		.word	.LC126
+ 1318 0ce8 EB100000 		.word	.LC127
+ 1319 0cec 29110000 		.word	.LC128
+ 1320 0cf0 43110000 		.word	.LC129
+ 1321 0cf4 60110000 		.word	.LC130
+ 1322 0cf8 79110000 		.word	.LC131
+ 1323 0cfc 91110000 		.word	.LC132
+ 1324 0d00 A7110000 		.word	.LC133
+ 1325 0d04 D4110000 		.word	.LC134
+ 1326 0d08 F9110000 		.word	.LC135
+ 1327 0d0c 00000000 		.word	.LC0
+ 1328 0d10 00000000 		.word	.LC0
+ 1329 0d14 00000000 		.word	.LC0
+ 1330 0d18 26120000 		.word	.LC136
+ 1331 0d1c 3A120000 		.word	.LC137
+ 1332 0d20 6A120000 		.word	.LC138
+ 1333 0d24 99120000 		.word	.LC139
+ 1334 0d28 CA120000 		.word	.LC140
+ 1335 0d2c E2120000 		.word	.LC141
+ 1336 0d30 FB120000 		.word	.LC142
+ 1337 0d34 27130000 		.word	.LC143
+ 1338 0d38 59130000 		.word	.LC144
+ 1339 0d3c 7B130000 		.word	.LC145
+ 1340 0d40 9F130000 		.word	.LC146
+ 1341 0d44 C4130000 		.word	.LC147
+ 1342 0d48 E3130000 		.word	.LC148
+ 1343 0d4c 04140000 		.word	.LC149
+ 1344 0d50 26140000 		.word	.LC150
+ 1345 0d54 4A140000 		.word	.LC151
+ 1346 0d58 7B140000 		.word	.LC152
+ 1347 0d5c B4140000 		.word	.LC153
+ 1348 0d60 CD140000 		.word	.LC154
+ 1349 0d64 EB140000 		.word	.LC155
+ 1350 0d68 0A150000 		.word	.LC156
+ 1351 0d6c 25150000 		.word	.LC157
+ 1352 0d70 3D150000 		.word	.LC158
+ 1353 0d74 59130000 		.word	.LC144
+ 1354 0d78 5D150000 		.word	.LC159
+ARM GAS  /tmp/ccf14fDY.s 			page 39
+
+
+ 1355 0d7c 81150000 		.word	.LC160
+ 1356 0d80 A3150000 		.word	.LC161
+ 1357 0d84 C4150000 		.word	.LC162
+ 1358 0d88 DD150000 		.word	.LC163
+ 1359 0d8c 04160000 		.word	.LC164
+ 1360 0d90 23160000 		.word	.LC165
+ 1361 0d94 43160000 		.word	.LC166
+ 1362 0d98 64160000 		.word	.LC167
+ 1363 0d9c 82160000 		.word	.LC168
+ 1364 0da0 9C160000 		.word	.LC169
+ 1365 0da4 CC160000 		.word	.LC170
+ 1366 0da8 00170000 		.word	.LC171
+ 1367 0dac 26170000 		.word	.LC172
+ 1368 0db0 59170000 		.word	.LC173
+ 1369 0db4 8C170000 		.word	.LC174
+ 1370 0db8 A9170000 		.word	.LC175
+ 1371 0dbc D5170000 		.word	.LC176
+ 1372 0dc0 00000000 		.word	.LC0
+ 1373 0dc4 E9170000 		.word	.LC177
+ 1374 0dc8 0C180000 		.word	.LC178
+ 1375 0dcc 2E180000 		.word	.LC179
+ 1376 0dd0 4B180000 		.word	.LC180
+ 1377 0dd4 5E180000 		.word	.LC181
+ 1378 0dd8 83180000 		.word	.LC182
+ 1379 0ddc A1180000 		.word	.LC183
+ 1380 0de0 CB180000 		.word	.LC184
+ 1381 0de4 EE180000 		.word	.LC185
+ 1382 0de8 0C190000 		.word	.LC186
+ 1383 0dec 2F190000 		.word	.LC187
+ 1384 0df0 54190000 		.word	.LC188
+ 1385 0df4 6B190000 		.word	.LC189
+ 1386 0df8 7F190000 		.word	.LC190
+ 1387 0dfc 93190000 		.word	.LC191
+ 1388 0e00 B9190000 		.word	.LC192
+ 1389 0e04 F2190000 		.word	.LC193
+ 1390 0e08 001A0000 		.word	.LC194
+ 1391 0e0c 1C1A0000 		.word	.LC195
+ 1392 0e10 411A0000 		.word	.LC196
+ 1393 0e14 601A0000 		.word	.LC197
+ 1394 0e18 791A0000 		.word	.LC198
+ 1395 0e1c 951A0000 		.word	.LC199
+ 1396 0e20 B11A0000 		.word	.LC200
+ 1397 0e24 CA1A0000 		.word	.LC201
+ 1398 0e28 F81A0000 		.word	.LC202
+ 1399 0e2c 141B0000 		.word	.LC203
+ 1400 0e30 00000000 		.word	.LC0
+ 1401 0e34 00000000 		.word	.LC0
+ 1402 0e38 00000000 		.word	.LC0
+ 1403 0e3c 00000000 		.word	.LC0
+ 1404 0e40 00000000 		.word	.LC0
+ 1405 0e44 00000000 		.word	.LC0
+ 1406 0e48 00000000 		.word	.LC0
+ 1407 0e4c 00000000 		.word	.LC0
+ 1408 0e50 00000000 		.word	.LC0
+ 1409 0e54 00000000 		.word	.LC0
+ 1410 0e58 00000000 		.word	.LC0
+ 1411 0e5c 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 40
+
+
+ 1412 0e60 00000000 		.word	.LC0
+ 1413 0e64 00000000 		.word	.LC0
+ 1414 0e68 00000000 		.word	.LC0
+ 1415 0e6c 00000000 		.word	.LC0
+ 1416 0e70 00000000 		.word	.LC0
+ 1417 0e74 00000000 		.word	.LC0
+ 1418 0e78 00000000 		.word	.LC0
+ 1419 0e7c 00000000 		.word	.LC0
+ 1420 0e80 00000000 		.word	.LC0
+ 1421 0e84 00000000 		.word	.LC0
+ 1422 0e88 00000000 		.word	.LC0
+ 1423 0e8c 00000000 		.word	.LC0
+ 1424 0e90 00000000 		.word	.LC0
+ 1425 0e94 00000000 		.word	.LC0
+ 1426 0e98 00000000 		.word	.LC0
+ 1427 0e9c 00000000 		.word	.LC0
+ 1428 0ea0 00000000 		.word	.LC0
+ 1429 0ea4 00000000 		.word	.LC0
+ 1430 0ea8 00000000 		.word	.LC0
+ 1431 0eac 00000000 		.word	.LC0
+ 1432 0eb0 00000000 		.word	.LC0
+ 1433 0eb4 00000000 		.word	.LC0
+ 1434 0eb8 00000000 		.word	.LC0
+ 1435 0ebc 00000000 		.word	.LC0
+ 1436 0ec0 00000000 		.word	.LC0
+ 1437 0ec4 00000000 		.word	.LC0
+ 1438 0ec8 00000000 		.word	.LC0
+ 1439 0ecc 00000000 		.word	.LC0
+ 1440 0ed0 00000000 		.word	.LC0
+ 1441 0ed4 00000000 		.word	.LC0
+ 1442 0ed8 00000000 		.word	.LC0
+ 1443 0edc 00000000 		.word	.LC0
+ 1444 0ee0 00000000 		.word	.LC0
+ 1445 0ee4 00000000 		.word	.LC0
+ 1446 0ee8 00000000 		.word	.LC0
+ 1447 0eec 00000000 		.word	.LC0
+ 1448 0ef0 00000000 		.word	.LC0
+ 1449 0ef4 00000000 		.word	.LC0
+ 1450 0ef8 00000000 		.word	.LC0
+ 1451 0efc 00000000 		.word	.LC0
+ 1452 0f00 00000000 		.word	.LC0
+ 1453 0f04 00000000 		.word	.LC0
+ 1454 0f08 00000000 		.word	.LC0
+ 1455 0f0c 00000000 		.word	.LC0
+ 1456 0f10 00000000 		.word	.LC0
+ 1457 0f14 00000000 		.word	.LC0
+ 1458 0f18 00000000 		.word	.LC0
+ 1459 0f1c 00000000 		.word	.LC0
+ 1460 0f20 00000000 		.word	.LC0
+ 1461 0f24 00000000 		.word	.LC0
+ 1462 0f28 00000000 		.word	.LC0
+ 1463 0f2c 00000000 		.word	.LC0
+ 1464 0f30 00000000 		.word	.LC0
+ 1465 0f34 00000000 		.word	.LC0
+ 1466 0f38 00000000 		.word	.LC0
+ 1467 0f3c 00000000 		.word	.LC0
+ 1468 0f40 00000000 		.word	.LC0
+ARM GAS  /tmp/ccf14fDY.s 			page 41
+
+
+ 1469 0f44 00000000 		.word	.LC0
+ 1470 0f48 00000000 		.word	.LC0
+ 1471 0f4c 00000000 		.word	.LC0
+ 1472 0f50 00000000 		.word	.LC0
+ 1473 0f54 00000000 		.word	.LC0
+ 1474 0f58 00000000 		.word	.LC0
+ 1475 0f5c 00000000 		.word	.LC0
+ 1476 0f60 00000000 		.word	.LC0
+ 1477 0f64 00000000 		.word	.LC0
+ 1478 0f68 00000000 		.word	.LC0
+ 1479 0f6c 00000000 		.word	.LC0
+ 1480 0f70 00000000 		.word	.LC0
+ 1481 0f74 00000000 		.word	.LC0
+ 1482 0f78 00000000 		.word	.LC0
+ 1483 0f7c 00000000 		.word	.LC0
+ 1484 0f80 00000000 		.word	.LC0
+ 1485 0f84 00000000 		.word	.LC0
+ 1486 0f88 00000000 		.word	.LC0
+ 1487 0f8c 00000000 		.word	.LC0
+ 1488 0f90 00000000 		.word	.LC0
+ 1489 0f94 00000000 		.word	.LC0
+ 1490 0f98 00000000 		.word	.LC0
+ 1491 0f9c 00000000 		.word	.LC0
+ 1492 0fa0 00000000 		.word	.LC0
+ 1493 0fa4 00000000 		.word	.LC0
+ 1494 0fa8 00000000 		.word	.LC0
+ 1495 0fac 401B0000 		.word	.LC204
+ 1496              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccf14fDY.s 			page 42
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 error.c
+     /tmp/ccf14fDY.s:19     .text.wc_GetErrorString:0000000000000000 $t
+     /tmp/ccf14fDY.s:28     .text.wc_GetErrorString:0000000000000000 wc_GetErrorString
+     /tmp/ccf14fDY.s:43     .text.wc_GetErrorString:0000000000000018 $d
+     /tmp/ccf14fDY.s:47     .text.wc_ErrorString:0000000000000000 $t
+     /tmp/ccf14fDY.s:54     .text.wc_ErrorString:0000000000000000 wc_ErrorString
+     /tmp/ccf14fDY.s:487    .rodata.CSWTCH.1:0000000000000000 $d
+     /tmp/ccf14fDY.s:491    .rodata.CSWTCH.1:0000000000000000 CSWTCH.1
+
+UNDEFINED SYMBOLS
+strncpy

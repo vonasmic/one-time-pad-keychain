@@ -1,0 +1,503 @@
+ARM GAS  /tmp/ccts4sLl.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"signature.c"
+  14              		.text
+  15              		.section	.text.wc_SignatureGetSize,"ax",%progbits
+  16              		.align	1
+  17              		.global	wc_SignatureGetSize
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	wc_SignatureGetSize:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 0346     		mov	r3, r0
+  30 0002 012B     		cmp	r3, #1
+  31 0004 0846     		mov	r0, r1
+  32 0006 07D0     		beq	.L2
+  33 0008 023B     		subs	r3, r3, #2
+  34 000a 012B     		cmp	r3, #1
+  35 000c 94BF     		ite	ls
+  36 000e 6FF0E600 		mvnls	r0, #230
+  37 0012 6FF0AC00 		mvnhi	r0, #172
+  38 0016 7047     		bx	lr
+  39              	.L2:
+  40 0018 B2F51B7F 		cmp	r2, #620
+  41 001c 01D3     		bcc	.L5
+  42 001e FFF7FEBF 		b	wc_ecc_sig_size
+  43              	.L5:
+  44 0022 6FF0AC00 		mvn	r0, #172
+  45 0026 7047     		bx	lr
+  47              		.section	.text.wc_SignatureVerifyHash,"ax",%progbits
+  48              		.align	1
+  49              		.global	wc_SignatureVerifyHash
+  50              		.syntax unified
+  51              		.thumb
+  52              		.thumb_func
+  53              		.fpu fpv4-sp-d16
+  55              	wc_SignatureVerifyHash:
+  56              		@ args = 16, pretend = 0, frame = 8
+  57              		@ frame_needed = 0, uses_anonymous_args = 0
+  58 0000 2DE9FF47 		push	{r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, lr}
+  59 0004 1E46     		mov	r6, r3
+  60 0006 DDE90C97 		ldrd	r9, r7, [sp, #48]
+ARM GAS  /tmp/ccts4sLl.s 			page 2
+
+
+  61 000a DDE90E83 		ldrd	r8, r3, [sp, #56]
+  62 000e 8246     		mov	r10, r0
+  63 0010 0C46     		mov	r4, r1
+  64 0012 1546     		mov	r5, r2
+  65 0014 22B9     		cbnz	r2, .L7
+  66              	.L9:
+  67 0016 6FF0AC00 		mvn	r0, #172
+  68              	.L6:
+  69 001a 04B0     		add	sp, sp, #16
+  70              		@ sp needed
+  71 001c BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+  72              	.L7:
+  73 0020 002E     		cmp	r6, #0
+  74 0022 F8D0     		beq	.L9
+  75 0024 B9F1000F 		cmp	r9, #0
+  76 0028 F5D0     		beq	.L9
+  77 002a 002F     		cmp	r7, #0
+  78 002c F3D0     		beq	.L9
+  79 002e B8F1000F 		cmp	r8, #0
+  80 0032 F0D0     		beq	.L9
+  81 0034 002B     		cmp	r3, #0
+  82 0036 EED0     		beq	.L9
+  83 0038 1A46     		mov	r2, r3
+  84 003a 4146     		mov	r1, r8
+  85 003c 2046     		mov	r0, r4
+  86 003e FFF7FEFF 		bl	wc_SignatureGetSize
+  87 0042 B842     		cmp	r0, r7
+  88 0044 E7DB     		blt	.L9
+  89 0046 5046     		mov	r0, r10
+  90 0048 FFF7FEFF 		bl	wc_HashGetDigestSize
+  91 004c 0028     		cmp	r0, #0
+  92 004e E4DB     		blt	.L6
+  93 0050 012C     		cmp	r4, #1
+  94 0052 07D0     		beq	.L10
+  95 0054 023C     		subs	r4, r4, #2
+  96 0056 012C     		cmp	r4, #1
+  97 0058 94BF     		ite	ls
+  98 005a 6FF0E600 		mvnls	r0, #230
+  99 005e 6FF0AC00 		mvnhi	r0, #172
+ 100 0062 DAE7     		b	.L6
+ 101              	.L10:
+ 102 0064 0023     		movs	r3, #0
+ 103 0066 0393     		str	r3, [sp, #12]
+ 104 0068 03AB     		add	r3, sp, #12
+ 105 006a 0093     		str	r3, [sp]
+ 106 006c 2A46     		mov	r2, r5
+ 107 006e 3346     		mov	r3, r6
+ 108 0070 3946     		mov	r1, r7
+ 109 0072 4846     		mov	r0, r9
+ 110 0074 CDF80480 		str	r8, [sp, #4]
+ 111 0078 FFF7FEFF 		bl	wc_ecc_verify_hash
+ 112 007c 10F16C0F 		cmn	r0, #108
+ 113 0080 00D1     		bne	.L11
+ 114              	.L12:
+ 115 0082 FEE7     		b	.L12
+ 116              	.L11:
+ 117 0084 28B9     		cbnz	r0, .L15
+ARM GAS  /tmp/ccts4sLl.s 			page 3
+
+
+ 118 0086 039B     		ldr	r3, [sp, #12]
+ 119 0088 012B     		cmp	r3, #1
+ 120 008a 18BF     		it	ne
+ 121 008c 6FF0E400 		mvnne	r0, #228
+ 122 0090 C3E7     		b	.L6
+ 123              	.L15:
+ 124 0092 6FF0E400 		mvn	r0, #228
+ 125 0096 C0E7     		b	.L6
+ 127              		.section	.text.wc_SignatureVerify,"ax",%progbits
+ 128              		.align	1
+ 129              		.global	wc_SignatureVerify
+ 130              		.syntax unified
+ 131              		.thumb
+ 132              		.thumb_func
+ 133              		.fpu fpv4-sp-d16
+ 135              	wc_SignatureVerify:
+ 136              		@ args = 16, pretend = 0, frame = 0
+ 137              		@ frame_needed = 0, uses_anonymous_args = 0
+ 138 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 139 0004 85B0     		sub	sp, sp, #20
+ 140 0006 0546     		mov	r5, r0
+ 141 0008 0E46     		mov	r6, r1
+ 142 000a 9846     		mov	r8, r3
+ 143 000c 1746     		mov	r7, r2
+ 144 000e DDF844A0 		ldr	r10, [sp, #68]
+ 145 0012 2AB9     		cbnz	r2, .L33
+ 146              	.L35:
+ 147 0014 6FF0AC09 		mvn	r9, #172
+ 148              	.L32:
+ 149 0018 4846     		mov	r0, r9
+ 150 001a 05B0     		add	sp, sp, #20
+ 151              		@ sp needed
+ 152 001c BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 153              	.L33:
+ 154 0020 002B     		cmp	r3, #0
+ 155 0022 F7D0     		beq	.L35
+ 156 0024 0E9B     		ldr	r3, [sp, #56]
+ 157 0026 002B     		cmp	r3, #0
+ 158 0028 F4D0     		beq	.L35
+ 159 002a 0F9B     		ldr	r3, [sp, #60]
+ 160 002c 002B     		cmp	r3, #0
+ 161 002e F1D0     		beq	.L35
+ 162 0030 109B     		ldr	r3, [sp, #64]
+ 163 0032 002B     		cmp	r3, #0
+ 164 0034 EED0     		beq	.L35
+ 165 0036 BAF1000F 		cmp	r10, #0
+ 166 003a EBD0     		beq	.L35
+ 167 003c 1946     		mov	r1, r3
+ 168 003e 5246     		mov	r2, r10
+ 169 0040 3046     		mov	r0, r6
+ 170 0042 FFF7FEFF 		bl	wc_SignatureGetSize
+ 171 0046 0F9B     		ldr	r3, [sp, #60]
+ 172 0048 9842     		cmp	r0, r3
+ 173 004a E3DB     		blt	.L35
+ 174 004c 2846     		mov	r0, r5
+ 175 004e FFF7FEFF 		bl	wc_HashGetDigestSize
+ 176 0052 B0F10009 		subs	r9, r0, #0
+ARM GAS  /tmp/ccts4sLl.s 			page 4
+
+
+ 177 0056 DFDB     		blt	.L32
+ 178 0058 FFF7FEFF 		bl	wolfSSL_Malloc
+ 179 005c CB46     		mov	fp, r9
+ 180 005e 0446     		mov	r4, r0
+ 181 0060 08B3     		cbz	r0, .L37
+ 182 0062 0346     		mov	r3, r0
+ 183 0064 CDF80090 		str	r9, [sp]
+ 184 0068 4246     		mov	r2, r8
+ 185 006a 3946     		mov	r1, r7
+ 186 006c 2846     		mov	r0, r5
+ 187 006e FFF7FEFF 		bl	wc_Hash
+ 188 0072 8146     		mov	r9, r0
+ 189 0074 80B9     		cbnz	r0, .L36
+ 190 0076 032E     		cmp	r6, #3
+ 191 0078 12D0     		beq	.L38
+ 192 007a 109B     		ldr	r3, [sp, #64]
+ 193 007c 2246     		mov	r2, r4
+ 194 007e 0293     		str	r3, [sp, #8]
+ 195 0080 0F9B     		ldr	r3, [sp, #60]
+ 196 0082 3146     		mov	r1, r6
+ 197 0084 0193     		str	r3, [sp, #4]
+ 198 0086 0E9B     		ldr	r3, [sp, #56]
+ 199 0088 2846     		mov	r0, r5
+ 200 008a 0093     		str	r3, [sp]
+ 201 008c CDF80CA0 		str	r10, [sp, #12]
+ 202 0090 5B46     		mov	r3, fp
+ 203 0092 FFF7FEFF 		bl	wc_SignatureVerifyHash
+ 204 0096 8146     		mov	r9, r0
+ 205              	.L36:
+ 206 0098 2046     		mov	r0, r4
+ 207 009a FFF7FEFF 		bl	wolfSSL_Free
+ 208 009e BBE7     		b	.L32
+ 209              	.L38:
+ 210 00a0 6FF0E609 		mvn	r9, #230
+ 211 00a4 F8E7     		b	.L36
+ 212              	.L37:
+ 213 00a6 6FF07C09 		mvn	r9, #124
+ 214 00aa B5E7     		b	.L32
+ 216              		.section	.text.wc_SignatureGenerateHash_ex,"ax",%progbits
+ 217              		.align	1
+ 218              		.global	wc_SignatureGenerateHash_ex
+ 219              		.syntax unified
+ 220              		.thumb
+ 221              		.thumb_func
+ 222              		.fpu fpv4-sp-d16
+ 224              	wc_SignatureGenerateHash_ex:
+ 225              		@ args = 24, pretend = 0, frame = 16
+ 226              		@ frame_needed = 0, uses_anonymous_args = 0
+ 227 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 228 0004 87B0     		sub	sp, sp, #28
+ 229 0006 1E46     		mov	r6, r3
+ 230 0008 DDE910A8 		ldrd	r10, r8, [sp, #64]
+ 231 000c DDE9129B 		ldrd	r9, fp, [sp, #72]
+ 232 0010 149B     		ldr	r3, [sp, #80]
+ 233 0012 0746     		mov	r7, r0
+ 234 0014 0393     		str	r3, [sp, #12]
+ 235 0016 159B     		ldr	r3, [sp, #84]
+ARM GAS  /tmp/ccts4sLl.s 			page 5
+
+
+ 236 0018 0C46     		mov	r4, r1
+ 237 001a 1546     		mov	r5, r2
+ 238 001c 0493     		str	r3, [sp, #16]
+ 239 001e 22B9     		cbnz	r2, .L55
+ 240              	.L57:
+ 241 0020 6FF0AC00 		mvn	r0, #172
+ 242              	.L54:
+ 243 0024 07B0     		add	sp, sp, #28
+ 244              		@ sp needed
+ 245 0026 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 246              	.L55:
+ 247 002a 002E     		cmp	r6, #0
+ 248 002c F8D0     		beq	.L57
+ 249 002e BAF1000F 		cmp	r10, #0
+ 250 0032 F5D0     		beq	.L57
+ 251 0034 B8F1000F 		cmp	r8, #0
+ 252 0038 F2D0     		beq	.L57
+ 253 003a D8F80030 		ldr	r3, [r8]
+ 254 003e 0593     		str	r3, [sp, #20]
+ 255 0040 002B     		cmp	r3, #0
+ 256 0042 EDD0     		beq	.L57
+ 257 0044 B9F1000F 		cmp	r9, #0
+ 258 0048 EAD0     		beq	.L57
+ 259 004a BBF1000F 		cmp	fp, #0
+ 260 004e E7D0     		beq	.L57
+ 261 0050 5A46     		mov	r2, fp
+ 262 0052 4946     		mov	r1, r9
+ 263 0054 2046     		mov	r0, r4
+ 264 0056 FFF7FEFF 		bl	wc_SignatureGetSize
+ 265 005a 059B     		ldr	r3, [sp, #20]
+ 266 005c 8342     		cmp	r3, r0
+ 267 005e DFDB     		blt	.L57
+ 268 0060 3846     		mov	r0, r7
+ 269 0062 FFF7FEFF 		bl	wc_HashGetDigestSize
+ 270 0066 0028     		cmp	r0, #0
+ 271 0068 DCDB     		blt	.L54
+ 272 006a 012C     		cmp	r4, #1
+ 273 006c 07D0     		beq	.L58
+ 274 006e 023C     		subs	r4, r4, #2
+ 275 0070 012C     		cmp	r4, #1
+ 276 0072 94BF     		ite	ls
+ 277 0074 6FF0E600 		mvnls	r0, #230
+ 278 0078 6FF0AC00 		mvnhi	r0, #172
+ 279 007c D2E7     		b	.L54
+ 280              	.L58:
+ 281 007e 039B     		ldr	r3, [sp, #12]
+ 282 0080 5246     		mov	r2, r10
+ 283 0082 0093     		str	r3, [sp]
+ 284 0084 3146     		mov	r1, r6
+ 285 0086 4346     		mov	r3, r8
+ 286 0088 2846     		mov	r0, r5
+ 287 008a CDF80490 		str	r9, [sp, #4]
+ 288 008e FFF7FEFF 		bl	wc_ecc_sign_hash
+ 289 0092 10F16C0F 		cmn	r0, #108
+ 290 0096 00D1     		bne	.L59
+ 291              	.L60:
+ 292 0098 FEE7     		b	.L60
+ARM GAS  /tmp/ccts4sLl.s 			page 6
+
+
+ 293              	.L59:
+ 294 009a 0028     		cmp	r0, #0
+ 295 009c C2D1     		bne	.L54
+ 296 009e 049B     		ldr	r3, [sp, #16]
+ 297 00a0 002B     		cmp	r3, #0
+ 298 00a2 BFD0     		beq	.L54
+ 299 00a4 CDE9129B 		strd	r9, fp, [sp, #72]
+ 300 00a8 D8F80030 		ldr	r3, [r8]
+ 301 00ac 2A46     		mov	r2, r5
+ 302 00ae CDE910A3 		strd	r10, r3, [sp, #64]
+ 303 00b2 0121     		movs	r1, #1
+ 304 00b4 3346     		mov	r3, r6
+ 305 00b6 3846     		mov	r0, r7
+ 306 00b8 07B0     		add	sp, sp, #28
+ 307              		@ sp needed
+ 308 00ba BDE8F04F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 309 00be FFF7FEBF 		b	wc_SignatureVerifyHash
+ 311              		.section	.text.wc_SignatureGenerateHash,"ax",%progbits
+ 312              		.align	1
+ 313              		.global	wc_SignatureGenerateHash
+ 314              		.syntax unified
+ 315              		.thumb
+ 316              		.thumb_func
+ 317              		.fpu fpv4-sp-d16
+ 319              	wc_SignatureGenerateHash:
+ 320              		@ args = 20, pretend = 0, frame = 0
+ 321              		@ frame_needed = 0, uses_anonymous_args = 0
+ 322 0000 10B5     		push	{r4, lr}
+ 323 0002 0124     		movs	r4, #1
+ 324 0004 86B0     		sub	sp, sp, #24
+ 325 0006 0594     		str	r4, [sp, #20]
+ 326 0008 0C9C     		ldr	r4, [sp, #48]
+ 327 000a 0494     		str	r4, [sp, #16]
+ 328 000c 0B9C     		ldr	r4, [sp, #44]
+ 329 000e 0394     		str	r4, [sp, #12]
+ 330 0010 0A9C     		ldr	r4, [sp, #40]
+ 331 0012 0294     		str	r4, [sp, #8]
+ 332 0014 099C     		ldr	r4, [sp, #36]
+ 333 0016 0194     		str	r4, [sp, #4]
+ 334 0018 089C     		ldr	r4, [sp, #32]
+ 335 001a 0094     		str	r4, [sp]
+ 336 001c FFF7FEFF 		bl	wc_SignatureGenerateHash_ex
+ 337 0020 06B0     		add	sp, sp, #24
+ 338              		@ sp needed
+ 339 0022 10BD     		pop	{r4, pc}
+ 341              		.section	.text.wc_SignatureGenerate_ex,"ax",%progbits
+ 342              		.align	1
+ 343              		.global	wc_SignatureGenerate_ex
+ 344              		.syntax unified
+ 345              		.thumb
+ 346              		.thumb_func
+ 347              		.fpu fpv4-sp-d16
+ 349              	wc_SignatureGenerate_ex:
+ 350              		@ args = 24, pretend = 0, frame = 0
+ 351              		@ frame_needed = 0, uses_anonymous_args = 0
+ 352 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 353 0004 87B0     		sub	sp, sp, #28
+ARM GAS  /tmp/ccts4sLl.s 			page 7
+
+
+ 354 0006 0546     		mov	r5, r0
+ 355 0008 0E46     		mov	r6, r1
+ 356 000a 9846     		mov	r8, r3
+ 357 000c 1746     		mov	r7, r2
+ 358 000e DDF84CA0 		ldr	r10, [sp, #76]
+ 359 0012 2AB9     		cbnz	r2, .L86
+ 360              	.L88:
+ 361 0014 6FF0AC09 		mvn	r9, #172
+ 362              	.L85:
+ 363 0018 4846     		mov	r0, r9
+ 364 001a 07B0     		add	sp, sp, #28
+ 365              		@ sp needed
+ 366 001c BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 367              	.L86:
+ 368 0020 002B     		cmp	r3, #0
+ 369 0022 F7D0     		beq	.L88
+ 370 0024 109B     		ldr	r3, [sp, #64]
+ 371 0026 002B     		cmp	r3, #0
+ 372 0028 F4D0     		beq	.L88
+ 373 002a 119B     		ldr	r3, [sp, #68]
+ 374 002c 002B     		cmp	r3, #0
+ 375 002e F1D0     		beq	.L88
+ 376 0030 1C68     		ldr	r4, [r3]
+ 377 0032 002C     		cmp	r4, #0
+ 378 0034 EED0     		beq	.L88
+ 379 0036 129B     		ldr	r3, [sp, #72]
+ 380 0038 002B     		cmp	r3, #0
+ 381 003a EBD0     		beq	.L88
+ 382 003c BAF1000F 		cmp	r10, #0
+ 383 0040 E8D0     		beq	.L88
+ 384 0042 5246     		mov	r2, r10
+ 385 0044 1946     		mov	r1, r3
+ 386 0046 3046     		mov	r0, r6
+ 387 0048 FFF7FEFF 		bl	wc_SignatureGetSize
+ 388 004c 8442     		cmp	r4, r0
+ 389 004e E1DB     		blt	.L88
+ 390 0050 2846     		mov	r0, r5
+ 391 0052 FFF7FEFF 		bl	wc_HashGetDigestSize
+ 392 0056 B0F10009 		subs	r9, r0, #0
+ 393 005a DDDB     		blt	.L85
+ 394 005c FFF7FEFF 		bl	wolfSSL_Malloc
+ 395 0060 CB46     		mov	fp, r9
+ 396 0062 0446     		mov	r4, r0
+ 397 0064 20B3     		cbz	r0, .L90
+ 398 0066 0346     		mov	r3, r0
+ 399 0068 CDF80090 		str	r9, [sp]
+ 400 006c 4246     		mov	r2, r8
+ 401 006e 3946     		mov	r1, r7
+ 402 0070 2846     		mov	r0, r5
+ 403 0072 FFF7FEFF 		bl	wc_Hash
+ 404 0076 8146     		mov	r9, r0
+ 405 0078 98B9     		cbnz	r0, .L89
+ 406 007a 032E     		cmp	r6, #3
+ 407 007c 15D0     		beq	.L91
+ 408 007e 159B     		ldr	r3, [sp, #84]
+ 409 0080 2246     		mov	r2, r4
+ 410 0082 0593     		str	r3, [sp, #20]
+ARM GAS  /tmp/ccts4sLl.s 			page 8
+
+
+ 411 0084 149B     		ldr	r3, [sp, #80]
+ 412 0086 3146     		mov	r1, r6
+ 413 0088 CDE903A3 		strd	r10, r3, [sp, #12]
+ 414 008c 129B     		ldr	r3, [sp, #72]
+ 415 008e 2846     		mov	r0, r5
+ 416 0090 0293     		str	r3, [sp, #8]
+ 417 0092 119B     		ldr	r3, [sp, #68]
+ 418 0094 0193     		str	r3, [sp, #4]
+ 419 0096 109B     		ldr	r3, [sp, #64]
+ 420 0098 0093     		str	r3, [sp]
+ 421 009a 5B46     		mov	r3, fp
+ 422 009c FFF7FEFF 		bl	wc_SignatureGenerateHash_ex
+ 423 00a0 8146     		mov	r9, r0
+ 424              	.L89:
+ 425 00a2 2046     		mov	r0, r4
+ 426 00a4 FFF7FEFF 		bl	wolfSSL_Free
+ 427 00a8 B6E7     		b	.L85
+ 428              	.L91:
+ 429 00aa 6FF0E609 		mvn	r9, #230
+ 430 00ae F8E7     		b	.L89
+ 431              	.L90:
+ 432 00b0 6FF07C09 		mvn	r9, #124
+ 433 00b4 B0E7     		b	.L85
+ 435              		.section	.text.wc_SignatureGenerate,"ax",%progbits
+ 436              		.align	1
+ 437              		.global	wc_SignatureGenerate
+ 438              		.syntax unified
+ 439              		.thumb
+ 440              		.thumb_func
+ 441              		.fpu fpv4-sp-d16
+ 443              	wc_SignatureGenerate:
+ 444              		@ args = 20, pretend = 0, frame = 0
+ 445              		@ frame_needed = 0, uses_anonymous_args = 0
+ 446 0000 10B5     		push	{r4, lr}
+ 447 0002 0124     		movs	r4, #1
+ 448 0004 86B0     		sub	sp, sp, #24
+ 449 0006 0594     		str	r4, [sp, #20]
+ 450 0008 0C9C     		ldr	r4, [sp, #48]
+ 451 000a 0494     		str	r4, [sp, #16]
+ 452 000c 0B9C     		ldr	r4, [sp, #44]
+ 453 000e 0394     		str	r4, [sp, #12]
+ 454 0010 0A9C     		ldr	r4, [sp, #40]
+ 455 0012 0294     		str	r4, [sp, #8]
+ 456 0014 099C     		ldr	r4, [sp, #36]
+ 457 0016 0194     		str	r4, [sp, #4]
+ 458 0018 089C     		ldr	r4, [sp, #32]
+ 459 001a 0094     		str	r4, [sp]
+ 460 001c FFF7FEFF 		bl	wc_SignatureGenerate_ex
+ 461 0020 06B0     		add	sp, sp, #24
+ 462              		@ sp needed
+ 463 0022 10BD     		pop	{r4, pc}
+ 465              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccts4sLl.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 signature.c
+     /tmp/ccts4sLl.s:16     .text.wc_SignatureGetSize:0000000000000000 $t
+     /tmp/ccts4sLl.s:25     .text.wc_SignatureGetSize:0000000000000000 wc_SignatureGetSize
+     /tmp/ccts4sLl.s:48     .text.wc_SignatureVerifyHash:0000000000000000 $t
+     /tmp/ccts4sLl.s:55     .text.wc_SignatureVerifyHash:0000000000000000 wc_SignatureVerifyHash
+     /tmp/ccts4sLl.s:128    .text.wc_SignatureVerify:0000000000000000 $t
+     /tmp/ccts4sLl.s:135    .text.wc_SignatureVerify:0000000000000000 wc_SignatureVerify
+     /tmp/ccts4sLl.s:217    .text.wc_SignatureGenerateHash_ex:0000000000000000 $t
+     /tmp/ccts4sLl.s:224    .text.wc_SignatureGenerateHash_ex:0000000000000000 wc_SignatureGenerateHash_ex
+     /tmp/ccts4sLl.s:312    .text.wc_SignatureGenerateHash:0000000000000000 $t
+     /tmp/ccts4sLl.s:319    .text.wc_SignatureGenerateHash:0000000000000000 wc_SignatureGenerateHash
+     /tmp/ccts4sLl.s:342    .text.wc_SignatureGenerate_ex:0000000000000000 $t
+     /tmp/ccts4sLl.s:349    .text.wc_SignatureGenerate_ex:0000000000000000 wc_SignatureGenerate_ex
+     /tmp/ccts4sLl.s:436    .text.wc_SignatureGenerate:0000000000000000 $t
+     /tmp/ccts4sLl.s:443    .text.wc_SignatureGenerate:0000000000000000 wc_SignatureGenerate
+
+UNDEFINED SYMBOLS
+wc_ecc_sig_size
+wc_HashGetDigestSize
+wc_ecc_verify_hash
+wolfSSL_Malloc
+wc_Hash
+wolfSSL_Free
+wc_ecc_sign_hash

@@ -1,0 +1,163 @@
+ARM GAS  /tmp/ccHJbASk.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"wots.c"
+  14              		.text
+  15              		.section	.text.base_w,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	base_w:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 0023     		movs	r3, #0
+  28 0002 70B5     		push	{r4, r5, r6, lr}
+  29 0004 1E46     		mov	r6, r3
+  30 0006 1D46     		mov	r5, r3
+  31 0008 00EB8101 		add	r1, r0, r1, lsl #2
+  32              	.L3:
+  33 000c 13B9     		cbnz	r3, .L2
+  34 000e 0823     		movs	r3, #8
+  35 0010 565D     		ldrb	r6, [r2, r5]	@ zero_extendqisi2
+  36 0012 0135     		adds	r5, r5, #1
+  37              	.L2:
+  38 0014 043B     		subs	r3, r3, #4
+  39 0016 46FA03F4 		asr	r4, r6, r3
+  40 001a 04F00F04 		and	r4, r4, #15
+  41 001e 40F8044B 		str	r4, [r0], #4
+  42 0022 8142     		cmp	r1, r0
+  43 0024 F2D1     		bne	.L3
+  44 0026 70BD     		pop	{r4, r5, r6, pc}
+  46              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths,"ax",%progbits
+  47              		.align	1
+  48              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths
+  49              		.syntax unified
+  50              		.thumb
+  51              		.thumb_func
+  52              		.fpu fpv4-sp-d16
+  54              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths:
+  55              		@ args = 0, pretend = 0, frame = 8
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57 0000 37B5     		push	{r0, r1, r2, r4, r5, lr}
+  58 0002 0446     		mov	r4, r0
+  59 0004 0A46     		mov	r2, r1
+  60 0006 2021     		movs	r1, #32
+ARM GAS  /tmp/ccHJbASk.s 			page 2
+
+
+  61 0008 FFF7FEFF 		bl	base_w
+  62 000c 0022     		movs	r2, #0
+  63 000e 04F18005 		add	r5, r4, #128
+  64 0012 231F     		subs	r3, r4, #4
+  65 0014 7C34     		adds	r4, r4, #124
+  66              	.L6:
+  67 0016 53F8041F 		ldr	r1, [r3, #4]!
+  68 001a C1F10F01 		rsb	r1, r1, #15
+  69 001e A342     		cmp	r3, r4
+  70 0020 0A44     		add	r2, r2, r1
+  71 0022 F8D1     		bne	.L6
+  72 0024 0023     		movs	r3, #0
+  73 0026 01A8     		add	r0, sp, #4
+  74 0028 0221     		movs	r1, #2
+  75 002a 1201     		lsls	r2, r2, #4
+  76 002c FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes
+  77 0030 0321     		movs	r1, #3
+  78 0032 2846     		mov	r0, r5
+  79 0034 01AA     		add	r2, sp, #4
+  80 0036 FFF7FEFF 		bl	base_w
+  81 003a 03B0     		add	sp, sp, #12
+  82              		@ sp needed
+  83 003c 30BD     		pop	{r4, r5, pc}
+  85              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig,"ax",%progbits
+  86              		.align	1
+  87              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  91              		.fpu fpv4-sp-d16
+  93              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig:
+  94              		@ args = 4, pretend = 0, frame = 144
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  97 0004 A7B0     		sub	sp, sp, #156
+  98 0006 0DF10C0B 		add	fp, sp, #12
+  99 000a 0646     		mov	r6, r0
+ 100 000c 0F46     		mov	r7, r1
+ 101 000e 5846     		mov	r0, fp
+ 102 0010 1146     		mov	r1, r2
+ 103 0012 9846     		mov	r8, r3
+ 104 0014 DDF8C090 		ldr	r9, [sp, #192]
+ 105 0018 0024     		movs	r4, #0
+ 106 001a FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths
+ 107              	.L12:
+ 108 001e 2146     		mov	r1, r4
+ 109 0020 4846     		mov	r0, r9
+ 110 0022 06EB041A 		add	r10, r6, r4, lsl #4
+ 111 0026 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_chain_addr
+ 112 002a 5246     		mov	r2, r10
+ 113 002c 07EB0413 		add	r3, r7, r4, lsl #4
+ 114 0030 5BF82450 		ldr	r5, [fp, r4, lsl #2]
+ 115 0034 03F11001 		add	r1, r3, #16
+ 116              	.L9:
+ 117 0038 53F8040B 		ldr	r0, [r3], #4	@ unaligned
+ 118 003c 8B42     		cmp	r3, r1
+ 119 003e 42F8040B 		str	r0, [r2], #4	@ unaligned
+ARM GAS  /tmp/ccHJbASk.s 			page 3
+
+
+ 120 0042 F9D1     		bne	.L9
+ 121              	.L10:
+ 122 0044 0E2D     		cmp	r5, #14
+ 123 0046 05D9     		bls	.L11
+ 124 0048 0134     		adds	r4, r4, #1
+ 125 004a 232C     		cmp	r4, #35
+ 126 004c E7D1     		bne	.L12
+ 127 004e 27B0     		add	sp, sp, #156
+ 128              		@ sp needed
+ 129 0050 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 130              	.L11:
+ 131 0054 2946     		mov	r1, r5
+ 132 0056 4846     		mov	r0, r9
+ 133 0058 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_hash_addr
+ 134 005c 4346     		mov	r3, r8
+ 135 005e 0122     		movs	r2, #1
+ 136 0060 5146     		mov	r1, r10
+ 137 0062 5046     		mov	r0, r10
+ 138 0064 CDF80090 		str	r9, [sp]
+ 139 0068 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 140 006c 0135     		adds	r5, r5, #1
+ 141 006e E9E7     		b	.L10
+ 143              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccHJbASk.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 wots.c
+     /tmp/ccHJbASk.s:16     .text.base_w:0000000000000000 $t
+     /tmp/ccHJbASk.s:24     .text.base_w:0000000000000000 base_w
+     /tmp/ccHJbASk.s:47     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths:0000000000000000 $t
+     /tmp/ccHJbASk.s:54     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_chain_lengths
+     /tmp/ccHJbASk.s:86     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig:0000000000000000 $t
+     /tmp/ccHJbASk.s:93     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig
+
+UNDEFINED SYMBOLS
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_ull_to_bytes
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_chain_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_hash_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash

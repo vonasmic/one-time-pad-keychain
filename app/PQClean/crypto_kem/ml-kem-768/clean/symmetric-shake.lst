@@ -1,0 +1,150 @@
+ARM GAS  /tmp/ccygfFLv.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"symmetric-shake.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb:
+  26              		@ args = 0, pretend = 0, frame = 40
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  29 0002 0646     		mov	r6, r0
+  30 0004 0C46     		mov	r4, r1
+  31 0006 8BB0     		sub	sp, sp, #44
+  32 0008 01AF     		add	r7, sp, #4
+  33 000a 01F1200C 		add	ip, r1, #32
+  34              	.L2:
+  35 000e 3D46     		mov	r5, r7
+  36 0010 2068     		ldr	r0, [r4]	@ unaligned
+  37 0012 6168     		ldr	r1, [r4, #4]	@ unaligned
+  38 0014 0834     		adds	r4, r4, #8
+  39 0016 03C5     		stmia	r5!, {r0, r1}
+  40 0018 6445     		cmp	r4, ip
+  41 001a 2F46     		mov	r7, r5
+  42 001c F7D1     		bne	.L2
+  43 001e 8DF82420 		strb	r2, [sp, #36]
+  44 0022 3046     		mov	r0, r6
+  45 0024 2222     		movs	r2, #34
+  46 0026 01A9     		add	r1, sp, #4
+  47 0028 8DF82530 		strb	r3, [sp, #37]
+  48 002c FFF7FEFF 		bl	shake128_absorb
+  49 0030 0BB0     		add	sp, sp, #44
+  50              		@ sp needed
+  51 0032 F0BD     		pop	{r4, r5, r6, r7, pc}
+  53              		.section	.text.PQCLEAN_MLKEM768_CLEAN_kyber_shake256_prf,"ax",%progbits
+  54              		.align	1
+  55              		.global	PQCLEAN_MLKEM768_CLEAN_kyber_shake256_prf
+  56              		.syntax unified
+  57              		.thumb
+  58              		.thumb_func
+  59              		.fpu fpv4-sp-d16
+ARM GAS  /tmp/ccygfFLv.s 			page 2
+
+
+  61              	PQCLEAN_MLKEM768_CLEAN_kyber_shake256_prf:
+  62              		@ args = 0, pretend = 0, frame = 40
+  63              		@ frame_needed = 0, uses_anonymous_args = 0
+  64 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  65 0002 0546     		mov	r5, r0
+  66 0004 0E46     		mov	r6, r1
+  67 0006 8BB0     		sub	sp, sp, #44
+  68 0008 01AF     		add	r7, sp, #4
+  69 000a 02F1200C 		add	ip, r2, #32
+  70              	.L5:
+  71 000e 3C46     		mov	r4, r7
+  72 0010 1068     		ldr	r0, [r2]	@ unaligned
+  73 0012 5168     		ldr	r1, [r2, #4]	@ unaligned
+  74 0014 0832     		adds	r2, r2, #8
+  75 0016 03C4     		stmia	r4!, {r0, r1}
+  76 0018 6245     		cmp	r2, ip
+  77 001a 2746     		mov	r7, r4
+  78 001c F7D1     		bne	.L5
+  79 001e 8DF82430 		strb	r3, [sp, #36]
+  80 0022 3146     		mov	r1, r6
+  81 0024 2123     		movs	r3, #33
+  82 0026 2846     		mov	r0, r5
+  83 0028 01AA     		add	r2, sp, #4
+  84 002a FFF7FEFF 		bl	shake256
+  85 002e 0BB0     		add	sp, sp, #44
+  86              		@ sp needed
+  87 0030 F0BD     		pop	{r4, r5, r6, r7, pc}
+  89              		.section	.text.PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf,"ax",%progbits
+  90              		.align	1
+  91              		.global	PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf
+  92              		.syntax unified
+  93              		.thumb
+  94              		.thumb_func
+  95              		.fpu fpv4-sp-d16
+  97              	PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf:
+  98              		@ args = 0, pretend = 0, frame = 16
+  99              		@ frame_needed = 0, uses_anonymous_args = 0
+ 100 0000 30B5     		push	{r4, r5, lr}
+ 101 0002 1546     		mov	r5, r2
+ 102 0004 0446     		mov	r4, r0
+ 103 0006 85B0     		sub	sp, sp, #20
+ 104 0008 03A8     		add	r0, sp, #12
+ 105 000a 0191     		str	r1, [sp, #4]
+ 106 000c FFF7FEFF 		bl	shake256_inc_init
+ 107 0010 0199     		ldr	r1, [sp, #4]
+ 108 0012 03A8     		add	r0, sp, #12
+ 109 0014 2022     		movs	r2, #32
+ 110 0016 FFF7FEFF 		bl	shake256_inc_absorb
+ 111 001a 2946     		mov	r1, r5
+ 112 001c 4FF48862 		mov	r2, #1088
+ 113 0020 03A8     		add	r0, sp, #12
+ 114 0022 FFF7FEFF 		bl	shake256_inc_absorb
+ 115 0026 03A8     		add	r0, sp, #12
+ 116 0028 FFF7FEFF 		bl	shake256_inc_finalize
+ 117 002c 2021     		movs	r1, #32
+ 118 002e 2046     		mov	r0, r4
+ 119 0030 03AA     		add	r2, sp, #12
+ARM GAS  /tmp/ccygfFLv.s 			page 3
+
+
+ 120 0032 FFF7FEFF 		bl	shake256_inc_squeeze
+ 121 0036 03A8     		add	r0, sp, #12
+ 122 0038 FFF7FEFF 		bl	shake256_inc_ctx_release
+ 123 003c 05B0     		add	sp, sp, #20
+ 124              		@ sp needed
+ 125 003e 30BD     		pop	{r4, r5, pc}
+ 127              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccygfFLv.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 symmetric-shake.c
+     /tmp/ccygfFLv.s:16     .text.PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb:0000000000000000 $t
+     /tmp/ccygfFLv.s:25     .text.PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb:0000000000000000 PQCLEAN_MLKEM768_CLEAN_kyber_shake128_absorb
+     /tmp/ccygfFLv.s:54     .text.PQCLEAN_MLKEM768_CLEAN_kyber_shake256_prf:0000000000000000 $t
+     /tmp/ccygfFLv.s:61     .text.PQCLEAN_MLKEM768_CLEAN_kyber_shake256_prf:0000000000000000 PQCLEAN_MLKEM768_CLEAN_kyber_shake256_prf
+     /tmp/ccygfFLv.s:90     .text.PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf:0000000000000000 $t
+     /tmp/ccygfFLv.s:97     .text.PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf:0000000000000000 PQCLEAN_MLKEM768_CLEAN_kyber_shake256_rkprf
+
+UNDEFINED SYMBOLS
+shake128_absorb
+shake256
+shake256_inc_init
+shake256_inc_absorb
+shake256_inc_finalize
+shake256_inc_squeeze
+shake256_inc_ctx_release

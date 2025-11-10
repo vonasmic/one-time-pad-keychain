@@ -1,0 +1,454 @@
+ARM GAS  /tmp/cc6ycTwB.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ntt.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLDSA65_CLEAN_ntt,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLDSA65_CLEAN_ntt
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLDSA65_CLEAN_ntt:
+  26              		@ args = 0, pretend = 0, frame = 8
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F74F 		push	{r0, r1, r2, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  29 0004 0646     		mov	r6, r0
+  30 0006 4FF00808 		mov	r8, #8
+  31 000a 4FF00009 		mov	r9, #0
+  32 000e 8025     		movs	r5, #128
+  33              	.L2:
+  34 0010 0024     		movs	r4, #0
+  35              	.L5:
+  36 0012 A246     		mov	r10, r4
+  37 0014 164B     		ldr	r3, .L8
+  38 0016 09F10109 		add	r9, r9, #1
+  39 001a 53F82920 		ldr	r2, [r3, r9, lsl #2]
+  40 001e 2B19     		adds	r3, r5, r4
+  41 0020 06EB830B 		add	fp, r6, r3, lsl #2
+  42 0024 06EB8407 		add	r7, r6, r4, lsl #2
+  43              	.L3:
+  44 0028 9A45     		cmp	r10, r3
+  45 002a 0BD3     		bcc	.L4
+  46 002c 04EB4504 		add	r4, r4, r5, lsl #1
+  47 0030 FF2C     		cmp	r4, #255
+  48 0032 EED9     		bls	.L5
+  49 0034 B8F10108 		subs	r8, r8, #1
+  50 0038 4FEA5505 		lsr	r5, r5, #1
+  51 003c E8D1     		bne	.L2
+  52 003e 03B0     		add	sp, sp, #12
+  53              		@ sp needed
+  54 0040 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+  55              	.L4:
+  56 0044 DBF80010 		ldr	r1, [fp]
+  57 0048 0193     		str	r3, [sp, #4]
+  58 004a 82FB0101 		smull	r0, r1, r2, r1
+ARM GAS  /tmp/cc6ycTwB.s 			page 2
+
+
+  59 004e 0092     		str	r2, [sp]
+  60 0050 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_montgomery_reduce
+  61 0054 DDE90023 		ldrd	r2, r3, [sp]
+  62 0058 3968     		ldr	r1, [r7]
+  63 005a 0AF1010A 		add	r10, r10, #1
+  64 005e 091A     		subs	r1, r1, r0
+  65 0060 4BF8041B 		str	r1, [fp], #4
+  66 0064 57F8041B 		ldr	r1, [r7], #4
+  67 0068 0844     		add	r0, r0, r1
+  68 006a 47F8040C 		str	r0, [r7, #-4]
+  69 006e DBE7     		b	.L3
+  70              	.L9:
+  71              		.align	2
+  72              	.L8:
+  73 0070 00000000 		.word	.LANCHOR0
+  75              		.section	.text.PQCLEAN_MLDSA65_CLEAN_invntt_tomont,"ax",%progbits
+  76              		.align	1
+  77              		.global	PQCLEAN_MLDSA65_CLEAN_invntt_tomont
+  78              		.syntax unified
+  79              		.thumb
+  80              		.thumb_func
+  81              		.fpu fpv4-sp-d16
+  83              	PQCLEAN_MLDSA65_CLEAN_invntt_tomont:
+  84              		@ args = 0, pretend = 0, frame = 16
+  85              		@ frame_needed = 0, uses_anonymous_args = 0
+  86 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  87 0004 0446     		mov	r4, r0
+  88 0006 4FF00808 		mov	r8, #8
+  89 000a 4FF48079 		mov	r9, #256
+  90 000e 0126     		movs	r6, #1
+  91 0010 254A     		ldr	r2, .L21
+  92 0012 85B0     		sub	sp, sp, #20
+  93              	.L11:
+  94 0014 0025     		movs	r5, #0
+  95              	.L16:
+  96 0016 09F1FF39 		add	r9, r9, #-1
+  97 001a 52F82930 		ldr	r3, [r2, r9, lsl #2]
+  98 001e AA46     		mov	r10, r5
+  99 0020 5B42     		rsbs	r3, r3, #0
+ 100 0022 0293     		str	r3, [sp, #8]
+ 101 0024 AB19     		adds	r3, r5, r6
+ 102 0026 2CBF     		ite	cs
+ 103 0028 0121     		movcs	r1, #1
+ 104 002a 0021     		movcc	r1, #0
+ 105 002c 04EB850B 		add	fp, r4, r5, lsl #2
+ 106 0030 0191     		str	r1, [sp, #4]
+ 107 0032 04EB8307 		add	r7, r4, r3, lsl #2
+ 108              	.L14:
+ 109 0036 9A45     		cmp	r10, r3
+ 110 0038 1ED3     		bcc	.L15
+ 111 003a 019B     		ldr	r3, [sp, #4]
+ 112 003c 002B     		cmp	r3, #0
+ 113 003e 0CBF     		ite	eq
+ 114 0040 3346     		moveq	r3, r6
+ 115 0042 0023     		movne	r3, #0
+ 116 0044 3344     		add	r3, r3, r6
+ 117 0046 1D44     		add	r5, r5, r3
+ARM GAS  /tmp/cc6ycTwB.s 			page 3
+
+
+ 118 0048 FF2D     		cmp	r5, #255
+ 119 004a E4D9     		bls	.L16
+ 120 004c B8F10108 		subs	r8, r8, #1
+ 121 0050 4FEA4606 		lsl	r6, r6, #1
+ 122 0054 DED1     		bne	.L11
+ 123 0056 4AF2FA36 		movw	r6, #41978
+ 124 005a 251F     		subs	r5, r4, #4
+ 125 005c 04F57F74 		add	r4, r4, #1020
+ 126              	.L18:
+ 127 0060 55F8041F 		ldr	r1, [r5, #4]!
+ 128 0064 81FB0601 		smull	r0, r1, r1, r6
+ 129 0068 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_montgomery_reduce
+ 130 006c AC42     		cmp	r4, r5
+ 131 006e 2860     		str	r0, [r5]
+ 132 0070 F6D1     		bne	.L18
+ 133 0072 05B0     		add	sp, sp, #20
+ 134              		@ sp needed
+ 135 0074 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 136              	.L15:
+ 137 0078 DBF80010 		ldr	r1, [fp]
+ 138 007c 3868     		ldr	r0, [r7]
+ 139 007e 0393     		str	r3, [sp, #12]
+ 140 0080 0844     		add	r0, r0, r1
+ 141 0082 4BF8040B 		str	r0, [fp], #4
+ 142 0086 57F8040B 		ldr	r0, [r7], #4
+ 143 008a 029B     		ldr	r3, [sp, #8]
+ 144 008c 091A     		subs	r1, r1, r0
+ 145 008e 47F8041C 		str	r1, [r7, #-4]
+ 146 0092 83FB0101 		smull	r0, r1, r3, r1
+ 147 0096 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_montgomery_reduce
+ 148 009a 0AF1010A 		add	r10, r10, #1
+ 149 009e 039B     		ldr	r3, [sp, #12]
+ 150 00a0 014A     		ldr	r2, .L21
+ 151 00a2 47F8040C 		str	r0, [r7, #-4]
+ 152 00a6 C6E7     		b	.L14
+ 153              	.L22:
+ 154              		.align	2
+ 155              	.L21:
+ 156 00a8 00000000 		.word	.LANCHOR0
+ 158              		.section	.rodata.zetas,"a"
+ 159              		.align	2
+ 160              		.set	.LANCHOR0,. + 0
+ 163              	zetas:
+ 164 0000 00000000 		.word	0
+ 165 0004 F7640000 		.word	25847
+ 166 0008 0231D8FF 		.word	-2608894
+ 167 000c 0315F8FF 		.word	-518909
+ 168 0010 449E0300 		.word	237124
+ 169 0014 1821F4FF 		.word	-777960
+ 170 0018 28A1F2FF 		.word	-876248
+ 171 001c 241E0700 		.word	466468
+ 172 0020 2BDE1B00 		.word	1826347
+ 173 0024 2BE92300 		.word	2353451
+ 174 0028 AD84FAFF 		.word	-359251
+ 175 002c 7F14E0FF 		.word	-2091905
+ 176 0030 759A2F00 		.word	3119733
+ 177 0034 09FBD3FF 		.word	-2884855
+ARM GAS  /tmp/cc6ycTwB.s 			page 4
+
+
+ 178 0038 497A2F00 		.word	3111497
+ 179 003c 27E52800 		.word	2680103
+ 180 0040 58962900 		.word	2725464
+ 181 0044 70A00F00 		.word	1024112
+ 182 0048 A485EFFF 		.word	-1079900
+ 183 004c 88B73600 		.word	3585928
+ 184 0050 909DF7FF 		.word	-549488
+ 185 0054 A0EAEEFF 		.word	-1119584
+ 186 0058 68F92700 		.word	2619752
+ 187 005c 7BD3DFFF 		.word	-2108549
+ 188 0060 D6ADDFFF 		.word	-2118186
+ 189 0064 E71AC5FF 		.word	-3859737
+ 190 0068 F7A4EAFF 		.word	-1399561
+ 191 006c 98FCCDFF 		.word	-3277672
+ 192 0070 35D01A00 		.word	1757237
+ 193 0074 22B4FFFF 		.word	-19422
+ 194 0078 01323D00 		.word	4010497
+ 195 007c C5450400 		.word	280005
+ 196 0080 674A2900 		.word	2706023
+ 197 0084 20760100 		.word	95776
+ 198 0088 CDF42E00 		.word	3077325
+ 199 008c C5DE3500 		.word	3530437
+ 200 0090 03A5E6FF 		.word	-1661693
+ 201 0094 2C30C9FF 		.word	-3592148
+ 202 0098 D447D9FF 		.word	-2537516
+ 203 009c AFBE3B00 		.word	3915439
+ 204 00a0 8515C5FF 		.word	-3861115
+ 205 00a4 7C8ED1FF 		.word	-3043716
+ 206 00a8 968A3600 		.word	3574422
+ 207 00ac 413ED4FF 		.word	-2867647
+ 208 00b0 00043600 		.word	3539968
+ 209 00b4 4D6AFBFF 		.word	-300467
+ 210 00b8 9CD62300 		.word	2348700
+ 211 00bc 5DC5F7FF 		.word	-539299
+ 212 00c0 3D12E6FF 		.word	-1699267
+ 213 00c4 D6EAE6FF 		.word	-1643818
+ 214 00c8 1E7E3500 		.word	3505694
+ 215 00cc 59AFC5FF 		.word	-3821735
+ 216 00d0 3F843500 		.word	3507263
+ 217 00d4 1756DFFF 		.word	-2140649
+ 218 00d8 5C94E7FF 		.word	-1600420
+ 219 00dc 8C733800 		.word	3699596
+ 220 00e0 A8630C00 		.word	811944
+ 221 00e4 9A1B0800 		.word	531354
+ 222 00e8 768F0E00 		.word	954230
+ 223 00ec 53383B00 		.word	3881043
+ 224 00f0 34853B00 		.word	3900724
+ 225 00f4 30FCD8FF 		.word	-2556880
+ 226 00f8 549D1F00 		.word	2071892
+ 227 00fc 2D4FD5FF 		.word	-2797779
+ 228 0100 E506C4FF 		.word	-3930395
+ 229 0104 81ACE8FF 		.word	-1528703
+ 230 0108 CFE1C7FF 		.word	-3677745
+ 231 010c 1998D1FF 		.word	-3041255
+ 232 0110 5DD6E9FF 		.word	-1452451
+ 233 0114 EE093500 		.word	3475950
+ 234 0118 C7352100 		.word	2176455
+ARM GAS  /tmp/cc6ycTwB.s 			page 5
+
+
+ 235 011c BBCFE7FF 		.word	-1585221
+ 236 0120 75CFECFF 		.word	-1257611
+ 237 0124 72971D00 		.word	1939314
+ 238 0128 72B0C1FF 		.word	-4083598
+ 239 012c F6BCF0FF 		.word	-1000202
+ 240 0130 8052CFFF 		.word	-3190144
+ 241 0134 AED2CFFF 		.word	-3157330
+ 242 0138 E090C8FF 		.word	-3632928
+ 243 013c CAEF0100 		.word	126922
+ 244 0140 F2103400 		.word	3412210
+ 245 0144 85FEF0FF 		.word	-983419
+ 246 0148 38C62000 		.word	2147896
+ 247 014c 9F6E2900 		.word	2715295
+ 248 0150 A3B7D2FF 		.word	-2967645
+ 249 0154 4BA4C7FF 		.word	-3693493
+ 250 0158 6DBAF9FF 		.word	-411027
+ 251 015c 0934DAFF 		.word	-2477047
+ 252 0160 82C2F5FF 		.word	-671102
+ 253 0164 1341EDFF 		.word	-1228525
+ 254 0168 3BA6FFFF 		.word	-22981
+ 255 016c F709ECFF 		.word	-1308169
+ 256 0170 DD2BFAFF 		.word	-381987
+ 257 0174 D4951400 		.word	1349076
+ 258 0178 63451C00 		.word	1852771
+ 259 017c 622CEAFF 		.word	-1430430
+ 260 0180 E9FBCCFF 		.word	-3343383
+ 261 0184 F00A0400 		.word	264944
+ 262 0188 17C40700 		.word	508951
+ 263 018c 88452F00 		.word	3097992
+ 264 0190 00AD0000 		.word	44288
+ 265 0194 BE36EFFF 		.word	-1100098
+ 266 0198 44CD0D00 		.word	904516
+ 267 019c 5A673C00 		.word	3958618
+ 268 01a0 CA2BC7FF 		.word	-3724342
+ 269 01a4 7EDEFFFF 		.word	-8578
+ 270 01a8 48391900 		.word	1653064
+ 271 01ac C069CEFF 		.word	-3249728
+ 272 01b0 6C752400 		.word	2389356
+ 273 01b4 DFC7FCFF 		.word	-210977
+ 274 01b8 A1980B00 		.word	759969
+ 275 01bc 08E8EBFF 		.word	-1316856
+ 276 01c0 6CE40200 		.word	189548
+ 277 01c4 08C8C9FF 		.word	-3553272
+ 278 01c8 C2363000 		.word	3159746
+ 279 01cc F6BFE3FF 		.word	-1851402
+ 280 01d0 933CDBFF 		.word	-2409325
+ 281 01d4 E04AFDFF 		.word	-177440
+ 282 01d8 05131400 		.word	1315589
+ 283 01dc 92771400 		.word	1341330
+ 284 01e0 259E1300 		.word	1285669
+ 285 01e4 E0D0E7FF 		.word	-1584928
+ 286 01e8 4499F3FF 		.word	-812732
+ 287 01ec 0208EAFF 		.word	-1439742
+ 288 01f0 A2EED1FF 		.word	-3019102
+ 289 01f4 9CC7C4FF 		.word	-3881060
+ 290 01f8 57A0C8FF 		.word	-3628969
+ 291 01fc D9973A00 		.word	3839961
+ARM GAS  /tmp/cc6ycTwB.s 			page 6
+
+
+ 292 0200 93EA1F00 		.word	2091667
+ 293 0204 5AFF3300 		.word	3407706
+ 294 0208 D4582300 		.word	2316500
+ 295 020c F8413A00 		.word	3817976
+ 296 0210 72FFCCFF 		.word	-3342478
+ 297 0214 FB3D2200 		.word	2244091
+ 298 0218 9FABDAFF 		.word	-2446433
+ 299 021c 22A4C9FF 		.word	-3562462
+ 300 0220 F5120400 		.word	266997
+ 301 0224 87252500 		.word	2434439
+ 302 0228 F024EDFF 		.word	-1235728
+ 303 022c 5D9B3500 		.word	3513181
+ 304 0230 A048CAFF 		.word	-3520352
+ 305 0234 FCA2C6FF 		.word	-3759364
+ 306 0238 56BBEDFF 		.word	-1197226
+ 307 023c DE45CFFF 		.word	-3193378
+ 308 0240 5EBE0D00 		.word	900702
+ 309 0244 1A5E1C00 		.word	1859098
+ 310 0248 E6E00D00 		.word	909542
+ 311 024c 5A7F0C00 		.word	819034
+ 312 0250 838F0700 		.word	495491
+ 313 0254 8A62E7FF 		.word	-1613174
+ 314 0258 0457FFFF 		.word	-43260
+ 315 025c FC06F8FF 		.word	-522500
+ 316 0260 2100F6FF 		.word	-655327
+ 317 0264 F65AD0FF 		.word	-3122442
+ 318 0268 84001F00 		.word	2031748
+ 319 026c 86EF3000 		.word	3207046
+ 320 0270 7DB9C9FF 		.word	-3556995
+ 321 0274 D6FCF7FF 		.word	-525098
+ 322 0278 9245F4FF 		.word	-768622
+ 323 027c C221C9FF 		.word	-3595838
+ 324 0280 19390500 		.word	342297
+ 325 0284 0C610400 		.word	286988
+ 326 0288 41CDDAFF 		.word	-2437823
+ 327 028c 1BB03E00 		.word	4108315
+ 328 0290 E7723400 		.word	3437287
+ 329 0294 3B00CDFF 		.word	-3342277
+ 330 0298 C77C1A00 		.word	1735879
+ 331 029c 24190300 		.word	203044
+ 332 02a0 E55E2B00 		.word	2842341
+ 333 02a4 99112900 		.word	2691481
+ 334 02a8 3A7AD8FF 		.word	-2590150
+ 335 02ac 714D1300 		.word	1265009
+ 336 02b0 1CE13D00 		.word	4055324
+ 337 02b4 84091300 		.word	1247620
+ 338 02b8 51F02500 		.word	2486353
+ 339 02bc 465A1800 		.word	1595974
+ 340 02c0 1885C6FF 		.word	-3767016
+ 341 02c4 BE141300 		.word	1250494
+ 342 02c8 91382800 		.word	2635921
+ 343 02cc 90DBC9FF 		.word	-3548272
+ 344 02d0 8950D2FF 		.word	-2994039
+ 345 02d4 3F851C00 		.word	1869119
+ 346 02d8 4B0B1D00 		.word	1903435
+ 347 02dc A6F6EFFF 		.word	-1050970
+ 348 02e0 BEA8EBFF 		.word	-1333058
+ARM GAS  /tmp/cc6ycTwB.s 			page 7
+
+
+ 349 02e4 1BE11200 		.word	1237275
+ 350 02e8 3E5ECDFF 		.word	-3318210
+ 351 02ec 2F2DEAFF 		.word	-1430225
+ 352 02f0 E41DF9FF 		.word	-451100
+ 353 02f4 C7061400 		.word	1312455
+ 354 02f8 83723200 		.word	3306115
+ 355 02fc 6E0DE2FF 		.word	-1962642
+ 356 0300 5379ECFF 		.word	-1279661
+ 357 0304 99401D00 		.word	1917081
+ 358 0308 7825D9FF 		.word	-2546312
+ 359 030c AD05EBFF 		.word	-1374803
+ 360 0310 05E41600 		.word	1500165
+ 361 0314 E7DB0B00 		.word	777191
+ 362 0318 E81D2200 		.word	2235880
+ 363 031c CFF83300 		.word	3406031
+ 364 0320 34B9F7FF 		.word	-542412
+ 365 0324 0CCAD4FF 		.word	-2831860
+ 366 0328 F87FE6FF 		.word	-1671176
+ 367 032c 57D1E3FF 		.word	-1846953
+ 368 0330 1B91D8FF 		.word	-2584293
+ 369 0334 122CC7FF 		.word	-3724270
+ 370 0338 D8100900 		.word	594136
+ 371 033c 1F5EC6FF 		.word	-3776993
+ 372 0340 5846E1FF 		.word	-2013608
+ 373 0344 8B1D2500 		.word	2432395
+ 374 0348 B7732500 		.word	2454455
+ 375 034c 8F7CFDFF 		.word	-164721
+ 376 0350 98DD1D00 		.word	1957272
+ 377 0354 98683300 		.word	3369112
+ 378 0358 BBD40200 		.word	185531
+ 379 035c A793EDFF 		.word	-1207385
+ 380 0360 BE6CCFFF 		.word	-3183426
+ 381 0364 1C7C0200 		.word	162844
+ 382 0368 08AA1800 		.word	1616392
+ 383 036c 71FD2D00 		.word	3014001
+ 384 0370 A55C0C00 		.word	810149
+ 385 0374 9A371900 		.word	1652634
+ 386 0378 67A1C7FF 		.word	-3694233
+ 387 037c 3D8CE4FF 		.word	-1799107
+ 388 0380 3CA1D1FF 		.word	-3038916
+ 389 0384 39C53500 		.word	3523897
+ 390 0388 15013B00 		.word	3866901
+ 391 038c C01D0400 		.word	269760
+ 392 0390 F7C42100 		.word	2213111
+ 393 0394 F41BF1FF 		.word	-975884
+ 394 0398 E7351A00 		.word	1717735
+ 395 039c 0E340700 		.word	472078
+ 396 03a0 457DF9FF 		.word	-426683
+ 397 03a4 D04C1A00 		.word	1723600
+ 398 03a8 AE7CE4FF 		.word	-1803090
+ 399 03ac 68261D00 		.word	1910376
+ 400 03b0 988EE6FF 		.word	-1667432
+ 401 03b4 3326EFFF 		.word	-1104333
+ 402 03b8 DA05FCFF 		.word	-260646
+ 403 03bc DB7FC5FF 		.word	-3833893
+ 404 03c0 6427D3FF 		.word	-2939036
+ 405 03c4 AFE1DDFF 		.word	-2235985
+ARM GAS  /tmp/cc6ycTwB.s 			page 8
+
+
+ 406 03c8 DD93F9FF 		.word	-420899
+ 407 03cc 091DDDFF 		.word	-2286327
+ 408 03d0 93CC0200 		.word	183443
+ 409 03d4 0518F1FF 		.word	-976891
+ 410 03d8 2A9C1800 		.word	1612842
+ 411 03dc A9E5C9FF 		.word	-3545687
+ 412 03e0 508AF7FF 		.word	-554416
+ 413 03e4 2CCF3B00 		.word	3919660
+ 414 03e8 4E43FFFF 		.word	-48306
+ 415 03ec DF36EBFF 		.word	-1362209
+ 416 03f0 CA153C00 		.word	3937738
+ 417 03f4 685E1500 		.word	1400424
+ 418 03f8 B616F3FF 		.word	-846154
+ 419 03fc CE291E00 		.word	1976782
+ 420              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc6ycTwB.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ntt.c
+     /tmp/cc6ycTwB.s:16     .text.PQCLEAN_MLDSA65_CLEAN_ntt:0000000000000000 $t
+     /tmp/cc6ycTwB.s:25     .text.PQCLEAN_MLDSA65_CLEAN_ntt:0000000000000000 PQCLEAN_MLDSA65_CLEAN_ntt
+     /tmp/cc6ycTwB.s:73     .text.PQCLEAN_MLDSA65_CLEAN_ntt:0000000000000070 $d
+     /tmp/cc6ycTwB.s:76     .text.PQCLEAN_MLDSA65_CLEAN_invntt_tomont:0000000000000000 $t
+     /tmp/cc6ycTwB.s:83     .text.PQCLEAN_MLDSA65_CLEAN_invntt_tomont:0000000000000000 PQCLEAN_MLDSA65_CLEAN_invntt_tomont
+     /tmp/cc6ycTwB.s:156    .text.PQCLEAN_MLDSA65_CLEAN_invntt_tomont:00000000000000a8 $d
+     /tmp/cc6ycTwB.s:159    .rodata.zetas:0000000000000000 $d
+     /tmp/cc6ycTwB.s:163    .rodata.zetas:0000000000000000 zetas
+
+UNDEFINED SYMBOLS
+PQCLEAN_MLDSA65_CLEAN_montgomery_reduce

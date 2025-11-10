@@ -1,0 +1,601 @@
+ARM GAS  /tmp/cc36eHNu.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"wc_port.c"
+  14              		.text
+  15              		.section	.text.wolfCrypt_Cleanup,"ax",%progbits
+  16              		.align	1
+  17              		.global	wolfCrypt_Cleanup
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	wolfCrypt_Cleanup:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 054B     		ldr	r3, .L3
+  30 0002 0020     		movs	r0, #0
+  31 0004 1A68     		ldr	r2, [r3]
+  32 0006 013A     		subs	r2, r2, #1
+  33 0008 1A60     		str	r2, [r3]
+  34 000a 1A68     		ldr	r2, [r3]
+  35 000c 002A     		cmp	r2, #0
+  36 000e BCBF     		itt	lt
+  37 0010 0022     		movlt	r2, #0
+  38 0012 1A60     		strlt	r2, [r3]
+  39 0014 1B68     		ldr	r3, [r3]
+  40 0016 7047     		bx	lr
+  41              	.L4:
+  42              		.align	2
+  43              	.L3:
+  44 0018 00000000 		.word	.LANCHOR0
+  46              		.section	.text.wc_InitAndAllocMutex,"ax",%progbits
+  47              		.align	1
+  48              		.global	wc_InitAndAllocMutex
+  49              		.syntax unified
+  50              		.thumb
+  51              		.thumb_func
+  52              		.fpu fpv4-sp-d16
+  54              	wc_InitAndAllocMutex:
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57              		@ link register save eliminated.
+  58 0000 0420     		movs	r0, #4
+  59 0002 FFF7FEBF 		b	wolfSSL_Malloc
+  61              		.section	.text.wc_strtok,"ax",%progbits
+ARM GAS  /tmp/cc36eHNu.s 			page 2
+
+
+  62              		.align	1
+  63              		.global	wc_strtok
+  64              		.syntax unified
+  65              		.thumb
+  66              		.thumb_func
+  67              		.fpu fpv4-sp-d16
+  69              	wc_strtok:
+  70              		@ args = 0, pretend = 0, frame = 0
+  71              		@ frame_needed = 0, uses_anonymous_args = 0
+  72 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  73 0002 10B9     		cbnz	r0, .L7
+  74 0004 C2B1     		cbz	r2, .L24
+  75 0006 1068     		ldr	r0, [r2]
+  76 0008 B0B1     		cbz	r0, .L24
+  77              	.L7:
+  78 000a 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+  79 000c 03B3     		cbz	r3, .L18
+  80 000e 0346     		mov	r3, r0
+  81 0010 0139     		subs	r1, r1, #1
+  82              	.L9:
+  83 0012 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+  84 0014 1846     		mov	r0, r3
+  85 0016 1D46     		mov	r5, r3
+  86 0018 0133     		adds	r3, r3, #1
+  87 001a DCB1     		cbz	r4, .L19
+  88 001c 0E46     		mov	r6, r1
+  89 001e 01E0     		b	.L12
+  90              	.L10:
+  91 0020 A742     		cmp	r7, r4
+  92 0022 F6D0     		beq	.L9
+  93              	.L12:
+  94 0024 16F8017F 		ldrb	r7, [r6, #1]!	@ zero_extendqisi2
+  95 0028 002F     		cmp	r7, #0
+  96 002a F9D1     		bne	.L10
+  97              	.L11:
+  98 002c 2B46     		mov	r3, r5
+  99 002e 15F8014B 		ldrb	r4, [r5], #1	@ zero_extendqisi2
+ 100 0032 14B9     		cbnz	r4, .L20
+ 101              	.L16:
+ 102 0034 02B1     		cbz	r2, .L24
+ 103 0036 1360     		str	r3, [r2]
+ 104              	.L24:
+ 105 0038 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 106              	.L20:
+ 107 003a 0F46     		mov	r7, r1
+ 108              	.L15:
+ 109 003c 17F8016F 		ldrb	r6, [r7, #1]!	@ zero_extendqisi2
+ 110 0040 002E     		cmp	r6, #0
+ 111 0042 F3D0     		beq	.L11
+ 112 0044 A642     		cmp	r6, r4
+ 113 0046 F9D1     		bne	.L15
+ 114 0048 0021     		movs	r1, #0
+ 115 004a 03F8011B 		strb	r1, [r3], #1
+ 116 004e F1E7     		b	.L16
+ 117              	.L18:
+ 118 0050 1846     		mov	r0, r3
+ 119 0052 F1E7     		b	.L24
+ARM GAS  /tmp/cc36eHNu.s 			page 3
+
+
+ 120              	.L19:
+ 121 0054 2046     		mov	r0, r4
+ 122 0056 EFE7     		b	.L24
+ 124              		.section	.text.wc_strsep,"ax",%progbits
+ 125              		.align	1
+ 126              		.global	wc_strsep
+ 127              		.syntax unified
+ 128              		.thumb
+ 129              		.thumb_func
+ 130              		.fpu fpv4-sp-d16
+ 132              	wc_strsep:
+ 133              		@ args = 0, pretend = 0, frame = 0
+ 134              		@ frame_needed = 0, uses_anonymous_args = 0
+ 135 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 136 0002 A8B1     		cbz	r0, .L38
+ 137 0004 0268     		ldr	r2, [r0]
+ 138 0006 7AB1     		cbz	r2, .L32
+ 139 0008 1546     		mov	r5, r2
+ 140              	.L34:
+ 141 000a 2B46     		mov	r3, r5
+ 142 000c 15F8014B 		ldrb	r4, [r5], #1	@ zero_extendqisi2
+ 143 0010 64B1     		cbz	r4, .L37
+ 144 0012 4E1E     		subs	r6, r1, #1
+ 145              	.L35:
+ 146 0014 16F8017F 		ldrb	r7, [r6, #1]!	@ zero_extendqisi2
+ 147 0018 002F     		cmp	r7, #0
+ 148 001a F6D0     		beq	.L34
+ 149 001c A742     		cmp	r7, r4
+ 150 001e F9D1     		bne	.L35
+ 151 0020 0021     		movs	r1, #0
+ 152 0022 03F8011B 		strb	r1, [r3], #1
+ 153 0026 0360     		str	r3, [r0]
+ 154              	.L32:
+ 155 0028 1046     		mov	r0, r2
+ 156 002a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 157              	.L37:
+ 158 002c 0460     		str	r4, [r0]
+ 159 002e FBE7     		b	.L32
+ 160              	.L38:
+ 161 0030 0246     		mov	r2, r0
+ 162 0032 F9E7     		b	.L32
+ 164              		.section	.text.wc_strlcpy,"ax",%progbits
+ 165              		.align	1
+ 166              		.global	wc_strlcpy
+ 167              		.syntax unified
+ 168              		.thumb
+ 169              		.thumb_func
+ 170              		.fpu fpv4-sp-d16
+ 172              	wc_strlcpy:
+ 173              		@ args = 0, pretend = 0, frame = 0
+ 174              		@ frame_needed = 0, uses_anonymous_args = 0
+ 175 0000 10B5     		push	{r4, lr}
+ 176 0002 32B1     		cbz	r2, .L44
+ 177 0004 0023     		movs	r3, #0
+ 178 0006 013A     		subs	r2, r2, #1
+ 179              	.L45:
+ 180 0008 9342     		cmp	r3, r2
+ARM GAS  /tmp/cc36eHNu.s 			page 4
+
+
+ 181 000a 04D3     		bcc	.L46
+ 182              	.L48:
+ 183 000c 0022     		movs	r2, #0
+ 184 000e 0270     		strb	r2, [r0]
+ 185 0010 1A46     		mov	r2, r3
+ 186              	.L44:
+ 187 0012 1046     		mov	r0, r2
+ 188 0014 10BD     		pop	{r4, pc}
+ 189              	.L46:
+ 190 0016 CC5C     		ldrb	r4, [r1, r3]	@ zero_extendqisi2
+ 191 0018 002C     		cmp	r4, #0
+ 192 001a F7D0     		beq	.L48
+ 193 001c 00F8014B 		strb	r4, [r0], #1
+ 194 0020 0133     		adds	r3, r3, #1
+ 195 0022 F1E7     		b	.L45
+ 197              		.section	.text.wc_strlcat,"ax",%progbits
+ 198              		.align	1
+ 199              		.global	wc_strlcat
+ 200              		.syntax unified
+ 201              		.thumb
+ 202              		.thumb_func
+ 203              		.fpu fpv4-sp-d16
+ 205              	wc_strlcat:
+ 206              		@ args = 0, pretend = 0, frame = 8
+ 207              		@ frame_needed = 0, uses_anonymous_args = 0
+ 208 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+ 209 0002 0646     		mov	r6, r0
+ 210 0004 1446     		mov	r4, r2
+ 211 0006 0191     		str	r1, [sp, #4]
+ 212 0008 4AB1     		cbz	r2, .L53
+ 213 000a FFF7FEFF 		bl	strlen
+ 214 000e 8442     		cmp	r4, r0
+ 215 0010 0546     		mov	r5, r0
+ 216 0012 0199     		ldr	r1, [sp, #4]
+ 217 0014 06D2     		bcs	.L54
+ 218 0016 0846     		mov	r0, r1
+ 219 0018 FFF7FEFF 		bl	strlen
+ 220              	.L58:
+ 221 001c 4419     		adds	r4, r0, r5
+ 222              	.L53:
+ 223 001e 2046     		mov	r0, r4
+ 224 0020 02B0     		add	sp, sp, #8
+ 225              		@ sp needed
+ 226 0022 70BD     		pop	{r4, r5, r6, pc}
+ 227              	.L54:
+ 228 0024 221A     		subs	r2, r4, r0
+ 229 0026 3018     		adds	r0, r6, r0
+ 230 0028 FFF7FEFF 		bl	wc_strlcpy
+ 231 002c F6E7     		b	.L58
+ 233              		.section	.text.wc_strdup_ex,"ax",%progbits
+ 234              		.align	1
+ 235              		.global	wc_strdup_ex
+ 236              		.syntax unified
+ 237              		.thumb
+ 238              		.thumb_func
+ 239              		.fpu fpv4-sp-d16
+ 241              	wc_strdup_ex:
+ARM GAS  /tmp/cc36eHNu.s 			page 5
+
+
+ 242              		@ args = 0, pretend = 0, frame = 8
+ 243              		@ frame_needed = 0, uses_anonymous_args = 0
+ 244 0000 37B5     		push	{r0, r1, r2, r4, r5, lr}
+ 245 0002 0546     		mov	r5, r0
+ 246 0004 78B1     		cbz	r0, .L61
+ 247 0006 FFF7FEFF 		bl	strlen
+ 248 000a 421C     		adds	r2, r0, #1
+ 249 000c 1046     		mov	r0, r2
+ 250 000e 0192     		str	r2, [sp, #4]
+ 251 0010 FFF7FEFF 		bl	wolfSSL_Malloc
+ 252 0014 0446     		mov	r4, r0
+ 253 0016 18B1     		cbz	r0, .L59
+ 254 0018 2946     		mov	r1, r5
+ 255 001a 019A     		ldr	r2, [sp, #4]
+ 256 001c FFF7FEFF 		bl	memcpy
+ 257              	.L59:
+ 258 0020 2046     		mov	r0, r4
+ 259 0022 03B0     		add	sp, sp, #12
+ 260              		@ sp needed
+ 261 0024 30BD     		pop	{r4, r5, pc}
+ 262              	.L61:
+ 263 0026 0446     		mov	r4, r0
+ 264 0028 FAE7     		b	.L59
+ 266              		.section	.text.wolfSSL_CryptHwMutexInit,"ax",%progbits
+ 267              		.align	1
+ 268              		.global	wolfSSL_CryptHwMutexInit
+ 269              		.syntax unified
+ 270              		.thumb
+ 271              		.thumb_func
+ 272              		.fpu fpv4-sp-d16
+ 274              	wolfSSL_CryptHwMutexInit:
+ 275              		@ args = 0, pretend = 0, frame = 0
+ 276              		@ frame_needed = 0, uses_anonymous_args = 0
+ 277              		@ link register save eliminated.
+ 278 0000 034B     		ldr	r3, .L67
+ 279 0002 1A68     		ldr	r2, [r3]
+ 280 0004 0AB9     		cbnz	r2, .L66
+ 281 0006 0122     		movs	r2, #1
+ 282 0008 1A60     		str	r2, [r3]
+ 283              	.L66:
+ 284 000a 0020     		movs	r0, #0
+ 285 000c 7047     		bx	lr
+ 286              	.L68:
+ 287 000e 00BF     		.align	2
+ 288              	.L67:
+ 289 0010 00000000 		.word	.LANCHOR1
+ 291              		.section	.text.wolfCrypt_Init,"ax",%progbits
+ 292              		.align	1
+ 293              		.global	wolfCrypt_Init
+ 294              		.syntax unified
+ 295              		.thumb
+ 296              		.thumb_func
+ 297              		.fpu fpv4-sp-d16
+ 299              	wolfCrypt_Init:
+ 300              		@ args = 0, pretend = 0, frame = 0
+ 301              		@ frame_needed = 0, uses_anonymous_args = 0
+ 302 0000 0649     		ldr	r1, .L76
+ARM GAS  /tmp/cc36eHNu.s 			page 6
+
+
+ 303 0002 08B5     		push	{r3, lr}
+ 304 0004 0B68     		ldr	r3, [r1]
+ 305 0006 23B1     		cbz	r3, .L70
+ 306              	.L72:
+ 307 0008 0020     		movs	r0, #0
+ 308 000a 0B68     		ldr	r3, [r1]
+ 309 000c 0133     		adds	r3, r3, #1
+ 310 000e 0B60     		str	r3, [r1]
+ 311              	.L69:
+ 312 0010 08BD     		pop	{r3, pc}
+ 313              	.L70:
+ 314 0012 FFF7FEFF 		bl	wolfSSL_CryptHwMutexInit
+ 315 0016 0028     		cmp	r0, #0
+ 316 0018 F6D0     		beq	.L72
+ 317 001a F9E7     		b	.L69
+ 318              	.L77:
+ 319              		.align	2
+ 320              	.L76:
+ 321 001c 00000000 		.word	.LANCHOR0
+ 323              		.section	.text.wolfSSL_CryptHwMutexLock,"ax",%progbits
+ 324              		.align	1
+ 325              		.global	wolfSSL_CryptHwMutexLock
+ 326              		.syntax unified
+ 327              		.thumb
+ 328              		.thumb_func
+ 329              		.fpu fpv4-sp-d16
+ 331              	wolfSSL_CryptHwMutexLock:
+ 332              		@ args = 0, pretend = 0, frame = 0
+ 333              		@ frame_needed = 0, uses_anonymous_args = 0
+ 334              		@ link register save eliminated.
+ 335 0000 FFF7FEBF 		b	wolfSSL_CryptHwMutexInit
+ 337              		.section	.text.wolfSSL_CryptHwMutexUnLock,"ax",%progbits
+ 338              		.align	1
+ 339              		.global	wolfSSL_CryptHwMutexUnLock
+ 340              		.syntax unified
+ 341              		.thumb
+ 342              		.thumb_func
+ 343              		.fpu fpv4-sp-d16
+ 345              	wolfSSL_CryptHwMutexUnLock:
+ 346              		@ args = 0, pretend = 0, frame = 0
+ 347              		@ frame_needed = 0, uses_anonymous_args = 0
+ 348              		@ link register save eliminated.
+ 349 0000 034B     		ldr	r3, .L82
+ 350 0002 1B68     		ldr	r3, [r3]
+ 351 0004 002B     		cmp	r3, #0
+ 352 0006 0CBF     		ite	eq
+ 353 0008 6FF06900 		mvneq	r0, #105
+ 354 000c 0020     		movne	r0, #0
+ 355 000e 7047     		bx	lr
+ 356              	.L83:
+ 357              		.align	2
+ 358              	.L82:
+ 359 0010 00000000 		.word	.LANCHOR1
+ 361              		.section	.text.wc_InitMutex,"ax",%progbits
+ 362              		.align	1
+ 363              		.global	wc_InitMutex
+ 364              		.syntax unified
+ARM GAS  /tmp/cc36eHNu.s 			page 7
+
+
+ 365              		.thumb
+ 366              		.thumb_func
+ 367              		.fpu fpv4-sp-d16
+ 369              	wc_InitMutex:
+ 370              		@ args = 0, pretend = 0, frame = 0
+ 371              		@ frame_needed = 0, uses_anonymous_args = 0
+ 372              		@ link register save eliminated.
+ 373 0000 0020     		movs	r0, #0
+ 374 0002 7047     		bx	lr
+ 376              		.section	.text.wc_FreeMutex,"ax",%progbits
+ 377              		.align	1
+ 378              		.global	wc_FreeMutex
+ 379              		.syntax unified
+ 380              		.thumb
+ 381              		.thumb_func
+ 382              		.fpu fpv4-sp-d16
+ 384              	wc_FreeMutex:
+ 385              		@ args = 0, pretend = 0, frame = 0
+ 386              		@ frame_needed = 0, uses_anonymous_args = 0
+ 387              		@ link register save eliminated.
+ 388 0000 0020     		movs	r0, #0
+ 389 0002 7047     		bx	lr
+ 391              		.section	.text.wc_LockMutex,"ax",%progbits
+ 392              		.align	1
+ 393              		.global	wc_LockMutex
+ 394              		.syntax unified
+ 395              		.thumb
+ 396              		.thumb_func
+ 397              		.fpu fpv4-sp-d16
+ 399              	wc_LockMutex:
+ 400              		@ args = 0, pretend = 0, frame = 0
+ 401              		@ frame_needed = 0, uses_anonymous_args = 0
+ 402              		@ link register save eliminated.
+ 403 0000 0020     		movs	r0, #0
+ 404 0002 7047     		bx	lr
+ 406              		.section	.text.wc_UnLockMutex,"ax",%progbits
+ 407              		.align	1
+ 408              		.global	wc_UnLockMutex
+ 409              		.syntax unified
+ 410              		.thumb
+ 411              		.thumb_func
+ 412              		.fpu fpv4-sp-d16
+ 414              	wc_UnLockMutex:
+ 415              		@ args = 0, pretend = 0, frame = 0
+ 416              		@ frame_needed = 0, uses_anonymous_args = 0
+ 417              		@ link register save eliminated.
+ 418 0000 0020     		movs	r0, #0
+ 419 0002 7047     		bx	lr
+ 421              		.section	.text.wc_InitRwLock,"ax",%progbits
+ 422              		.align	1
+ 423              		.global	wc_InitRwLock
+ 424              		.syntax unified
+ 425              		.thumb
+ 426              		.thumb_func
+ 427              		.fpu fpv4-sp-d16
+ 429              	wc_InitRwLock:
+ 430              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  /tmp/cc36eHNu.s 			page 8
+
+
+ 431              		@ frame_needed = 0, uses_anonymous_args = 0
+ 432              		@ link register save eliminated.
+ 433 0000 0020     		movs	r0, #0
+ 434 0002 7047     		bx	lr
+ 436              		.section	.text.wc_FreeRwLock,"ax",%progbits
+ 437              		.align	1
+ 438              		.global	wc_FreeRwLock
+ 439              		.syntax unified
+ 440              		.thumb
+ 441              		.thumb_func
+ 442              		.fpu fpv4-sp-d16
+ 444              	wc_FreeRwLock:
+ 445              		@ args = 0, pretend = 0, frame = 0
+ 446              		@ frame_needed = 0, uses_anonymous_args = 0
+ 447              		@ link register save eliminated.
+ 448 0000 0020     		movs	r0, #0
+ 449 0002 7047     		bx	lr
+ 451              		.section	.text.wc_LockRwLock_Wr,"ax",%progbits
+ 452              		.align	1
+ 453              		.global	wc_LockRwLock_Wr
+ 454              		.syntax unified
+ 455              		.thumb
+ 456              		.thumb_func
+ 457              		.fpu fpv4-sp-d16
+ 459              	wc_LockRwLock_Wr:
+ 460              		@ args = 0, pretend = 0, frame = 0
+ 461              		@ frame_needed = 0, uses_anonymous_args = 0
+ 462              		@ link register save eliminated.
+ 463 0000 0020     		movs	r0, #0
+ 464 0002 7047     		bx	lr
+ 466              		.section	.text.wc_LockRwLock_Rd,"ax",%progbits
+ 467              		.align	1
+ 468              		.global	wc_LockRwLock_Rd
+ 469              		.syntax unified
+ 470              		.thumb
+ 471              		.thumb_func
+ 472              		.fpu fpv4-sp-d16
+ 474              	wc_LockRwLock_Rd:
+ 475              		@ args = 0, pretend = 0, frame = 0
+ 476              		@ frame_needed = 0, uses_anonymous_args = 0
+ 477              		@ link register save eliminated.
+ 478 0000 0020     		movs	r0, #0
+ 479 0002 7047     		bx	lr
+ 481              		.section	.text.wc_UnLockRwLock,"ax",%progbits
+ 482              		.align	1
+ 483              		.global	wc_UnLockRwLock
+ 484              		.syntax unified
+ 485              		.thumb
+ 486              		.thumb_func
+ 487              		.fpu fpv4-sp-d16
+ 489              	wc_UnLockRwLock:
+ 490              		@ args = 0, pretend = 0, frame = 0
+ 491              		@ frame_needed = 0, uses_anonymous_args = 0
+ 492              		@ link register save eliminated.
+ 493 0000 0020     		movs	r0, #0
+ 494 0002 7047     		bx	lr
+ 496              		.section	.text.wolfSSL_strnstr,"ax",%progbits
+ARM GAS  /tmp/cc36eHNu.s 			page 9
+
+
+ 497              		.align	1
+ 498              		.global	wolfSSL_strnstr
+ 499              		.syntax unified
+ 500              		.thumb
+ 501              		.thumb_func
+ 502              		.fpu fpv4-sp-d16
+ 504              	wolfSSL_strnstr:
+ 505              		@ args = 0, pretend = 0, frame = 0
+ 506              		@ frame_needed = 0, uses_anonymous_args = 0
+ 507 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 508 0004 0446     		mov	r4, r0
+ 509 0006 0846     		mov	r0, r1
+ 510 0008 0F46     		mov	r7, r1
+ 511 000a 1646     		mov	r6, r2
+ 512 000c FFF7FEFF 		bl	strlen
+ 513 0010 0546     		mov	r5, r0
+ 514 0012 B0B1     		cbz	r0, .L94
+ 515 0014 A046     		mov	r8, r4
+ 516 0016 2644     		add	r6, r6, r4
+ 517              	.L95:
+ 518 0018 4446     		mov	r4, r8
+ 519 001a 331B     		subs	r3, r6, r4
+ 520 001c 9D42     		cmp	r5, r3
+ 521 001e 04D8     		bhi	.L98
+ 522 0020 98F80030 		ldrb	r3, [r8]	@ zero_extendqisi2
+ 523 0024 08F10108 		add	r8, r8, #1
+ 524 0028 0BB9     		cbnz	r3, .L97
+ 525              	.L98:
+ 526 002a 0024     		movs	r4, #0
+ 527 002c 09E0     		b	.L94
+ 528              	.L97:
+ 529 002e 3A78     		ldrb	r2, [r7]	@ zero_extendqisi2
+ 530 0030 9A42     		cmp	r2, r3
+ 531 0032 F1D1     		bne	.L95
+ 532 0034 2A46     		mov	r2, r5
+ 533 0036 3946     		mov	r1, r7
+ 534 0038 2046     		mov	r0, r4
+ 535 003a FFF7FEFF 		bl	memcmp
+ 536 003e 0028     		cmp	r0, #0
+ 537 0040 EAD1     		bne	.L95
+ 538              	.L94:
+ 539 0042 2046     		mov	r0, r4
+ 540 0044 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 542              		.section	.bss.initRefCount,"aw",%nobits
+ 543              		.align	2
+ 544              		.set	.LANCHOR0,. + 0
+ 547              	initRefCount:
+ 548 0000 00000000 		.space	4
+ 549              		.section	.bss.wcCryptHwMutexInit,"aw",%nobits
+ 550              		.align	2
+ 551              		.set	.LANCHOR1,. + 0
+ 554              	wcCryptHwMutexInit:
+ 555 0000 00000000 		.space	4
+ 556              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc36eHNu.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 wc_port.c
+     /tmp/cc36eHNu.s:16     .text.wolfCrypt_Cleanup:0000000000000000 $t
+     /tmp/cc36eHNu.s:25     .text.wolfCrypt_Cleanup:0000000000000000 wolfCrypt_Cleanup
+     /tmp/cc36eHNu.s:44     .text.wolfCrypt_Cleanup:0000000000000018 $d
+     /tmp/cc36eHNu.s:47     .text.wc_InitAndAllocMutex:0000000000000000 $t
+     /tmp/cc36eHNu.s:54     .text.wc_InitAndAllocMutex:0000000000000000 wc_InitAndAllocMutex
+     /tmp/cc36eHNu.s:62     .text.wc_strtok:0000000000000000 $t
+     /tmp/cc36eHNu.s:69     .text.wc_strtok:0000000000000000 wc_strtok
+     /tmp/cc36eHNu.s:125    .text.wc_strsep:0000000000000000 $t
+     /tmp/cc36eHNu.s:132    .text.wc_strsep:0000000000000000 wc_strsep
+     /tmp/cc36eHNu.s:165    .text.wc_strlcpy:0000000000000000 $t
+     /tmp/cc36eHNu.s:172    .text.wc_strlcpy:0000000000000000 wc_strlcpy
+     /tmp/cc36eHNu.s:198    .text.wc_strlcat:0000000000000000 $t
+     /tmp/cc36eHNu.s:205    .text.wc_strlcat:0000000000000000 wc_strlcat
+     /tmp/cc36eHNu.s:234    .text.wc_strdup_ex:0000000000000000 $t
+     /tmp/cc36eHNu.s:241    .text.wc_strdup_ex:0000000000000000 wc_strdup_ex
+     /tmp/cc36eHNu.s:267    .text.wolfSSL_CryptHwMutexInit:0000000000000000 $t
+     /tmp/cc36eHNu.s:274    .text.wolfSSL_CryptHwMutexInit:0000000000000000 wolfSSL_CryptHwMutexInit
+     /tmp/cc36eHNu.s:289    .text.wolfSSL_CryptHwMutexInit:0000000000000010 $d
+     /tmp/cc36eHNu.s:292    .text.wolfCrypt_Init:0000000000000000 $t
+     /tmp/cc36eHNu.s:299    .text.wolfCrypt_Init:0000000000000000 wolfCrypt_Init
+     /tmp/cc36eHNu.s:321    .text.wolfCrypt_Init:000000000000001c $d
+     /tmp/cc36eHNu.s:324    .text.wolfSSL_CryptHwMutexLock:0000000000000000 $t
+     /tmp/cc36eHNu.s:331    .text.wolfSSL_CryptHwMutexLock:0000000000000000 wolfSSL_CryptHwMutexLock
+     /tmp/cc36eHNu.s:338    .text.wolfSSL_CryptHwMutexUnLock:0000000000000000 $t
+     /tmp/cc36eHNu.s:345    .text.wolfSSL_CryptHwMutexUnLock:0000000000000000 wolfSSL_CryptHwMutexUnLock
+     /tmp/cc36eHNu.s:359    .text.wolfSSL_CryptHwMutexUnLock:0000000000000010 $d
+     /tmp/cc36eHNu.s:362    .text.wc_InitMutex:0000000000000000 $t
+     /tmp/cc36eHNu.s:369    .text.wc_InitMutex:0000000000000000 wc_InitMutex
+     /tmp/cc36eHNu.s:377    .text.wc_FreeMutex:0000000000000000 $t
+     /tmp/cc36eHNu.s:384    .text.wc_FreeMutex:0000000000000000 wc_FreeMutex
+     /tmp/cc36eHNu.s:392    .text.wc_LockMutex:0000000000000000 $t
+     /tmp/cc36eHNu.s:399    .text.wc_LockMutex:0000000000000000 wc_LockMutex
+     /tmp/cc36eHNu.s:407    .text.wc_UnLockMutex:0000000000000000 $t
+     /tmp/cc36eHNu.s:414    .text.wc_UnLockMutex:0000000000000000 wc_UnLockMutex
+     /tmp/cc36eHNu.s:422    .text.wc_InitRwLock:0000000000000000 $t
+     /tmp/cc36eHNu.s:429    .text.wc_InitRwLock:0000000000000000 wc_InitRwLock
+     /tmp/cc36eHNu.s:437    .text.wc_FreeRwLock:0000000000000000 $t
+     /tmp/cc36eHNu.s:444    .text.wc_FreeRwLock:0000000000000000 wc_FreeRwLock
+     /tmp/cc36eHNu.s:452    .text.wc_LockRwLock_Wr:0000000000000000 $t
+     /tmp/cc36eHNu.s:459    .text.wc_LockRwLock_Wr:0000000000000000 wc_LockRwLock_Wr
+     /tmp/cc36eHNu.s:467    .text.wc_LockRwLock_Rd:0000000000000000 $t
+     /tmp/cc36eHNu.s:474    .text.wc_LockRwLock_Rd:0000000000000000 wc_LockRwLock_Rd
+     /tmp/cc36eHNu.s:482    .text.wc_UnLockRwLock:0000000000000000 $t
+     /tmp/cc36eHNu.s:489    .text.wc_UnLockRwLock:0000000000000000 wc_UnLockRwLock
+     /tmp/cc36eHNu.s:497    .text.wolfSSL_strnstr:0000000000000000 $t
+     /tmp/cc36eHNu.s:504    .text.wolfSSL_strnstr:0000000000000000 wolfSSL_strnstr
+     /tmp/cc36eHNu.s:543    .bss.initRefCount:0000000000000000 $d
+     /tmp/cc36eHNu.s:547    .bss.initRefCount:0000000000000000 initRefCount
+     /tmp/cc36eHNu.s:550    .bss.wcCryptHwMutexInit:0000000000000000 $d
+     /tmp/cc36eHNu.s:554    .bss.wcCryptHwMutexInit:0000000000000000 wcCryptHwMutexInit
+
+UNDEFINED SYMBOLS
+wolfSSL_Malloc
+strlen
+memcpy
+ARM GAS  /tmp/cc36eHNu.s 			page 11
+
+
+memcmp

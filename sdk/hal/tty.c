@@ -6,6 +6,9 @@
     #warning "No TTY uart defined"
 #endif // ! TTY_ON_UART
 
+/* Forward declaration for TLS RX handler */
+extern void tls_pqc_usb_rx_handler(u8 *data, u32 len);
+extern bool tls_pqc_is_active(void);
 
 tty_parse_callback_t _rx_callback = NULL;
 
@@ -75,6 +78,13 @@ int _read (int fd, const void *buf, size_t count)
 
 static void _usb_rx_handler(u8 *buf, u32 len)
 {
+    /* Check if TLS handshake is active - route to TLS handler */
+    if (tls_pqc_is_active()) {
+        tls_pqc_usb_rx_handler(buf, len);
+        return;
+    }
+
+    /* Normal TTY mode - route to command parser */
     u32 i;
 
     size_t wr_ptr = _usb_stream_wr_ptr;

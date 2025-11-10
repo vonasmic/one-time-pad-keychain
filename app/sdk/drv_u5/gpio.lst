@@ -1,0 +1,176 @@
+ARM GAS  /tmp/ccbtZt1y.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"gpio.c"
+  14              		.text
+  15              		.section	.text.LL_AHB2_GRP1_EnableClock,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	LL_AHB2_GRP1_EnableClock:
+  25              		@ args = 0, pretend = 0, frame = 8
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27              		@ link register save eliminated.
+  28 0000 064B     		ldr	r3, .L2
+  29 0002 82B0     		sub	sp, sp, #8
+  30 0004 D3F88C20 		ldr	r2, [r3, #140]
+  31 0008 0243     		orrs	r2, r2, r0
+  32 000a C3F88C20 		str	r2, [r3, #140]
+  33 000e D3F88C30 		ldr	r3, [r3, #140]
+  34 0012 1840     		ands	r0, r0, r3
+  35 0014 0190     		str	r0, [sp, #4]
+  36 0016 019B     		ldr	r3, [sp, #4]
+  37 0018 02B0     		add	sp, sp, #8
+  38              		@ sp needed
+  39 001a 7047     		bx	lr
+  40              	.L3:
+  41              		.align	2
+  42              	.L2:
+  43 001c 000C0246 		.word	1174539264
+  45              		.section	.text.gpio_pin_code,"ax",%progbits
+  46              		.align	1
+  47              		.global	gpio_pin_code
+  48              		.syntax unified
+  49              		.thumb
+  50              		.thumb_func
+  51              		.fpu fpv4-sp-d16
+  53              	gpio_pin_code:
+  54              		@ args = 0, pretend = 0, frame = 0
+  55              		@ frame_needed = 0, uses_anonymous_args = 0
+  56              		@ link register save eliminated.
+  57 0000 0F28     		cmp	r0, #15
+  58 0002 9ABF     		itte	ls
+  59 0004 024B     		ldrls	r3, .L7
+  60 0006 53F82000 		ldrls	r0, [r3, r0, lsl #2]
+ARM GAS  /tmp/ccbtZt1y.s 			page 2
+
+
+  61 000a 0020     		movhi	r0, #0
+  62 000c 7047     		bx	lr
+  63              	.L8:
+  64 000e 00BF     		.align	2
+  65              	.L7:
+  66 0010 00000000 		.word	.LANCHOR0
+  68              		.section	.text.gpio_pin_init,"ax",%progbits
+  69              		.align	1
+  70              		.global	gpio_pin_init
+  71              		.syntax unified
+  72              		.thumb
+  73              		.thumb_func
+  74              		.fpu fpv4-sp-d16
+  76              	gpio_pin_init:
+  77              		@ args = 0, pretend = 0, frame = 24
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79 0000 70B5     		push	{r4, r5, r6, lr}
+  80 0002 0D46     		mov	r5, r1
+  81 0004 86B0     		sub	sp, sp, #24
+  82 0006 0646     		mov	r6, r0
+  83 0008 1446     		mov	r4, r2
+  84 000a 0021     		movs	r1, #0
+  85 000c 1822     		movs	r2, #24
+  86 000e 6846     		mov	r0, sp
+  87 0010 FFF7FEFF 		bl	memset
+  88 0014 0F2D     		cmp	r5, #15
+  89 0016 0BD8     		bhi	.L9
+  90 0018 064B     		ldr	r3, .L16
+  91 001a 53F82530 		ldr	r3, [r3, r5, lsl #2]
+  92 001e 0093     		str	r3, [sp]
+  93 0020 14B1     		cbz	r4, .L11
+  94 0022 012C     		cmp	r4, #1
+  95 0024 04D1     		bne	.L9
+  96 0026 0194     		str	r4, [sp, #4]
+  97              	.L11:
+  98 0028 6946     		mov	r1, sp
+  99 002a 3046     		mov	r0, r6
+ 100 002c FFF7FEFF 		bl	LL_GPIO_Init
+ 101              	.L9:
+ 102 0030 06B0     		add	sp, sp, #24
+ 103              		@ sp needed
+ 104 0032 70BD     		pop	{r4, r5, r6, pc}
+ 105              	.L17:
+ 106              		.align	2
+ 107              	.L16:
+ 108 0034 00000000 		.word	.LANCHOR0
+ 110              		.section	.text.gpio_init,"ax",%progbits
+ 111              		.align	1
+ 112              		.global	gpio_init
+ 113              		.syntax unified
+ 114              		.thumb
+ 115              		.thumb_func
+ 116              		.fpu fpv4-sp-d16
+ 118              	gpio_init:
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121 0000 08B5     		push	{r3, lr}
+ARM GAS  /tmp/ccbtZt1y.s 			page 3
+
+
+ 122 0002 0120     		movs	r0, #1
+ 123 0004 FFF7FEFF 		bl	LL_AHB2_GRP1_EnableClock
+ 124 0008 0220     		movs	r0, #2
+ 125 000a FFF7FEFF 		bl	LL_AHB2_GRP1_EnableClock
+ 126 000e 0420     		movs	r0, #4
+ 127 0010 FFF7FEFF 		bl	LL_AHB2_GRP1_EnableClock
+ 128 0014 BDE80840 		pop	{r3, lr}
+ 129 0018 8020     		movs	r0, #128
+ 130 001a FFF7FEBF 		b	LL_AHB2_GRP1_EnableClock
+ 132              		.global	gpio_ll_map
+ 133              		.section	.rodata.gpio_ll_map,"a"
+ 134              		.align	2
+ 135              		.set	.LANCHOR0,. + 0
+ 138              	gpio_ll_map:
+ 139 0000 01000000 		.word	1
+ 140 0004 02000000 		.word	2
+ 141 0008 04000000 		.word	4
+ 142 000c 08000000 		.word	8
+ 143 0010 10000000 		.word	16
+ 144 0014 20000000 		.word	32
+ 145 0018 40000000 		.word	64
+ 146 001c 80000000 		.word	128
+ 147 0020 00010000 		.word	256
+ 148 0024 00020000 		.word	512
+ 149 0028 00040000 		.word	1024
+ 150 002c 00080000 		.word	2048
+ 151 0030 00100000 		.word	4096
+ 152 0034 00200000 		.word	8192
+ 153 0038 00400000 		.word	16384
+ 154 003c 00800000 		.word	32768
+ 155              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccbtZt1y.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 gpio.c
+     /tmp/ccbtZt1y.s:16     .text.LL_AHB2_GRP1_EnableClock:0000000000000000 $t
+     /tmp/ccbtZt1y.s:24     .text.LL_AHB2_GRP1_EnableClock:0000000000000000 LL_AHB2_GRP1_EnableClock
+     /tmp/ccbtZt1y.s:43     .text.LL_AHB2_GRP1_EnableClock:000000000000001c $d
+     /tmp/ccbtZt1y.s:46     .text.gpio_pin_code:0000000000000000 $t
+     /tmp/ccbtZt1y.s:53     .text.gpio_pin_code:0000000000000000 gpio_pin_code
+     /tmp/ccbtZt1y.s:66     .text.gpio_pin_code:0000000000000010 $d
+     /tmp/ccbtZt1y.s:69     .text.gpio_pin_init:0000000000000000 $t
+     /tmp/ccbtZt1y.s:76     .text.gpio_pin_init:0000000000000000 gpio_pin_init
+     /tmp/ccbtZt1y.s:108    .text.gpio_pin_init:0000000000000034 $d
+     /tmp/ccbtZt1y.s:111    .text.gpio_init:0000000000000000 $t
+     /tmp/ccbtZt1y.s:118    .text.gpio_init:0000000000000000 gpio_init
+     /tmp/ccbtZt1y.s:138    .rodata.gpio_ll_map:0000000000000000 gpio_ll_map
+     /tmp/ccbtZt1y.s:134    .rodata.gpio_ll_map:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+memset
+LL_GPIO_Init

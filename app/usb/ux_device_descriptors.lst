@@ -1,0 +1,795 @@
+ARM GAS  /tmp/cc5NVVJx.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_descriptors.c"
+  14              		.text
+  15              		.section	.text.USBD_FrameWork_AssignEp,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	USBD_FrameWork_AssignEp:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  28 0002 5C25     		movs	r5, #92
+  29 0004 0026     		movs	r6, #0
+  30 0006 4468     		ldr	r4, [r0, #4]
+  31 0008 05FB0405 		mla	r5, r5, r4, r0
+  32 000c D5F81CC0 		ldr	ip, [r5, #28]
+  33              	.L2:
+  34 0010 B445     		cmp	ip, r6
+  35 0012 0ED1     		bne	.L3
+  36              	.L5:
+  37 0014 5C25     		movs	r5, #92
+  38 0016 6C43     		muls	r4, r5, r4
+  39 0018 0625     		movs	r5, #6
+  40 001a 05FB0644 		mla	r4, r5, r6, r4
+  41 001e 2044     		add	r0, r0, r4
+  42 0020 C384     		strh	r3, [r0, #38]	@ movhi
+  43 0022 0123     		movs	r3, #1
+  44 0024 80F82410 		strb	r1, [r0, #36]
+  45 0028 80F82520 		strb	r2, [r0, #37]
+  46 002c 80F82830 		strb	r3, [r0, #40]
+  47 0030 F0BD     		pop	{r4, r5, r6, r7, pc}
+  48              	.L3:
+  49 0032 95F82870 		ldrb	r7, [r5, #40]	@ zero_extendqisi2
+  50 0036 0635     		adds	r5, r5, #6
+  51 0038 002F     		cmp	r7, #0
+  52 003a EBD0     		beq	.L5
+  53 003c 0136     		adds	r6, r6, #1
+  54 003e E7E7     		b	.L2
+  56              		.section	.text.USBD_Desc_GetString.part.0,"ax",%progbits
+  57              		.align	1
+  58              		.syntax unified
+  59              		.thumb
+ARM GAS  /tmp/cc5NVVJx.s 			page 2
+
+
+  60              		.thumb_func
+  61              		.fpu fpv4-sp-d16
+  63              	USBD_Desc_GetString.part.0:
+  64              		@ args = 0, pretend = 0, frame = 0
+  65              		@ frame_needed = 0, uses_anonymous_args = 0
+  66 0000 0023     		movs	r3, #0
+  67 0002 30B5     		push	{r4, r5, lr}
+  68 0004 0138     		subs	r0, r0, #1
+  69              	.L8:
+  70 0006 DCB2     		uxtb	r4, r3
+  71 0008 0133     		adds	r3, r3, #1
+  72 000a C55C     		ldrb	r5, [r0, r3]	@ zero_extendqisi2
+  73 000c 002D     		cmp	r5, #0
+  74 000e FAD1     		bne	.L8
+  75 0010 0123     		movs	r3, #1
+  76 0012 1480     		strh	r4, [r2]	@ movhi
+  77 0014 0C70     		strb	r4, [r1]
+  78              	.L9:
+  79 0016 10F8012F 		ldrb	r2, [r0, #1]!	@ zero_extendqisi2
+  80 001a 02B9     		cbnz	r2, .L10
+  81 001c 30BD     		pop	{r4, r5, pc}
+  82              	.L10:
+  83 001e 5C1C     		adds	r4, r3, #1
+  84 0020 CA54     		strb	r2, [r1, r3]
+  85 0022 E3B2     		uxtb	r3, r4
+  86 0024 F7E7     		b	.L9
+  88              		.section	.text.USBD_Device_Framework_Builder.constprop.0.isra.0,"ax",%progbits
+  89              		.align	1
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  93              		.fpu fpv4-sp-d16
+  95              	USBD_Device_Framework_Builder.constprop.0.isra.0:
+  96              		@ args = 0, pretend = 0, frame = 8
+  97              		@ frame_needed = 0, uses_anonymous_args = 0
+  98 0000 0023     		movs	r3, #0
+  99 0002 2DE9F74F 		push	{r0, r1, r2, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 100 0006 9346     		mov	fp, r2
+ 101 0008 CF4A     		ldr	r2, .L35
+ 102 000a C0F82431 		str	r3, [r0, #292]
+ 103 000e 0C46     		mov	r4, r1
+ 104 0010 0646     		mov	r6, r0
+ 105 0012 1225     		movs	r5, #18
+ 106 0014 0120     		movs	r0, #1
+ 107 0016 6FF07C07 		mvn	r7, #124
+ 108 001a 1160     		str	r1, [r2]
+ 109 001c 0222     		movs	r2, #2
+ 110 001e 0D70     		strb	r5, [r1]
+ 111 0020 4870     		strb	r0, [r1, #1]
+ 112 0022 8B70     		strb	r3, [r1, #2]
+ 113 0024 CA70     		strb	r2, [r1, #3]
+ 114 0026 0B71     		strb	r3, [r1, #4]
+ 115 0028 4B71     		strb	r3, [r1, #5]
+ 116 002a 8B71     		strb	r3, [r1, #6]
+ 117 002c 2772     		strb	r7, [r4, #8]
+ 118 002e 0427     		movs	r7, #4
+ 119 0030 6772     		strb	r7, [r4, #9]
+ARM GAS  /tmp/cc5NVVJx.s 			page 3
+
+
+ 120 0032 5727     		movs	r7, #87
+ 121 0034 4021     		movs	r1, #64
+ 122 0036 E772     		strb	r7, [r4, #11]
+ 123 0038 0327     		movs	r7, #3
+ 124 003a 8345     		cmp	fp, r0
+ 125 003c E171     		strb	r1, [r4, #7]
+ 126 003e A172     		strb	r1, [r4, #10]
+ 127 0040 2373     		strb	r3, [r4, #12]
+ 128 0042 6273     		strb	r2, [r4, #13]
+ 129 0044 A073     		strb	r0, [r4, #14]
+ 130 0046 E273     		strb	r2, [r4, #15]
+ 131 0048 2774     		strb	r7, [r4, #16]
+ 132 004a 6074     		strb	r0, [r4, #17]
+ 133 004c C6F82051 		str	r5, [r6, #288]
+ 134 0050 0FD1     		bne	.L13
+ 135 0052 0A20     		movs	r0, #10
+ 136 0054 2375     		strb	r3, [r4, #20]
+ 137 0056 A074     		strb	r0, [r4, #18]
+ 138 0058 A375     		strb	r3, [r4, #22]
+ 139 005a E375     		strb	r3, [r4, #23]
+ 140 005c 2376     		strb	r3, [r4, #24]
+ 141 005e E376     		strb	r3, [r4, #27]
+ 142 0060 0620     		movs	r0, #6
+ 143 0062 1C23     		movs	r3, #28
+ 144 0064 E074     		strb	r0, [r4, #19]
+ 145 0066 6275     		strb	r2, [r4, #21]
+ 146 0068 6176     		strb	r1, [r4, #25]
+ 147 006a 84F81AB0 		strb	fp, [r4, #26]
+ 148 006e C6F82031 		str	r3, [r6, #288]
+ 149              	.L13:
+ 150 0072 4FF00108 		mov	r8, #1
+ 151 0076 0227     		movs	r7, #2
+ 152 0078 B44B     		ldr	r3, .L35+4
+ 153 007a 0093     		str	r3, [sp]
+ 154              	.L22:
+ 155 007c 7368     		ldr	r3, [r6, #4]
+ 156 007e 022B     		cmp	r3, #2
+ 157 0080 00F23D81 		bhi	.L14
+ 158 0084 B268     		ldr	r2, [r6, #8]
+ 159 0086 022A     		cmp	r2, #2
+ 160 0088 00F23981 		bhi	.L14
+ 161 008c 0099     		ldr	r1, [sp]
+ 162 008e 0878     		ldrb	r0, [r1]	@ zero_extendqisi2
+ 163 0090 0028     		cmp	r0, #0
+ 164 0092 00F03481 		beq	.L14
+ 165 0096 5C21     		movs	r1, #92
+ 166 0098 01FB036C 		mla	ip, r1, r3, r6
+ 167 009c DCF81810 		ldr	r1, [ip, #24]
+ 168 00a0 0029     		cmp	r1, #0
+ 169 00a2 40F02681 		bne	.L16
+ 170 00a6 D6F82011 		ldr	r1, [r6, #288]
+ 171 00aa CCF81030 		str	r3, [ip, #16]
+ 172 00ae CCF81880 		str	r8, [ip, #24]
+ 173 00b2 8CF80C00 		strb	r0, [ip, #12]
+ 174 00b6 6518     		adds	r5, r4, r1
+ 175 00b8 86F800B0 		strb	fp, [r6]
+ 176 00bc 93B9     		cbnz	r3, .L17
+ARM GAS  /tmp/cc5NVVJx.s 			page 4
+
+
+ 177 00be 4FF0090C 		mov	ip, #9
+ 178 00c2 04F801C0 		strb	ip, [r4, r1]
+ 179 00c6 C021     		movs	r1, #192
+ 180 00c8 6F70     		strb	r7, [r5, #1]
+ 181 00ca 2B71     		strb	r3, [r5, #4]
+ 182 00cc 85F80580 		strb	r8, [r5, #5]
+ 183 00d0 AB71     		strb	r3, [r5, #6]
+ 184 00d2 E971     		strb	r1, [r5, #7]
+ 185 00d4 2B72     		strb	r3, [r5, #8]
+ 186 00d6 D6F82411 		ldr	r1, [r6, #292]
+ 187 00da AB70     		strb	r3, [r5, #2]
+ 188 00dc 6144     		add	r1, r1, ip
+ 189 00de EB70     		strb	r3, [r5, #3]
+ 190 00e0 C6F82411 		str	r1, [r6, #292]
+ 191              	.L17:
+ 192 00e4 0228     		cmp	r0, #2
+ 193 00e6 40F00481 		bne	.L16
+ 194 00ea 2AB1     		cbz	r2, .L19
+ 195 00ec 316A     		ldr	r1, [r6, #32]
+ 196 00ee 022A     		cmp	r2, #2
+ 197 00f0 12BF     		itee	ne
+ 198 00f2 0A46     		movne	r2, r1
+ 199 00f4 F26F     		ldreq	r2, [r6, #124]
+ 200 00f6 5218     		addeq	r2, r2, r1
+ 201              	.L19:
+ 202 00f8 5C21     		movs	r1, #92
+ 203 00fa 4FF00309 		mov	r9, #3
+ 204 00fe 01FB0363 		mla	r3, r1, r3, r6
+ 205 0102 D2B2     		uxtb	r2, r2
+ 206 0104 83F85A20 		strb	r2, [r3, #90]
+ 207 0108 BBF1010F 		cmp	fp, #1
+ 208 010c 02F10102 		add	r2, r2, #1
+ 209 0110 1F62     		str	r7, [r3, #32]
+ 210 0112 83F85B20 		strb	r2, [r3, #91]
+ 211 0116 C3F81C90 		str	r9, [r3, #28]
+ 212 011a 40F00481 		bne	.L20
+ 213 011e 4FF40073 		mov	r3, #512
+ 214 0122 0222     		movs	r2, #2
+ 215 0124 5946     		mov	r1, fp
+ 216 0126 3046     		mov	r0, r6
+ 217 0128 FFF7FEFF 		bl	USBD_FrameWork_AssignEp
+ 218 012c 4FF40073 		mov	r3, #512
+ 219              	.L33:
+ 220 0130 8121     		movs	r1, #129
+ 221 0132 3046     		mov	r0, r6
+ 222 0134 FFF7FEFF 		bl	USBD_FrameWork_AssignEp
+ 223 0138 4A46     		mov	r2, r9
+ 224 013a 0823     		movs	r3, #8
+ 225 013c 8221     		movs	r1, #130
+ 226 013e 3046     		mov	r0, r6
+ 227 0140 FFF7FEFF 		bl	USBD_FrameWork_AssignEp
+ 228 0144 0822     		movs	r2, #8
+ 229 0146 D6F82431 		ldr	r3, [r6, #292]
+ 230 014a 4FF0090E 		mov	lr, #9
+ 231 014e EA54     		strb	r2, [r5, r3]
+ 232 0150 0B22     		movs	r2, #11
+ 233 0152 E818     		adds	r0, r5, r3
+ARM GAS  /tmp/cc5NVVJx.s 			page 5
+
+
+ 234 0154 4270     		strb	r2, [r0, #1]
+ 235 0156 5C22     		movs	r2, #92
+ 236 0158 7168     		ldr	r1, [r6, #4]
+ 237 015a 03F1080C 		add	ip, r3, #8
+ 238 015e 02FB0161 		mla	r1, r2, r1, r6
+ 239 0162 0022     		movs	r2, #0
+ 240 0164 91F85AA0 		ldrb	r10, [r1, #90]	@ zero_extendqisi2
+ 241 0168 C271     		strb	r2, [r0, #7]
+ 242 016a 80F802A0 		strb	r10, [r0, #2]
+ 243 016e C770     		strb	r7, [r0, #3]
+ 244 0170 0771     		strb	r7, [r0, #4]
+ 245 0172 4771     		strb	r7, [r0, #5]
+ 246 0174 80F80680 		strb	r8, [r0, #6]
+ 247 0178 0CF805E0 		strb	lr, [ip, r5]
+ 248 017c 0CEB0500 		add	r0, ip, r5
+ 249 0180 4FF0040C 		mov	ip, #4
+ 250 0184 80F802A0 		strb	r10, [r0, #2]
+ 251 0188 80F801C0 		strb	ip, [r0, #1]
+ 252 018c C270     		strb	r2, [r0, #3]
+ 253 018e 0272     		strb	r2, [r0, #8]
+ 254 0190 80F80480 		strb	r8, [r0, #4]
+ 255 0194 4771     		strb	r7, [r0, #5]
+ 256 0196 8771     		strb	r7, [r0, #6]
+ 257 0198 80F80780 		strb	r8, [r0, #7]
+ 258 019c 4FF00500 		mov	r0, #5
+ 259 01a0 03F1110E 		add	lr, r3, #17
+ 260 01a4 4FF01009 		mov	r9, #16
+ 261 01a8 0EF80500 		strb	r0, [lr, r5]
+ 262 01ac 0EEB050C 		add	ip, lr, r5
+ 263 01b0 4FF0240E 		mov	lr, #36
+ 264 01b4 8CF80390 		strb	r9, [ip, #3]
+ 265 01b8 03F11609 		add	r9, r3, #22
+ 266 01bc 8CF801E0 		strb	lr, [ip, #1]
+ 267 01c0 8CF80220 		strb	r2, [ip, #2]
+ 268 01c4 8CF80480 		strb	r8, [ip, #4]
+ 269 01c8 09F80500 		strb	r0, [r9, r5]
+ 270 01cc 09EB050C 		add	ip, r9, r5
+ 271 01d0 4FF00409 		mov	r9, #4
+ 272 01d4 8CF801E0 		strb	lr, [ip, #1]
+ 273 01d8 8CF80320 		strb	r2, [ip, #3]
+ 274 01dc 8CF80280 		strb	r8, [ip, #2]
+ 275 01e0 91F85B00 		ldrb	r0, [r1, #91]	@ zero_extendqisi2
+ 276 01e4 8CF80400 		strb	r0, [ip, #4]
+ 277 01e8 0190     		str	r0, [sp, #4]
+ 278 01ea 03F11B00 		add	r0, r3, #27
+ 279 01ee 00F80590 		strb	r9, [r0, r5]
+ 280 01f2 4FF00509 		mov	r9, #5
+ 281 01f6 00EB050C 		add	ip, r0, r5
+ 282 01fa 03F11F00 		add	r0, r3, #31
+ 283 01fe 8CF801E0 		strb	lr, [ip, #1]
+ 284 0202 8CF80270 		strb	r7, [ip, #2]
+ 285 0206 8CF80370 		strb	r7, [ip, #3]
+ 286 020a 00EB050C 		add	ip, r0, r5
+ 287 020e 00F80590 		strb	r9, [r0, r5]
+ 288 0212 8CF801E0 		strb	lr, [ip, #1]
+ 289 0216 4FF0060E 		mov	lr, #6
+ 290 021a 8CF802E0 		strb	lr, [ip, #2]
+ARM GAS  /tmp/cc5NVVJx.s 			page 6
+
+
+ 291 021e 4FF0070E 		mov	lr, #7
+ 292 0222 0198     		ldr	r0, [sp, #4]
+ 293 0224 8CF803A0 		strb	r10, [ip, #3]
+ 294 0228 03F1240A 		add	r10, r3, #36
+ 295 022c 8CF80400 		strb	r0, [ip, #4]
+ 296 0230 0AEB050C 		add	ip, r10, r5
+ 297 0234 0AF805E0 		strb	lr, [r10, r5]
+ 298 0238 8CF80190 		strb	r9, [ip, #1]
+ 299 023c 91F830A0 		ldrb	r10, [r1, #48]	@ zero_extendqisi2
+ 300 0240 4FF00900 		mov	r0, #9
+ 301 0244 8CF802A0 		strb	r10, [ip, #2]
+ 302 0248 4FF0030A 		mov	r10, #3
+ 303 024c 8CF803A0 		strb	r10, [ip, #3]
+ 304 0250 B1F832A0 		ldrh	r10, [r1, #50]
+ 305 0254 8CF80690 		strb	r9, [ip, #6]
+ 306 0258 4FF00409 		mov	r9, #4
+ 307 025c ACF804A0 		strh	r10, [ip, #4]	@ unaligned
+ 308 0260 03F12B0A 		add	r10, r3, #43
+ 309 0264 0AEB050C 		add	ip, r10, r5
+ 310 0268 0AF80500 		strb	r0, [r10, r5]
+ 311 026c 8CF80190 		strb	r9, [ip, #1]
+ 312 0270 0198     		ldr	r0, [sp, #4]
+ 313 0272 4FF00A09 		mov	r9, #10
+ 314 0276 8CF80200 		strb	r0, [ip, #2]
+ 315 027a 4FF00500 		mov	r0, #5
+ 316 027e 8CF80590 		strb	r9, [ip, #5]
+ 317 0282 03F13409 		add	r9, r3, #52
+ 318 0286 8CF80320 		strb	r2, [ip, #3]
+ 319 028a 8CF80620 		strb	r2, [ip, #6]
+ 320 028e 8CF80720 		strb	r2, [ip, #7]
+ 321 0292 8CF80820 		strb	r2, [ip, #8]
+ 322 0296 8CF80470 		strb	r7, [ip, #4]
+ 323 029a 09EB050C 		add	ip, r9, r5
+ 324 029e 09F805E0 		strb	lr, [r9, r5]
+ 325 02a2 8CF80100 		strb	r0, [ip, #1]
+ 326 02a6 91F82490 		ldrb	r9, [r1, #36]	@ zero_extendqisi2
+ 327 02aa 8CF80370 		strb	r7, [ip, #3]
+ 328 02ae 8CF80290 		strb	r9, [ip, #2]
+ 329 02b2 B1F82690 		ldrh	r9, [r1, #38]
+ 330 02b6 8CF80620 		strb	r2, [ip, #6]
+ 331 02ba ACF80490 		strh	r9, [ip, #4]	@ unaligned
+ 332 02be 03F13B09 		add	r9, r3, #59
+ 333 02c2 09EB050C 		add	ip, r9, r5
+ 334 02c6 09F805E0 		strb	lr, [r9, r5]
+ 335 02ca 8CF80100 		strb	r0, [ip, #1]
+ 336 02ce 91F82A00 		ldrb	r0, [r1, #42]	@ zero_extendqisi2
+ 337 02d2 8CF80370 		strb	r7, [ip, #3]
+ 338 02d6 8CF80200 		strb	r0, [ip, #2]
+ 339 02da 898D     		ldrh	r1, [r1, #44]
+ 340 02dc 4233     		adds	r3, r3, #66
+ 341 02de ACF80410 		strh	r1, [ip, #4]	@ unaligned
+ 342 02e2 8CF80620 		strb	r2, [ip, #6]
+ 343 02e6 C6F82431 		str	r3, [r6, #292]
+ 344 02ea 2A79     		ldrb	r2, [r5, #4]	@ zero_extendqisi2
+ 345 02ec 6B80     		strh	r3, [r5, #2]	@ unaligned
+ 346 02ee 0232     		adds	r2, r2, #2
+ 347 02f0 2A71     		strb	r2, [r5, #4]
+ARM GAS  /tmp/cc5NVVJx.s 			page 7
+
+
+ 348              	.L16:
+ 349 02f2 7368     		ldr	r3, [r6, #4]
+ 350 02f4 0133     		adds	r3, r3, #1
+ 351 02f6 7360     		str	r3, [r6, #4]
+ 352 02f8 B368     		ldr	r3, [r6, #8]
+ 353 02fa 0133     		adds	r3, r3, #1
+ 354 02fc B360     		str	r3, [r6, #8]
+ 355              	.L14:
+ 356 02fe 009B     		ldr	r3, [sp]
+ 357 0300 0133     		adds	r3, r3, #1
+ 358 0302 0093     		str	r3, [sp]
+ 359 0304 009A     		ldr	r2, [sp]
+ 360 0306 124B     		ldr	r3, .L35+8
+ 361 0308 9342     		cmp	r3, r2
+ 362 030a 7FF4B7AE 		bne	.L22
+ 363 030e B368     		ldr	r3, [r6, #8]
+ 364 0310 012B     		cmp	r3, #1
+ 365 0312 10D9     		bls	.L23
+ 366 0314 EF23     		movs	r3, #239
+ 367 0316 2371     		strb	r3, [r4, #4]
+ 368 0318 0223     		movs	r3, #2
+ 369 031a 6371     		strb	r3, [r4, #5]
+ 370 031c 0123     		movs	r3, #1
+ 371              	.L34:
+ 372 031e A371     		strb	r3, [r4, #6]
+ 373              	.L12:
+ 374 0320 03B0     		add	sp, sp, #12
+ 375              		@ sp needed
+ 376 0322 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 377              	.L20:
+ 378 0326 4023     		movs	r3, #64
+ 379 0328 0222     		movs	r2, #2
+ 380 032a 0121     		movs	r1, #1
+ 381 032c 3046     		mov	r0, r6
+ 382 032e FFF7FEFF 		bl	USBD_FrameWork_AssignEp
+ 383 0332 4023     		movs	r3, #64
+ 384 0334 FCE6     		b	.L33
+ 385              	.L23:
+ 386 0336 054B     		ldr	r3, .L35+4
+ 387 0338 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 388 033a 022B     		cmp	r3, #2
+ 389 033c F0D1     		bne	.L12
+ 390 033e 2371     		strb	r3, [r4, #4]
+ 391 0340 6371     		strb	r3, [r4, #5]
+ 392 0342 0023     		movs	r3, #0
+ 393 0344 EBE7     		b	.L34
+ 394              	.L36:
+ 395 0346 00BF     		.align	2
+ 396              	.L35:
+ 397 0348 00000000 		.word	.LANCHOR0
+ 398 034c 00000000 		.word	.LANCHOR1
+ 399 0350 03000000 		.word	.LANCHOR1+3
+ 401              		.section	.rodata.ux_device_sn_text.str1.1,"aMS",%progbits,1
+ 402              	.LC0:
+ 403 0000 2530346C 		.ascii	"%04lx%08lx\000"
+ 403      78253038 
+ 403      6C7800
+ARM GAS  /tmp/cc5NVVJx.s 			page 8
+
+
+ 404              		.section	.text.ux_device_sn_text,"ax",%progbits
+ 405              		.align	1
+ 406              		.global	ux_device_sn_text
+ 407              		.syntax unified
+ 408              		.thumb
+ 409              		.thumb_func
+ 410              		.fpu fpv4-sp-d16
+ 412              	ux_device_sn_text:
+ 413              		@ args = 0, pretend = 0, frame = 0
+ 414              		@ frame_needed = 0, uses_anonymous_args = 0
+ 415 0000 13B5     		push	{r0, r1, r4, lr}
+ 416 0002 0A49     		ldr	r1, .L38
+ 417 0004 0A4C     		ldr	r4, .L38+4
+ 418 0006 D1F80437 		ldr	r3, [r1, #1796]
+ 419 000a D1F80027 		ldr	r2, [r1, #1792]
+ 420 000e D1F80817 		ldr	r1, [r1, #1800]
+ 421 0012 83EA1343 		eor	r3, r3, r3, lsr #16
+ 422 0016 0A44     		add	r2, r2, r1
+ 423 0018 0092     		str	r2, [sp]
+ 424 001a 1021     		movs	r1, #16
+ 425 001c 2046     		mov	r0, r4
+ 426 001e 054A     		ldr	r2, .L38+8
+ 427 0020 9BB2     		uxth	r3, r3
+ 428 0022 FFF7FEFF 		bl	snprintf
+ 429 0026 2046     		mov	r0, r4
+ 430 0028 02B0     		add	sp, sp, #8
+ 431              		@ sp needed
+ 432 002a 10BD     		pop	{r4, pc}
+ 433              	.L39:
+ 434              		.align	2
+ 435              	.L38:
+ 436 002c 0000FA0B 		.word	200933376
+ 437 0030 00000000 		.word	.LANCHOR2
+ 438 0034 00000000 		.word	.LC0
+ 440              		.section	.text.USBD_Get_Device_Framework_Speed,"ax",%progbits
+ 441              		.align	1
+ 442              		.global	USBD_Get_Device_Framework_Speed
+ 443              		.syntax unified
+ 444              		.thumb
+ 445              		.thumb_func
+ 446              		.fpu fpv4-sp-d16
+ 448              	USBD_Get_Device_Framework_Speed:
+ 449              		@ args = 0, pretend = 0, frame = 0
+ 450              		@ frame_needed = 0, uses_anonymous_args = 0
+ 451 0000 38B5     		push	{r3, r4, r5, lr}
+ 452 0002 0246     		mov	r2, r0
+ 453 0004 0C46     		mov	r4, r1
+ 454 0006 50B9     		cbnz	r0, .L41
+ 455 0008 0A4D     		ldr	r5, .L43
+ 456 000a 0B49     		ldr	r1, .L43+4
+ 457 000c 2846     		mov	r0, r5
+ 458 000e FFF7FEFF 		bl	USBD_Device_Framework_Builder.constprop.0.isra.0
+ 459 0012 D5E94832 		ldrd	r3, r2, [r5, #288]
+ 460 0016 0848     		ldr	r0, .L43+4
+ 461 0018 1344     		add	r3, r3, r2
+ 462 001a 2360     		str	r3, [r4]
+ 463              	.L40:
+ARM GAS  /tmp/cc5NVVJx.s 			page 9
+
+
+ 464 001c 38BD     		pop	{r3, r4, r5, pc}
+ 465              	.L41:
+ 466 001e 074D     		ldr	r5, .L43+8
+ 467 0020 0749     		ldr	r1, .L43+12
+ 468 0022 2846     		mov	r0, r5
+ 469 0024 FFF7FEFF 		bl	USBD_Device_Framework_Builder.constprop.0.isra.0
+ 470 0028 D5E94832 		ldrd	r3, r2, [r5, #288]
+ 471 002c 1344     		add	r3, r3, r2
+ 472 002e 0448     		ldr	r0, .L43+12
+ 473 0030 2360     		str	r3, [r4]
+ 474 0032 F3E7     		b	.L40
+ 475              	.L44:
+ 476              		.align	2
+ 477              	.L43:
+ 478 0034 00000000 		.word	.LANCHOR5
+ 479 0038 00000000 		.word	.LANCHOR3
+ 480 003c 00000000 		.word	.LANCHOR6
+ 481 0040 00000000 		.word	.LANCHOR4
+ 483              		.section	.rodata.USBD_Get_String_Framework.str1.1,"aMS",%progbits,1
+ 484              	.LC1:
+ 485 0000 54726F70 		.ascii	"TropicSquare\000"
+ 485      69635371 
+ 485      75617265 
+ 485      00
+ 486              	.LC2:
+ 487 000d 53504920 		.ascii	"SPI interface\000"
+ 487      696E7465 
+ 487      72666163 
+ 487      6500
+ 488              		.section	.text.USBD_Get_String_Framework,"ax",%progbits
+ 489              		.align	1
+ 490              		.global	USBD_Get_String_Framework
+ 491              		.syntax unified
+ 492              		.thumb
+ 493              		.thumb_func
+ 494              		.fpu fpv4-sp-d16
+ 496              	USBD_Get_String_Framework:
+ 497              		@ args = 0, pretend = 0, frame = 8
+ 498              		@ frame_needed = 0, uses_anonymous_args = 0
+ 499 0000 0023     		movs	r3, #0
+ 500 0002 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 501 0006 ADF80630 		strh	r3, [sp, #6]	@ movhi
+ 502 000a 40F20943 		movw	r3, #1033
+ 503 000e 224C     		ldr	r4, .L50
+ 504 0010 4FF00908 		mov	r8, #9
+ 505 0014 2380     		strh	r3, [r4]	@ movhi
+ 506 0016 0123     		movs	r3, #1
+ 507 0018 0427     		movs	r7, #4
+ 508 001a 0DF10602 		add	r2, sp, #6
+ 509 001e E11C     		adds	r1, r4, #3
+ 510 0020 0646     		mov	r6, r0
+ 511 0022 1E48     		ldr	r0, .L50+4
+ 512 0024 A370     		strb	r3, [r4, #2]
+ 513 0026 FFF7FEFF 		bl	USBD_Desc_GetString.part.0
+ 514 002a 9DF80630 		ldrb	r3, [sp, #6]	@ zero_extendqisi2
+ 515 002e 1C48     		ldr	r0, .L50+8
+ 516 0030 1A1D     		adds	r2, r3, #4
+ARM GAS  /tmp/cc5NVVJx.s 			page 10
+
+
+ 517 0032 D2B2     		uxtb	r2, r2
+ 518 0034 04F80280 		strb	r8, [r4, r2]
+ 519 0038 5A1D     		adds	r2, r3, #5
+ 520 003a D2B2     		uxtb	r2, r2
+ 521 003c A754     		strb	r7, [r4, r2]
+ 522 003e 0222     		movs	r2, #2
+ 523 0040 D91D     		adds	r1, r3, #7
+ 524 0042 0633     		adds	r3, r3, #6
+ 525 0044 DBB2     		uxtb	r3, r3
+ 526 0046 E254     		strb	r2, [r4, r3]
+ 527 0048 CDB2     		uxtb	r5, r1
+ 528 004a 0DF10602 		add	r2, sp, #6
+ 529 004e 54FA81F1 		uxtab	r1, r4, r1
+ 530 0052 FFF7FEFF 		bl	USBD_Desc_GetString.part.0
+ 531 0056 0322     		movs	r2, #3
+ 532 0058 BDF80610 		ldrh	r1, [sp, #6]
+ 533 005c 0D44     		add	r5, r5, r1
+ 534 005e EDB2     		uxtb	r5, r5
+ 535 0060 6B1C     		adds	r3, r5, #1
+ 536 0062 DBB2     		uxtb	r3, r3
+ 537 0064 04F80380 		strb	r8, [r4, r3]
+ 538 0068 AB1C     		adds	r3, r5, #2
+ 539 006a DBB2     		uxtb	r3, r3
+ 540 006c E754     		strb	r7, [r4, r3]
+ 541 006e EB1C     		adds	r3, r5, #3
+ 542 0070 DBB2     		uxtb	r3, r3
+ 543 0072 E254     		strb	r2, [r4, r3]
+ 544 0074 FFF7FEFF 		bl	ux_device_sn_text
+ 545 0078 30B1     		cbz	r0, .L46
+ 546 007a E919     		adds	r1, r5, r7
+ 547 007c 0DF10602 		add	r2, sp, #6
+ 548 0080 54FA81F1 		uxtab	r1, r4, r1
+ 549 0084 FFF7FEFF 		bl	USBD_Desc_GetString.part.0
+ 550              	.L46:
+ 551 0088 0348     		ldr	r0, .L50
+ 552 008a FFF7FEFF 		bl	strlen
+ 553 008e 3060     		str	r0, [r6]
+ 554 0090 0148     		ldr	r0, .L50
+ 555 0092 02B0     		add	sp, sp, #8
+ 556              		@ sp needed
+ 557 0094 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 558              	.L51:
+ 559              		.align	2
+ 560              	.L50:
+ 561 0098 00000000 		.word	.LANCHOR7
+ 562 009c 00000000 		.word	.LC1
+ 563 00a0 0D000000 		.word	.LC2
+ 565              		.section	.text.USBD_Get_Language_Id_Framework,"ax",%progbits
+ 566              		.align	1
+ 567              		.global	USBD_Get_Language_Id_Framework
+ 568              		.syntax unified
+ 569              		.thumb
+ 570              		.thumb_func
+ 571              		.fpu fpv4-sp-d16
+ 573              	USBD_Get_Language_Id_Framework:
+ 574              		@ args = 0, pretend = 0, frame = 0
+ 575              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/cc5NVVJx.s 			page 11
+
+
+ 576 0000 38B5     		push	{r3, r4, r5, lr}
+ 577 0002 40F20943 		movw	r3, #1033
+ 578 0006 044C     		ldr	r4, .L53
+ 579 0008 0546     		mov	r5, r0
+ 580 000a 2046     		mov	r0, r4
+ 581 000c 2380     		strh	r3, [r4]	@ movhi
+ 582 000e FFF7FEFF 		bl	strlen
+ 583 0012 2860     		str	r0, [r5]
+ 584 0014 2046     		mov	r0, r4
+ 585 0016 38BD     		pop	{r3, r4, r5, pc}
+ 586              	.L54:
+ 587              		.align	2
+ 588              	.L53:
+ 589 0018 00000000 		.word	.LANCHOR8
+ 591              		.section	.text.USBD_Get_Interface_Number,"ax",%progbits
+ 592              		.align	1
+ 593              		.global	USBD_Get_Interface_Number
+ 594              		.syntax unified
+ 595              		.thumb
+ 596              		.thumb_func
+ 597              		.fpu fpv4-sp-d16
+ 599              	USBD_Get_Interface_Number:
+ 600              		@ args = 0, pretend = 0, frame = 0
+ 601              		@ frame_needed = 0, uses_anonymous_args = 0
+ 602 0000 0022     		movs	r2, #0
+ 603 0002 30B5     		push	{r4, r5, lr}
+ 604 0004 1446     		mov	r4, r2
+ 605 0006 084B     		ldr	r3, .L59
+ 606              	.L57:
+ 607 0008 1D7B     		ldrb	r5, [r3, #12]	@ zero_extendqisi2
+ 608 000a 8542     		cmp	r5, r0
+ 609 000c 04D1     		bne	.L56
+ 610 000e 1D7D     		ldrb	r5, [r3, #20]	@ zero_extendqisi2
+ 611 0010 8D42     		cmp	r5, r1
+ 612 0012 08BF     		it	eq
+ 613 0014 93F85A40 		ldrbeq	r4, [r3, #90]	@ zero_extendqisi2
+ 614              	.L56:
+ 615 0018 0132     		adds	r2, r2, #1
+ 616 001a 032A     		cmp	r2, #3
+ 617 001c 03F15C03 		add	r3, r3, #92
+ 618 0020 F2D1     		bne	.L57
+ 619 0022 2046     		mov	r0, r4
+ 620 0024 30BD     		pop	{r4, r5, pc}
+ 621              	.L60:
+ 622 0026 00BF     		.align	2
+ 623              	.L59:
+ 624 0028 00000000 		.word	.LANCHOR5
+ 626              		.section	.text.USBD_Get_Configuration_Number,"ax",%progbits
+ 627              		.align	1
+ 628              		.global	USBD_Get_Configuration_Number
+ 629              		.syntax unified
+ 630              		.thumb
+ 631              		.thumb_func
+ 632              		.fpu fpv4-sp-d16
+ 634              	USBD_Get_Configuration_Number:
+ 635              		@ args = 0, pretend = 0, frame = 0
+ 636              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/cc5NVVJx.s 			page 12
+
+
+ 637              		@ link register save eliminated.
+ 638 0000 0120     		movs	r0, #1
+ 639 0002 7047     		bx	lr
+ 641              		.global	USBD_language_id_framework
+ 642              		.global	USBD_string_framework
+ 643              		.global	UserClassInstance
+ 644              		.global	USBD_Device_HS
+ 645              		.global	USBD_Device_FS
+ 646              		.section	.bss.DevFrameWorkDesc_FS,"aw",%nobits
+ 647              		.align	2
+ 648              		.set	.LANCHOR3,. + 0
+ 651              	DevFrameWorkDesc_FS:
+ 652 0000 00000000 		.space	200
+ 652      00000000 
+ 652      00000000 
+ 652      00000000 
+ 652      00000000 
+ 653              		.section	.bss.DevFrameWorkDesc_HS,"aw",%nobits
+ 654              		.align	2
+ 655              		.set	.LANCHOR4,. + 0
+ 658              	DevFrameWorkDesc_HS:
+ 659 0000 00000000 		.space	200
+ 659      00000000 
+ 659      00000000 
+ 659      00000000 
+ 659      00000000 
+ 660              		.section	.bss.USBD_Device_FS,"aw",%nobits
+ 661              		.align	2
+ 662              		.set	.LANCHOR5,. + 0
+ 665              	USBD_Device_FS:
+ 666 0000 00000000 		.space	296
+ 666      00000000 
+ 666      00000000 
+ 666      00000000 
+ 666      00000000 
+ 667              		.section	.bss.USBD_Device_HS,"aw",%nobits
+ 668              		.align	2
+ 669              		.set	.LANCHOR6,. + 0
+ 672              	USBD_Device_HS:
+ 673 0000 00000000 		.space	296
+ 673      00000000 
+ 673      00000000 
+ 673      00000000 
+ 673      00000000 
+ 674              		.section	.bss.USBD_language_id_framework,"aw",%nobits
+ 675              		.align	2
+ 676              		.set	.LANCHOR8,. + 0
+ 679              	USBD_language_id_framework:
+ 680 0000 0000     		.space	2
+ 681              		.section	.bss.USBD_string_framework,"aw",%nobits
+ 682              		.align	2
+ 683              		.set	.LANCHOR7,. + 0
+ 686              	USBD_string_framework:
+ 687 0000 00000000 		.space	256
+ 687      00000000 
+ 687      00000000 
+ 687      00000000 
+ARM GAS  /tmp/cc5NVVJx.s 			page 13
+
+
+ 687      00000000 
+ 688              		.section	.bss.buf.9,"aw",%nobits
+ 689              		.set	.LANCHOR2,. + 0
+ 692              	buf.9:
+ 693 0000 00000000 		.space	16
+ 693      00000000 
+ 693      00000000 
+ 693      00000000 
+ 694              		.section	.bss.pDevDesc.8,"aw",%nobits
+ 695              		.align	2
+ 696              		.set	.LANCHOR0,. + 0
+ 699              	pDevDesc.8:
+ 700 0000 00000000 		.space	4
+ 701              		.section	.data.UserClassInstance,"aw"
+ 702              		.set	.LANCHOR1,. + 0
+ 705              	UserClassInstance:
+ 706 0000 0200     		.ascii	"\002\000"
+ 707 0002 00000000 		.space	9
+ 707      00000000 
+ 707      00
+ 708              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc5NVVJx.s 			page 14
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_descriptors.c
+     /tmp/cc5NVVJx.s:16     .text.USBD_FrameWork_AssignEp:0000000000000000 $t
+     /tmp/cc5NVVJx.s:24     .text.USBD_FrameWork_AssignEp:0000000000000000 USBD_FrameWork_AssignEp
+     /tmp/cc5NVVJx.s:57     .text.USBD_Desc_GetString.part.0:0000000000000000 $t
+     /tmp/cc5NVVJx.s:63     .text.USBD_Desc_GetString.part.0:0000000000000000 USBD_Desc_GetString.part.0
+     /tmp/cc5NVVJx.s:89     .text.USBD_Device_Framework_Builder.constprop.0.isra.0:0000000000000000 $t
+     /tmp/cc5NVVJx.s:95     .text.USBD_Device_Framework_Builder.constprop.0.isra.0:0000000000000000 USBD_Device_Framework_Builder.constprop.0.isra.0
+     /tmp/cc5NVVJx.s:397    .text.USBD_Device_Framework_Builder.constprop.0.isra.0:0000000000000348 $d
+     /tmp/cc5NVVJx.s:405    .text.ux_device_sn_text:0000000000000000 $t
+     /tmp/cc5NVVJx.s:412    .text.ux_device_sn_text:0000000000000000 ux_device_sn_text
+     /tmp/cc5NVVJx.s:436    .text.ux_device_sn_text:000000000000002c $d
+     /tmp/cc5NVVJx.s:441    .text.USBD_Get_Device_Framework_Speed:0000000000000000 $t
+     /tmp/cc5NVVJx.s:448    .text.USBD_Get_Device_Framework_Speed:0000000000000000 USBD_Get_Device_Framework_Speed
+     /tmp/cc5NVVJx.s:478    .text.USBD_Get_Device_Framework_Speed:0000000000000034 $d
+     /tmp/cc5NVVJx.s:489    .text.USBD_Get_String_Framework:0000000000000000 $t
+     /tmp/cc5NVVJx.s:496    .text.USBD_Get_String_Framework:0000000000000000 USBD_Get_String_Framework
+     /tmp/cc5NVVJx.s:561    .text.USBD_Get_String_Framework:0000000000000098 $d
+     /tmp/cc5NVVJx.s:566    .text.USBD_Get_Language_Id_Framework:0000000000000000 $t
+     /tmp/cc5NVVJx.s:573    .text.USBD_Get_Language_Id_Framework:0000000000000000 USBD_Get_Language_Id_Framework
+     /tmp/cc5NVVJx.s:589    .text.USBD_Get_Language_Id_Framework:0000000000000018 $d
+     /tmp/cc5NVVJx.s:592    .text.USBD_Get_Interface_Number:0000000000000000 $t
+     /tmp/cc5NVVJx.s:599    .text.USBD_Get_Interface_Number:0000000000000000 USBD_Get_Interface_Number
+     /tmp/cc5NVVJx.s:624    .text.USBD_Get_Interface_Number:0000000000000028 $d
+     /tmp/cc5NVVJx.s:627    .text.USBD_Get_Configuration_Number:0000000000000000 $t
+     /tmp/cc5NVVJx.s:634    .text.USBD_Get_Configuration_Number:0000000000000000 USBD_Get_Configuration_Number
+     /tmp/cc5NVVJx.s:679    .bss.USBD_language_id_framework:0000000000000000 USBD_language_id_framework
+     /tmp/cc5NVVJx.s:686    .bss.USBD_string_framework:0000000000000000 USBD_string_framework
+     /tmp/cc5NVVJx.s:705    .data.UserClassInstance:0000000000000000 UserClassInstance
+     /tmp/cc5NVVJx.s:672    .bss.USBD_Device_HS:0000000000000000 USBD_Device_HS
+     /tmp/cc5NVVJx.s:665    .bss.USBD_Device_FS:0000000000000000 USBD_Device_FS
+     /tmp/cc5NVVJx.s:647    .bss.DevFrameWorkDesc_FS:0000000000000000 $d
+     /tmp/cc5NVVJx.s:651    .bss.DevFrameWorkDesc_FS:0000000000000000 DevFrameWorkDesc_FS
+     /tmp/cc5NVVJx.s:654    .bss.DevFrameWorkDesc_HS:0000000000000000 $d
+     /tmp/cc5NVVJx.s:658    .bss.DevFrameWorkDesc_HS:0000000000000000 DevFrameWorkDesc_HS
+     /tmp/cc5NVVJx.s:661    .bss.USBD_Device_FS:0000000000000000 $d
+     /tmp/cc5NVVJx.s:668    .bss.USBD_Device_HS:0000000000000000 $d
+     /tmp/cc5NVVJx.s:675    .bss.USBD_language_id_framework:0000000000000000 $d
+     /tmp/cc5NVVJx.s:682    .bss.USBD_string_framework:0000000000000000 $d
+     /tmp/cc5NVVJx.s:692    .bss.buf.9:0000000000000000 buf.9
+     /tmp/cc5NVVJx.s:693    .bss.buf.9:0000000000000000 $d
+     /tmp/cc5NVVJx.s:695    .bss.pDevDesc.8:0000000000000000 $d
+     /tmp/cc5NVVJx.s:699    .bss.pDevDesc.8:0000000000000000 pDevDesc.8
+     /tmp/cc5NVVJx.s:707    .data.UserClassInstance:0000000000000002 $d
+
+UNDEFINED SYMBOLS
+snprintf
+strlen

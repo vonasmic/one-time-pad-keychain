@@ -79,3 +79,12 @@ void wd_feed (void)
 		IWDG->KR=IWDG_KEY_RELOAD;
 	}
 }
+
+void wd_set_timeout(u32 timeout)
+{
+	IWDG->KR = IWDG_KEY_WRITE_ACCESS_ENABLE;
+	IWDG->RLR = timeout;
+	while (IWDG->SR != 0)
+		;
+	IWDG->KR = IWDG_KEY_RELOAD;
+}

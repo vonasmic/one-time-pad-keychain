@@ -1,0 +1,133 @@
+ARM GAS  /tmp/ccZ0jbjz.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"logging.c"
+  14              		.text
+  15              		.section	.text.wolfSSL_CertDebugging_ON,"ax",%progbits
+  16              		.align	1
+  17              		.global	wolfSSL_CertDebugging_ON
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	wolfSSL_CertDebugging_ON:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 6FF0AD00 		mvn	r0, #173
+  30 0004 7047     		bx	lr
+  32              		.section	.text.wolfSSL_CertDebugging_OFF,"ax",%progbits
+  33              		.align	1
+  34              		.global	wolfSSL_CertDebugging_OFF
+  35              		.syntax unified
+  36              		.thumb
+  37              		.thumb_func
+  38              		.fpu fpv4-sp-d16
+  40              	wolfSSL_CertDebugging_OFF:
+  41              		@ args = 0, pretend = 0, frame = 0
+  42              		@ frame_needed = 0, uses_anonymous_args = 0
+  43              		@ link register save eliminated.
+  44 0000 6FF0AD00 		mvn	r0, #173
+  45 0004 7047     		bx	lr
+  47              		.section	.text.wolfSSL_SetLoggingCb,"ax",%progbits
+  48              		.align	1
+  49              		.global	wolfSSL_SetLoggingCb
+  50              		.syntax unified
+  51              		.thumb
+  52              		.thumb_func
+  53              		.fpu fpv4-sp-d16
+  55              	wolfSSL_SetLoggingCb:
+  56              		@ args = 0, pretend = 0, frame = 0
+  57              		@ frame_needed = 0, uses_anonymous_args = 0
+  58              		@ link register save eliminated.
+  59 0000 6FF0AD00 		mvn	r0, #173
+  60 0004 7047     		bx	lr
+  62              		.section	.text.wolfSSL_GetLoggingCb,"ax",%progbits
+  63              		.align	1
+ARM GAS  /tmp/ccZ0jbjz.s 			page 2
+
+
+  64              		.global	wolfSSL_GetLoggingCb
+  65              		.syntax unified
+  66              		.thumb
+  67              		.thumb_func
+  68              		.fpu fpv4-sp-d16
+  70              	wolfSSL_GetLoggingCb:
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 0, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 0020     		movs	r0, #0
+  75 0002 7047     		bx	lr
+  77              		.section	.text.wolfSSL_Debugging_ON,"ax",%progbits
+  78              		.align	1
+  79              		.global	wolfSSL_Debugging_ON
+  80              		.syntax unified
+  81              		.thumb
+  82              		.thumb_func
+  83              		.fpu fpv4-sp-d16
+  85              	wolfSSL_Debugging_ON:
+  86              		@ args = 0, pretend = 0, frame = 0
+  87              		@ frame_needed = 0, uses_anonymous_args = 0
+  88              		@ link register save eliminated.
+  89 0000 6FF0AD00 		mvn	r0, #173
+  90 0004 7047     		bx	lr
+  92              		.section	.text.wolfSSL_Debugging_OFF,"ax",%progbits
+  93              		.align	1
+  94              		.global	wolfSSL_Debugging_OFF
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  98              		.fpu fpv4-sp-d16
+ 100              	wolfSSL_Debugging_OFF:
+ 101              		@ args = 0, pretend = 0, frame = 0
+ 102              		@ frame_needed = 0, uses_anonymous_args = 0
+ 103              		@ link register save eliminated.
+ 104 0000 7047     		bx	lr
+ 106              		.section	.text.wolfSSL_SetLoggingPrefix,"ax",%progbits
+ 107              		.align	1
+ 108              		.global	wolfSSL_SetLoggingPrefix
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 112              		.fpu fpv4-sp-d16
+ 114              	wolfSSL_SetLoggingPrefix:
+ 115              		@ args = 0, pretend = 0, frame = 0
+ 116              		@ frame_needed = 0, uses_anonymous_args = 0
+ 117              		@ link register save eliminated.
+ 118 0000 7047     		bx	lr
+ 120              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccZ0jbjz.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 logging.c
+     /tmp/ccZ0jbjz.s:16     .text.wolfSSL_CertDebugging_ON:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:25     .text.wolfSSL_CertDebugging_ON:0000000000000000 wolfSSL_CertDebugging_ON
+     /tmp/ccZ0jbjz.s:33     .text.wolfSSL_CertDebugging_OFF:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:40     .text.wolfSSL_CertDebugging_OFF:0000000000000000 wolfSSL_CertDebugging_OFF
+     /tmp/ccZ0jbjz.s:48     .text.wolfSSL_SetLoggingCb:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:55     .text.wolfSSL_SetLoggingCb:0000000000000000 wolfSSL_SetLoggingCb
+     /tmp/ccZ0jbjz.s:63     .text.wolfSSL_GetLoggingCb:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:70     .text.wolfSSL_GetLoggingCb:0000000000000000 wolfSSL_GetLoggingCb
+     /tmp/ccZ0jbjz.s:78     .text.wolfSSL_Debugging_ON:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:85     .text.wolfSSL_Debugging_ON:0000000000000000 wolfSSL_Debugging_ON
+     /tmp/ccZ0jbjz.s:93     .text.wolfSSL_Debugging_OFF:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:100    .text.wolfSSL_Debugging_OFF:0000000000000000 wolfSSL_Debugging_OFF
+     /tmp/ccZ0jbjz.s:107    .text.wolfSSL_SetLoggingPrefix:0000000000000000 $t
+     /tmp/ccZ0jbjz.s:114    .text.wolfSSL_SetLoggingPrefix:0000000000000000 wolfSSL_SetLoggingPrefix
+
+NO UNDEFINED SYMBOLS

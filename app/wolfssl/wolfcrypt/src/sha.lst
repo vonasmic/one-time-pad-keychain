@@ -1,0 +1,244 @@
+ARM GAS  /tmp/ccIq1cDz.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"sha.c"
+  14              		.text
+  15              		.section	.text.wc_InitSha_ex,"ax",%progbits
+  16              		.align	1
+  17              		.global	wc_InitSha_ex
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	wc_InitSha_ex:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 08B5     		push	{r3, lr}
+  29 0002 18B1     		cbz	r0, .L3
+  30 0004 FFF7FEFF 		bl	wc_Stm32_Hash_Init
+  31 0008 0020     		movs	r0, #0
+  32              	.L1:
+  33 000a 08BD     		pop	{r3, pc}
+  34              	.L3:
+  35 000c 6FF0AC00 		mvn	r0, #172
+  36 0010 FBE7     		b	.L1
+  38              		.section	.text.wc_ShaUpdate,"ax",%progbits
+  39              		.align	1
+  40              		.global	wc_ShaUpdate
+  41              		.syntax unified
+  42              		.thumb
+  43              		.thumb_func
+  44              		.fpu fpv4-sp-d16
+  46              	wc_ShaUpdate:
+  47              		@ args = 0, pretend = 0, frame = 0
+  48              		@ frame_needed = 0, uses_anonymous_args = 0
+  49 0000 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+  50 0002 0E46     		mov	r6, r1
+  51 0004 1746     		mov	r7, r2
+  52 0006 0546     		mov	r5, r0
+  53 0008 98B1     		cbz	r0, .L8
+  54 000a 01B9     		cbnz	r1, .L6
+  55 000c 8AB9     		cbnz	r2, .L8
+  56              	.L6:
+  57 000e FFF7FEFF 		bl	wolfSSL_CryptHwMutexLock
+  58 0012 0446     		mov	r4, r0
+  59 0014 50B9     		cbnz	r0, .L4
+  60 0016 4023     		movs	r3, #64
+ARM GAS  /tmp/ccIq1cDz.s 			page 2
+
+
+  61 0018 0146     		mov	r1, r0
+  62 001a 0093     		str	r3, [sp]
+  63 001c 3246     		mov	r2, r6
+  64 001e 3B46     		mov	r3, r7
+  65 0020 2846     		mov	r0, r5
+  66 0022 FFF7FEFF 		bl	wc_Stm32_Hash_Update
+  67 0026 0446     		mov	r4, r0
+  68 0028 FFF7FEFF 		bl	wolfSSL_CryptHwMutexUnLock
+  69              	.L4:
+  70 002c 2046     		mov	r0, r4
+  71 002e 03B0     		add	sp, sp, #12
+  72              		@ sp needed
+  73 0030 F0BD     		pop	{r4, r5, r6, r7, pc}
+  74              	.L8:
+  75 0032 6FF0AC04 		mvn	r4, #172
+  76 0036 F9E7     		b	.L4
+  78              		.section	.text.wc_InitSha,"ax",%progbits
+  79              		.align	1
+  80              		.global	wc_InitSha
+  81              		.syntax unified
+  82              		.thumb
+  83              		.thumb_func
+  84              		.fpu fpv4-sp-d16
+  86              	wc_InitSha:
+  87              		@ args = 0, pretend = 0, frame = 0
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89 0000 08B5     		push	{r3, lr}
+  90 0002 18B1     		cbz	r0, .L11
+  91 0004 FFF7FEFF 		bl	wc_Stm32_Hash_Init
+  92 0008 0020     		movs	r0, #0
+  93              	.L9:
+  94 000a 08BD     		pop	{r3, pc}
+  95              	.L11:
+  96 000c 6FF0AC00 		mvn	r0, #172
+  97 0010 FBE7     		b	.L9
+  99              		.section	.text.wc_ShaFinal,"ax",%progbits
+ 100              		.align	1
+ 101              		.global	wc_ShaFinal
+ 102              		.syntax unified
+ 103              		.thumb
+ 104              		.thumb_func
+ 105              		.fpu fpv4-sp-d16
+ 107              	wc_ShaFinal:
+ 108              		@ args = 0, pretend = 0, frame = 0
+ 109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110 0000 70B5     		push	{r4, r5, r6, lr}
+ 111 0002 0E46     		mov	r6, r1
+ 112 0004 0546     		mov	r5, r0
+ 113 0006 90B1     		cbz	r0, .L16
+ 114 0008 89B1     		cbz	r1, .L16
+ 115 000a FFF7FEFF 		bl	wolfSSL_CryptHwMutexLock
+ 116 000e 0446     		mov	r4, r0
+ 117 0010 40B9     		cbnz	r0, .L14
+ 118 0012 0146     		mov	r1, r0
+ 119 0014 1423     		movs	r3, #20
+ 120 0016 3246     		mov	r2, r6
+ 121 0018 2846     		mov	r0, r5
+ARM GAS  /tmp/ccIq1cDz.s 			page 3
+
+
+ 122 001a FFF7FEFF 		bl	wc_Stm32_Hash_Final
+ 123 001e 0446     		mov	r4, r0
+ 124 0020 FFF7FEFF 		bl	wolfSSL_CryptHwMutexUnLock
+ 125              	.L14:
+ 126 0024 2846     		mov	r0, r5
+ 127 0026 FFF7FEFF 		bl	wc_InitSha
+ 128              	.L12:
+ 129 002a 2046     		mov	r0, r4
+ 130 002c 70BD     		pop	{r4, r5, r6, pc}
+ 131              	.L16:
+ 132 002e 6FF0AC04 		mvn	r4, #172
+ 133 0032 FAE7     		b	.L12
+ 135              		.section	.text.wc_ShaFree,"ax",%progbits
+ 136              		.align	1
+ 137              		.global	wc_ShaFree
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 141              		.fpu fpv4-sp-d16
+ 143              	wc_ShaFree:
+ 144              		@ args = 0, pretend = 0, frame = 0
+ 145              		@ frame_needed = 0, uses_anonymous_args = 0
+ 146              		@ link register save eliminated.
+ 147 0000 7047     		bx	lr
+ 149              		.section	.text.wc_ShaCopy,"ax",%progbits
+ 150              		.align	1
+ 151              		.global	wc_ShaCopy
+ 152              		.syntax unified
+ 153              		.thumb
+ 154              		.thumb_func
+ 155              		.fpu fpv4-sp-d16
+ 157              	wc_ShaCopy:
+ 158              		@ args = 0, pretend = 0, frame = 0
+ 159              		@ frame_needed = 0, uses_anonymous_args = 0
+ 160 0000 08B5     		push	{r3, lr}
+ 161 0002 0B46     		mov	r3, r1
+ 162 0004 0146     		mov	r1, r0
+ 163 0006 38B1     		cbz	r0, .L21
+ 164 0008 33B1     		cbz	r3, .L21
+ 165 000a 4FF49C72 		mov	r2, #312
+ 166 000e 1846     		mov	r0, r3
+ 167 0010 FFF7FEFF 		bl	memcpy
+ 168 0014 0020     		movs	r0, #0
+ 169              	.L18:
+ 170 0016 08BD     		pop	{r3, pc}
+ 171              	.L21:
+ 172 0018 6FF0AC00 		mvn	r0, #172
+ 173 001c FBE7     		b	.L18
+ 175              		.section	.text.wc_ShaGetHash,"ax",%progbits
+ 176              		.align	1
+ 177              		.global	wc_ShaGetHash
+ 178              		.syntax unified
+ 179              		.thumb
+ 180              		.thumb_func
+ 181              		.fpu fpv4-sp-d16
+ 183              	wc_ShaGetHash:
+ 184              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  /tmp/ccIq1cDz.s 			page 4
+
+
+ 185              		@ frame_needed = 0, uses_anonymous_args = 0
+ 186 0000 70B5     		push	{r4, r5, r6, lr}
+ 187 0002 0E46     		mov	r6, r1
+ 188 0004 0446     		mov	r4, r0
+ 189 0006 B0B1     		cbz	r0, .L26
+ 190 0008 A9B1     		cbz	r1, .L26
+ 191 000a 4FF49C70 		mov	r0, #312
+ 192 000e FFF7FEFF 		bl	wolfSSL_Malloc
+ 193 0012 0546     		mov	r5, r0
+ 194 0014 90B1     		cbz	r0, .L27
+ 195 0016 0146     		mov	r1, r0
+ 196 0018 2046     		mov	r0, r4
+ 197 001a FFF7FEFF 		bl	wc_ShaCopy
+ 198 001e 0446     		mov	r4, r0
+ 199 0020 20B9     		cbnz	r0, .L24
+ 200 0022 3146     		mov	r1, r6
+ 201 0024 2846     		mov	r0, r5
+ 202 0026 FFF7FEFF 		bl	wc_ShaFinal
+ 203 002a 0446     		mov	r4, r0
+ 204              	.L24:
+ 205 002c 2846     		mov	r0, r5
+ 206 002e FFF7FEFF 		bl	wolfSSL_Free
+ 207              	.L22:
+ 208 0032 2046     		mov	r0, r4
+ 209 0034 70BD     		pop	{r4, r5, r6, pc}
+ 210              	.L26:
+ 211 0036 6FF0AC04 		mvn	r4, #172
+ 212 003a FAE7     		b	.L22
+ 213              	.L27:
+ 214 003c 6FF07C04 		mvn	r4, #124
+ 215 0040 F7E7     		b	.L22
+ 217              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccIq1cDz.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sha.c
+     /tmp/ccIq1cDz.s:16     .text.wc_InitSha_ex:0000000000000000 $t
+     /tmp/ccIq1cDz.s:25     .text.wc_InitSha_ex:0000000000000000 wc_InitSha_ex
+     /tmp/ccIq1cDz.s:39     .text.wc_ShaUpdate:0000000000000000 $t
+     /tmp/ccIq1cDz.s:46     .text.wc_ShaUpdate:0000000000000000 wc_ShaUpdate
+     /tmp/ccIq1cDz.s:79     .text.wc_InitSha:0000000000000000 $t
+     /tmp/ccIq1cDz.s:86     .text.wc_InitSha:0000000000000000 wc_InitSha
+     /tmp/ccIq1cDz.s:100    .text.wc_ShaFinal:0000000000000000 $t
+     /tmp/ccIq1cDz.s:107    .text.wc_ShaFinal:0000000000000000 wc_ShaFinal
+     /tmp/ccIq1cDz.s:136    .text.wc_ShaFree:0000000000000000 $t
+     /tmp/ccIq1cDz.s:143    .text.wc_ShaFree:0000000000000000 wc_ShaFree
+     /tmp/ccIq1cDz.s:150    .text.wc_ShaCopy:0000000000000000 $t
+     /tmp/ccIq1cDz.s:157    .text.wc_ShaCopy:0000000000000000 wc_ShaCopy
+     /tmp/ccIq1cDz.s:176    .text.wc_ShaGetHash:0000000000000000 $t
+     /tmp/ccIq1cDz.s:183    .text.wc_ShaGetHash:0000000000000000 wc_ShaGetHash
+
+UNDEFINED SYMBOLS
+wc_Stm32_Hash_Init
+wolfSSL_CryptHwMutexLock
+wc_Stm32_Hash_Update
+wolfSSL_CryptHwMutexUnLock
+wc_Stm32_Hash_Final
+memcpy
+wolfSSL_Malloc
+wolfSSL_Free

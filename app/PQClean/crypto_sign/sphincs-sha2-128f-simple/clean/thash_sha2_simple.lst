@@ -1,0 +1,93 @@
+ARM GAS  /tmp/ccFu3bEH.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"thash_sha2_simple.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash:
+  26              		@ args = 4, pretend = 0, frame = 40
+  27              		@ frame_needed = 1, uses_anonymous_args = 0
+  28 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+  29 0004 1501     		lsls	r5, r2, #4
+  30 0006 8BB0     		sub	sp, sp, #44
+  31 0008 05F11802 		add	r2, r5, #24
+  32 000c 00AF     		add	r7, sp, #0
+  33 000e 0446     		mov	r4, r0
+  34 0010 ADEB020D 		sub	sp, sp, r2
+  35 0014 0E46     		mov	r6, r1
+  36 0016 381D     		adds	r0, r7, #4
+  37 0018 03F12001 		add	r1, r3, #32
+  38 001c FFF7FEFF 		bl	sha256_inc_ctx_clone
+  39 0020 E846     		mov	r8, sp
+  40 0022 6946     		mov	r1, sp
+  41 0024 BA6C     		ldr	r2, [r7, #72]
+  42 0026 05F11609 		add	r9, r5, #22
+  43 002a 02F11403 		add	r3, r2, #20
+  44              	.L2:
+  45 002e 52F8040B 		ldr	r0, [r2], #4	@ unaligned
+  46 0032 9A42     		cmp	r2, r3
+  47 0034 41F8040B 		str	r0, [r1], #4	@ unaligned
+  48 0038 F9D1     		bne	.L2
+  49 003a 1388     		ldrh	r3, [r2]	@ unaligned
+  50 003c 08F11600 		add	r0, r8, #22
+  51 0040 2A46     		mov	r2, r5
+  52 0042 0B80     		strh	r3, [r1]	@ unaligned
+  53 0044 3146     		mov	r1, r6
+  54 0046 FFF7FEFF 		bl	memcpy
+  55 004a 4B46     		mov	r3, r9
+  56 004c 4246     		mov	r2, r8
+  57 004e 391D     		adds	r1, r7, #4
+  58 0050 07F10800 		add	r0, r7, #8
+ARM GAS  /tmp/ccFu3bEH.s 			page 2
+
+
+  59 0054 FFF7FEFF 		bl	sha256_inc_finalize
+  60 0058 2346     		mov	r3, r4
+  61 005a 07F10802 		add	r2, r7, #8
+  62 005e 07F11805 		add	r5, r7, #24
+  63              	.L3:
+  64 0062 1446     		mov	r4, r2
+  65 0064 03CC     		ldmia	r4!, {r0, r1}
+  66 0066 AC42     		cmp	r4, r5
+  67 0068 1860     		str	r0, [r3]	@ unaligned
+  68 006a 5960     		str	r1, [r3, #4]	@ unaligned
+  69 006c 2246     		mov	r2, r4
+  70 006e 03F10803 		add	r3, r3, #8
+  71 0072 F6D1     		bne	.L3
+  72 0074 2C37     		adds	r7, r7, #44
+  73 0076 BD46     		mov	sp, r7
+  74              		@ sp needed
+  75 0078 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+  77              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccFu3bEH.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 thash_sha2_simple.c
+     /tmp/ccFu3bEH.s:16     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash:0000000000000000 $t
+     /tmp/ccFu3bEH.s:25     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+
+UNDEFINED SYMBOLS
+sha256_inc_ctx_clone
+memcpy
+sha256_inc_finalize

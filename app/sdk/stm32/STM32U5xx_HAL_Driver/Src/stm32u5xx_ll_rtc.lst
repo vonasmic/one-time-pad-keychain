@@ -1,0 +1,774 @@
+ARM GAS  /tmp/ccskpl24.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_ll_rtc.c"
+  14              		.text
+  15              		.section	.text.LL_RTC_StructInit,"ax",%progbits
+  16              		.align	1
+  17              		.global	LL_RTC_StructInit
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	LL_RTC_StructInit:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 7F23     		movs	r3, #127
+  30 0002 0022     		movs	r2, #0
+  31 0004 C0E90023 		strd	r2, r3, [r0]
+  32 0008 FF23     		movs	r3, #255
+  33 000a 8360     		str	r3, [r0, #8]
+  34 000c 7047     		bx	lr
+  36              		.section	.text.LL_RTC_TIME_StructInit,"ax",%progbits
+  37              		.align	1
+  38              		.global	LL_RTC_TIME_StructInit
+  39              		.syntax unified
+  40              		.thumb
+  41              		.thumb_func
+  42              		.fpu fpv4-sp-d16
+  44              	LL_RTC_TIME_StructInit:
+  45              		@ args = 0, pretend = 0, frame = 0
+  46              		@ frame_needed = 0, uses_anonymous_args = 0
+  47              		@ link register save eliminated.
+  48 0000 0023     		movs	r3, #0
+  49 0002 0360     		str	r3, [r0]
+  50 0004 8380     		strh	r3, [r0, #4]	@ movhi
+  51 0006 8371     		strb	r3, [r0, #6]
+  52 0008 7047     		bx	lr
+  54              		.section	.text.LL_RTC_DATE_StructInit,"ax",%progbits
+  55              		.align	1
+  56              		.global	LL_RTC_DATE_StructInit
+  57              		.syntax unified
+  58              		.thumb
+  59              		.thumb_func
+  60              		.fpu fpv4-sp-d16
+  62              	LL_RTC_DATE_StructInit:
+ARM GAS  /tmp/ccskpl24.s 			page 2
+
+
+  63              		@ args = 0, pretend = 0, frame = 0
+  64              		@ frame_needed = 0, uses_anonymous_args = 0
+  65              		@ link register save eliminated.
+  66 0000 0123     		movs	r3, #1
+  67 0002 0370     		strb	r3, [r0]
+  68 0004 8370     		strb	r3, [r0, #2]
+  69 0006 4370     		strb	r3, [r0, #1]
+  70 0008 0023     		movs	r3, #0
+  71 000a C370     		strb	r3, [r0, #3]
+  72 000c 7047     		bx	lr
+  74              		.section	.text.LL_RTC_ALMA_Init,"ax",%progbits
+  75              		.align	1
+  76              		.global	LL_RTC_ALMA_Init
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+  80              		.fpu fpv4-sp-d16
+  82              	LL_RTC_ALMA_Init:
+  83              		@ args = 0, pretend = 0, frame = 0
+  84              		@ frame_needed = 0, uses_anonymous_args = 0
+  85 0000 8369     		ldr	r3, [r0, #24]
+  86 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+  87 0004 5B06     		lsls	r3, r3, #25
+  88 0006 5CBF     		itt	pl
+  89 0008 0023     		movpl	r3, #0
+  90 000a 1360     		strpl	r3, [r2]
+  91 000c CA23     		movs	r3, #202
+  92 000e 4362     		str	r3, [r0, #36]
+  93 0010 5323     		movs	r3, #83
+  94 0012 4362     		str	r3, [r0, #36]
+  95 0014 D368     		ldr	r3, [r2, #12]
+  96 0016 147C     		ldrb	r4, [r2, #16]	@ zero_extendqisi2
+  97 0018 1768     		ldr	r7, [r2]
+  98 001a 002B     		cmp	r3, #0
+  99 001c 55D1     		bne	.L8
+ 100 001e 036C     		ldr	r3, [r0, #64]
+ 101 0020 23F08043 		bic	r3, r3, #1073741824
+ 102 0024 0364     		str	r3, [r0, #64]
+ 103 0026 F1B1     		cbz	r1, .L9
+ 104 0028 016C     		ldr	r1, [r0, #64]
+ 105 002a 21F07C51 		bic	r1, r1, #1056964608
+ 106 002e 41EA0461 		orr	r1, r1, r4, lsl #24
+ 107 0032 0164     		str	r1, [r0, #64]
+ 108              	.L10:
+ 109 0034 9379     		ldrb	r3, [r2, #6]	@ zero_extendqisi2
+ 110 0036 1479     		ldrb	r4, [r2, #4]	@ zero_extendqisi2
+ 111 0038 016C     		ldr	r1, [r0, #64]
+ 112 003a 3B43     		orrs	r3, r3, r7
+ 113 003c 43EA0443 		orr	r3, r3, r4, lsl #16
+ 114 0040 5479     		ldrb	r4, [r2, #5]	@ zero_extendqisi2
+ 115 0042 21F07F11 		bic	r1, r1, #8323199
+ 116 0046 43EA0423 		orr	r3, r3, r4, lsl #8
+ 117 004a 21F4FE41 		bic	r1, r1, #32512
+ 118 004e 0B43     		orrs	r3, r3, r1
+ 119              	.L20:
+ 120 0050 0364     		str	r3, [r0, #64]
+ 121 0052 036C     		ldr	r3, [r0, #64]
+ARM GAS  /tmp/ccskpl24.s 			page 3
+
+
+ 122 0054 9268     		ldr	r2, [r2, #8]
+ 123 0056 03F07F33 		and	r3, r3, #2139062143
+ 124 005a 1343     		orrs	r3, r3, r2
+ 125 005c 0364     		str	r3, [r0, #64]
+ 126 005e FF23     		movs	r3, #255
+ 127 0060 4362     		str	r3, [r0, #36]
+ 128 0062 0020     		movs	r0, #0
+ 129 0064 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 130              	.L9:
+ 131 0066 0A21     		movs	r1, #10
+ 132 0068 B4FBF1F5 		udiv	r5, r4, r1
+ 133 006c 01FB1541 		mls	r1, r1, r5, r4
+ 134 0070 036C     		ldr	r3, [r0, #64]
+ 135 0072 41EA0511 		orr	r1, r1, r5, lsl #4
+ 136 0076 23F07C53 		bic	r3, r3, #1056964608
+ 137 007a 43EA0161 		orr	r1, r3, r1, lsl #24
+ 138 007e 0164     		str	r1, [r0, #64]
+ 139              	.L11:
+ 140 0080 0A25     		movs	r5, #10
+ 141 0082 9379     		ldrb	r3, [r2, #6]	@ zero_extendqisi2
+ 142 0084 066C     		ldr	r6, [r0, #64]
+ 143 0086 B3FBF5FC 		udiv	ip, r3, r5
+ 144 008a 05FB1C33 		mls	r3, r5, ip, r3
+ 145 008e 26F07F16 		bic	r6, r6, #8323199
+ 146 0092 1479     		ldrb	r4, [r2, #4]	@ zero_extendqisi2
+ 147 0094 43EA0C13 		orr	r3, r3, ip, lsl #4
+ 148 0098 26F4FE46 		bic	r6, r6, #32512
+ 149 009c 3E43     		orrs	r6, r6, r7
+ 150 009e DBB2     		uxtb	r3, r3
+ 151 00a0 3343     		orrs	r3, r3, r6
+ 152 00a2 B4FBF5F6 		udiv	r6, r4, r5
+ 153 00a6 05FB1644 		mls	r4, r5, r6, r4
+ 154 00aa 5179     		ldrb	r1, [r2, #5]	@ zero_extendqisi2
+ 155 00ac 44EA0614 		orr	r4, r4, r6, lsl #4
+ 156 00b0 E4B2     		uxtb	r4, r4
+ 157 00b2 43EA0443 		orr	r3, r3, r4, lsl #16
+ 158 00b6 B1FBF5F4 		udiv	r4, r1, r5
+ 159 00ba 05FB1411 		mls	r1, r5, r4, r1
+ 160 00be 41EA0411 		orr	r1, r1, r4, lsl #4
+ 161 00c2 C9B2     		uxtb	r1, r1
+ 162 00c4 43EA0123 		orr	r3, r3, r1, lsl #8
+ 163 00c8 C2E7     		b	.L20
+ 164              	.L8:
+ 165 00ca 036C     		ldr	r3, [r0, #64]
+ 166 00cc 43F08043 		orr	r3, r3, #1073741824
+ 167 00d0 0364     		str	r3, [r0, #64]
+ 168 00d2 036C     		ldr	r3, [r0, #64]
+ 169 00d4 23F07063 		bic	r3, r3, #251658240
+ 170 00d8 43EA0463 		orr	r3, r3, r4, lsl #24
+ 171 00dc 0364     		str	r3, [r0, #64]
+ 172 00de 0029     		cmp	r1, #0
+ 173 00e0 CED0     		beq	.L11
+ 174 00e2 A7E7     		b	.L10
+ 176              		.section	.text.LL_RTC_ALMB_Init,"ax",%progbits
+ 177              		.align	1
+ 178              		.global	LL_RTC_ALMB_Init
+ 179              		.syntax unified
+ARM GAS  /tmp/ccskpl24.s 			page 4
+
+
+ 180              		.thumb
+ 181              		.thumb_func
+ 182              		.fpu fpv4-sp-d16
+ 184              	LL_RTC_ALMB_Init:
+ 185              		@ args = 0, pretend = 0, frame = 0
+ 186              		@ frame_needed = 0, uses_anonymous_args = 0
+ 187 0000 8369     		ldr	r3, [r0, #24]
+ 188 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+ 189 0004 5B06     		lsls	r3, r3, #25
+ 190 0006 5CBF     		itt	pl
+ 191 0008 0023     		movpl	r3, #0
+ 192 000a 1360     		strpl	r3, [r2]
+ 193 000c CA23     		movs	r3, #202
+ 194 000e 4362     		str	r3, [r0, #36]
+ 195 0010 5323     		movs	r3, #83
+ 196 0012 4362     		str	r3, [r0, #36]
+ 197 0014 D368     		ldr	r3, [r2, #12]
+ 198 0016 147C     		ldrb	r4, [r2, #16]	@ zero_extendqisi2
+ 199 0018 1768     		ldr	r7, [r2]
+ 200 001a 002B     		cmp	r3, #0
+ 201 001c 55D1     		bne	.L25
+ 202 001e 836C     		ldr	r3, [r0, #72]
+ 203 0020 23F08043 		bic	r3, r3, #1073741824
+ 204 0024 8364     		str	r3, [r0, #72]
+ 205 0026 F1B1     		cbz	r1, .L26
+ 206 0028 816C     		ldr	r1, [r0, #72]
+ 207 002a 21F07C51 		bic	r1, r1, #1056964608
+ 208 002e 41EA0461 		orr	r1, r1, r4, lsl #24
+ 209 0032 8164     		str	r1, [r0, #72]
+ 210              	.L27:
+ 211 0034 9379     		ldrb	r3, [r2, #6]	@ zero_extendqisi2
+ 212 0036 1479     		ldrb	r4, [r2, #4]	@ zero_extendqisi2
+ 213 0038 816C     		ldr	r1, [r0, #72]
+ 214 003a 3B43     		orrs	r3, r3, r7
+ 215 003c 43EA0443 		orr	r3, r3, r4, lsl #16
+ 216 0040 5479     		ldrb	r4, [r2, #5]	@ zero_extendqisi2
+ 217 0042 21F07F11 		bic	r1, r1, #8323199
+ 218 0046 43EA0423 		orr	r3, r3, r4, lsl #8
+ 219 004a 21F4FE41 		bic	r1, r1, #32512
+ 220 004e 0B43     		orrs	r3, r3, r1
+ 221              	.L37:
+ 222 0050 8364     		str	r3, [r0, #72]
+ 223 0052 836C     		ldr	r3, [r0, #72]
+ 224 0054 9268     		ldr	r2, [r2, #8]
+ 225 0056 03F07F33 		and	r3, r3, #2139062143
+ 226 005a 1343     		orrs	r3, r3, r2
+ 227 005c 8364     		str	r3, [r0, #72]
+ 228 005e FF23     		movs	r3, #255
+ 229 0060 4362     		str	r3, [r0, #36]
+ 230 0062 0020     		movs	r0, #0
+ 231 0064 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 232              	.L26:
+ 233 0066 0A21     		movs	r1, #10
+ 234 0068 B4FBF1F5 		udiv	r5, r4, r1
+ 235 006c 01FB1541 		mls	r1, r1, r5, r4
+ 236 0070 836C     		ldr	r3, [r0, #72]
+ 237 0072 41EA0511 		orr	r1, r1, r5, lsl #4
+ARM GAS  /tmp/ccskpl24.s 			page 5
+
+
+ 238 0076 23F07C53 		bic	r3, r3, #1056964608
+ 239 007a 43EA0161 		orr	r1, r3, r1, lsl #24
+ 240 007e 8164     		str	r1, [r0, #72]
+ 241              	.L28:
+ 242 0080 0A25     		movs	r5, #10
+ 243 0082 9379     		ldrb	r3, [r2, #6]	@ zero_extendqisi2
+ 244 0084 866C     		ldr	r6, [r0, #72]
+ 245 0086 B3FBF5FC 		udiv	ip, r3, r5
+ 246 008a 05FB1C33 		mls	r3, r5, ip, r3
+ 247 008e 26F07F16 		bic	r6, r6, #8323199
+ 248 0092 1479     		ldrb	r4, [r2, #4]	@ zero_extendqisi2
+ 249 0094 43EA0C13 		orr	r3, r3, ip, lsl #4
+ 250 0098 26F4FE46 		bic	r6, r6, #32512
+ 251 009c 3E43     		orrs	r6, r6, r7
+ 252 009e DBB2     		uxtb	r3, r3
+ 253 00a0 3343     		orrs	r3, r3, r6
+ 254 00a2 B4FBF5F6 		udiv	r6, r4, r5
+ 255 00a6 05FB1644 		mls	r4, r5, r6, r4
+ 256 00aa 5179     		ldrb	r1, [r2, #5]	@ zero_extendqisi2
+ 257 00ac 44EA0614 		orr	r4, r4, r6, lsl #4
+ 258 00b0 E4B2     		uxtb	r4, r4
+ 259 00b2 43EA0443 		orr	r3, r3, r4, lsl #16
+ 260 00b6 B1FBF5F4 		udiv	r4, r1, r5
+ 261 00ba 05FB1411 		mls	r1, r5, r4, r1
+ 262 00be 41EA0411 		orr	r1, r1, r4, lsl #4
+ 263 00c2 C9B2     		uxtb	r1, r1
+ 264 00c4 43EA0123 		orr	r3, r3, r1, lsl #8
+ 265 00c8 C2E7     		b	.L37
+ 266              	.L25:
+ 267 00ca 836C     		ldr	r3, [r0, #72]
+ 268 00cc 43F08043 		orr	r3, r3, #1073741824
+ 269 00d0 8364     		str	r3, [r0, #72]
+ 270 00d2 836C     		ldr	r3, [r0, #72]
+ 271 00d4 23F07063 		bic	r3, r3, #251658240
+ 272 00d8 43EA0463 		orr	r3, r3, r4, lsl #24
+ 273 00dc 8364     		str	r3, [r0, #72]
+ 274 00de 0029     		cmp	r1, #0
+ 275 00e0 CED0     		beq	.L28
+ 276 00e2 A7E7     		b	.L27
+ 278              		.section	.text.LL_RTC_ALMA_StructInit,"ax",%progbits
+ 279              		.align	1
+ 280              		.global	LL_RTC_ALMA_StructInit
+ 281              		.syntax unified
+ 282              		.thumb
+ 283              		.thumb_func
+ 284              		.fpu fpv4-sp-d16
+ 286              	LL_RTC_ALMA_StructInit:
+ 287              		@ args = 0, pretend = 0, frame = 0
+ 288              		@ frame_needed = 0, uses_anonymous_args = 0
+ 289              		@ link register save eliminated.
+ 290 0000 0023     		movs	r3, #0
+ 291 0002 0122     		movs	r2, #1
+ 292 0004 0360     		str	r3, [r0]
+ 293 0006 8380     		strh	r3, [r0, #4]	@ movhi
+ 294 0008 8371     		strb	r3, [r0, #6]
+ 295 000a C360     		str	r3, [r0, #12]
+ 296 000c 0274     		strb	r2, [r0, #16]
+ARM GAS  /tmp/ccskpl24.s 			page 6
+
+
+ 297 000e 8360     		str	r3, [r0, #8]
+ 298 0010 7047     		bx	lr
+ 300              		.section	.text.LL_RTC_ALMB_StructInit,"ax",%progbits
+ 301              		.align	1
+ 302              		.global	LL_RTC_ALMB_StructInit
+ 303              		.syntax unified
+ 304              		.thumb
+ 305              		.thumb_func
+ 306              		.fpu fpv4-sp-d16
+ 308              	LL_RTC_ALMB_StructInit:
+ 309              		@ args = 0, pretend = 0, frame = 0
+ 310              		@ frame_needed = 0, uses_anonymous_args = 0
+ 311              		@ link register save eliminated.
+ 312 0000 FFF7FEBF 		b	LL_RTC_ALMA_StructInit
+ 314              		.section	.text.LL_RTC_EnterInitMode,"ax",%progbits
+ 315              		.align	1
+ 316              		.global	LL_RTC_EnterInitMode
+ 317              		.syntax unified
+ 318              		.thumb
+ 319              		.thumb_func
+ 320              		.fpu fpv4-sp-d16
+ 322              	LL_RTC_EnterInitMode:
+ 323              		@ args = 0, pretend = 0, frame = 8
+ 324              		@ frame_needed = 0, uses_anonymous_args = 0
+ 325 0000 4FF47A73 		mov	r3, #1000
+ 326 0004 13B5     		push	{r0, r1, r4, lr}
+ 327 0006 0193     		str	r3, [sp, #4]
+ 328 0008 C368     		ldr	r3, [r0, #12]
+ 329 000a 0246     		mov	r2, r0
+ 330 000c 13F04003 		ands	r3, r3, #64
+ 331 0010 1DD1     		bne	.L46
+ 332 0012 C168     		ldr	r1, [r0, #12]
+ 333 0014 4FF0E024 		mov	r4, #-536813568
+ 334 0018 41F08001 		orr	r1, r1, #128
+ 335 001c C160     		str	r1, [r0, #12]
+ 336 001e C168     		ldr	r1, [r0, #12]
+ 337 0020 1846     		mov	r0, r3
+ 338 0022 C1F38011 		ubfx	r1, r1, #6, #1
+ 339              	.L42:
+ 340 0026 019B     		ldr	r3, [sp, #4]
+ 341 0028 03B1     		cbz	r3, .L41
+ 342 002a 09B1     		cbz	r1, .L45
+ 343              	.L41:
+ 344 002c 02B0     		add	sp, sp, #8
+ 345              		@ sp needed
+ 346 002e 10BD     		pop	{r4, pc}
+ 347              	.L45:
+ 348 0030 2369     		ldr	r3, [r4, #16]
+ 349 0032 DB03     		lsls	r3, r3, #15
+ 350 0034 42BF     		ittt	mi
+ 351 0036 019B     		ldrmi	r3, [sp, #4]
+ 352 0038 03F1FF33 		addmi	r3, r3, #-1
+ 353 003c 0193     		strmi	r3, [sp, #4]
+ 354 003e D168     		ldr	r1, [r2, #12]
+ 355 0040 019B     		ldr	r3, [sp, #4]
+ 356 0042 C1F38011 		ubfx	r1, r1, #6, #1
+ 357 0046 002B     		cmp	r3, #0
+ARM GAS  /tmp/ccskpl24.s 			page 7
+
+
+ 358 0048 08BF     		it	eq
+ 359 004a 0120     		moveq	r0, #1
+ 360 004c EBE7     		b	.L42
+ 361              	.L46:
+ 362 004e 0020     		movs	r0, #0
+ 363 0050 ECE7     		b	.L41
+ 365              		.section	.text.LL_RTC_Init,"ax",%progbits
+ 366              		.align	1
+ 367              		.global	LL_RTC_Init
+ 368              		.syntax unified
+ 369              		.thumb
+ 370              		.thumb_func
+ 371              		.fpu fpv4-sp-d16
+ 373              	LL_RTC_Init:
+ 374              		@ args = 0, pretend = 0, frame = 0
+ 375              		@ frame_needed = 0, uses_anonymous_args = 0
+ 376 0000 38B5     		push	{r3, r4, r5, lr}
+ 377 0002 CA23     		movs	r3, #202
+ 378 0004 4362     		str	r3, [r0, #36]
+ 379 0006 5323     		movs	r3, #83
+ 380 0008 4362     		str	r3, [r0, #36]
+ 381 000a 0446     		mov	r4, r0
+ 382 000c 0D46     		mov	r5, r1
+ 383 000e FFF7FEFF 		bl	LL_RTC_EnterInitMode
+ 384 0012 0128     		cmp	r0, #1
+ 385 0014 19D0     		beq	.L54
+ 386 0016 0020     		movs	r0, #0
+ 387 0018 A369     		ldr	r3, [r4, #24]
+ 388 001a 2A68     		ldr	r2, [r5]
+ 389 001c 23F04003 		bic	r3, r3, #64
+ 390 0020 1343     		orrs	r3, r3, r2
+ 391 0022 A361     		str	r3, [r4, #24]
+ 392 0024 2369     		ldr	r3, [r4, #16]
+ 393 0026 AA68     		ldr	r2, [r5, #8]
+ 394 0028 23F4FF43 		bic	r3, r3, #32640
+ 395 002c 23F07F03 		bic	r3, r3, #127
+ 396 0030 1343     		orrs	r3, r3, r2
+ 397 0032 2361     		str	r3, [r4, #16]
+ 398 0034 2369     		ldr	r3, [r4, #16]
+ 399 0036 6A68     		ldr	r2, [r5, #4]
+ 400 0038 23F4FE03 		bic	r3, r3, #8323072
+ 401 003c 43EA0243 		orr	r3, r3, r2, lsl #16
+ 402 0040 2361     		str	r3, [r4, #16]
+ 403 0042 E368     		ldr	r3, [r4, #12]
+ 404 0044 23F08003 		bic	r3, r3, #128
+ 405 0048 E360     		str	r3, [r4, #12]
+ 406              	.L54:
+ 407 004a FF23     		movs	r3, #255
+ 408 004c 6362     		str	r3, [r4, #36]
+ 409 004e 38BD     		pop	{r3, r4, r5, pc}
+ 411              		.section	.text.LL_RTC_ExitInitMode,"ax",%progbits
+ 412              		.align	1
+ 413              		.global	LL_RTC_ExitInitMode
+ 414              		.syntax unified
+ 415              		.thumb
+ 416              		.thumb_func
+ 417              		.fpu fpv4-sp-d16
+ARM GAS  /tmp/ccskpl24.s 			page 8
+
+
+ 419              	LL_RTC_ExitInitMode:
+ 420              		@ args = 0, pretend = 0, frame = 0
+ 421              		@ frame_needed = 0, uses_anonymous_args = 0
+ 422              		@ link register save eliminated.
+ 423 0000 C368     		ldr	r3, [r0, #12]
+ 424 0002 23F08003 		bic	r3, r3, #128
+ 425 0006 C360     		str	r3, [r0, #12]
+ 426 0008 0020     		movs	r0, #0
+ 427 000a 7047     		bx	lr
+ 429              		.section	.text.LL_RTC_WaitForSynchro,"ax",%progbits
+ 430              		.align	1
+ 431              		.global	LL_RTC_WaitForSynchro
+ 432              		.syntax unified
+ 433              		.thumb
+ 434              		.thumb_func
+ 435              		.fpu fpv4-sp-d16
+ 437              	LL_RTC_WaitForSynchro:
+ 438              		@ args = 0, pretend = 0, frame = 8
+ 439              		@ frame_needed = 0, uses_anonymous_args = 0
+ 440 0000 4FF47A73 		mov	r3, #1000
+ 441 0004 13B5     		push	{r0, r1, r4, lr}
+ 442 0006 0193     		str	r3, [sp, #4]
+ 443 0008 C368     		ldr	r3, [r0, #12]
+ 444 000a 4FF0E021 		mov	r1, #-536813568
+ 445 000e 03F08003 		and	r3, r3, #128
+ 446 0012 63F0A003 		orn	r3, r3, #160
+ 447 0016 C360     		str	r3, [r0, #12]
+ 448 0018 0023     		movs	r3, #0
+ 449 001a C268     		ldr	r2, [r0, #12]
+ 450 001c C2F34012 		ubfx	r2, r2, #5, #1
+ 451              	.L60:
+ 452 0020 019C     		ldr	r4, [sp, #4]
+ 453 0022 7CB9     		cbnz	r4, .L63
+ 454              	.L67:
+ 455 0024 012B     		cmp	r3, #1
+ 456 0026 0AD0     		beq	.L65
+ 457 0028 4FF47A72 		mov	r2, #1000
+ 458 002c 4FF0E021 		mov	r1, #-536813568
+ 459 0030 0192     		str	r2, [sp, #4]
+ 460 0032 C268     		ldr	r2, [r0, #12]
+ 461 0034 C2F34012 		ubfx	r2, r2, #5, #1
+ 462              	.L68:
+ 463 0038 019C     		ldr	r4, [sp, #4]
+ 464 003a 04B1     		cbz	r4, .L65
+ 465 003c 9AB1     		cbz	r2, .L71
+ 466              	.L65:
+ 467 003e 1846     		mov	r0, r3
+ 468 0040 02B0     		add	sp, sp, #8
+ 469              		@ sp needed
+ 470 0042 10BD     		pop	{r4, pc}
+ 471              	.L63:
+ 472 0044 002A     		cmp	r2, #0
+ 473 0046 EDD0     		beq	.L67
+ 474 0048 0A69     		ldr	r2, [r1, #16]
+ 475 004a D403     		lsls	r4, r2, #15
+ 476 004c 42BF     		ittt	mi
+ 477 004e 019A     		ldrmi	r2, [sp, #4]
+ARM GAS  /tmp/ccskpl24.s 			page 9
+
+
+ 478 0050 02F1FF32 		addmi	r2, r2, #-1
+ 479 0054 0192     		strmi	r2, [sp, #4]
+ 480 0056 C268     		ldr	r2, [r0, #12]
+ 481 0058 019C     		ldr	r4, [sp, #4]
+ 482 005a C2F34012 		ubfx	r2, r2, #5, #1
+ 483 005e 002C     		cmp	r4, #0
+ 484 0060 08BF     		it	eq
+ 485 0062 0123     		moveq	r3, #1
+ 486 0064 DCE7     		b	.L60
+ 487              	.L71:
+ 488 0066 0A69     		ldr	r2, [r1, #16]
+ 489 0068 D203     		lsls	r2, r2, #15
+ 490 006a 42BF     		ittt	mi
+ 491 006c 019A     		ldrmi	r2, [sp, #4]
+ 492 006e 02F1FF32 		addmi	r2, r2, #-1
+ 493 0072 0192     		strmi	r2, [sp, #4]
+ 494 0074 C268     		ldr	r2, [r0, #12]
+ 495 0076 019C     		ldr	r4, [sp, #4]
+ 496 0078 C2F34012 		ubfx	r2, r2, #5, #1
+ 497 007c 002C     		cmp	r4, #0
+ 498 007e 08BF     		it	eq
+ 499 0080 0123     		moveq	r3, #1
+ 500 0082 D9E7     		b	.L68
+ 502              		.section	.text.LL_RTC_DeInit,"ax",%progbits
+ 503              		.align	1
+ 504              		.global	LL_RTC_DeInit
+ 505              		.syntax unified
+ 506              		.thumb
+ 507              		.thumb_func
+ 508              		.fpu fpv4-sp-d16
+ 510              	LL_RTC_DeInit:
+ 511              		@ args = 0, pretend = 0, frame = 0
+ 512              		@ frame_needed = 0, uses_anonymous_args = 0
+ 513 0000 CA23     		movs	r3, #202
+ 514 0002 10B5     		push	{r4, lr}
+ 515 0004 4362     		str	r3, [r0, #36]
+ 516 0006 5323     		movs	r3, #83
+ 517 0008 4362     		str	r3, [r0, #36]
+ 518 000a 0446     		mov	r4, r0
+ 519 000c FFF7FEFF 		bl	LL_RTC_EnterInitMode
+ 520 0010 0128     		cmp	r0, #1
+ 521 0012 17D0     		beq	.L82
+ 522 0014 0023     		movs	r3, #0
+ 523 0016 42F20112 		movw	r2, #8449
+ 524 001a 2360     		str	r3, [r4]
+ 525 001c 6260     		str	r2, [r4, #4]
+ 526 001e 4FF6FF72 		movw	r2, #65535
+ 527 0022 A361     		str	r3, [r4, #24]
+ 528 0024 6261     		str	r2, [r4, #20]
+ 529 0026 0E4A     		ldr	r2, .L86
+ 530 0028 2046     		mov	r0, r4
+ 531 002a 2261     		str	r2, [r4, #16]
+ 532 002c 2364     		str	r3, [r4, #64]
+ 533 002e A364     		str	r3, [r4, #72]
+ 534 0030 E362     		str	r3, [r4, #44]
+ 535 0032 A362     		str	r3, [r4, #40]
+ 536 0034 6364     		str	r3, [r4, #68]
+ARM GAS  /tmp/ccskpl24.s 			page 10
+
+
+ 537 0036 E364     		str	r3, [r4, #76]
+ 538 0038 E368     		ldr	r3, [r4, #12]
+ 539 003a 23F08003 		bic	r3, r3, #128
+ 540 003e E360     		str	r3, [r4, #12]
+ 541 0040 FFF7FEFF 		bl	LL_RTC_WaitForSynchro
+ 542              	.L82:
+ 543 0044 FF23     		movs	r3, #255
+ 544 0046 0022     		movs	r2, #0
+ 545 0048 4FF0FF31 		mov	r1, #-1
+ 546 004c 6362     		str	r3, [r4, #36]
+ 547 004e 054B     		ldr	r3, .L86+4
+ 548 0050 1A60     		str	r2, [r3]
+ 549 0052 5A60     		str	r2, [r3, #4]
+ 550 0054 DA60     		str	r2, [r3, #12]
+ 551 0056 DA62     		str	r2, [r3, #44]
+ 552 0058 D963     		str	r1, [r3, #60]
+ 553 005a 5A65     		str	r2, [r3, #84]
+ 554 005c 10BD     		pop	{r4, pc}
+ 555              	.L87:
+ 556 005e 00BF     		.align	2
+ 557              	.L86:
+ 558 0060 FF007F00 		.word	8323327
+ 559 0064 007C0046 		.word	1174436864
+ 561              		.section	.text.LL_RTC_TIME_Init,"ax",%progbits
+ 562              		.align	1
+ 563              		.global	LL_RTC_TIME_Init
+ 564              		.syntax unified
+ 565              		.thumb
+ 566              		.thumb_func
+ 567              		.fpu fpv4-sp-d16
+ 569              	LL_RTC_TIME_Init:
+ 570              		@ args = 0, pretend = 0, frame = 0
+ 571              		@ frame_needed = 0, uses_anonymous_args = 0
+ 572 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 573 0002 8369     		ldr	r3, [r0, #24]
+ 574 0004 1646     		mov	r6, r2
+ 575 0006 5A06     		lsls	r2, r3, #25
+ 576 0008 5CBF     		itt	pl
+ 577 000a 0023     		movpl	r3, #0
+ 578 000c 3360     		strpl	r3, [r6]
+ 579 000e CA23     		movs	r3, #202
+ 580 0010 4362     		str	r3, [r0, #36]
+ 581 0012 5323     		movs	r3, #83
+ 582 0014 4362     		str	r3, [r0, #36]
+ 583 0016 0446     		mov	r4, r0
+ 584 0018 0F46     		mov	r7, r1
+ 585 001a FFF7FEFF 		bl	LL_RTC_EnterInitMode
+ 586 001e 0128     		cmp	r0, #1
+ 587 0020 1CD0     		beq	.L92
+ 588 0022 D6F800C0 		ldr	ip, [r6]
+ 589 0026 3579     		ldrb	r5, [r6, #4]	@ zero_extendqisi2
+ 590 0028 7079     		ldrb	r0, [r6, #5]	@ zero_extendqisi2
+ 591 002a B379     		ldrb	r3, [r6, #6]	@ zero_extendqisi2
+ 592 002c 2268     		ldr	r2, [r4]
+ 593 002e C7B1     		cbz	r7, .L93
+ 594 0030 43EA0C03 		orr	r3, r3, ip
+ 595 0034 43EA0543 		orr	r3, r3, r5, lsl #16
+ARM GAS  /tmp/ccskpl24.s 			page 11
+
+
+ 596 0038 22F07F12 		bic	r2, r2, #8323199
+ 597 003c 43EA0023 		orr	r3, r3, r0, lsl #8
+ 598 0040 22F4FE42 		bic	r2, r2, #32512
+ 599 0044 1343     		orrs	r3, r3, r2
+ 600              	.L103:
+ 601 0046 2360     		str	r3, [r4]
+ 602 0048 E368     		ldr	r3, [r4, #12]
+ 603 004a 23F08003 		bic	r3, r3, #128
+ 604 004e E360     		str	r3, [r4, #12]
+ 605 0050 A369     		ldr	r3, [r4, #24]
+ 606 0052 9B06     		lsls	r3, r3, #26
+ 607 0054 27D4     		bmi	.L95
+ 608 0056 2046     		mov	r0, r4
+ 609 0058 FFF7FEFF 		bl	LL_RTC_WaitForSynchro
+ 610              	.L92:
+ 611 005c FF23     		movs	r3, #255
+ 612 005e 6362     		str	r3, [r4, #36]
+ 613 0060 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 614              	.L93:
+ 615 0062 0A21     		movs	r1, #10
+ 616 0064 B3FBF1F6 		udiv	r6, r3, r1
+ 617 0068 01FB1633 		mls	r3, r1, r6, r3
+ 618 006c 22F07F12 		bic	r2, r2, #8323199
+ 619 0070 43EA0613 		orr	r3, r3, r6, lsl #4
+ 620 0074 22F4FE42 		bic	r2, r2, #32512
+ 621 0078 42EA0C02 		orr	r2, r2, ip
+ 622 007c DBB2     		uxtb	r3, r3
+ 623 007e 1343     		orrs	r3, r3, r2
+ 624 0080 B5FBF1F2 		udiv	r2, r5, r1
+ 625 0084 01FB1255 		mls	r5, r1, r2, r5
+ 626 0088 45EA0215 		orr	r5, r5, r2, lsl #4
+ 627 008c B0FBF1F2 		udiv	r2, r0, r1
+ 628 0090 01FB1200 		mls	r0, r1, r2, r0
+ 629 0094 EDB2     		uxtb	r5, r5
+ 630 0096 40EA0210 		orr	r0, r0, r2, lsl #4
+ 631 009a 43EA0543 		orr	r3, r3, r5, lsl #16
+ 632 009e C0B2     		uxtb	r0, r0
+ 633 00a0 43EA0023 		orr	r3, r3, r0, lsl #8
+ 634 00a4 CFE7     		b	.L103
+ 635              	.L95:
+ 636 00a6 0020     		movs	r0, #0
+ 637 00a8 D8E7     		b	.L92
+ 639              		.section	.text.LL_RTC_DATE_Init,"ax",%progbits
+ 640              		.align	1
+ 641              		.global	LL_RTC_DATE_Init
+ 642              		.syntax unified
+ 643              		.thumb
+ 644              		.thumb_func
+ 645              		.fpu fpv4-sp-d16
+ 647              	LL_RTC_DATE_Init:
+ 648              		@ args = 0, pretend = 0, frame = 0
+ 649              		@ frame_needed = 0, uses_anonymous_args = 0
+ 650 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 651 0002 0446     		mov	r4, r0
+ 652 0004 1646     		mov	r6, r2
+ 653 0006 0F46     		mov	r7, r1
+ 654 0008 31B9     		cbnz	r1, .L105
+ARM GAS  /tmp/ccskpl24.s 			page 12
+
+
+ 655 000a 5378     		ldrb	r3, [r2, #1]	@ zero_extendqisi2
+ 656 000c DA06     		lsls	r2, r3, #27
+ 657 000e 42BF     		ittt	mi
+ 658 0010 23F01003 		bicmi	r3, r3, #16
+ 659 0014 0A33     		addmi	r3, r3, #10
+ 660 0016 7370     		strbmi	r3, [r6, #1]
+ 661              	.L105:
+ 662 0018 CA23     		movs	r3, #202
+ 663 001a 6362     		str	r3, [r4, #36]
+ 664 001c 5323     		movs	r3, #83
+ 665 001e 2046     		mov	r0, r4
+ 666 0020 6362     		str	r3, [r4, #36]
+ 667 0022 FFF7FEFF 		bl	LL_RTC_EnterInitMode
+ 668 0026 0128     		cmp	r0, #1
+ 669 0028 1BD0     		beq	.L106
+ 670 002a B378     		ldrb	r3, [r6, #2]	@ zero_extendqisi2
+ 671 002c 7078     		ldrb	r0, [r6, #1]	@ zero_extendqisi2
+ 672 002e F578     		ldrb	r5, [r6, #3]	@ zero_extendqisi2
+ 673 0030 3678     		ldrb	r6, [r6]	@ zero_extendqisi2
+ 674 0032 4FEA463C 		lsl	ip, r6, #13
+ 675 0036 BFB1     		cbz	r7, .L107
+ 676 0038 6168     		ldr	r1, [r4, #4]
+ 677 003a 1C4A     		ldr	r2, .L117
+ 678 003c 0A40     		ands	r2, r2, r1
+ 679 003e 1343     		orrs	r3, r3, r2
+ 680 0040 43EA0C03 		orr	r3, r3, ip
+ 681 0044 43EA0543 		orr	r3, r3, r5, lsl #16
+ 682              	.L116:
+ 683 0048 43EA0023 		orr	r3, r3, r0, lsl #8
+ 684 004c 6360     		str	r3, [r4, #4]
+ 685 004e E368     		ldr	r3, [r4, #12]
+ 686 0050 23F08003 		bic	r3, r3, #128
+ 687 0054 E360     		str	r3, [r4, #12]
+ 688 0056 A369     		ldr	r3, [r4, #24]
+ 689 0058 9B06     		lsls	r3, r3, #26
+ 690 005a 24D4     		bmi	.L109
+ 691 005c 2046     		mov	r0, r4
+ 692 005e FFF7FEFF 		bl	LL_RTC_WaitForSynchro
+ 693              	.L106:
+ 694 0062 FF23     		movs	r3, #255
+ 695 0064 6362     		str	r3, [r4, #36]
+ 696 0066 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 697              	.L107:
+ 698 0068 0A21     		movs	r1, #10
+ 699 006a B3FBF1F2 		udiv	r2, r3, r1
+ 700 006e 01FB1233 		mls	r3, r1, r2, r3
+ 701 0072 43EA0213 		orr	r3, r3, r2, lsl #4
+ 702 0076 B5FBF1F2 		udiv	r2, r5, r1
+ 703 007a 01FB1255 		mls	r5, r1, r2, r5
+ 704 007e 45EA0215 		orr	r5, r5, r2, lsl #4
+ 705 0082 B0FBF1F2 		udiv	r2, r0, r1
+ 706 0086 6768     		ldr	r7, [r4, #4]
+ 707 0088 01FB1200 		mls	r0, r1, r2, r0
+ 708 008c 074E     		ldr	r6, .L117
+ 709 008e DBB2     		uxtb	r3, r3
+ 710 0090 3E40     		ands	r6, r6, r7
+ 711 0092 46EA0C06 		orr	r6, r6, ip
+ARM GAS  /tmp/ccskpl24.s 			page 13
+
+
+ 712 0096 3343     		orrs	r3, r3, r6
+ 713 0098 EDB2     		uxtb	r5, r5
+ 714 009a 40EA0210 		orr	r0, r0, r2, lsl #4
+ 715 009e 43EA0543 		orr	r3, r3, r5, lsl #16
+ 716 00a2 C0B2     		uxtb	r0, r0
+ 717 00a4 D0E7     		b	.L116
+ 718              	.L109:
+ 719 00a6 0020     		movs	r0, #0
+ 720 00a8 DBE7     		b	.L106
+ 721              	.L118:
+ 722 00aa 00BF     		.align	2
+ 723              	.L117:
+ 724 00ac C00000FF 		.word	-16777024
+ 726              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccskpl24.s 			page 14
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_ll_rtc.c
+     /tmp/ccskpl24.s:16     .text.LL_RTC_StructInit:0000000000000000 $t
+     /tmp/ccskpl24.s:25     .text.LL_RTC_StructInit:0000000000000000 LL_RTC_StructInit
+     /tmp/ccskpl24.s:37     .text.LL_RTC_TIME_StructInit:0000000000000000 $t
+     /tmp/ccskpl24.s:44     .text.LL_RTC_TIME_StructInit:0000000000000000 LL_RTC_TIME_StructInit
+     /tmp/ccskpl24.s:55     .text.LL_RTC_DATE_StructInit:0000000000000000 $t
+     /tmp/ccskpl24.s:62     .text.LL_RTC_DATE_StructInit:0000000000000000 LL_RTC_DATE_StructInit
+     /tmp/ccskpl24.s:75     .text.LL_RTC_ALMA_Init:0000000000000000 $t
+     /tmp/ccskpl24.s:82     .text.LL_RTC_ALMA_Init:0000000000000000 LL_RTC_ALMA_Init
+     /tmp/ccskpl24.s:177    .text.LL_RTC_ALMB_Init:0000000000000000 $t
+     /tmp/ccskpl24.s:184    .text.LL_RTC_ALMB_Init:0000000000000000 LL_RTC_ALMB_Init
+     /tmp/ccskpl24.s:279    .text.LL_RTC_ALMA_StructInit:0000000000000000 $t
+     /tmp/ccskpl24.s:286    .text.LL_RTC_ALMA_StructInit:0000000000000000 LL_RTC_ALMA_StructInit
+     /tmp/ccskpl24.s:301    .text.LL_RTC_ALMB_StructInit:0000000000000000 $t
+     /tmp/ccskpl24.s:308    .text.LL_RTC_ALMB_StructInit:0000000000000000 LL_RTC_ALMB_StructInit
+     /tmp/ccskpl24.s:315    .text.LL_RTC_EnterInitMode:0000000000000000 $t
+     /tmp/ccskpl24.s:322    .text.LL_RTC_EnterInitMode:0000000000000000 LL_RTC_EnterInitMode
+     /tmp/ccskpl24.s:366    .text.LL_RTC_Init:0000000000000000 $t
+     /tmp/ccskpl24.s:373    .text.LL_RTC_Init:0000000000000000 LL_RTC_Init
+     /tmp/ccskpl24.s:412    .text.LL_RTC_ExitInitMode:0000000000000000 $t
+     /tmp/ccskpl24.s:419    .text.LL_RTC_ExitInitMode:0000000000000000 LL_RTC_ExitInitMode
+     /tmp/ccskpl24.s:430    .text.LL_RTC_WaitForSynchro:0000000000000000 $t
+     /tmp/ccskpl24.s:437    .text.LL_RTC_WaitForSynchro:0000000000000000 LL_RTC_WaitForSynchro
+     /tmp/ccskpl24.s:503    .text.LL_RTC_DeInit:0000000000000000 $t
+     /tmp/ccskpl24.s:510    .text.LL_RTC_DeInit:0000000000000000 LL_RTC_DeInit
+     /tmp/ccskpl24.s:558    .text.LL_RTC_DeInit:0000000000000060 $d
+     /tmp/ccskpl24.s:562    .text.LL_RTC_TIME_Init:0000000000000000 $t
+     /tmp/ccskpl24.s:569    .text.LL_RTC_TIME_Init:0000000000000000 LL_RTC_TIME_Init
+     /tmp/ccskpl24.s:640    .text.LL_RTC_DATE_Init:0000000000000000 $t
+     /tmp/ccskpl24.s:647    .text.LL_RTC_DATE_Init:0000000000000000 LL_RTC_DATE_Init
+     /tmp/ccskpl24.s:724    .text.LL_RTC_DATE_Init:00000000000000ac $d
+
+NO UNDEFINED SYMBOLS

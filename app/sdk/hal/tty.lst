@@ -1,0 +1,419 @@
+ARM GAS  /tmp/ccHRr0Xq.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"tty.c"
+  14              		.text
+  15              		.section	.text._usb_send_data,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	_usb_send_data:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 70B5     		push	{r4, r5, r6, lr}
+  28 0002 0446     		mov	r4, r0
+  29 0004 0D46     		mov	r5, r1
+  30 0006 FFF7FEFF 		bl	usb_device_connected
+  31 000a B0B9     		cbnz	r0, .L7
+  32              	.L1:
+  33 000c 70BD     		pop	{r4, r5, r6, pc}
+  34              	.L4:
+  35 000e 013E     		subs	r6, r6, #1
+  36 0010 FCD0     		beq	.L1
+  37 0012 0120     		movs	r0, #1
+  38 0014 FFF7FEFF 		bl	time_delay_ms
+  39              	.L2:
+  40 0018 2946     		mov	r1, r5
+  41 001a 2046     		mov	r0, r4
+  42 001c FFF7FEFF 		bl	usb_cdc_tx
+  43 0020 FF28     		cmp	r0, #255
+  44 0022 F4D0     		beq	.L4
+  45 0024 0A24     		movs	r4, #10
+  46              	.L5:
+  47 0026 FFF7FEFF 		bl	usb_cdc_tx_busy
+  48 002a 0028     		cmp	r0, #0
+  49 002c EED0     		beq	.L1
+  50 002e 013C     		subs	r4, r4, #1
+  51 0030 ECD0     		beq	.L1
+  52 0032 0120     		movs	r0, #1
+  53 0034 FFF7FEFF 		bl	time_delay_ms
+  54 0038 F5E7     		b	.L5
+  55              	.L7:
+  56 003a 6426     		movs	r6, #100
+  57 003c ECE7     		b	.L2
+  59              		.section	.text._write,"ax",%progbits
+ARM GAS  /tmp/ccHRr0Xq.s 			page 2
+
+
+  60              		.align	1
+  61              		.global	_write
+  62              		.syntax unified
+  63              		.thumb
+  64              		.thumb_func
+  65              		.fpu fpv4-sp-d16
+  67              	_write:
+  68              		@ args = 0, pretend = 0, frame = 0
+  69              		@ frame_needed = 0, uses_anonymous_args = 0
+  70 0000 10B5     		push	{r4, lr}
+  71 0002 1446     		mov	r4, r2
+  72 0004 0846     		mov	r0, r1
+  73 0006 91B2     		uxth	r1, r2
+  74 0008 FFF7FEFF 		bl	_usb_send_data
+  75 000c 601C     		adds	r0, r4, #1
+  76 000e 10BD     		pop	{r4, pc}
+  78              		.section	.text._read,"ax",%progbits
+  79              		.align	1
+  80              		.global	_read
+  81              		.syntax unified
+  82              		.thumb
+  83              		.thumb_func
+  84              		.fpu fpv4-sp-d16
+  86              	_read:
+  87              		@ args = 0, pretend = 0, frame = 0
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89              		@ link register save eliminated.
+  90 0000 0020     		movs	r0, #0
+  91 0002 7047     		bx	lr
+  93              		.section	.text._usb_getchar,"ax",%progbits
+  94              		.align	1
+  95              		.global	_usb_getchar
+  96              		.syntax unified
+  97              		.thumb
+  98              		.thumb_func
+  99              		.fpu fpv4-sp-d16
+ 101              	_usb_getchar:
+ 102              		@ args = 0, pretend = 0, frame = 0
+ 103              		@ frame_needed = 0, uses_anonymous_args = 0
+ 104              		@ link register save eliminated.
+ 105 0000 084A     		ldr	r2, .L20
+ 106 0002 0949     		ldr	r1, .L20+4
+ 107 0004 1368     		ldr	r3, [r2]
+ 108 0006 0968     		ldr	r1, [r1]
+ 109 0008 9942     		cmp	r1, r3
+ 110 000a 08D0     		beq	.L19
+ 111 000c 0133     		adds	r3, r3, #1
+ 112 000e B3F5805F 		cmp	r3, #4096
+ 113 0012 28BF     		it	cs
+ 114 0014 0023     		movcs	r3, #0
+ 115 0016 1360     		str	r3, [r2]
+ 116 0018 044A     		ldr	r2, .L20+8
+ 117 001a D05C     		ldrb	r0, [r2, r3]	@ zero_extendqisi2
+ 118 001c 7047     		bx	lr
+ 119              	.L19:
+ 120 001e 4FF0FF30 		mov	r0, #-1
+ 121 0022 7047     		bx	lr
+ARM GAS  /tmp/ccHRr0Xq.s 			page 3
+
+
+ 122              	.L21:
+ 123              		.align	2
+ 124              	.L20:
+ 125 0024 00000000 		.word	.LANCHOR0
+ 126 0028 00000000 		.word	.LANCHOR1
+ 127 002c 00000000 		.word	_usb_stream_buffer
+ 129              		.section	.text._rx_feed,"ax",%progbits
+ 130              		.align	1
+ 131              		.global	_rx_feed
+ 132              		.syntax unified
+ 133              		.thumb
+ 134              		.thumb_func
+ 135              		.fpu fpv4-sp-d16
+ 137              	_rx_feed:
+ 138              		@ args = 0, pretend = 0, frame = 0
+ 139              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140 0000 0D29     		cmp	r1, #13
+ 141 0002 10B5     		push	{r4, lr}
+ 142 0004 0446     		mov	r4, r0
+ 143 0006 0CD0     		beq	.L28
+ 144 0008 0A29     		cmp	r1, #10
+ 145 000a 08BF     		it	eq
+ 146 000c 0021     		moveq	r1, #0
+ 147              	.L23:
+ 148 000e D4F80034 		ldr	r3, [r4, #1024]
+ 149 0012 0829     		cmp	r1, #8
+ 150 0014 E154     		strb	r1, [r4, r3]
+ 151 0016 06D1     		bne	.L24
+ 152 0018 13B1     		cbz	r3, .L22
+ 153 001a 013B     		subs	r3, r3, #1
+ 154              	.L38:
+ 155 001c C4F80034 		str	r3, [r4, #1024]
+ 156              	.L22:
+ 157 0020 10BD     		pop	{r4, pc}
+ 158              	.L28:
+ 159 0022 0021     		movs	r1, #0
+ 160 0024 F3E7     		b	.L23
+ 161              	.L24:
+ 162 0026 41B9     		cbnz	r1, .L26
+ 163 0028 002B     		cmp	r3, #0
+ 164 002a F9D0     		beq	.L22
+ 165 002c 064B     		ldr	r3, .L39
+ 166 002e 1B68     		ldr	r3, [r3]
+ 167 0030 0BB1     		cbz	r3, .L27
+ 168 0032 2046     		mov	r0, r4
+ 169 0034 9847     		blx	r3
+ 170              	.L27:
+ 171 0036 0023     		movs	r3, #0
+ 172 0038 F0E7     		b	.L38
+ 173              	.L26:
+ 174 003a 40F2FE32 		movw	r2, #1022
+ 175 003e 9342     		cmp	r3, r2
+ 176 0040 EED8     		bhi	.L22
+ 177 0042 0133     		adds	r3, r3, #1
+ 178 0044 EAE7     		b	.L38
+ 179              	.L40:
+ 180 0046 00BF     		.align	2
+ARM GAS  /tmp/ccHRr0Xq.s 			page 4
+
+
+ 181              	.L39:
+ 182 0048 00000000 		.word	.LANCHOR2
+ 184              		.section	.text.tty_rx_task,"ax",%progbits
+ 185              		.align	1
+ 186              		.global	tty_rx_task
+ 187              		.syntax unified
+ 188              		.thumb
+ 189              		.thumb_func
+ 190              		.fpu fpv4-sp-d16
+ 192              	tty_rx_task:
+ 193              		@ args = 0, pretend = 0, frame = 0
+ 194              		@ frame_needed = 0, uses_anonymous_args = 0
+ 195 0000 10B5     		push	{r4, lr}
+ 196 0002 054C     		ldr	r4, .L44
+ 197              	.L42:
+ 198 0004 FFF7FEFF 		bl	_usb_getchar
+ 199 0008 011E     		subs	r1, r0, #0
+ 200 000a 00DA     		bge	.L43
+ 201 000c 10BD     		pop	{r4, pc}
+ 202              	.L43:
+ 203 000e 2046     		mov	r0, r4
+ 204 0010 C9B2     		uxtb	r1, r1
+ 205 0012 FFF7FEFF 		bl	_rx_feed
+ 206 0016 F5E7     		b	.L42
+ 207              	.L45:
+ 208              		.align	2
+ 209              	.L44:
+ 210 0018 00000000 		.word	.LANCHOR3
+ 212              		.section	.text.tty_put_binary,"ax",%progbits
+ 213              		.align	1
+ 214              		.global	tty_put_binary
+ 215              		.syntax unified
+ 216              		.thumb
+ 217              		.thumb_func
+ 218              		.fpu fpv4-sp-d16
+ 220              	tty_put_binary:
+ 221              		@ args = 0, pretend = 0, frame = 0
+ 222              		@ frame_needed = 0, uses_anonymous_args = 0
+ 223              		@ link register save eliminated.
+ 224 0000 89B2     		uxth	r1, r1
+ 225 0002 FFF7FEBF 		b	_usb_send_data
+ 227              		.section	.text.tty_put_text,"ax",%progbits
+ 228              		.align	1
+ 229              		.global	tty_put_text
+ 230              		.syntax unified
+ 231              		.thumb
+ 232              		.thumb_func
+ 233              		.fpu fpv4-sp-d16
+ 235              	tty_put_text:
+ 236              		@ args = 0, pretend = 0, frame = 0
+ 237              		@ frame_needed = 0, uses_anonymous_args = 0
+ 238 0000 10B5     		push	{r4, lr}
+ 239 0002 0446     		mov	r4, r0
+ 240 0004 FFF7FEFF 		bl	strlen
+ 241 0008 81B2     		uxth	r1, r0
+ 242 000a 2046     		mov	r0, r4
+ 243 000c FFF7FEFF 		bl	_usb_send_data
+ARM GAS  /tmp/ccHRr0Xq.s 			page 5
+
+
+ 244 0010 013C     		subs	r4, r4, #1
+ 245              	.L48:
+ 246 0012 14F8013F 		ldrb	r3, [r4, #1]!	@ zero_extendqisi2
+ 247 0016 002B     		cmp	r3, #0
+ 248 0018 FBD1     		bne	.L48
+ 249 001a 10BD     		pop	{r4, pc}
+ 251              		.section	.rodata._usb_rx_handler.str1.1,"aMS",%progbits,1
+ 252              	.LC0:
+ 253 0000 4552524F 		.ascii	"ERROR: USB RX overflow !\015\012\000"
+ 253      523A2055 
+ 253      53422052 
+ 253      58206F76 
+ 253      6572666C 
+ 254              		.section	.text._usb_rx_handler,"ax",%progbits
+ 255              		.align	1
+ 256              		.syntax unified
+ 257              		.thumb
+ 258              		.thumb_func
+ 259              		.fpu fpv4-sp-d16
+ 261              	_usb_rx_handler:
+ 262              		@ args = 0, pretend = 0, frame = 0
+ 263              		@ frame_needed = 0, uses_anonymous_args = 0
+ 264 0000 70B5     		push	{r4, r5, r6, lr}
+ 265 0002 0446     		mov	r4, r0
+ 266 0004 0D46     		mov	r5, r1
+ 267 0006 FFF7FEFF 		bl	tls_pqc_is_active
+ 268 000a 28B1     		cbz	r0, .L51
+ 269 000c 2946     		mov	r1, r5
+ 270 000e 2046     		mov	r0, r4
+ 271 0010 BDE87040 		pop	{r4, r5, r6, lr}
+ 272 0014 FFF7FEBF 		b	tls_pqc_usb_rx_handler
+ 273              	.L51:
+ 274 0018 0D4A     		ldr	r2, .L56
+ 275 001a 0E49     		ldr	r1, .L56+4
+ 276 001c 2046     		mov	r0, r4
+ 277 001e 2544     		add	r5, r5, r4
+ 278 0020 1368     		ldr	r3, [r2]
+ 279 0022 0968     		ldr	r1, [r1]
+ 280 0024 0C4C     		ldr	r4, .L56+8
+ 281              	.L52:
+ 282 0026 A842     		cmp	r0, r5
+ 283 0028 01D1     		bne	.L55
+ 284 002a 1360     		str	r3, [r2]
+ 285 002c 70BD     		pop	{r4, r5, r6, pc}
+ 286              	.L55:
+ 287 002e 0133     		adds	r3, r3, #1
+ 288 0030 B3F5805F 		cmp	r3, #4096
+ 289 0034 28BF     		it	cs
+ 290 0036 0023     		movcs	r3, #0
+ 291 0038 9942     		cmp	r1, r3
+ 292 003a 04D1     		bne	.L54
+ 293 003c 0748     		ldr	r0, .L56+12
+ 294 003e BDE87040 		pop	{r4, r5, r6, lr}
+ 295 0042 FFF7FEBF 		b	tty_put_text
+ 296              	.L54:
+ 297 0046 10F8016B 		ldrb	r6, [r0], #1	@ zero_extendqisi2
+ 298 004a E654     		strb	r6, [r4, r3]
+ARM GAS  /tmp/ccHRr0Xq.s 			page 6
+
+
+ 299 004c EBE7     		b	.L52
+ 300              	.L57:
+ 301 004e 00BF     		.align	2
+ 302              	.L56:
+ 303 0050 00000000 		.word	.LANCHOR1
+ 304 0054 00000000 		.word	.LANCHOR0
+ 305 0058 00000000 		.word	_usb_stream_buffer
+ 306 005c 00000000 		.word	.LC0
+ 308              		.section	.text.tty_init,"ax",%progbits
+ 309              		.align	1
+ 310              		.global	tty_init
+ 311              		.syntax unified
+ 312              		.thumb
+ 313              		.thumb_func
+ 314              		.fpu fpv4-sp-d16
+ 316              	tty_init:
+ 317              		@ args = 0, pretend = 0, frame = 0
+ 318              		@ frame_needed = 0, uses_anonymous_args = 0
+ 319 0000 08B5     		push	{r3, lr}
+ 320 0002 034B     		ldr	r3, .L59
+ 321 0004 1860     		str	r0, [r3]
+ 322 0006 0348     		ldr	r0, .L59+4
+ 323 0008 FFF7FEFF 		bl	usb_cdc_rx_init
+ 324 000c 0120     		movs	r0, #1
+ 325 000e 08BD     		pop	{r3, pc}
+ 326              	.L60:
+ 327              		.align	2
+ 328              	.L59:
+ 329 0010 00000000 		.word	.LANCHOR2
+ 330 0014 00000000 		.word	_usb_rx_handler
+ 332              		.global	_rx_callback
+ 333              		.section	.bss._rx_callback,"aw",%nobits
+ 334              		.align	2
+ 335              		.set	.LANCHOR2,. + 0
+ 338              	_rx_callback:
+ 339 0000 00000000 		.space	4
+ 340              		.section	.bss._usb_stream_buffer,"aw",%nobits
+ 343              	_usb_stream_buffer:
+ 344 0000 00000000 		.space	4096
+ 344      00000000 
+ 344      00000000 
+ 344      00000000 
+ 344      00000000 
+ 345              		.section	.bss._usb_stream_rd_ptr,"aw",%nobits
+ 346              		.align	2
+ 347              		.set	.LANCHOR0,. + 0
+ 350              	_usb_stream_rd_ptr:
+ 351 0000 00000000 		.space	4
+ 352              		.section	.bss._usb_stream_wr_ptr,"aw",%nobits
+ 353              		.align	2
+ 354              		.set	.LANCHOR1,. + 0
+ 357              	_usb_stream_wr_ptr:
+ 358 0000 00000000 		.space	4
+ 359              		.section	.bss.usb_rx_buf.1,"aw",%nobits
+ 360              		.align	2
+ 361              		.set	.LANCHOR3,. + 0
+ 364              	usb_rx_buf.1:
+ARM GAS  /tmp/ccHRr0Xq.s 			page 7
+
+
+ 365 0000 00000000 		.space	1028
+ 365      00000000 
+ 365      00000000 
+ 365      00000000 
+ 365      00000000 
+ 366              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccHRr0Xq.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 tty.c
+     /tmp/ccHRr0Xq.s:16     .text._usb_send_data:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:24     .text._usb_send_data:0000000000000000 _usb_send_data
+     /tmp/ccHRr0Xq.s:60     .text._write:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:67     .text._write:0000000000000000 _write
+     /tmp/ccHRr0Xq.s:79     .text._read:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:86     .text._read:0000000000000000 _read
+     /tmp/ccHRr0Xq.s:94     .text._usb_getchar:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:101    .text._usb_getchar:0000000000000000 _usb_getchar
+     /tmp/ccHRr0Xq.s:125    .text._usb_getchar:0000000000000024 $d
+     /tmp/ccHRr0Xq.s:343    .bss._usb_stream_buffer:0000000000000000 _usb_stream_buffer
+     /tmp/ccHRr0Xq.s:130    .text._rx_feed:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:137    .text._rx_feed:0000000000000000 _rx_feed
+     /tmp/ccHRr0Xq.s:182    .text._rx_feed:0000000000000048 $d
+     /tmp/ccHRr0Xq.s:185    .text.tty_rx_task:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:192    .text.tty_rx_task:0000000000000000 tty_rx_task
+     /tmp/ccHRr0Xq.s:210    .text.tty_rx_task:0000000000000018 $d
+     /tmp/ccHRr0Xq.s:213    .text.tty_put_binary:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:220    .text.tty_put_binary:0000000000000000 tty_put_binary
+     /tmp/ccHRr0Xq.s:228    .text.tty_put_text:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:235    .text.tty_put_text:0000000000000000 tty_put_text
+     /tmp/ccHRr0Xq.s:255    .text._usb_rx_handler:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:261    .text._usb_rx_handler:0000000000000000 _usb_rx_handler
+     /tmp/ccHRr0Xq.s:303    .text._usb_rx_handler:0000000000000050 $d
+     /tmp/ccHRr0Xq.s:309    .text.tty_init:0000000000000000 $t
+     /tmp/ccHRr0Xq.s:316    .text.tty_init:0000000000000000 tty_init
+     /tmp/ccHRr0Xq.s:329    .text.tty_init:0000000000000010 $d
+     /tmp/ccHRr0Xq.s:338    .bss._rx_callback:0000000000000000 _rx_callback
+     /tmp/ccHRr0Xq.s:334    .bss._rx_callback:0000000000000000 $d
+     /tmp/ccHRr0Xq.s:344    .bss._usb_stream_buffer:0000000000000000 $d
+     /tmp/ccHRr0Xq.s:346    .bss._usb_stream_rd_ptr:0000000000000000 $d
+     /tmp/ccHRr0Xq.s:350    .bss._usb_stream_rd_ptr:0000000000000000 _usb_stream_rd_ptr
+     /tmp/ccHRr0Xq.s:353    .bss._usb_stream_wr_ptr:0000000000000000 $d
+     /tmp/ccHRr0Xq.s:357    .bss._usb_stream_wr_ptr:0000000000000000 _usb_stream_wr_ptr
+     /tmp/ccHRr0Xq.s:360    .bss.usb_rx_buf.1:0000000000000000 $d
+     /tmp/ccHRr0Xq.s:364    .bss.usb_rx_buf.1:0000000000000000 usb_rx_buf.1
+
+UNDEFINED SYMBOLS
+usb_device_connected
+time_delay_ms
+usb_cdc_tx
+usb_cdc_tx_busy
+strlen
+tls_pqc_is_active
+tls_pqc_usb_rx_handler
+usb_cdc_rx_init

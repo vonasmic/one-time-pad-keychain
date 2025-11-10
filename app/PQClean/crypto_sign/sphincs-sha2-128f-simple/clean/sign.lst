@@ -1,0 +1,619 @@
+ARM GAS  /tmp/ccLvDBFR.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"sign.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_secretkeybytes,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_secretkeybytes
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_secretkeybytes:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 4020     		movs	r0, #64
+  30 0002 7047     		bx	lr
+  32              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_publickeybytes,"ax",%progbits
+  33              		.align	1
+  34              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_publickeybytes
+  35              		.syntax unified
+  36              		.thumb
+  37              		.thumb_func
+  38              		.fpu fpv4-sp-d16
+  40              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_publickeybytes:
+  41              		@ args = 0, pretend = 0, frame = 0
+  42              		@ frame_needed = 0, uses_anonymous_args = 0
+  43              		@ link register save eliminated.
+  44 0000 2020     		movs	r0, #32
+  45 0002 7047     		bx	lr
+  47              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_bytes,"ax",%progbits
+  48              		.align	1
+  49              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_bytes
+  50              		.syntax unified
+  51              		.thumb
+  52              		.thumb_func
+  53              		.fpu fpv4-sp-d16
+  55              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_bytes:
+  56              		@ args = 0, pretend = 0, frame = 0
+  57              		@ frame_needed = 0, uses_anonymous_args = 0
+  58              		@ link register save eliminated.
+  59 0000 44F2C020 		movw	r0, #17088
+  60 0004 7047     		bx	lr
+  62              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seedbytes,"ax",%progbits
+  63              		.align	1
+ARM GAS  /tmp/ccLvDBFR.s 			page 2
+
+
+  64              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seedbytes
+  65              		.syntax unified
+  66              		.thumb
+  67              		.thumb_func
+  68              		.fpu fpv4-sp-d16
+  70              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seedbytes:
+  71              		@ args = 0, pretend = 0, frame = 0
+  72              		@ frame_needed = 0, uses_anonymous_args = 0
+  73              		@ link register save eliminated.
+  74 0000 3020     		movs	r0, #48
+  75 0002 7047     		bx	lr
+  77              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair,"ax",%progbits
+  78              		.align	1
+  79              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair
+  80              		.syntax unified
+  81              		.thumb
+  82              		.thumb_func
+  83              		.fpu fpv4-sp-d16
+  85              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair:
+  86              		@ args = 0, pretend = 0, frame = 40
+  87              		@ frame_needed = 0, uses_anonymous_args = 0
+  88 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  89 0004 0B46     		mov	r3, r1
+  90 0006 0C46     		mov	r4, r1
+  91 0008 8AB0     		sub	sp, sp, #40
+  92 000a 02F13001 		add	r1, r2, #48
+  93              	.L6:
+  94 000e 52F8045B 		ldr	r5, [r2], #4	@ unaligned
+  95 0012 8A42     		cmp	r2, r1
+  96 0014 43F8045B 		str	r5, [r3], #4	@ unaligned
+  97 0018 F9D1     		bne	.L6
+  98 001a 0246     		mov	r2, r0
+  99 001c 04F12003 		add	r3, r4, #32
+ 100 0020 04F13005 		add	r5, r4, #48
+ 101              	.L7:
+ 102 0024 53F8041B 		ldr	r1, [r3], #4	@ unaligned
+ 103 0028 AB42     		cmp	r3, r5
+ 104 002a 42F8041B 		str	r1, [r2], #4	@ unaligned
+ 105 002e F9D1     		bne	.L7
+ 106 0030 01AA     		add	r2, sp, #4
+ 107 0032 0346     		mov	r3, r0
+ 108 0034 9046     		mov	r8, r2
+ 109 0036 00F11006 		add	r6, r0, #16
+ 110              	.L8:
+ 111 003a 1746     		mov	r7, r2
+ 112 003c 1868     		ldr	r0, [r3]	@ unaligned
+ 113 003e 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 114 0040 0833     		adds	r3, r3, #8
+ 115 0042 03C7     		stmia	r7!, {r0, r1}
+ 116 0044 B342     		cmp	r3, r6
+ 117 0046 3A46     		mov	r2, r7
+ 118 0048 F7D1     		bne	.L8
+ 119 004a 2346     		mov	r3, r4
+ 120 004c 05AF     		add	r7, sp, #20
+ 121 004e 04F1100C 		add	ip, r4, #16
+ 122              	.L9:
+ 123 0052 3A46     		mov	r2, r7
+ARM GAS  /tmp/ccLvDBFR.s 			page 3
+
+
+ 124 0054 1868     		ldr	r0, [r3]	@ unaligned
+ 125 0056 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 126 0058 0833     		adds	r3, r3, #8
+ 127 005a 03C2     		stmia	r2!, {r0, r1}
+ 128 005c 6345     		cmp	r3, ip
+ 129 005e 1746     		mov	r7, r2
+ 130 0060 F7D1     		bne	.L9
+ 131 0062 4046     		mov	r0, r8
+ 132 0064 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_initialize_hash_function
+ 133 0068 FFF7FEFF 		bl	wd_feed
+ 134 006c FFF7FEFF 		bl	usb_device_task
+ 135 0070 4146     		mov	r1, r8
+ 136 0072 2846     		mov	r0, r5
+ 137 0074 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_merkle_gen_root
+ 138 0078 4046     		mov	r0, r8
+ 139 007a FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_free_hash_function
+ 140 007e 4034     		adds	r4, r4, #64
+ 141              	.L10:
+ 142 0080 55F8043B 		ldr	r3, [r5], #4	@ unaligned
+ 143 0084 A542     		cmp	r5, r4
+ 144 0086 46F8043B 		str	r3, [r6], #4	@ unaligned
+ 145 008a F9D1     		bne	.L10
+ 146 008c 0020     		movs	r0, #0
+ 147 008e 0AB0     		add	sp, sp, #40
+ 148              		@ sp needed
+ 149 0090 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 151              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_keypair,"ax",%progbits
+ 152              		.align	1
+ 153              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_keypair
+ 154              		.syntax unified
+ 155              		.thumb
+ 156              		.thumb_func
+ 157              		.fpu fpv4-sp-d16
+ 159              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_keypair:
+ 160              		@ args = 0, pretend = 0, frame = 48
+ 161              		@ frame_needed = 0, uses_anonymous_args = 0
+ 162 0000 30B5     		push	{r4, r5, lr}
+ 163 0002 0446     		mov	r4, r0
+ 164 0004 0D46     		mov	r5, r1
+ 165 0006 8DB0     		sub	sp, sp, #52
+ 166 0008 3021     		movs	r1, #48
+ 167 000a 6846     		mov	r0, sp
+ 168 000c FFF7FEFF 		bl	PQCLEAN_randombytes
+ 169 0010 6A46     		mov	r2, sp
+ 170 0012 2946     		mov	r1, r5
+ 171 0014 2046     		mov	r0, r4
+ 172 0016 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair
+ 173 001a 0020     		movs	r0, #0
+ 174 001c 0DB0     		add	sp, sp, #52
+ 175              		@ sp needed
+ 176 001e 30BD     		pop	{r4, r5, pc}
+ 178              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature,"ax",%progbits
+ 179              		.align	1
+ 180              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature
+ 181              		.syntax unified
+ 182              		.thumb
+ 183              		.thumb_func
+ARM GAS  /tmp/ccLvDBFR.s 			page 4
+
+
+ 184              		.fpu fpv4-sp-d16
+ 186              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature:
+ 187              		@ args = 4, pretend = 0, frame = 176
+ 188              		@ frame_needed = 0, uses_anonymous_args = 0
+ 189 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 190 0004 B1B0     		sub	sp, sp, #196
+ 191 0006 17AD     		add	r5, sp, #92
+ 192 0008 3A9F     		ldr	r7, [sp, #232]
+ 193 000a 0446     		mov	r4, r0
+ 194 000c 8946     		mov	r9, r1
+ 195 000e 9046     		mov	r8, r2
+ 196 0010 0021     		movs	r1, #0
+ 197 0012 2022     		movs	r2, #32
+ 198 0014 2846     		mov	r0, r5
+ 199 0016 1FAE     		add	r6, sp, #124
+ 200 0018 9A46     		mov	r10, r3
+ 201 001a FFF7FEFF 		bl	memset
+ 202 001e 2022     		movs	r2, #32
+ 203 0020 0021     		movs	r1, #0
+ 204 0022 3046     		mov	r0, r6
+ 205 0024 FFF7FEFF 		bl	memset
+ 206 0028 3B46     		mov	r3, r7
+ 207 002a 0DF1AC0C 		add	ip, sp, #172
+ 208 002e 07F1100B 		add	fp, r7, #16
+ 209              	.L18:
+ 210 0032 6246     		mov	r2, ip
+ 211 0034 1868     		ldr	r0, [r3]	@ unaligned
+ 212 0036 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 213 0038 0833     		adds	r3, r3, #8
+ 214 003a 03C2     		stmia	r2!, {r0, r1}
+ 215 003c 5B45     		cmp	r3, fp
+ 216 003e 9446     		mov	ip, r2
+ 217 0040 F7D1     		bne	.L18
+ 218 0042 07F12002 		add	r2, r7, #32
+ 219 0046 07F13003 		add	r3, r7, #48
+ 220 004a 1746     		mov	r7, r2
+ 221 004c 0DF19C0C 		add	ip, sp, #156
+ 222              	.L19:
+ 223 0050 E646     		mov	lr, ip
+ 224 0052 1068     		ldr	r0, [r2]	@ unaligned
+ 225 0054 5168     		ldr	r1, [r2, #4]	@ unaligned
+ 226 0056 0832     		adds	r2, r2, #8
+ 227 0058 AEE80300 		stmia	lr!, {r0, r1}
+ 228 005c 9A42     		cmp	r2, r3
+ 229 005e F446     		mov	ip, lr
+ 230 0060 F6D1     		bne	.L19
+ 231 0062 27A8     		add	r0, sp, #156
+ 232 0064 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_initialize_hash_function
+ 233 0068 0021     		movs	r1, #0
+ 234 006a 2846     		mov	r0, r5
+ 235 006c FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_type
+ 236 0070 0221     		movs	r1, #2
+ 237 0072 3046     		mov	r0, r6
+ 238 0074 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_type
+ 239 0078 1021     		movs	r1, #16
+ 240 007a 08A8     		add	r0, sp, #32
+ 241 007c FFF7FEFF 		bl	PQCLEAN_randombytes
+ARM GAS  /tmp/ccLvDBFR.s 			page 5
+
+
+ 242 0080 FFF7FEFF 		bl	wd_feed
+ 243 0084 FFF7FEFF 		bl	usb_device_task
+ 244 0088 27AB     		add	r3, sp, #156
+ 245 008a 2046     		mov	r0, r4
+ 246 008c 5946     		mov	r1, fp
+ 247 008e CDE900A3 		strd	r10, r3, [sp]
+ 248 0092 08AA     		add	r2, sp, #32
+ 249 0094 4346     		mov	r3, r8
+ 250 0096 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random
+ 251 009a 27AB     		add	r3, sp, #156
+ 252 009c 06A9     		add	r1, sp, #24
+ 253 009e CDE902A3 		strd	r10, r3, [sp, #8]
+ 254 00a2 CDE90078 		strd	r7, r8, [sp]
+ 255 00a6 2346     		mov	r3, r4
+ 256 00a8 05AA     		add	r2, sp, #20
+ 257 00aa 10A8     		add	r0, sp, #64
+ 258 00ac FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message
+ 259 00b0 DDE90623 		ldrd	r2, [sp, #24]
+ 260 00b4 2846     		mov	r0, r5
+ 261 00b6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_addr
+ 262 00ba 2846     		mov	r0, r5
+ 263 00bc 0599     		ldr	r1, [sp, #20]
+ 264 00be FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_keypair_addr
+ 265 00c2 FFF7FEFF 		bl	wd_feed
+ 266 00c6 FFF7FEFF 		bl	usb_device_task
+ 267 00ca 04F11000 		add	r0, r4, #16
+ 268 00ce 0095     		str	r5, [sp]
+ 269 00d0 27AB     		add	r3, sp, #156
+ 270 00d2 10AA     		add	r2, sp, #64
+ 271 00d4 0CA9     		add	r1, sp, #48
+ 272 00d6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_fors_sign
+ 273 00da 0027     		movs	r7, #0
+ 274 00dc 04F56864 		add	r4, r4, #3712
+ 275              	.L20:
+ 276 00e0 3946     		mov	r1, r7
+ 277 00e2 3046     		mov	r0, r6
+ 278 00e4 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_layer_addr
+ 279 00e8 DDE90623 		ldrd	r2, [sp, #24]
+ 280 00ec 3046     		mov	r0, r6
+ 281 00ee FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_addr
+ 282 00f2 3146     		mov	r1, r6
+ 283 00f4 2846     		mov	r0, r5
+ 284 00f6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_copy_subtree_addr
+ 285 00fa 2846     		mov	r0, r5
+ 286 00fc 0599     		ldr	r1, [sp, #20]
+ 287 00fe FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_keypair_addr
+ 288 0102 FFF7FEFF 		bl	wd_feed
+ 289 0106 FFF7FEFF 		bl	usb_device_task
+ 290 010a 059B     		ldr	r3, [sp, #20]
+ 291 010c 2046     		mov	r0, r4
+ 292 010e CDE90063 		strd	r6, r3, [sp]
+ 293 0112 27AA     		add	r2, sp, #156
+ 294 0114 2B46     		mov	r3, r5
+ 295 0116 0CA9     		add	r1, sp, #48
+ 296 0118 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_merkle_sign
+ 297 011c DDE90632 		ldrd	r3, r2, [sp, #24]
+ 298 0120 0137     		adds	r7, r7, #1
+ARM GAS  /tmp/ccLvDBFR.s 			page 6
+
+
+ 299 0122 03F00701 		and	r1, r3, #7
+ 300 0126 DB08     		lsrs	r3, r3, #3
+ 301 0128 43EA4273 		orr	r3, r3, r2, lsl #29
+ 302 012c 162F     		cmp	r7, #22
+ 303 012e 4FEAD202 		lsr	r2, r2, #3
+ 304 0132 CDE90632 		strd	r3, r2, [sp, #24]
+ 305 0136 04F51874 		add	r4, r4, #608
+ 306 013a 0591     		str	r1, [sp, #20]
+ 307 013c D0D1     		bne	.L20
+ 308 013e FFF7FEFF 		bl	wd_feed
+ 309 0142 FFF7FEFF 		bl	usb_device_task
+ 310 0146 27A8     		add	r0, sp, #156
+ 311 0148 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_free_hash_function
+ 312 014c 44F2C023 		movw	r3, #17088
+ 313 0150 0020     		movs	r0, #0
+ 314 0152 C9F80030 		str	r3, [r9]
+ 315 0156 31B0     		add	sp, sp, #196
+ 316              		@ sp needed
+ 317 0158 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 319              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify,"ax",%progbits
+ 320              		.align	1
+ 321              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify
+ 322              		.syntax unified
+ 323              		.thumb
+ 324              		.thumb_func
+ 325              		.fpu fpv4-sp-d16
+ 327              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify:
+ 328              		@ args = 4, pretend = 0, frame = 776
+ 329              		@ frame_needed = 0, uses_anonymous_args = 0
+ 330 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 331 0004 ADF5477D 		sub	sp, sp, #796
+ 332 0008 9A46     		mov	r10, r3
+ 333 000a D09B     		ldr	r3, [sp, #832]
+ 334 000c 0E46     		mov	r6, r1
+ 335 000e 0446     		mov	r4, r0
+ 336 0010 0021     		movs	r1, #0
+ 337 0012 9146     		mov	r9, r2
+ 338 0014 19A8     		add	r0, sp, #100
+ 339 0016 2022     		movs	r2, #32
+ 340 0018 21AD     		add	r5, sp, #132
+ 341 001a 03F1100B 		add	fp, r3, #16
+ 342 001e 29AF     		add	r7, sp, #164
+ 343 0020 FFF7FEFF 		bl	memset
+ 344 0024 2022     		movs	r2, #32
+ 345 0026 0021     		movs	r1, #0
+ 346 0028 2846     		mov	r0, r5
+ 347 002a FFF7FEFF 		bl	memset
+ 348 002e 2022     		movs	r2, #32
+ 349 0030 0021     		movs	r1, #0
+ 350 0032 3846     		mov	r0, r7
+ 351 0034 FFF7FEFF 		bl	memset
+ 352 0038 44F2C023 		movw	r3, #17088
+ 353 003c 9E42     		cmp	r6, r3
+ 354 003e 40F09580 		bne	.L28
+ 355 0042 0DF1C408 		add	r8, sp, #196
+ 356 0046 4646     		mov	r6, r8
+ 357 0048 D09B     		ldr	r3, [sp, #832]
+ARM GAS  /tmp/ccLvDBFR.s 			page 7
+
+
+ 358              	.L26:
+ 359 004a 3246     		mov	r2, r6
+ 360 004c 1868     		ldr	r0, [r3]	@ unaligned
+ 361 004e 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 362 0050 0833     		adds	r3, r3, #8
+ 363 0052 03C2     		stmia	r2!, {r0, r1}
+ 364 0054 5B45     		cmp	r3, fp
+ 365 0056 1646     		mov	r6, r2
+ 366 0058 F7D1     		bne	.L26
+ 367 005a 4046     		mov	r0, r8
+ 368 005c FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_initialize_hash_function
+ 369 0060 0021     		movs	r1, #0
+ 370 0062 19A8     		add	r0, sp, #100
+ 371 0064 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_type
+ 372 0068 0221     		movs	r1, #2
+ 373 006a 2846     		mov	r0, r5
+ 374 006c FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_type
+ 375 0070 0121     		movs	r1, #1
+ 376 0072 3846     		mov	r0, r7
+ 377 0074 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_type
+ 378 0078 D09B     		ldr	r3, [sp, #832]
+ 379 007a 07AE     		add	r6, sp, #28
+ 380 007c 08A9     		add	r1, sp, #32
+ 381 007e 3246     		mov	r2, r6
+ 382 0080 CDE902A8 		strd	r10, r8, [sp, #8]
+ 383 0084 0093     		str	r3, [sp]
+ 384 0086 12A8     		add	r0, sp, #72
+ 385 0088 2346     		mov	r3, r4
+ 386 008a CDF80490 		str	r9, [sp, #4]
+ 387 008e FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message
+ 388 0092 DDE90823 		ldrd	r2, [sp, #32]
+ 389 0096 19A8     		add	r0, sp, #100
+ 390 0098 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_addr
+ 391 009c 3168     		ldr	r1, [r6]
+ 392 009e 19A8     		add	r0, sp, #100
+ 393 00a0 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_keypair_addr
+ 394 00a4 19AB     		add	r3, sp, #100
+ 395 00a6 0093     		str	r3, [sp]
+ 396 00a8 4346     		mov	r3, r8
+ 397 00aa 4FF00008 		mov	r8, #0
+ 398 00ae 04F11001 		add	r1, r4, #16
+ 399 00b2 12AA     		add	r2, sp, #72
+ 400 00b4 0AA8     		add	r0, sp, #40
+ 401 00b6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_fors_pk_from_sig
+ 402 00ba 04F56864 		add	r4, r4, #3712
+ 403 00be 0595     		str	r5, [sp, #20]
+ 404              	.L27:
+ 405 00c0 4146     		mov	r1, r8
+ 406 00c2 0598     		ldr	r0, [sp, #20]
+ 407 00c4 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_layer_addr
+ 408 00c8 DDE90823 		ldrd	r2, [sp, #32]
+ 409 00cc 0598     		ldr	r0, [sp, #20]
+ 410 00ce FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_addr
+ 411 00d2 0599     		ldr	r1, [sp, #20]
+ 412 00d4 19A8     		add	r0, sp, #100
+ 413 00d6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_copy_subtree_addr
+ 414 00da 3168     		ldr	r1, [r6]
+ARM GAS  /tmp/ccLvDBFR.s 			page 8
+
+
+ 415 00dc 19A8     		add	r0, sp, #100
+ 416 00de FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_keypair_addr
+ 417 00e2 3846     		mov	r0, r7
+ 418 00e4 19A9     		add	r1, sp, #100
+ 419 00e6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_copy_keypair_addr
+ 420 00ea 31AD     		add	r5, sp, #196
+ 421 00ec 19AB     		add	r3, sp, #100
+ 422 00ee 2146     		mov	r1, r4
+ 423 00f0 0093     		str	r3, [sp]
+ 424 00f2 0AAA     		add	r2, sp, #40
+ 425 00f4 2B46     		mov	r3, r5
+ 426 00f6 3AA8     		add	r0, sp, #232
+ 427 00f8 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig
+ 428 00fc 2B46     		mov	r3, r5
+ 429 00fe 2322     		movs	r2, #35
+ 430 0100 3AA9     		add	r1, sp, #232
+ 431 0102 0EA8     		add	r0, sp, #56
+ 432 0104 0097     		str	r7, [sp]
+ 433 0106 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+ 434 010a 059B     		ldr	r3, [sp, #20]
+ 435 010c 0EA9     		add	r1, sp, #56
+ 436 010e CDE90253 		strd	r5, r3, [sp, #8]
+ 437 0112 0323     		movs	r3, #3
+ 438 0114 0193     		str	r3, [sp, #4]
+ 439 0116 04F50C73 		add	r3, r4, #560
+ 440 011a 0093     		str	r3, [sp]
+ 441 011c 3268     		ldr	r2, [r6]
+ 442 011e 0023     		movs	r3, #0
+ 443 0120 0AA8     		add	r0, sp, #40
+ 444 0122 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root
+ 445 0126 DDE90832 		ldrd	r3, r2, [sp, #32]
+ 446 012a 08F10108 		add	r8, r8, #1
+ 447 012e 03F00701 		and	r1, r3, #7
+ 448 0132 DB08     		lsrs	r3, r3, #3
+ 449 0134 43EA4273 		orr	r3, r3, r2, lsl #29
+ 450 0138 B8F1160F 		cmp	r8, #22
+ 451 013c 4FEAD202 		lsr	r2, r2, #3
+ 452 0140 CDE90832 		strd	r3, r2, [sp, #32]
+ 453 0144 04F51874 		add	r4, r4, #608
+ 454 0148 3160     		str	r1, [r6]
+ 455 014a B9D1     		bne	.L27
+ 456 014c 2846     		mov	r0, r5
+ 457 014e FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_free_hash_function
+ 458 0152 1022     		movs	r2, #16
+ 459 0154 5946     		mov	r1, fp
+ 460 0156 0AA8     		add	r0, sp, #40
+ 461 0158 FFF7FEFF 		bl	memcmp
+ 462 015c 0038     		subs	r0, r0, #0
+ 463 015e 18BF     		it	ne
+ 464 0160 0120     		movne	r0, #1
+ 465 0162 4042     		rsbs	r0, r0, #0
+ 466              	.L24:
+ 467 0164 0DF5477D 		add	sp, sp, #796
+ 468              		@ sp needed
+ 469 0168 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 470              	.L28:
+ 471 016c 4FF0FF30 		mov	r0, #-1
+ARM GAS  /tmp/ccLvDBFR.s 			page 9
+
+
+ 472 0170 F8E7     		b	.L24
+ 474              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign,"ax",%progbits
+ 475              		.align	1
+ 476              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign
+ 477              		.syntax unified
+ 478              		.thumb
+ 479              		.thumb_func
+ 480              		.fpu fpv4-sp-d16
+ 482              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign:
+ 483              		@ args = 4, pretend = 0, frame = 8
+ 484              		@ frame_needed = 0, uses_anonymous_args = 0
+ 485 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 486 0002 0646     		mov	r6, r0
+ 487 0004 1C46     		mov	r4, r3
+ 488 0006 1746     		mov	r7, r2
+ 489 0008 85B0     		sub	sp, sp, #20
+ 490 000a 0D46     		mov	r5, r1
+ 491 000c 0A99     		ldr	r1, [sp, #40]
+ 492 000e 0091     		str	r1, [sp]
+ 493 0010 03A9     		add	r1, sp, #12
+ 494 0012 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature
+ 495 0016 06F58540 		add	r0, r6, #17024
+ 496 001a 2246     		mov	r2, r4
+ 497 001c 3946     		mov	r1, r7
+ 498 001e 4030     		adds	r0, r0, #64
+ 499 0020 FFF7FEFF 		bl	memmove
+ 500 0024 0020     		movs	r0, #0
+ 501 0026 039B     		ldr	r3, [sp, #12]
+ 502 0028 2344     		add	r3, r3, r4
+ 503 002a 2B60     		str	r3, [r5]
+ 504 002c 05B0     		add	sp, sp, #20
+ 505              		@ sp needed
+ 506 002e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 508              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_open,"ax",%progbits
+ 509              		.align	1
+ 510              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_open
+ 511              		.syntax unified
+ 512              		.thumb
+ 513              		.thumb_func
+ 514              		.fpu fpv4-sp-d16
+ 516              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_open:
+ 517              		@ args = 4, pretend = 0, frame = 0
+ 518              		@ frame_needed = 0, uses_anonymous_args = 0
+ 519 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+ 520 0004 1E46     		mov	r6, r3
+ 521 0006 44F2BF23 		movw	r3, #17087
+ 522 000a 9E42     		cmp	r6, r3
+ 523 000c 0746     		mov	r7, r0
+ 524 000e 0D46     		mov	r5, r1
+ 525 0010 1046     		mov	r0, r2
+ 526 0012 0CD8     		bhi	.L33
+ 527              	.L35:
+ 528 0014 3246     		mov	r2, r6
+ 529 0016 0021     		movs	r1, #0
+ 530 0018 3846     		mov	r0, r7
+ 531 001a FFF7FEFF 		bl	memset
+ 532 001e 0023     		movs	r3, #0
+ARM GAS  /tmp/ccLvDBFR.s 			page 10
+
+
+ 533 0020 4FF0FF34 		mov	r4, #-1
+ 534 0024 2B60     		str	r3, [r5]
+ 535              	.L32:
+ 536 0026 2046     		mov	r0, r4
+ 537 0028 02B0     		add	sp, sp, #8
+ 538              		@ sp needed
+ 539 002a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 540              	.L33:
+ 541 002e A6F58543 		sub	r3, r6, #17024
+ 542 0032 403B     		subs	r3, r3, #64
+ 543 0034 0B60     		str	r3, [r1]
+ 544 0036 44F2C021 		movw	r1, #17088
+ 545 003a 02EB0108 		add	r8, r2, r1
+ 546 003e 089A     		ldr	r2, [sp, #32]
+ 547 0040 0092     		str	r2, [sp]
+ 548 0042 4246     		mov	r2, r8
+ 549 0044 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify
+ 550 0048 0446     		mov	r4, r0
+ 551 004a 0028     		cmp	r0, #0
+ 552 004c E2D1     		bne	.L35
+ 553 004e 4146     		mov	r1, r8
+ 554 0050 3846     		mov	r0, r7
+ 555 0052 2A68     		ldr	r2, [r5]
+ 556 0054 FFF7FEFF 		bl	memmove
+ 557 0058 E5E7     		b	.L32
+ 559              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccLvDBFR.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sign.c
+     /tmp/ccLvDBFR.s:16     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_secretkeybytes:0000000000000000 $t
+     /tmp/ccLvDBFR.s:25     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_secretkeybytes:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_secretkeybytes
+     /tmp/ccLvDBFR.s:33     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_publickeybytes:0000000000000000 $t
+     /tmp/ccLvDBFR.s:40     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_publickeybytes:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_publickeybytes
+     /tmp/ccLvDBFR.s:48     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_bytes:0000000000000000 $t
+     /tmp/ccLvDBFR.s:55     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_bytes:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_bytes
+     /tmp/ccLvDBFR.s:63     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seedbytes:0000000000000000 $t
+     /tmp/ccLvDBFR.s:70     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seedbytes:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seedbytes
+     /tmp/ccLvDBFR.s:78     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair:0000000000000000 $t
+     /tmp/ccLvDBFR.s:85     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_seed_keypair
+     /tmp/ccLvDBFR.s:152    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_keypair:0000000000000000 $t
+     /tmp/ccLvDBFR.s:159    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_keypair:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_keypair
+     /tmp/ccLvDBFR.s:179    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature:0000000000000000 $t
+     /tmp/ccLvDBFR.s:186    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_signature
+     /tmp/ccLvDBFR.s:320    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify:0000000000000000 $t
+     /tmp/ccLvDBFR.s:327    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_verify
+     /tmp/ccLvDBFR.s:475    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign:0000000000000000 $t
+     /tmp/ccLvDBFR.s:482    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign
+     /tmp/ccLvDBFR.s:509    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_open:0000000000000000 $t
+     /tmp/ccLvDBFR.s:516    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_open:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_crypto_sign_open
+
+UNDEFINED SYMBOLS
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_initialize_hash_function
+wd_feed
+usb_device_task
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_merkle_gen_root
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_free_hash_function
+PQCLEAN_randombytes
+memset
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_type
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_tree_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_keypair_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_fors_sign
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_set_layer_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_copy_subtree_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_merkle_sign
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_fors_pk_from_sig
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_copy_keypair_addr
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_wots_pk_from_sig
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_thash
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_compute_root
+memcmp
+memmove

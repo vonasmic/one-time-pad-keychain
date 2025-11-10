@@ -1,0 +1,346 @@
+ARM GAS  /tmp/cc8u6I0C.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_ll_gpio.c"
+  14              		.text
+  15              		.section	.text.LL_AHB2_GRP1_ForceReset,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	LL_AHB2_GRP1_ForceReset:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27              		@ link register save eliminated.
+  28 0000 024A     		ldr	r2, .L2
+  29 0002 536E     		ldr	r3, [r2, #100]
+  30 0004 1843     		orrs	r0, r0, r3
+  31 0006 5066     		str	r0, [r2, #100]
+  32 0008 7047     		bx	lr
+  33              	.L3:
+  34 000a 00BF     		.align	2
+  35              	.L2:
+  36 000c 000C0246 		.word	1174539264
+  38              		.section	.text.LL_GPIO_DeInit,"ax",%progbits
+  39              		.align	1
+  40              		.global	LL_GPIO_DeInit
+  41              		.syntax unified
+  42              		.thumb
+  43              		.thumb_func
+  44              		.fpu fpv4-sp-d16
+  46              	LL_GPIO_DeInit:
+  47              		@ args = 0, pretend = 0, frame = 0
+  48              		@ frame_needed = 0, uses_anonymous_args = 0
+  49 0000 08B5     		push	{r3, lr}
+  50 0002 284B     		ldr	r3, .L14
+  51 0004 9842     		cmp	r0, r3
+  52 0006 09D1     		bne	.L5
+  53 0008 0120     		movs	r0, #1
+  54 000a FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+  55 000e 264A     		ldr	r2, .L14+4
+  56 0010 536E     		ldr	r3, [r2, #100]
+  57 0012 23F00103 		bic	r3, r3, #1
+  58              	.L13:
+  59 0016 0020     		movs	r0, #0
+  60 0018 5366     		str	r3, [r2, #100]
+ARM GAS  /tmp/cc8u6I0C.s 			page 2
+
+
+  61              	.L6:
+  62 001a 08BD     		pop	{r3, pc}
+  63              	.L5:
+  64 001c 234B     		ldr	r3, .L14+8
+  65 001e 9842     		cmp	r0, r3
+  66 0020 07D1     		bne	.L7
+  67 0022 0220     		movs	r0, #2
+  68 0024 FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+  69 0028 1F4A     		ldr	r2, .L14+4
+  70 002a 536E     		ldr	r3, [r2, #100]
+  71 002c 23F00203 		bic	r3, r3, #2
+  72 0030 F1E7     		b	.L13
+  73              	.L7:
+  74 0032 1F4B     		ldr	r3, .L14+12
+  75 0034 9842     		cmp	r0, r3
+  76 0036 07D1     		bne	.L8
+  77 0038 0420     		movs	r0, #4
+  78 003a FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+  79 003e 1A4A     		ldr	r2, .L14+4
+  80 0040 536E     		ldr	r3, [r2, #100]
+  81 0042 23F00403 		bic	r3, r3, #4
+  82 0046 E6E7     		b	.L13
+  83              	.L8:
+  84 0048 1A4B     		ldr	r3, .L14+16
+  85 004a 9842     		cmp	r0, r3
+  86 004c 07D1     		bne	.L9
+  87 004e 0820     		movs	r0, #8
+  88 0050 FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+  89 0054 144A     		ldr	r2, .L14+4
+  90 0056 536E     		ldr	r3, [r2, #100]
+  91 0058 23F00803 		bic	r3, r3, #8
+  92 005c DBE7     		b	.L13
+  93              	.L9:
+  94 005e 164B     		ldr	r3, .L14+20
+  95 0060 9842     		cmp	r0, r3
+  96 0062 07D1     		bne	.L10
+  97 0064 1020     		movs	r0, #16
+  98 0066 FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+  99 006a 0F4A     		ldr	r2, .L14+4
+ 100 006c 536E     		ldr	r3, [r2, #100]
+ 101 006e 23F01003 		bic	r3, r3, #16
+ 102 0072 D0E7     		b	.L13
+ 103              	.L10:
+ 104 0074 114B     		ldr	r3, .L14+24
+ 105 0076 9842     		cmp	r0, r3
+ 106 0078 07D1     		bne	.L11
+ 107 007a 4020     		movs	r0, #64
+ 108 007c FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+ 109 0080 094A     		ldr	r2, .L14+4
+ 110 0082 536E     		ldr	r3, [r2, #100]
+ 111 0084 23F04003 		bic	r3, r3, #64
+ 112 0088 C5E7     		b	.L13
+ 113              	.L11:
+ 114 008a 0D4B     		ldr	r3, .L14+28
+ 115 008c 9842     		cmp	r0, r3
+ 116 008e 07D1     		bne	.L12
+ 117 0090 8020     		movs	r0, #128
+ARM GAS  /tmp/cc8u6I0C.s 			page 3
+
+
+ 118 0092 FFF7FEFF 		bl	LL_AHB2_GRP1_ForceReset
+ 119 0096 044A     		ldr	r2, .L14+4
+ 120 0098 536E     		ldr	r3, [r2, #100]
+ 121 009a 23F08003 		bic	r3, r3, #128
+ 122 009e BAE7     		b	.L13
+ 123              	.L12:
+ 124 00a0 0120     		movs	r0, #1
+ 125 00a2 BAE7     		b	.L6
+ 126              	.L15:
+ 127              		.align	2
+ 128              	.L14:
+ 129 00a4 00000242 		.word	1107427328
+ 130 00a8 000C0246 		.word	1174539264
+ 131 00ac 00040242 		.word	1107428352
+ 132 00b0 00080242 		.word	1107429376
+ 133 00b4 000C0242 		.word	1107430400
+ 134 00b8 00100242 		.word	1107431424
+ 135 00bc 00180242 		.word	1107433472
+ 136 00c0 001C0242 		.word	1107434496
+ 138              		.section	.text.LL_GPIO_Init,"ax",%progbits
+ 139              		.align	1
+ 140              		.global	LL_GPIO_Init
+ 141              		.syntax unified
+ 142              		.thumb
+ 143              		.thumb_func
+ 144              		.fpu fpv4-sp-d16
+ 146              	LL_GPIO_Init:
+ 147              		@ args = 0, pretend = 0, frame = 0
+ 148              		@ frame_needed = 0, uses_anonymous_args = 0
+ 149 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 150 0004 0D68     		ldr	r5, [r1]
+ 151 0006 0246     		mov	r2, r0
+ 152              		.syntax unified
+ 153              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 154 0008 95FAA5F4 		rbit r4, r5
+ 155              	@ 0 "" 2
+ 156              		.thumb
+ 157              		.syntax unified
+ 158 000c 4FF0010E 		mov	lr, #1
+ 159 0010 B4FA84F4 		clz	r4, r4
+ 160 0014 0327     		movs	r7, #3
+ 161 0016 4FF00F0C 		mov	ip, #15
+ 162 001a 6FEA0508 		mvn	r8, r5
+ 163              	.L18:
+ 164 001e 35FA04F0 		lsrs	r0, r5, r4
+ 165 0022 01D1     		bne	.L33
+ 166 0024 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 167              	.L33:
+ 168 0028 0EFA04F3 		lsl	r3, lr, r4
+ 169 002c 2B40     		ands	r3, r3, r5
+ 170 002e 69D0     		beq	.L19
+ 171 0030 4868     		ldr	r0, [r1, #4]
+ 172 0032 461E     		subs	r6, r0, #1
+ 173 0034 012E     		cmp	r6, #1
+ 174 0036 1ED8     		bhi	.L20
+ 175              		.syntax unified
+ 176              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ARM GAS  /tmp/cc8u6I0C.s 			page 4
+
+
+ 177 0038 93FAA3F9 		rbit r9, r3
+ 178              	@ 0 "" 2
+ 179              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 180 003c 93FAA3FA 		rbit r10, r3
+ 181              	@ 0 "" 2
+ 182              		.thumb
+ 183              		.syntax unified
+ 184 0040 B9FA89F9 		clz	r9, r9
+ 185 0044 BAFA8AFA 		clz	r10, r10
+ 186 0048 9668     		ldr	r6, [r2, #8]
+ 187 004a 4FEA4909 		lsl	r9, r9, #1
+ 188 004e 07FA09F9 		lsl	r9, r7, r9
+ 189 0052 26EA0909 		bic	r9, r6, r9
+ 190 0056 8E68     		ldr	r6, [r1, #8]
+ 191 0058 4FEA4A0A 		lsl	r10, r10, #1
+ 192 005c 06FA0AF6 		lsl	r6, r6, r10
+ 193 0060 46EA0906 		orr	r6, r6, r9
+ 194 0064 9660     		str	r6, [r2, #8]
+ 195 0066 5668     		ldr	r6, [r2, #4]
+ 196 0068 08EA0609 		and	r9, r8, r6
+ 197 006c CE68     		ldr	r6, [r1, #12]
+ 198 006e 6E43     		muls	r6, r5, r6
+ 199 0070 49EA0606 		orr	r6, r9, r6
+ 200 0074 5660     		str	r6, [r2, #4]
+ 201              	.L20:
+ 202              		.syntax unified
+ 203              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 204 0076 93FAA3F9 		rbit r9, r3
+ 205              	@ 0 "" 2
+ 206              		.thumb
+ 207              		.syntax unified
+ 208 007a B9FA89F9 		clz	r9, r9
+ 209              		.syntax unified
+ 210              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 211 007e 93FAA3FA 		rbit r10, r3
+ 212              	@ 0 "" 2
+ 213              		.thumb
+ 214              		.syntax unified
+ 215 0082 BAFA8AFA 		clz	r10, r10
+ 216 0086 D668     		ldr	r6, [r2, #12]
+ 217 0088 4FEA4909 		lsl	r9, r9, #1
+ 218 008c 07FA09F9 		lsl	r9, r7, r9
+ 219 0090 26EA0909 		bic	r9, r6, r9
+ 220 0094 0E69     		ldr	r6, [r1, #16]
+ 221 0096 4FEA4A0A 		lsl	r10, r10, #1
+ 222 009a 06FA0AF6 		lsl	r6, r6, r10
+ 223 009e 46EA0906 		orr	r6, r6, r9
+ 224 00a2 0228     		cmp	r0, #2
+ 225 00a4 D660     		str	r6, [r2, #12]
+ 226 00a6 19D1     		bne	.L25
+ 227              		.syntax unified
+ 228              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 229 00a8 93FAA3F6 		rbit r6, r3
+ 230              	@ 0 "" 2
+ 231              		.thumb
+ 232              		.syntax unified
+ 233 00ac D1F814A0 		ldr	r10, [r1, #20]
+ARM GAS  /tmp/cc8u6I0C.s 			page 5
+
+
+ 234 00b0 56B3     		cbz	r6, .L26
+ 235 00b2 B6FA86FB 		clz	fp, r6
+ 236 00b6 BBF1070F 		cmp	fp, #7
+ 237 00ba 25DC     		bgt	.L26
+ 238 00bc B6FA86F6 		clz	r6, r6
+ 239 00c0 D2F82090 		ldr	r9, [r2, #32]
+ 240 00c4 4FEA8B0B 		lsl	fp, fp, #2
+ 241 00c8 0CFA0BFB 		lsl	fp, ip, fp
+ 242 00cc B600     		lsls	r6, r6, #2
+ 243 00ce 29EA0B09 		bic	r9, r9, fp
+ 244 00d2 0AFA06F6 		lsl	r6, r10, r6
+ 245 00d6 46EA0906 		orr	r6, r6, r9
+ 246 00da 1662     		str	r6, [r2, #32]
+ 247              	.L25:
+ 248              		.syntax unified
+ 249              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 250 00dc 93FAA3F6 		rbit r6, r3
+ 251              	@ 0 "" 2
+ 252              		.thumb
+ 253              		.syntax unified
+ 254 00e0 B6FA86F6 		clz	r6, r6
+ 255              		.syntax unified
+ 256              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 257 00e4 93FAA3F3 		rbit r3, r3
+ 258              	@ 0 "" 2
+ 259              		.thumb
+ 260              		.syntax unified
+ 261 00e8 B3FA83F3 		clz	r3, r3
+ 262 00ec D2F80090 		ldr	r9, [r2]
+ 263 00f0 7600     		lsls	r6, r6, #1
+ 264 00f2 07FA06F6 		lsl	r6, r7, r6
+ 265 00f6 5B00     		lsls	r3, r3, #1
+ 266 00f8 29EA0606 		bic	r6, r9, r6
+ 267 00fc 00FA03F3 		lsl	r3, r0, r3
+ 268 0100 3343     		orrs	r3, r3, r6
+ 269 0102 1360     		str	r3, [r2]
+ 270              	.L19:
+ 271 0104 0134     		adds	r4, r4, #1
+ 272 0106 8AE7     		b	.L18
+ 273              	.L26:
+ 274 0108 4FEA1329 		lsr	r9, r3, #8
+ 275              		.syntax unified
+ 276              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 277 010c 99FAA9F6 		rbit r6, r9
+ 278              	@ 0 "" 2
+ 279              		.thumb
+ 280              		.syntax unified
+ 281 0110 B6FA86F6 		clz	r6, r6
+ 282 0114 D2F824B0 		ldr	fp, [r2, #36]
+ 283 0118 B600     		lsls	r6, r6, #2
+ 284 011a 0CFA06F6 		lsl	r6, ip, r6
+ 285 011e 2BEA060B 		bic	fp, fp, r6
+ 286              		.syntax unified
+ 287              	@ 380 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 288 0122 99FAA9F6 		rbit r6, r9
+ 289              	@ 0 "" 2
+ 290              		.thumb
+ARM GAS  /tmp/cc8u6I0C.s 			page 6
+
+
+ 291              		.syntax unified
+ 292 0126 B6FA86F6 		clz	r6, r6
+ 293 012a B600     		lsls	r6, r6, #2
+ 294 012c 0AFA06F6 		lsl	r6, r10, r6
+ 295 0130 46EA0B06 		orr	r6, r6, fp
+ 296 0134 5662     		str	r6, [r2, #36]
+ 297 0136 D1E7     		b	.L25
+ 299              		.section	.text.LL_GPIO_StructInit,"ax",%progbits
+ 300              		.align	1
+ 301              		.global	LL_GPIO_StructInit
+ 302              		.syntax unified
+ 303              		.thumb
+ 304              		.thumb_func
+ 305              		.fpu fpv4-sp-d16
+ 307              	LL_GPIO_StructInit:
+ 308              		@ args = 0, pretend = 0, frame = 0
+ 309              		@ frame_needed = 0, uses_anonymous_args = 0
+ 310              		@ link register save eliminated.
+ 311 0000 0323     		movs	r3, #3
+ 312 0002 4FF6FF72 		movw	r2, #65535
+ 313 0006 C0E90023 		strd	r2, r3, [r0]
+ 314 000a 0023     		movs	r3, #0
+ 315 000c C0E90233 		strd	r3, r3, [r0, #8]
+ 316 0010 C0E90433 		strd	r3, r3, [r0, #16]
+ 317 0014 7047     		bx	lr
+ 319              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc8u6I0C.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_ll_gpio.c
+     /tmp/cc8u6I0C.s:16     .text.LL_AHB2_GRP1_ForceReset:0000000000000000 $t
+     /tmp/cc8u6I0C.s:24     .text.LL_AHB2_GRP1_ForceReset:0000000000000000 LL_AHB2_GRP1_ForceReset
+     /tmp/cc8u6I0C.s:36     .text.LL_AHB2_GRP1_ForceReset:000000000000000c $d
+     /tmp/cc8u6I0C.s:39     .text.LL_GPIO_DeInit:0000000000000000 $t
+     /tmp/cc8u6I0C.s:46     .text.LL_GPIO_DeInit:0000000000000000 LL_GPIO_DeInit
+     /tmp/cc8u6I0C.s:129    .text.LL_GPIO_DeInit:00000000000000a4 $d
+     /tmp/cc8u6I0C.s:139    .text.LL_GPIO_Init:0000000000000000 $t
+     /tmp/cc8u6I0C.s:146    .text.LL_GPIO_Init:0000000000000000 LL_GPIO_Init
+     /tmp/cc8u6I0C.s:300    .text.LL_GPIO_StructInit:0000000000000000 $t
+     /tmp/cc8u6I0C.s:307    .text.LL_GPIO_StructInit:0000000000000000 LL_GPIO_StructInit
+
+NO UNDEFINED SYMBOLS

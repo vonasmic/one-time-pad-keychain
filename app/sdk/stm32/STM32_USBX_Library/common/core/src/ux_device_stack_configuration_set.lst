@@ -1,0 +1,243 @@
+ARM GAS  /tmp/cck0MFXG.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_configuration_set.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_configuration_set,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_configuration_set
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_configuration_set:
+  26              		@ args = 0, pretend = 0, frame = 80
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 0023     		movs	r3, #0
+  29 0002 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  30 0006 DFF8A8A1 		ldr	r10, .L36+8
+  31 000a 95B0     		sub	sp, sp, #84
+  32 000c DAF80040 		ldr	r4, [r10]
+  33 0010 CDE90333 		strd	r3, r3, [sp, #12]
+  34 0014 0593     		str	r3, [sp, #20]
+  35 0016 D4F8A430 		ldr	r3, [r4, #164]
+  36 001a 0746     		mov	r7, r0
+  37 001c 8342     		cmp	r3, r0
+  38 001e 05D1     		bne	.L2
+  39              	.L11:
+  40 0020 4FF00008 		mov	r8, #0
+  41              	.L1:
+  42 0024 4046     		mov	r0, r8
+  43 0026 15B0     		add	sp, sp, #84
+  44              		@ sp needed
+  45 0028 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+  46              	.L2:
+  47 002c DFF87891 		ldr	r9, .L36
+  48 0030 D4E93356 		ldrd	r5, r6, [r4, #204]
+  49              	.L4:
+  50 0034 1EB9     		cbnz	r6, .L8
+  51 0036 AFB1     		cbz	r7, .L6
+  52 0038 4FF0FF08 		mov	r8, #255
+  53 003c F2E7     		b	.L1
+  54              	.L8:
+  55 003e 6B78     		ldrb	r3, [r5, #1]	@ zero_extendqisi2
+  56 0040 95F80080 		ldrb	r8, [r5]	@ zero_extendqisi2
+  57 0044 022B     		cmp	r3, #2
+  58 0046 03D0     		beq	.L5
+ARM GAS  /tmp/cck0MFXG.s 			page 2
+
+
+  59              	.L7:
+  60 0048 A6EB0806 		sub	r6, r6, r8
+  61 004c 4544     		add	r5, r5, r8
+  62 004e F1E7     		b	.L4
+  63              	.L5:
+  64 0050 03AB     		add	r3, sp, #12
+  65 0052 0822     		movs	r2, #8
+  66 0054 4946     		mov	r1, r9
+  67 0056 2846     		mov	r0, r5
+  68 0058 FFF7FEFF 		bl	_ux_utility_descriptor_parse
+  69 005c 9DF81130 		ldrb	r3, [sp, #17]	@ zero_extendqisi2
+  70 0060 BB42     		cmp	r3, r7
+  71 0062 F1D1     		bne	.L7
+  72              	.L6:
+  73 0064 D4F8A430 		ldr	r3, [r4, #164]
+  74 0068 8BBB     		cbnz	r3, .L10
+  75              	.L16:
+  76 006a 0026     		movs	r6, #0
+  77 006c 0122     		movs	r2, #1
+  78 006e 1321     		movs	r1, #19
+  79 0070 2046     		mov	r0, r4
+  80 0072 A369     		ldr	r3, [r4, #24]
+  81 0074 C4F8A460 		str	r6, [r4, #164]
+  82 0078 6262     		str	r2, [r4, #36]
+  83 007a 9847     		blx	r3
+  84 007c 002F     		cmp	r7, #0
+  85 007e CFD0     		beq	.L11
+  86 0080 4949     		ldr	r1, .L36
+  87 0082 0822     		movs	r2, #8
+  88 0084 04F1A803 		add	r3, r4, #168
+  89 0088 2846     		mov	r0, r5
+  90 008a C4F8A470 		str	r7, [r4, #164]
+  91 008e FFF7FEFF 		bl	_ux_utility_descriptor_parse
+  92 0092 9DF81330 		ldrb	r3, [sp, #19]	@ zero_extendqisi2
+  93 0096 B146     		mov	r9, r6
+  94 0098 13F0400F 		tst	r3, #64
+  95 009c 14BF     		ite	ne
+  96 009e 0221     		movne	r1, #2
+  97 00a0 0121     		moveq	r1, #1
+  98 00a2 B346     		mov	fp, r6
+  99 00a4 DAF80020 		ldr	r2, [r10]
+ 100 00a8 C3F34013 		ubfx	r3, r3, #5, #1
+ 101 00ac BDF80E80 		ldrh	r8, [sp, #14]
+ 102 00b0 C2F84411 		str	r1, [r2, #324]
+ 103 00b4 C2F84831 		str	r3, [r2, #328]
+ 104 00b8 0096     		str	r6, [sp]
+ 105              	.L18:
+ 106 00ba B8F1000F 		cmp	r8, #0
+ 107 00be 1CD1     		bne	.L25
+ 108 00c0 0322     		movs	r2, #3
+ 109 00c2 1321     		movs	r1, #19
+ 110 00c4 2046     		mov	r0, r4
+ 111 00c6 A369     		ldr	r3, [r4, #24]
+ 112 00c8 6262     		str	r2, [r4, #36]
+ 113 00ca 9847     		blx	r3
+ 114 00cc AAE7     		b	.L1
+ 115              	.L10:
+ARM GAS  /tmp/cck0MFXG.s 			page 3
+
+
+ 116 00ce 4FF00308 		mov	r8, #3
+ 117 00d2 D4F8B460 		ldr	r6, [r4, #180]
+ 118              	.L13:
+ 119 00d6 002E     		cmp	r6, #0
+ 120 00d8 C7D0     		beq	.L16
+ 121 00da 7368     		ldr	r3, [r6, #4]
+ 122 00dc CDF82480 		str	r8, [sp, #36]
+ 123 00e0 0B96     		str	r6, [sp, #44]
+ 124 00e2 1193     		str	r3, [sp, #68]
+ 125 00e4 13B1     		cbz	r3, .L14
+ 126 00e6 5B6C     		ldr	r3, [r3, #68]
+ 127 00e8 09A8     		add	r0, sp, #36
+ 128 00ea 9847     		blx	r3
+ 129              	.L14:
+ 130 00ec D6F81890 		ldr	r9, [r6, #24]
+ 131 00f0 3046     		mov	r0, r6
+ 132 00f2 FFF7FEFF 		bl	_ux_device_stack_interface_delete
+ 133 00f6 4E46     		mov	r6, r9
+ 134 00f8 EDE7     		b	.L13
+ 135              	.L25:
+ 136 00fa 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 137 00fc 0193     		str	r3, [sp, #4]
+ 138 00fe 6B78     		ldrb	r3, [r5, #1]	@ zero_extendqisi2
+ 139 0100 0B2B     		cmp	r3, #11
+ 140 0102 09D1     		bne	.L19
+ 141 0104 4FF0010B 		mov	fp, #1
+ 142 0108 95F80290 		ldrb	r9, [r5, #2]	@ zero_extendqisi2
+ 143 010c EE78     		ldrb	r6, [r5, #3]	@ zero_extendqisi2
+ 144              	.L20:
+ 145 010e 019B     		ldr	r3, [sp, #4]
+ 146 0110 A8EB0308 		sub	r8, r8, r3
+ 147 0114 1D44     		add	r5, r5, r3
+ 148 0116 D0E7     		b	.L18
+ 149              	.L19:
+ 150 0118 042B     		cmp	r3, #4
+ 151 011a F8D1     		bne	.L20
+ 152 011c 06AB     		add	r3, sp, #24
+ 153 011e 0922     		movs	r2, #9
+ 154 0120 2846     		mov	r0, r5
+ 155 0122 2249     		ldr	r1, .L36+4
+ 156 0124 FFF7FEFF 		bl	_ux_utility_descriptor_parse
+ 157 0128 9DF81B30 		ldrb	r3, [sp, #27]	@ zero_extendqisi2
+ 158 012c 002B     		cmp	r3, #0
+ 159 012e EED1     		bne	.L20
+ 160 0130 DAF80030 		ldr	r3, [r10]
+ 161 0134 BBF1000F 		cmp	fp, #0
+ 162 0138 24D0     		beq	.L21
+ 163 013a 9DF81A20 		ldrb	r2, [sp, #26]	@ zero_extendqisi2
+ 164 013e 4A45     		cmp	r2, r9
+ 165 0140 1BD1     		bne	.L22
+ 166 0142 D3F8FC20 		ldr	r2, [r3, #252]
+ 167 0146 116C     		ldr	r1, [r2, #64]
+ 168 0148 0129     		cmp	r1, #1
+ 169 014a 0AD1     		bne	.L23
+ 170 014c 916D     		ldr	r1, [r2, #88]
+ 171 014e 8945     		cmp	r9, r1
+ 172 0150 07D1     		bne	.L23
+ARM GAS  /tmp/cck0MFXG.s 			page 4
+
+
+ 173 0152 D16D     		ldr	r1, [r2, #92]
+ 174 0154 B942     		cmp	r1, r7
+ 175 0156 04D1     		bne	.L23
+ 176 0158 09F14001 		add	r1, r9, #64
+ 177 015c 43F82120 		str	r2, [r3, r1, lsl #2]
+ 178 0160 0092     		str	r2, [sp]
+ 179              	.L23:
+ 180 0162 013E     		subs	r6, r6, #1
+ 181 0164 14BF     		ite	ne
+ 182 0166 4FF0010B 		movne	fp, #1
+ 183 016a 4FF0000B 		moveq	fp, #0
+ 184              	.L24:
+ 185 016e 0022     		movs	r2, #0
+ 186 0170 4146     		mov	r1, r8
+ 187 0172 2846     		mov	r0, r5
+ 188 0174 FFF7FEFF 		bl	_ux_device_stack_interface_set
+ 189 0178 C9E7     		b	.L20
+ 190              	.L22:
+ 191 017a 0099     		ldr	r1, [sp]
+ 192 017c 4032     		adds	r2, r2, #64
+ 193 017e 43F82210 		str	r1, [r3, r2, lsl #2]
+ 194 0182 EEE7     		b	.L23
+ 195              	.L21:
+ 196 0184 D3F8FC10 		ldr	r1, [r3, #252]
+ 197 0188 0A6C     		ldr	r2, [r1, #64]
+ 198 018a 012A     		cmp	r2, #1
+ 199 018c EFD1     		bne	.L24
+ 200 018e 9DF81A20 		ldrb	r2, [sp, #26]	@ zero_extendqisi2
+ 201 0192 886D     		ldr	r0, [r1, #88]
+ 202 0194 8242     		cmp	r2, r0
+ 203 0196 EAD1     		bne	.L24
+ 204 0198 C86D     		ldr	r0, [r1, #92]
+ 205 019a B842     		cmp	r0, r7
+ 206 019c 04BF     		itt	eq
+ 207 019e 4032     		addeq	r2, r2, #64
+ 208 01a0 43F82210 		streq	r1, [r3, r2, lsl #2]
+ 209 01a4 E3E7     		b	.L24
+ 210              	.L37:
+ 211 01a6 00BF     		.align	2
+ 212              	.L36:
+ 213 01a8 00000000 		.word	_ux_system_configuration_descriptor_structure
+ 214 01ac 00000000 		.word	_ux_system_interface_descriptor_structure
+ 215 01b0 00000000 		.word	_ux_system_slave
+ 217              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cck0MFXG.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_configuration_set.c
+     /tmp/cck0MFXG.s:16     .text._ux_device_stack_configuration_set:0000000000000000 $t
+     /tmp/cck0MFXG.s:25     .text._ux_device_stack_configuration_set:0000000000000000 _ux_device_stack_configuration_set
+     /tmp/cck0MFXG.s:213    .text._ux_device_stack_configuration_set:00000000000001a8 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_descriptor_parse
+_ux_device_stack_interface_delete
+_ux_device_stack_interface_set
+_ux_system_configuration_descriptor_structure
+_ux_system_interface_descriptor_structure
+_ux_system_slave

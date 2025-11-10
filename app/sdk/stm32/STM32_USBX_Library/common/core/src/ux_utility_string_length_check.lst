@@ -1,0 +1,65 @@
+ARM GAS  /tmp/cc8S8T0J.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_utility_string_length_check.c"
+  14              		.text
+  15              		.section	.text._ux_utility_string_length_check,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_utility_string_length_check
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_utility_string_length_check:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 10B5     		push	{r4, lr}
+  29 0002 50B1     		cbz	r0, .L5
+  30 0004 0023     		movs	r3, #0
+  31              	.L4:
+  32 0006 C45C     		ldrb	r4, [r0, r3]	@ zero_extendqisi2
+  33 0008 4CB1     		cbz	r4, .L3
+  34 000a 0133     		adds	r3, r3, #1
+  35 000c 9342     		cmp	r3, r2
+  36 000e FAD9     		bls	.L4
+  37 0010 FF22     		movs	r2, #255
+  38 0012 0821     		movs	r1, #8
+  39 0014 0220     		movs	r0, #2
+  40 0016 FFF7FEFF 		bl	_ux_system_error_handler
+  41              	.L5:
+  42 001a FF20     		movs	r0, #255
+  43 001c 02E0     		b	.L1
+  44              	.L3:
+  45 001e 11B1     		cbz	r1, .L6
+  46 0020 2046     		mov	r0, r4
+  47 0022 0B60     		str	r3, [r1]
+  48              	.L1:
+  49 0024 10BD     		pop	{r4, pc}
+  50              	.L6:
+  51 0026 0846     		mov	r0, r1
+  52 0028 FCE7     		b	.L1
+  54              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc8S8T0J.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_utility_string_length_check.c
+     /tmp/cc8S8T0J.s:16     .text._ux_utility_string_length_check:0000000000000000 $t
+     /tmp/cc8S8T0J.s:25     .text._ux_utility_string_length_check:0000000000000000 _ux_utility_string_length_check
+
+UNDEFINED SYMBOLS
+_ux_system_error_handler

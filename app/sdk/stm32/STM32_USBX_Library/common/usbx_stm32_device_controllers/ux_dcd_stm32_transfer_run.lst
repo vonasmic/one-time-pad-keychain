@@ -1,0 +1,110 @@
+ARM GAS  /tmp/cce9PcqF.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_dcd_stm32_transfer_run.c"
+  14              		.text
+  15              		.section	.text._ux_dcd_stm32_transfer_run,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_dcd_stm32_transfer_run
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_dcd_stm32_transfer_run:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  29 0004 D1F80880 		ldr	r8, [r1, #8]
+  30 0008 0646     		mov	r6, r0
+  31 000a 0C46     		mov	r4, r1
+  32 000c D8F80870 		ldr	r7, [r8, #8]
+  33 0010 FFF7FEFF 		bl	_ux_utility_interrupt_disable
+  34 0014 1B4B     		ldr	r3, .L11
+  35 0016 0546     		mov	r5, r0
+  36 0018 1B68     		ldr	r3, [r3]
+  37 001a 5B6A     		ldr	r3, [r3, #36]
+  38 001c 33B9     		cbnz	r3, .L2
+  39 001e 2623     		movs	r3, #38
+  40 0020 6362     		str	r3, [r4, #36]
+  41 0022 FFF7FEFF 		bl	_ux_utility_interrupt_restore
+  42 0026 0120     		movs	r0, #1
+  43              	.L1:
+  44 0028 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+  45              	.L2:
+  46 002c 7B68     		ldr	r3, [r7, #4]
+  47 002e 5A07     		lsls	r2, r3, #29
+  48 0030 05D5     		bpl	.L4
+  49 0032 2123     		movs	r3, #33
+  50 0034 6362     		str	r3, [r4, #36]
+  51              	.L9:
+  52 0036 FFF7FEFF 		bl	_ux_utility_interrupt_restore
+  53 003a 0420     		movs	r0, #4
+  54 003c F4E7     		b	.L1
+  55              	.L4:
+  56 003e 9907     		lsls	r1, r3, #30
+  57 0040 09D5     		bpl	.L5
+  58 0042 1A07     		lsls	r2, r3, #28
+ARM GAS  /tmp/cce9PcqF.s 			page 2
+
+
+  59 0044 16D5     		bpl	.L10
+  60 0046 23F47E73 		bic	r3, r3, #1016
+  61 004a 23F00203 		bic	r3, r3, #2
+  62 004e 5B05     		lsls	r3, r3, #21
+  63 0050 5B0D     		lsrs	r3, r3, #21
+  64 0052 7B60     		str	r3, [r7, #4]
+  65 0054 EFE7     		b	.L9
+  66              	.L5:
+  67 0056 43F00203 		orr	r3, r3, #2
+  68 005a 7B60     		str	r3, [r7, #4]
+  69 005c E268     		ldr	r2, [r4, #12]
+  70 005e 6369     		ldr	r3, [r4, #20]
+  71 0060 A46A     		ldr	r4, [r4, #40]
+  72 0062 D6F8C400 		ldr	r0, [r6, #196]
+  73 0066 032C     		cmp	r4, #3
+  74 0068 98F80E10 		ldrb	r1, [r8, #14]	@ zero_extendqisi2
+  75 006c 06D1     		bne	.L7
+  76 006e FFF7FEFF 		bl	HAL_PCD_EP_Transmit
+  77              	.L8:
+  78 0072 2846     		mov	r0, r5
+  79              	.L10:
+  80 0074 FFF7FEFF 		bl	_ux_utility_interrupt_restore
+  81 0078 0520     		movs	r0, #5
+  82 007a D5E7     		b	.L1
+  83              	.L7:
+  84 007c FFF7FEFF 		bl	HAL_PCD_EP_Receive
+  85 0080 F7E7     		b	.L8
+  86              	.L12:
+  87 0082 00BF     		.align	2
+  88              	.L11:
+  89 0084 00000000 		.word	_ux_system_slave
+  91              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cce9PcqF.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_dcd_stm32_transfer_run.c
+     /tmp/cce9PcqF.s:16     .text._ux_dcd_stm32_transfer_run:0000000000000000 $t
+     /tmp/cce9PcqF.s:25     .text._ux_dcd_stm32_transfer_run:0000000000000000 _ux_dcd_stm32_transfer_run
+     /tmp/cce9PcqF.s:89     .text._ux_dcd_stm32_transfer_run:0000000000000084 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_interrupt_disable
+_ux_utility_interrupt_restore
+HAL_PCD_EP_Transmit
+HAL_PCD_EP_Receive
+_ux_system_slave

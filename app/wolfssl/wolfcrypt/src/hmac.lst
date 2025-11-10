@@ -1,0 +1,1303 @@
+ARM GAS  /tmp/ccxKhUQ0.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"hmac.c"
+  14              		.text
+  15              		.section	.text.HmacKeyHashUpdate,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	HmacKeyHashUpdate:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27              		@ link register save eliminated.
+  28 0000 0346     		mov	r3, r0
+  29 0002 043B     		subs	r3, r3, #4
+  30 0004 0846     		mov	r0, r1
+  31 0006 1146     		mov	r1, r2
+  32 0008 092B     		cmp	r3, #9
+  33 000a 18D8     		bhi	.L2
+  34 000c DFE803F0 		tbb	[pc, r3]
+  35              	.L4:
+  36 0010 05       		.byte	(.L9-.L4)/2
+  37 0011 17       		.byte	(.L2-.L4)/2
+  38 0012 08       		.byte	(.L8-.L4)/2
+  39 0013 17       		.byte	(.L2-.L4)/2
+  40 0014 17       		.byte	(.L2-.L4)/2
+  41 0015 17       		.byte	(.L2-.L4)/2
+  42 0016 0B       		.byte	(.L7-.L4)/2
+  43 0017 0E       		.byte	(.L6-.L4)/2
+  44 0018 11       		.byte	(.L5-.L4)/2
+  45 0019 14       		.byte	(.L3-.L4)/2
+  46              		.p2align 1
+  47              	.L9:
+  48 001a 4022     		movs	r2, #64
+  49 001c FFF7FEBF 		b	wc_ShaUpdate
+  50              	.L8:
+  51 0020 4022     		movs	r2, #64
+  52 0022 FFF7FEBF 		b	wc_Sha256Update
+  53              	.L7:
+  54 0026 9022     		movs	r2, #144
+  55 0028 FFF7FEBF 		b	wc_Sha3_224_Update
+  56              	.L6:
+  57 002c 8822     		movs	r2, #136
+  58 002e FFF7FEBF 		b	wc_Sha3_256_Update
+ARM GAS  /tmp/ccxKhUQ0.s 			page 2
+
+
+  59              	.L5:
+  60 0032 6822     		movs	r2, #104
+  61 0034 FFF7FEBF 		b	wc_Sha3_384_Update
+  62              	.L3:
+  63 0038 4822     		movs	r2, #72
+  64 003a FFF7FEBF 		b	wc_Sha3_512_Update
+  65              	.L2:
+  66 003e 0020     		movs	r0, #0
+  67 0040 7047     		bx	lr
+  69              		.section	.text.wc_HmacSizeByType,"ax",%progbits
+  70              		.align	1
+  71              		.global	wc_HmacSizeByType
+  72              		.syntax unified
+  73              		.thumb
+  74              		.thumb_func
+  75              		.fpu fpv4-sp-d16
+  77              	wc_HmacSizeByType:
+  78              		@ args = 0, pretend = 0, frame = 0
+  79              		@ frame_needed = 0, uses_anonymous_args = 0
+  80              		@ link register save eliminated.
+  81 0000 C31E     		subs	r3, r0, #3
+  82 0002 052B     		cmp	r3, #5
+  83 0004 03D9     		bls	.L11
+  84 0006 A0F10A03 		sub	r3, r0, #10
+  85 000a 032B     		cmp	r3, #3
+  86 000c 06D8     		bhi	.L14
+  87              	.L11:
+  88 000e 0438     		subs	r0, r0, #4
+  89 0010 0928     		cmp	r0, #9
+  90 0012 03D8     		bhi	.L14
+  91 0014 034B     		ldr	r3, .L15
+  92 0016 33F91000 		ldrsh	r0, [r3, r0, lsl #1]
+  93 001a 7047     		bx	lr
+  94              	.L14:
+  95 001c 6FF0AC00 		mvn	r0, #172
+  96 0020 7047     		bx	lr
+  97              	.L16:
+  98 0022 00BF     		.align	2
+  99              	.L15:
+ 100 0024 00000000 		.word	.LANCHOR0
+ 102              		.section	.text._InitHmac,"ax",%progbits
+ 103              		.align	1
+ 104              		.global	_InitHmac
+ 105              		.syntax unified
+ 106              		.thumb
+ 107              		.thumb_func
+ 108              		.fpu fpv4-sp-d16
+ 110              	_InitHmac:
+ 111              		@ args = 0, pretend = 0, frame = 0
+ 112              		@ frame_needed = 0, uses_anonymous_args = 0
+ 113 0000 0439     		subs	r1, r1, #4
+ 114 0002 38B5     		push	{r3, r4, r5, lr}
+ 115 0004 0446     		mov	r4, r0
+ 116 0006 1546     		mov	r5, r2
+ 117 0008 0929     		cmp	r1, #9
+ 118 000a 2DD8     		bhi	.L27
+ 119 000c DFE801F0 		tbb	[pc, r1]
+ARM GAS  /tmp/ccxKhUQ0.s 			page 3
+
+
+ 120              	.L20:
+ 121 0010 05       		.byte	(.L25-.L20)/2
+ 122 0011 2C       		.byte	(.L27-.L20)/2
+ 123 0012 0E       		.byte	(.L24-.L20)/2
+ 124 0013 2C       		.byte	(.L27-.L20)/2
+ 125 0014 2C       		.byte	(.L27-.L20)/2
+ 126 0015 2C       		.byte	(.L27-.L20)/2
+ 127 0016 14       		.byte	(.L23-.L20)/2
+ 128 0017 1A       		.byte	(.L22-.L20)/2
+ 129 0018 20       		.byte	(.L21-.L20)/2
+ 130 0019 26       		.byte	(.L19-.L20)/2
+ 131              		.p2align 1
+ 132              	.L25:
+ 133 001a 6FF00102 		mvn	r2, #1
+ 134 001e 2946     		mov	r1, r5
+ 135 0020 FFF7FEFF 		bl	wc_InitSha_ex
+ 136              	.L26:
+ 137 0024 08B9     		cbnz	r0, .L17
+ 138 0026 C4F8F852 		str	r5, [r4, #760]
+ 139              	.L17:
+ 140 002a 38BD     		pop	{r3, r4, r5, pc}
+ 141              	.L24:
+ 142 002c 6FF00102 		mvn	r2, #1
+ 143 0030 2946     		mov	r1, r5
+ 144 0032 FFF7FEFF 		bl	wc_InitSha256_ex
+ 145 0036 F5E7     		b	.L26
+ 146              	.L23:
+ 147 0038 6FF00102 		mvn	r2, #1
+ 148 003c 2946     		mov	r1, r5
+ 149 003e FFF7FEFF 		bl	wc_InitSha3_224
+ 150 0042 EFE7     		b	.L26
+ 151              	.L22:
+ 152 0044 6FF00102 		mvn	r2, #1
+ 153 0048 2946     		mov	r1, r5
+ 154 004a FFF7FEFF 		bl	wc_InitSha3_256
+ 155 004e E9E7     		b	.L26
+ 156              	.L21:
+ 157 0050 6FF00102 		mvn	r2, #1
+ 158 0054 2946     		mov	r1, r5
+ 159 0056 FFF7FEFF 		bl	wc_InitSha3_384
+ 160 005a E3E7     		b	.L26
+ 161              	.L19:
+ 162 005c 6FF00102 		mvn	r2, #1
+ 163 0060 2946     		mov	r1, r5
+ 164 0062 FFF7FEFF 		bl	wc_InitSha3_512
+ 165 0066 DDE7     		b	.L26
+ 166              	.L27:
+ 167 0068 6FF0AC00 		mvn	r0, #172
+ 168 006c DDE7     		b	.L17
+ 170              		.section	.text.wc_HmacUpdate,"ax",%progbits
+ 171              		.align	1
+ 172              		.global	wc_HmacUpdate
+ 173              		.syntax unified
+ 174              		.thumb
+ 175              		.thumb_func
+ 176              		.fpu fpv4-sp-d16
+ 178              	wc_HmacUpdate:
+ARM GAS  /tmp/ccxKhUQ0.s 			page 4
+
+
+ 179              		@ args = 0, pretend = 0, frame = 0
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181 0000 70B5     		push	{r4, r5, r6, lr}
+ 182 0002 0D46     		mov	r5, r1
+ 183 0004 1646     		mov	r6, r2
+ 184 0006 0446     		mov	r4, r0
+ 185 0008 0028     		cmp	r0, #0
+ 186 000a 47D0     		beq	.L40
+ 187 000c 09B9     		cbnz	r1, .L30
+ 188 000e 002A     		cmp	r2, #0
+ 189 0010 44D1     		bne	.L40
+ 190              	.L30:
+ 191 0012 94F8FD32 		ldrb	r3, [r4, #765]	@ zero_extendqisi2
+ 192 0016 5BB9     		cbnz	r3, .L31
+ 193 0018 2146     		mov	r1, r4
+ 194 001a 94F8FC02 		ldrb	r0, [r4, #764]	@ zero_extendqisi2
+ 195 001e 04F5CC72 		add	r2, r4, #408
+ 196 0022 FFF7FEFF 		bl	HmacKeyHashUpdate
+ 197 0026 0028     		cmp	r0, #0
+ 198 0028 3AD1     		bne	.L28
+ 199 002a 0123     		movs	r3, #1
+ 200 002c 84F8FD32 		strb	r3, [r4, #765]
+ 201              	.L31:
+ 202 0030 94F8FC32 		ldrb	r3, [r4, #764]	@ zero_extendqisi2
+ 203 0034 043B     		subs	r3, r3, #4
+ 204 0036 092B     		cmp	r3, #9
+ 205 0038 33D8     		bhi	.L41
+ 206 003a DFE803F0 		tbb	[pc, r3]
+ 207              	.L33:
+ 208 003e 05       		.byte	(.L38-.L33)/2
+ 209 003f 32       		.byte	(.L41-.L33)/2
+ 210 0040 0C       		.byte	(.L37-.L33)/2
+ 211 0041 32       		.byte	(.L41-.L33)/2
+ 212 0042 32       		.byte	(.L41-.L33)/2
+ 213 0043 32       		.byte	(.L41-.L33)/2
+ 214 0044 13       		.byte	(.L36-.L33)/2
+ 215 0045 1A       		.byte	(.L35-.L33)/2
+ 216 0046 21       		.byte	(.L34-.L33)/2
+ 217 0047 28       		.byte	(.L32-.L33)/2
+ 218              		.p2align 1
+ 219              	.L38:
+ 220 0048 3246     		mov	r2, r6
+ 221 004a 2946     		mov	r1, r5
+ 222 004c 2046     		mov	r0, r4
+ 223 004e BDE87040 		pop	{r4, r5, r6, lr}
+ 224 0052 FFF7FEBF 		b	wc_ShaUpdate
+ 225              	.L37:
+ 226 0056 3246     		mov	r2, r6
+ 227 0058 2946     		mov	r1, r5
+ 228 005a 2046     		mov	r0, r4
+ 229 005c BDE87040 		pop	{r4, r5, r6, lr}
+ 230 0060 FFF7FEBF 		b	wc_Sha256Update
+ 231              	.L36:
+ 232 0064 3246     		mov	r2, r6
+ 233 0066 2946     		mov	r1, r5
+ 234 0068 2046     		mov	r0, r4
+ 235 006a BDE87040 		pop	{r4, r5, r6, lr}
+ARM GAS  /tmp/ccxKhUQ0.s 			page 5
+
+
+ 236 006e FFF7FEBF 		b	wc_Sha3_224_Update
+ 237              	.L35:
+ 238 0072 3246     		mov	r2, r6
+ 239 0074 2946     		mov	r1, r5
+ 240 0076 2046     		mov	r0, r4
+ 241 0078 BDE87040 		pop	{r4, r5, r6, lr}
+ 242 007c FFF7FEBF 		b	wc_Sha3_256_Update
+ 243              	.L34:
+ 244 0080 3246     		mov	r2, r6
+ 245 0082 2946     		mov	r1, r5
+ 246 0084 2046     		mov	r0, r4
+ 247 0086 BDE87040 		pop	{r4, r5, r6, lr}
+ 248 008a FFF7FEBF 		b	wc_Sha3_384_Update
+ 249              	.L32:
+ 250 008e 3246     		mov	r2, r6
+ 251 0090 2946     		mov	r1, r5
+ 252 0092 2046     		mov	r0, r4
+ 253 0094 BDE87040 		pop	{r4, r5, r6, lr}
+ 254 0098 FFF7FEBF 		b	wc_Sha3_512_Update
+ 255              	.L40:
+ 256 009c 6FF0AC00 		mvn	r0, #172
+ 257              	.L28:
+ 258 00a0 70BD     		pop	{r4, r5, r6, pc}
+ 259              	.L41:
+ 260 00a2 0020     		movs	r0, #0
+ 261 00a4 FCE7     		b	.L28
+ 263              		.section	.text.wc_HmacFinal,"ax",%progbits
+ 264              		.align	1
+ 265              		.global	wc_HmacFinal
+ 266              		.syntax unified
+ 267              		.thumb
+ 268              		.thumb_func
+ 269              		.fpu fpv4-sp-d16
+ 271              	wc_HmacFinal:
+ 272              		@ args = 0, pretend = 0, frame = 0
+ 273              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274 0000 70B5     		push	{r4, r5, r6, lr}
+ 275 0002 0D46     		mov	r5, r1
+ 276 0004 0446     		mov	r4, r0
+ 277 0006 0028     		cmp	r0, #0
+ 278 0008 00F0C880 		beq	.L55
+ 279 000c 0029     		cmp	r1, #0
+ 280 000e 00F0C580 		beq	.L55
+ 281 0012 90F8FD32 		ldrb	r3, [r0, #765]	@ zero_extendqisi2
+ 282 0016 53B9     		cbnz	r3, .L44
+ 283 0018 0146     		mov	r1, r0
+ 284 001a 00F5CC72 		add	r2, r0, #408
+ 285 001e 90F8FC02 		ldrb	r0, [r0, #764]	@ zero_extendqisi2
+ 286 0022 FFF7FEFF 		bl	HmacKeyHashUpdate
+ 287 0026 50BB     		cbnz	r0, .L42
+ 288 0028 0123     		movs	r3, #1
+ 289 002a 84F8FD32 		strb	r3, [r4, #765]
+ 290              	.L44:
+ 291 002e 94F8FC32 		ldrb	r3, [r4, #764]	@ zero_extendqisi2
+ 292 0032 043B     		subs	r3, r3, #4
+ 293 0034 092B     		cmp	r3, #9
+ 294 0036 00F2B180 		bhi	.L55
+ARM GAS  /tmp/ccxKhUQ0.s 			page 6
+
+
+ 295 003a DFE803F0 		tbb	[pc, r3]
+ 296              	.L46:
+ 297 003e 05       		.byte	(.L51-.L46)/2
+ 298 003f AF       		.byte	(.L55-.L46)/2
+ 299 0040 21       		.byte	(.L50-.L46)/2
+ 300 0041 AF       		.byte	(.L55-.L46)/2
+ 301 0042 AF       		.byte	(.L55-.L46)/2
+ 302 0043 AF       		.byte	(.L55-.L46)/2
+ 303 0044 3D       		.byte	(.L49-.L46)/2
+ 304 0045 59       		.byte	(.L48-.L46)/2
+ 305 0046 75       		.byte	(.L47-.L46)/2
+ 306 0047 91       		.byte	(.L45-.L46)/2
+ 307              		.p2align 1
+ 308              	.L51:
+ 309 0048 04F52E76 		add	r6, r4, #696
+ 310 004c 3146     		mov	r1, r6
+ 311 004e 2046     		mov	r0, r4
+ 312 0050 FFF7FEFF 		bl	wc_ShaFinal
+ 313 0054 98B9     		cbnz	r0, .L42
+ 314 0056 4022     		movs	r2, #64
+ 315 0058 2046     		mov	r0, r4
+ 316 005a 04F50A71 		add	r1, r4, #552
+ 317 005e FFF7FEFF 		bl	wc_ShaUpdate
+ 318 0062 60B9     		cbnz	r0, .L42
+ 319 0064 1422     		movs	r2, #20
+ 320 0066 3146     		mov	r1, r6
+ 321 0068 2046     		mov	r0, r4
+ 322 006a FFF7FEFF 		bl	wc_ShaUpdate
+ 323 006e 30B9     		cbnz	r0, .L42
+ 324 0070 2946     		mov	r1, r5
+ 325 0072 2046     		mov	r0, r4
+ 326 0074 FFF7FEFF 		bl	wc_ShaFinal
+ 327              	.L52:
+ 328 0078 08B9     		cbnz	r0, .L42
+ 329 007a 84F8FD02 		strb	r0, [r4, #765]
+ 330              	.L42:
+ 331 007e 70BD     		pop	{r4, r5, r6, pc}
+ 332              	.L50:
+ 333 0080 04F52E76 		add	r6, r4, #696
+ 334 0084 3146     		mov	r1, r6
+ 335 0086 2046     		mov	r0, r4
+ 336 0088 FFF7FEFF 		bl	wc_Sha256Final
+ 337 008c 0028     		cmp	r0, #0
+ 338 008e F6D1     		bne	.L42
+ 339 0090 4022     		movs	r2, #64
+ 340 0092 2046     		mov	r0, r4
+ 341 0094 04F50A71 		add	r1, r4, #552
+ 342 0098 FFF7FEFF 		bl	wc_Sha256Update
+ 343 009c 0028     		cmp	r0, #0
+ 344 009e EED1     		bne	.L42
+ 345 00a0 2022     		movs	r2, #32
+ 346 00a2 3146     		mov	r1, r6
+ 347 00a4 2046     		mov	r0, r4
+ 348 00a6 FFF7FEFF 		bl	wc_Sha256Update
+ 349 00aa 0028     		cmp	r0, #0
+ 350 00ac E7D1     		bne	.L42
+ 351 00ae 2946     		mov	r1, r5
+ARM GAS  /tmp/ccxKhUQ0.s 			page 7
+
+
+ 352 00b0 2046     		mov	r0, r4
+ 353 00b2 FFF7FEFF 		bl	wc_Sha256Final
+ 354 00b6 DFE7     		b	.L52
+ 355              	.L49:
+ 356 00b8 04F52E76 		add	r6, r4, #696
+ 357 00bc 3146     		mov	r1, r6
+ 358 00be 2046     		mov	r0, r4
+ 359 00c0 FFF7FEFF 		bl	wc_Sha3_224_Final
+ 360 00c4 0028     		cmp	r0, #0
+ 361 00c6 DAD1     		bne	.L42
+ 362 00c8 9022     		movs	r2, #144
+ 363 00ca 2046     		mov	r0, r4
+ 364 00cc 04F50A71 		add	r1, r4, #552
+ 365 00d0 FFF7FEFF 		bl	wc_Sha3_224_Update
+ 366 00d4 0028     		cmp	r0, #0
+ 367 00d6 D2D1     		bne	.L42
+ 368 00d8 1C22     		movs	r2, #28
+ 369 00da 3146     		mov	r1, r6
+ 370 00dc 2046     		mov	r0, r4
+ 371 00de FFF7FEFF 		bl	wc_Sha3_224_Update
+ 372 00e2 0028     		cmp	r0, #0
+ 373 00e4 CBD1     		bne	.L42
+ 374 00e6 2946     		mov	r1, r5
+ 375 00e8 2046     		mov	r0, r4
+ 376 00ea FFF7FEFF 		bl	wc_Sha3_224_Final
+ 377 00ee C3E7     		b	.L52
+ 378              	.L48:
+ 379 00f0 04F52E76 		add	r6, r4, #696
+ 380 00f4 3146     		mov	r1, r6
+ 381 00f6 2046     		mov	r0, r4
+ 382 00f8 FFF7FEFF 		bl	wc_Sha3_256_Final
+ 383 00fc 0028     		cmp	r0, #0
+ 384 00fe BED1     		bne	.L42
+ 385 0100 8822     		movs	r2, #136
+ 386 0102 2046     		mov	r0, r4
+ 387 0104 04F50A71 		add	r1, r4, #552
+ 388 0108 FFF7FEFF 		bl	wc_Sha3_256_Update
+ 389 010c 0028     		cmp	r0, #0
+ 390 010e B6D1     		bne	.L42
+ 391 0110 2022     		movs	r2, #32
+ 392 0112 3146     		mov	r1, r6
+ 393 0114 2046     		mov	r0, r4
+ 394 0116 FFF7FEFF 		bl	wc_Sha3_256_Update
+ 395 011a 0028     		cmp	r0, #0
+ 396 011c AFD1     		bne	.L42
+ 397 011e 2946     		mov	r1, r5
+ 398 0120 2046     		mov	r0, r4
+ 399 0122 FFF7FEFF 		bl	wc_Sha3_256_Final
+ 400 0126 A7E7     		b	.L52
+ 401              	.L47:
+ 402 0128 04F52E76 		add	r6, r4, #696
+ 403 012c 3146     		mov	r1, r6
+ 404 012e 2046     		mov	r0, r4
+ 405 0130 FFF7FEFF 		bl	wc_Sha3_384_Final
+ 406 0134 0028     		cmp	r0, #0
+ 407 0136 A2D1     		bne	.L42
+ 408 0138 6822     		movs	r2, #104
+ARM GAS  /tmp/ccxKhUQ0.s 			page 8
+
+
+ 409 013a 2046     		mov	r0, r4
+ 410 013c 04F50A71 		add	r1, r4, #552
+ 411 0140 FFF7FEFF 		bl	wc_Sha3_384_Update
+ 412 0144 0028     		cmp	r0, #0
+ 413 0146 9AD1     		bne	.L42
+ 414 0148 3022     		movs	r2, #48
+ 415 014a 3146     		mov	r1, r6
+ 416 014c 2046     		mov	r0, r4
+ 417 014e FFF7FEFF 		bl	wc_Sha3_384_Update
+ 418 0152 0028     		cmp	r0, #0
+ 419 0154 93D1     		bne	.L42
+ 420 0156 2946     		mov	r1, r5
+ 421 0158 2046     		mov	r0, r4
+ 422 015a FFF7FEFF 		bl	wc_Sha3_384_Final
+ 423 015e 8BE7     		b	.L52
+ 424              	.L45:
+ 425 0160 04F52E76 		add	r6, r4, #696
+ 426 0164 3146     		mov	r1, r6
+ 427 0166 2046     		mov	r0, r4
+ 428 0168 FFF7FEFF 		bl	wc_Sha3_512_Final
+ 429 016c 0028     		cmp	r0, #0
+ 430 016e 86D1     		bne	.L42
+ 431 0170 4822     		movs	r2, #72
+ 432 0172 2046     		mov	r0, r4
+ 433 0174 04F50A71 		add	r1, r4, #552
+ 434 0178 FFF7FEFF 		bl	wc_Sha3_512_Update
+ 435 017c 0028     		cmp	r0, #0
+ 436 017e 7FF47EAF 		bne	.L42
+ 437 0182 4022     		movs	r2, #64
+ 438 0184 3146     		mov	r1, r6
+ 439 0186 2046     		mov	r0, r4
+ 440 0188 FFF7FEFF 		bl	wc_Sha3_512_Update
+ 441 018c 0028     		cmp	r0, #0
+ 442 018e 7FF476AF 		bne	.L42
+ 443 0192 2946     		mov	r1, r5
+ 444 0194 2046     		mov	r0, r4
+ 445 0196 FFF7FEFF 		bl	wc_Sha3_512_Final
+ 446 019a 6DE7     		b	.L52
+ 447              	.L55:
+ 448 019c 6FF0AC00 		mvn	r0, #172
+ 449 01a0 6DE7     		b	.L42
+ 451              		.section	.text.wc_HmacInit,"ax",%progbits
+ 452              		.align	1
+ 453              		.global	wc_HmacInit
+ 454              		.syntax unified
+ 455              		.thumb
+ 456              		.thumb_func
+ 457              		.fpu fpv4-sp-d16
+ 459              	wc_HmacInit:
+ 460              		@ args = 0, pretend = 0, frame = 0
+ 461              		@ frame_needed = 0, uses_anonymous_args = 0
+ 462 0000 38B5     		push	{r3, r4, r5, lr}
+ 463 0002 0D46     		mov	r5, r1
+ 464 0004 0446     		mov	r4, r0
+ 465 0006 40B1     		cbz	r0, .L58
+ 466 0008 4FF44072 		mov	r2, #768
+ 467 000c 0021     		movs	r1, #0
+ARM GAS  /tmp/ccxKhUQ0.s 			page 9
+
+
+ 468 000e FFF7FEFF 		bl	memset
+ 469 0012 0020     		movs	r0, #0
+ 470 0014 C4F8F852 		str	r5, [r4, #760]
+ 471              	.L56:
+ 472 0018 38BD     		pop	{r3, r4, r5, pc}
+ 473              	.L58:
+ 474 001a 6FF0AC00 		mvn	r0, #172
+ 475 001e FBE7     		b	.L56
+ 477              		.section	.text.wc_HmacFree,"ax",%progbits
+ 478              		.align	1
+ 479              		.global	wc_HmacFree
+ 480              		.syntax unified
+ 481              		.thumb
+ 482              		.thumb_func
+ 483              		.fpu fpv4-sp-d16
+ 485              	wc_HmacFree:
+ 486              		@ args = 0, pretend = 0, frame = 8
+ 487              		@ frame_needed = 0, uses_anonymous_args = 0
+ 488 0000 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+ 489 0002 0446     		mov	r4, r0
+ 490 0004 38B3     		cbz	r0, .L59
+ 491 0006 90F8FC32 		ldrb	r3, [r0, #764]	@ zero_extendqisi2
+ 492 000a 043B     		subs	r3, r3, #4
+ 493 000c 092B     		cmp	r3, #9
+ 494 000e 08D8     		bhi	.L62
+ 495 0010 DFE803F0 		tbb	[pc, r3]
+ 496              	.L64:
+ 497 0014 05       		.byte	(.L69-.L64)/2
+ 498 0015 07       		.byte	(.L62-.L64)/2
+ 499 0016 23       		.byte	(.L68-.L64)/2
+ 500 0017 07       		.byte	(.L62-.L64)/2
+ 501 0018 07       		.byte	(.L62-.L64)/2
+ 502 0019 07       		.byte	(.L62-.L64)/2
+ 503 001a 26       		.byte	(.L67-.L64)/2
+ 504 001b 29       		.byte	(.L66-.L64)/2
+ 505 001c 2C       		.byte	(.L65-.L64)/2
+ 506 001d 2F       		.byte	(.L63-.L64)/2
+ 507              		.p2align 1
+ 508              	.L69:
+ 509 001e FFF7FEFF 		bl	wc_ShaFree
+ 510              	.L62:
+ 511 0022 BFF35B8F 		dmb	ish
+ 512 0026 4FF44075 		mov	r5, #768
+ 513 002a 0023     		movs	r3, #0
+ 514              	.L70:
+ 515 002c 14F00301 		ands	r1, r4, #3
+ 516 0030 22D1     		bne	.L72
+ 517 0032 25F00306 		bic	r6, r5, #3
+ 518 0036 3246     		mov	r2, r6
+ 519 0038 2046     		mov	r0, r4
+ 520 003a 0191     		str	r1, [sp, #4]
+ 521 003c FFF7FEFF 		bl	memset
+ 522 0040 6FF00302 		mvn	r2, #3
+ 523 0044 AF08     		lsrs	r7, r5, #2
+ 524 0046 02FB0752 		mla	r2, r2, r7, r5
+ 525 004a 0199     		ldr	r1, [sp, #4]
+ 526 004c A019     		adds	r0, r4, r6
+ARM GAS  /tmp/ccxKhUQ0.s 			page 10
+
+
+ 527 004e FFF7FEFF 		bl	memset
+ 528 0052 BFF35B8F 		dmb	ish
+ 529              	.L59:
+ 530 0056 03B0     		add	sp, sp, #12
+ 531              		@ sp needed
+ 532 0058 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 533              	.L68:
+ 534 005a FFF7FEFF 		bl	wc_Sha256Free
+ 535 005e E0E7     		b	.L62
+ 536              	.L67:
+ 537 0060 FFF7FEFF 		bl	wc_Sha3_224_Free
+ 538 0064 DDE7     		b	.L62
+ 539              	.L66:
+ 540 0066 FFF7FEFF 		bl	wc_Sha3_256_Free
+ 541 006a DAE7     		b	.L62
+ 542              	.L65:
+ 543 006c FFF7FEFF 		bl	wc_Sha3_384_Free
+ 544 0070 D7E7     		b	.L62
+ 545              	.L63:
+ 546 0072 FFF7FEFF 		bl	wc_Sha3_512_Free
+ 547 0076 D4E7     		b	.L62
+ 548              	.L72:
+ 549 0078 002D     		cmp	r5, #0
+ 550 007a ECD0     		beq	.L59
+ 551 007c 04F8013B 		strb	r3, [r4], #1
+ 552 0080 013D     		subs	r5, r5, #1
+ 553 0082 D3E7     		b	.L70
+ 555              		.section	.text.wc_HmacSetKey_ex,"ax",%progbits
+ 556              		.align	1
+ 557              		.global	wc_HmacSetKey_ex
+ 558              		.syntax unified
+ 559              		.thumb
+ 560              		.thumb_func
+ 561              		.fpu fpv4-sp-d16
+ 563              	wc_HmacSetKey_ex:
+ 564              		@ args = 4, pretend = 0, frame = 8
+ 565              		@ frame_needed = 0, uses_anonymous_args = 0
+ 566 0000 2DE9F342 		push	{r0, r1, r4, r5, r6, r7, r9, lr}
+ 567 0004 0F46     		mov	r7, r1
+ 568 0006 1646     		mov	r6, r2
+ 569 0008 1D46     		mov	r5, r3
+ 570 000a 0446     		mov	r4, r0
+ 571 000c 0028     		cmp	r0, #0
+ 572 000e 00F0E180 		beq	.L105
+ 573 0012 12B9     		cbnz	r2, .L79
+ 574 0014 002B     		cmp	r3, #0
+ 575 0016 40F0DD80 		bne	.L105
+ 576              	.L79:
+ 577 001a FB1E     		subs	r3, r7, #3
+ 578 001c 052B     		cmp	r3, #5
+ 579 001e 04D9     		bls	.L80
+ 580 0020 A7F10A03 		sub	r3, r7, #10
+ 581 0024 032B     		cmp	r3, #3
+ 582 0026 00F2D580 		bhi	.L105
+ 583              	.L80:
+ 584 002a 94F8FC32 		ldrb	r3, [r4, #764]	@ zero_extendqisi2
+ 585 002e D4F8F822 		ldr	r2, [r4, #760]
+ARM GAS  /tmp/ccxKhUQ0.s 			page 11
+
+
+ 586 0032 23B1     		cbz	r3, .L81
+ 587 0034 2046     		mov	r0, r4
+ 588 0036 0192     		str	r2, [sp, #4]
+ 589 0038 FFF7FEFF 		bl	wc_HmacFree
+ 590 003c 019A     		ldr	r2, [sp, #4]
+ 591              	.L81:
+ 592 003e 0023     		movs	r3, #0
+ 593 0040 3946     		mov	r1, r7
+ 594 0042 84F8FC72 		strb	r7, [r4, #764]
+ 595 0046 2046     		mov	r0, r4
+ 596 0048 84F8FD32 		strb	r3, [r4, #765]
+ 597 004c FFF7FEFF 		bl	_InitHmac
+ 598 0050 0746     		mov	r7, r0
+ 599 0052 0028     		cmp	r0, #0
+ 600 0054 44D1     		bne	.L77
+ 601 0056 089B     		ldr	r3, [sp, #32]
+ 602 0058 13B9     		cbnz	r3, .L82
+ 603 005a 0D2D     		cmp	r5, #13
+ 604 005c 40F2B780 		bls	.L104
+ 605              	.L82:
+ 606 0060 94F8FC32 		ldrb	r3, [r4, #764]	@ zero_extendqisi2
+ 607 0064 04F5CC79 		add	r9, r4, #408
+ 608 0068 043B     		subs	r3, r3, #4
+ 609 006a 092B     		cmp	r3, #9
+ 610 006c 00F2B280 		bhi	.L105
+ 611 0070 DFE803F0 		tbb	[pc, r3]
+ 612              	.L84:
+ 613 0074 05       		.byte	(.L89-.L84)/2
+ 614 0075 B0       		.byte	(.L105-.L84)/2
+ 615 0076 3A       		.byte	(.L88-.L84)/2
+ 616 0077 B0       		.byte	(.L105-.L84)/2
+ 617 0078 B0       		.byte	(.L105-.L84)/2
+ 618 0079 B0       		.byte	(.L105-.L84)/2
+ 619 007a 4C       		.byte	(.L87-.L84)/2
+ 620 007b 66       		.byte	(.L86-.L84)/2
+ 621 007c 7D       		.byte	(.L85-.L84)/2
+ 622 007d 95       		.byte	(.L83-.L84)/2
+ 623              		.p2align 1
+ 624              	.L89:
+ 625 007e 402D     		cmp	r5, #64
+ 626 0080 09D8     		bhi	.L90
+ 627              	.L131:
+ 628 0082 26B1     		cbz	r6, .L109
+ 629 0084 2A46     		mov	r2, r5
+ 630 0086 3146     		mov	r1, r6
+ 631 0088 4846     		mov	r0, r9
+ 632 008a FFF7FEFF 		bl	memcpy
+ 633              	.L109:
+ 634 008e 4026     		movs	r6, #64
+ 635              	.L91:
+ 636 0090 B542     		cmp	r5, r6
+ 637 0092 17D2     		bcs	.L100
+ 638 0094 10E0     		b	.L99
+ 639              	.L90:
+ 640 0096 2A46     		mov	r2, r5
+ 641 0098 3146     		mov	r1, r6
+ 642 009a 2046     		mov	r0, r4
+ARM GAS  /tmp/ccxKhUQ0.s 			page 12
+
+
+ 643 009c FFF7FEFF 		bl	wc_ShaUpdate
+ 644 00a0 0028     		cmp	r0, #0
+ 645 00a2 40F09A80 		bne	.L123
+ 646 00a6 4946     		mov	r1, r9
+ 647 00a8 2046     		mov	r0, r4
+ 648 00aa FFF7FEFF 		bl	wc_ShaFinal
+ 649 00ae 0028     		cmp	r0, #0
+ 650 00b0 40F09380 		bne	.L123
+ 651 00b4 4026     		movs	r6, #64
+ 652 00b6 1425     		movs	r5, #20
+ 653              	.L99:
+ 654 00b8 0021     		movs	r1, #0
+ 655 00ba 721B     		subs	r2, r6, r5
+ 656 00bc 09EB0500 		add	r0, r9, r5
+ 657 00c0 FFF7FEFF 		bl	memset
+ 658              	.L100:
+ 659 00c4 04F29714 		addw	r4, r4, #407
+ 660 00c8 2644     		add	r6, r6, r4
+ 661              	.L98:
+ 662 00ca 14F8013F 		ldrb	r3, [r4, #1]!	@ zero_extendqisi2
+ 663 00ce 83F05C02 		eor	r2, r3, #92
+ 664 00d2 B442     		cmp	r4, r6
+ 665 00d4 83F03603 		eor	r3, r3, #54
+ 666 00d8 84F89020 		strb	r2, [r4, #144]
+ 667 00dc 2370     		strb	r3, [r4]
+ 668 00de F4D1     		bne	.L98
+ 669              	.L77:
+ 670 00e0 3846     		mov	r0, r7
+ 671 00e2 02B0     		add	sp, sp, #8
+ 672              		@ sp needed
+ 673 00e4 BDE8F082 		pop	{r4, r5, r6, r7, r9, pc}
+ 674              	.L88:
+ 675 00e8 402D     		cmp	r5, #64
+ 676 00ea CAD9     		bls	.L131
+ 677 00ec 2A46     		mov	r2, r5
+ 678 00ee 3146     		mov	r1, r6
+ 679 00f0 2046     		mov	r0, r4
+ 680 00f2 FFF7FEFF 		bl	wc_Sha256Update
+ 681 00f6 0028     		cmp	r0, #0
+ 682 00f8 6FD1     		bne	.L123
+ 683 00fa 4946     		mov	r1, r9
+ 684 00fc 2046     		mov	r0, r4
+ 685 00fe FFF7FEFF 		bl	wc_Sha256Final
+ 686 0102 0028     		cmp	r0, #0
+ 687 0104 69D1     		bne	.L123
+ 688 0106 4026     		movs	r6, #64
+ 689              	.L128:
+ 690 0108 2025     		movs	r5, #32
+ 691 010a D5E7     		b	.L99
+ 692              	.L87:
+ 693 010c 902D     		cmp	r5, #144
+ 694 010e 07D8     		bhi	.L94
+ 695 0110 26B1     		cbz	r6, .L112
+ 696 0112 2A46     		mov	r2, r5
+ 697 0114 3146     		mov	r1, r6
+ 698 0116 4846     		mov	r0, r9
+ 699 0118 FFF7FEFF 		bl	memcpy
+ARM GAS  /tmp/ccxKhUQ0.s 			page 13
+
+
+ 700              	.L112:
+ 701 011c 9026     		movs	r6, #144
+ 702 011e B7E7     		b	.L91
+ 703              	.L94:
+ 704 0120 2A46     		mov	r2, r5
+ 705 0122 3146     		mov	r1, r6
+ 706 0124 2046     		mov	r0, r4
+ 707 0126 FFF7FEFF 		bl	wc_Sha3_224_Update
+ 708 012a 0028     		cmp	r0, #0
+ 709 012c 55D1     		bne	.L123
+ 710 012e 4946     		mov	r1, r9
+ 711 0130 2046     		mov	r0, r4
+ 712 0132 FFF7FEFF 		bl	wc_Sha3_224_Final
+ 713 0136 0028     		cmp	r0, #0
+ 714 0138 4FD1     		bne	.L123
+ 715 013a 9026     		movs	r6, #144
+ 716 013c 1C25     		movs	r5, #28
+ 717 013e BBE7     		b	.L99
+ 718              	.L86:
+ 719 0140 882D     		cmp	r5, #136
+ 720 0142 07D8     		bhi	.L95
+ 721 0144 26B1     		cbz	r6, .L115
+ 722 0146 2A46     		mov	r2, r5
+ 723 0148 3146     		mov	r1, r6
+ 724 014a 4846     		mov	r0, r9
+ 725 014c FFF7FEFF 		bl	memcpy
+ 726              	.L115:
+ 727 0150 8826     		movs	r6, #136
+ 728 0152 9DE7     		b	.L91
+ 729              	.L95:
+ 730 0154 2A46     		mov	r2, r5
+ 731 0156 3146     		mov	r1, r6
+ 732 0158 2046     		mov	r0, r4
+ 733 015a FFF7FEFF 		bl	wc_Sha3_256_Update
+ 734 015e E0BB     		cbnz	r0, .L123
+ 735 0160 4946     		mov	r1, r9
+ 736 0162 2046     		mov	r0, r4
+ 737 0164 FFF7FEFF 		bl	wc_Sha3_256_Final
+ 738 0168 B8BB     		cbnz	r0, .L123
+ 739 016a 8826     		movs	r6, #136
+ 740 016c CCE7     		b	.L128
+ 741              	.L85:
+ 742 016e 682D     		cmp	r5, #104
+ 743 0170 07D8     		bhi	.L96
+ 744 0172 26B1     		cbz	r6, .L118
+ 745 0174 2A46     		mov	r2, r5
+ 746 0176 3146     		mov	r1, r6
+ 747 0178 4846     		mov	r0, r9
+ 748 017a FFF7FEFF 		bl	memcpy
+ 749              	.L118:
+ 750 017e 6826     		movs	r6, #104
+ 751 0180 86E7     		b	.L91
+ 752              	.L96:
+ 753 0182 2A46     		mov	r2, r5
+ 754 0184 3146     		mov	r1, r6
+ 755 0186 2046     		mov	r0, r4
+ 756 0188 FFF7FEFF 		bl	wc_Sha3_384_Update
+ARM GAS  /tmp/ccxKhUQ0.s 			page 14
+
+
+ 757 018c 28BB     		cbnz	r0, .L123
+ 758 018e 4946     		mov	r1, r9
+ 759 0190 2046     		mov	r0, r4
+ 760 0192 FFF7FEFF 		bl	wc_Sha3_384_Final
+ 761 0196 00BB     		cbnz	r0, .L123
+ 762 0198 6826     		movs	r6, #104
+ 763 019a 3025     		movs	r5, #48
+ 764 019c 8CE7     		b	.L99
+ 765              	.L83:
+ 766 019e 482D     		cmp	r5, #72
+ 767 01a0 07D8     		bhi	.L97
+ 768 01a2 26B1     		cbz	r6, .L121
+ 769 01a4 2A46     		mov	r2, r5
+ 770 01a6 3146     		mov	r1, r6
+ 771 01a8 4846     		mov	r0, r9
+ 772 01aa FFF7FEFF 		bl	memcpy
+ 773              	.L121:
+ 774 01ae 4826     		movs	r6, #72
+ 775 01b0 6EE7     		b	.L91
+ 776              	.L97:
+ 777 01b2 2A46     		mov	r2, r5
+ 778 01b4 3146     		mov	r1, r6
+ 779 01b6 2046     		mov	r0, r4
+ 780 01b8 FFF7FEFF 		bl	wc_Sha3_512_Update
+ 781 01bc 68B9     		cbnz	r0, .L123
+ 782 01be 4946     		mov	r1, r9
+ 783 01c0 2046     		mov	r0, r4
+ 784 01c2 FFF7FEFF 		bl	wc_Sha3_512_Final
+ 785 01c6 40B9     		cbnz	r0, .L123
+ 786 01c8 4826     		movs	r6, #72
+ 787 01ca 4025     		movs	r5, #64
+ 788 01cc 74E7     		b	.L99
+ 789              	.L104:
+ 790 01ce 6FF0C707 		mvn	r7, #199
+ 791 01d2 85E7     		b	.L77
+ 792              	.L105:
+ 793 01d4 6FF0AC07 		mvn	r7, #172
+ 794 01d8 82E7     		b	.L77
+ 795              	.L123:
+ 796 01da 0746     		mov	r7, r0
+ 797 01dc 80E7     		b	.L77
+ 799              		.section	.text.wc_HmacSetKey,"ax",%progbits
+ 800              		.align	1
+ 801              		.global	wc_HmacSetKey
+ 802              		.syntax unified
+ 803              		.thumb
+ 804              		.thumb_func
+ 805              		.fpu fpv4-sp-d16
+ 807              	wc_HmacSetKey:
+ 808              		@ args = 0, pretend = 0, frame = 0
+ 809              		@ frame_needed = 0, uses_anonymous_args = 0
+ 810 0000 13B5     		push	{r0, r1, r4, lr}
+ 811 0002 0124     		movs	r4, #1
+ 812 0004 0094     		str	r4, [sp]
+ 813 0006 FFF7FEFF 		bl	wc_HmacSetKey_ex
+ 814 000a 02B0     		add	sp, sp, #8
+ 815              		@ sp needed
+ARM GAS  /tmp/ccxKhUQ0.s 			page 15
+
+
+ 816 000c 10BD     		pop	{r4, pc}
+ 818              		.section	.text.wolfSSL_GetHmacMaxSize,"ax",%progbits
+ 819              		.align	1
+ 820              		.global	wolfSSL_GetHmacMaxSize
+ 821              		.syntax unified
+ 822              		.thumb
+ 823              		.thumb_func
+ 824              		.fpu fpv4-sp-d16
+ 826              	wolfSSL_GetHmacMaxSize:
+ 827              		@ args = 0, pretend = 0, frame = 0
+ 828              		@ frame_needed = 0, uses_anonymous_args = 0
+ 829              		@ link register save eliminated.
+ 830 0000 4020     		movs	r0, #64
+ 831 0002 7047     		bx	lr
+ 833              		.section	.text.wc_HKDF_Extract_ex,"ax",%progbits
+ 834              		.align	1
+ 835              		.global	wc_HKDF_Extract_ex
+ 836              		.syntax unified
+ 837              		.thumb
+ 838              		.thumb_func
+ 839              		.fpu fpv4-sp-d16
+ 841              	wc_HKDF_Extract_ex:
+ 842              		@ args = 16, pretend = 0, frame = 64
+ 843              		@ frame_needed = 0, uses_anonymous_args = 0
+ 844 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 845 0004 91B0     		sub	sp, sp, #68
+ 846 0006 8146     		mov	r9, r0
+ 847 0008 9846     		mov	r8, r3
+ 848 000a FFF7FEFF 		bl	wc_HmacSizeByType
+ 849 000e 041E     		subs	r4, r0, #0
+ 850 0010 0E46     		mov	r6, r1
+ 851 0012 1746     		mov	r7, r2
+ 852 0014 2EDB     		blt	.L134
+ 853 0016 4FF44070 		mov	r0, #768
+ 854 001a FFF7FEFF 		bl	wolfSSL_Malloc
+ 855 001e 0546     		mov	r5, r0
+ 856 0020 60B3     		cbz	r0, .L139
+ 857 0022 36B9     		cbnz	r6, .L136
+ 858 0024 3146     		mov	r1, r6
+ 859 0026 2246     		mov	r2, r4
+ 860 0028 6846     		mov	r0, sp
+ 861 002a 2746     		mov	r7, r4
+ 862 002c FFF7FEFF 		bl	memset
+ 863 0030 6E46     		mov	r6, sp
+ 864              	.L136:
+ 865 0032 DDE91A12 		ldrd	r1, r2, [sp, #104]
+ 866 0036 2846     		mov	r0, r5
+ 867 0038 FFF7FEFF 		bl	wc_HmacInit
+ 868 003c 0446     		mov	r4, r0
+ 869 003e B0B9     		cbnz	r0, .L137
+ 870 0040 3B46     		mov	r3, r7
+ 871 0042 3246     		mov	r2, r6
+ 872 0044 4946     		mov	r1, r9
+ 873 0046 2846     		mov	r0, r5
+ 874 0048 FFF7FEFF 		bl	wc_HmacSetKey
+ 875 004c 0446     		mov	r4, r0
+ 876 004e 58B9     		cbnz	r0, .L138
+ARM GAS  /tmp/ccxKhUQ0.s 			page 16
+
+
+ 877 0050 4146     		mov	r1, r8
+ 878 0052 2846     		mov	r0, r5
+ 879 0054 189A     		ldr	r2, [sp, #96]
+ 880 0056 FFF7FEFF 		bl	wc_HmacUpdate
+ 881 005a 0446     		mov	r4, r0
+ 882 005c 20B9     		cbnz	r0, .L138
+ 883 005e 2846     		mov	r0, r5
+ 884 0060 1999     		ldr	r1, [sp, #100]
+ 885 0062 FFF7FEFF 		bl	wc_HmacFinal
+ 886 0066 0446     		mov	r4, r0
+ 887              	.L138:
+ 888 0068 2846     		mov	r0, r5
+ 889 006a FFF7FEFF 		bl	wc_HmacFree
+ 890              	.L137:
+ 891 006e 2846     		mov	r0, r5
+ 892 0070 FFF7FEFF 		bl	wolfSSL_Free
+ 893              	.L134:
+ 894 0074 2046     		mov	r0, r4
+ 895 0076 11B0     		add	sp, sp, #68
+ 896              		@ sp needed
+ 897 0078 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 898              	.L139:
+ 899 007c 6FF07C04 		mvn	r4, #124
+ 900 0080 F8E7     		b	.L134
+ 902              		.section	.text.wc_HKDF_Extract,"ax",%progbits
+ 903              		.align	1
+ 904              		.global	wc_HKDF_Extract
+ 905              		.syntax unified
+ 906              		.thumb
+ 907              		.thumb_func
+ 908              		.fpu fpv4-sp-d16
+ 910              	wc_HKDF_Extract:
+ 911              		@ args = 8, pretend = 0, frame = 0
+ 912              		@ frame_needed = 0, uses_anonymous_args = 0
+ 913 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
+ 914 0002 6FF0010C 		mvn	ip, #1
+ 915 0006 0024     		movs	r4, #0
+ 916 0008 CDE9024C 		strd	r4, ip, [sp, #8]
+ 917 000c 079C     		ldr	r4, [sp, #28]
+ 918 000e 0194     		str	r4, [sp, #4]
+ 919 0010 069C     		ldr	r4, [sp, #24]
+ 920 0012 0094     		str	r4, [sp]
+ 921 0014 FFF7FEFF 		bl	wc_HKDF_Extract_ex
+ 922 0018 04B0     		add	sp, sp, #16
+ 923              		@ sp needed
+ 924 001a 10BD     		pop	{r4, pc}
+ 926              		.section	.text.wc_HKDF_Expand_ex,"ax",%progbits
+ 927              		.align	1
+ 928              		.global	wc_HKDF_Expand_ex
+ 929              		.syntax unified
+ 930              		.thumb
+ 931              		.thumb_func
+ 932              		.fpu fpv4-sp-d16
+ 934              	wc_HKDF_Expand_ex:
+ 935              		@ args = 20, pretend = 0, frame = 80
+ 936              		@ frame_needed = 0, uses_anonymous_args = 0
+ 937 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ARM GAS  /tmp/ccxKhUQ0.s 			page 17
+
+
+ 938 0004 2DED048B 		vpush.64	{d8, d9}
+ 939 0008 9A46     		mov	r10, r3
+ 940 000a 0123     		movs	r3, #1
+ 941 000c 95B0     		sub	sp, sp, #84
+ 942 000e 08EE100A 		vmov	s16, r0	@ int
+ 943 0012 8DF80B30 		strb	r3, [sp, #11]
+ 944 0016 FFF7FEFF 		bl	wc_HmacSizeByType
+ 945 001a 041E     		subs	r4, r0, #0
+ 946 001c 08EE901A 		vmov	s17, r1	@ int
+ 947 0020 09EE102A 		vmov	s18, r2	@ int
+ 948 0024 DDF89090 		ldr	r9, [sp, #144]
+ 949 0028 1DDB     		blt	.L141
+ 950 002a 239B     		ldr	r3, [sp, #140]
+ 951 002c 002B     		cmp	r3, #0
+ 952 002e 00F08480 		beq	.L149
+ 953 0032 B9FBF4F3 		udiv	r3, r9, r4
+ 954 0036 04FB1392 		mls	r2, r4, r3, r9
+ 955 003a 002A     		cmp	r2, #0
+ 956 003c 18BF     		it	ne
+ 957 003e 0133     		addne	r3, r3, #1
+ 958 0040 FF2B     		cmp	r3, #255
+ 959 0042 7AD8     		bhi	.L149
+ 960 0044 4FF44070 		mov	r0, #768
+ 961 0048 FFF7FEFF 		bl	wolfSSL_Malloc
+ 962 004c 0646     		mov	r6, r0
+ 963 004e 0028     		cmp	r0, #0
+ 964 0050 76D0     		beq	.L150
+ 965 0052 DDE92512 		ldrd	r1, r2, [sp, #148]
+ 966 0056 FFF7FEFF 		bl	wc_HmacInit
+ 967 005a 0546     		mov	r5, r0
+ 968 005c 48B1     		cbz	r0, .L143
+ 969 005e 3046     		mov	r0, r6
+ 970 0060 FFF7FEFF 		bl	wolfSSL_Free
+ 971 0064 2C46     		mov	r4, r5
+ 972              	.L141:
+ 973 0066 2046     		mov	r0, r4
+ 974 0068 15B0     		add	sp, sp, #84
+ 975              		@ sp needed
+ 976 006a BDEC048B 		vldm	sp!, {d8-d9}
+ 977 006e BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 978              	.L143:
+ 979 0072 0DF11008 		add	r8, sp, #16
+ 980 0076 0146     		mov	r1, r0
+ 981 0078 4022     		movs	r2, #64
+ 982 007a 4046     		mov	r0, r8
+ 983 007c FFF7FEFF 		bl	memset
+ 984              	.L144:
+ 985 0080 4D45     		cmp	r5, r9
+ 986 0082 0AD3     		bcc	.L147
+ 987 0084 0023     		movs	r3, #0
+ 988              	.L146:
+ 989 0086 3046     		mov	r0, r6
+ 990 0088 0193     		str	r3, [sp, #4]
+ 991 008a FFF7FEFF 		bl	wc_HmacFree
+ 992 008e 3046     		mov	r0, r6
+ 993 0090 FFF7FEFF 		bl	wolfSSL_Free
+ 994 0094 019B     		ldr	r3, [sp, #4]
+ARM GAS  /tmp/ccxKhUQ0.s 			page 18
+
+
+ 995 0096 1C46     		mov	r4, r3
+ 996 0098 E5E7     		b	.L141
+ 997              	.L147:
+ 998 009a 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ 999 009e 18EE902A 		vmov	r2, s17	@ int
+ 1000 00a2 012B     		cmp	r3, #1
+ 1001 00a4 18EE101A 		vmov	r1, s16	@ int
+ 1002 00a8 19EE103A 		vmov	r3, s18	@ int
+ 1003 00ac 3046     		mov	r0, r6
+ 1004 00ae 14BF     		ite	ne
+ 1005 00b0 A346     		movne	fp, r4
+ 1006 00b2 4FF0000B 		moveq	fp, #0
+ 1007 00b6 FFF7FEFF 		bl	wc_HmacSetKey
+ 1008 00ba A9EB0507 		sub	r7, r9, r5
+ 1009 00be 0346     		mov	r3, r0
+ 1010 00c0 0028     		cmp	r0, #0
+ 1011 00c2 E0D1     		bne	.L146
+ 1012 00c4 5A46     		mov	r2, fp
+ 1013 00c6 4146     		mov	r1, r8
+ 1014 00c8 3046     		mov	r0, r6
+ 1015 00ca FFF7FEFF 		bl	wc_HmacUpdate
+ 1016 00ce 0346     		mov	r3, r0
+ 1017 00d0 0028     		cmp	r0, #0
+ 1018 00d2 D8D1     		bne	.L146
+ 1019 00d4 5146     		mov	r1, r10
+ 1020 00d6 3046     		mov	r0, r6
+ 1021 00d8 229A     		ldr	r2, [sp, #136]
+ 1022 00da FFF7FEFF 		bl	wc_HmacUpdate
+ 1023 00de 0346     		mov	r3, r0
+ 1024 00e0 0028     		cmp	r0, #0
+ 1025 00e2 D0D1     		bne	.L146
+ 1026 00e4 0122     		movs	r2, #1
+ 1027 00e6 3046     		mov	r0, r6
+ 1028 00e8 0DF10B01 		add	r1, sp, #11
+ 1029 00ec FFF7FEFF 		bl	wc_HmacUpdate
+ 1030 00f0 0346     		mov	r3, r0
+ 1031 00f2 0028     		cmp	r0, #0
+ 1032 00f4 C7D1     		bne	.L146
+ 1033 00f6 4146     		mov	r1, r8
+ 1034 00f8 3046     		mov	r0, r6
+ 1035 00fa FFF7FEFF 		bl	wc_HmacFinal
+ 1036 00fe 0346     		mov	r3, r0
+ 1037 0100 0028     		cmp	r0, #0
+ 1038 0102 C0D1     		bne	.L146
+ 1039 0104 3A1B     		subs	r2, r7, r4
+ 1040 0106 4FEAE473 		asr	r3, r4, #31
+ 1041 010a 63EB4303 		sbc	r3, r3, r3, lsl #1
+ 1042 010e DB0F     		lsrs	r3, r3, #31
+ 1043 0110 013B     		subs	r3, r3, #1
+ 1044 0112 0393     		str	r3, [sp, #12]
+ 1045 0114 039B     		ldr	r3, [sp, #12]
+ 1046 0116 039A     		ldr	r2, [sp, #12]
+ 1047 0118 27EA0307 		bic	r7, r7, r3
+ 1048 011c 2240     		ands	r2, r2, r4
+ 1049 011e 239B     		ldr	r3, [sp, #140]
+ 1050 0120 1743     		orrs	r7, r7, r2
+ 1051 0122 5819     		adds	r0, r3, r5
+ARM GAS  /tmp/ccxKhUQ0.s 			page 19
+
+
+ 1052 0124 3A46     		mov	r2, r7
+ 1053 0126 4146     		mov	r1, r8
+ 1054 0128 FFF7FEFF 		bl	memcpy
+ 1055 012c 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ 1056 0130 3D44     		add	r5, r5, r7
+ 1057 0132 0133     		adds	r3, r3, #1
+ 1058 0134 8DF80B30 		strb	r3, [sp, #11]
+ 1059 0138 A2E7     		b	.L144
+ 1060              	.L149:
+ 1061 013a 6FF0AC04 		mvn	r4, #172
+ 1062 013e 92E7     		b	.L141
+ 1063              	.L150:
+ 1064 0140 6FF07C04 		mvn	r4, #124
+ 1065 0144 8FE7     		b	.L141
+ 1067              		.section	.text.wc_HKDF_Expand,"ax",%progbits
+ 1068              		.align	1
+ 1069              		.global	wc_HKDF_Expand
+ 1070              		.syntax unified
+ 1071              		.thumb
+ 1072              		.thumb_func
+ 1073              		.fpu fpv4-sp-d16
+ 1075              	wc_HKDF_Expand:
+ 1076              		@ args = 12, pretend = 0, frame = 0
+ 1077              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1078 0000 10B5     		push	{r4, lr}
+ 1079 0002 6FF0010C 		mvn	ip, #1
+ 1080 0006 0024     		movs	r4, #0
+ 1081 0008 86B0     		sub	sp, sp, #24
+ 1082 000a CDE9034C 		strd	r4, ip, [sp, #12]
+ 1083 000e 0A9C     		ldr	r4, [sp, #40]
+ 1084 0010 0294     		str	r4, [sp, #8]
+ 1085 0012 099C     		ldr	r4, [sp, #36]
+ 1086 0014 0194     		str	r4, [sp, #4]
+ 1087 0016 089C     		ldr	r4, [sp, #32]
+ 1088 0018 0094     		str	r4, [sp]
+ 1089 001a FFF7FEFF 		bl	wc_HKDF_Expand_ex
+ 1090 001e 06B0     		add	sp, sp, #24
+ 1091              		@ sp needed
+ 1092 0020 10BD     		pop	{r4, pc}
+ 1094              		.section	.text.wc_HKDF_ex,"ax",%progbits
+ 1095              		.align	1
+ 1096              		.global	wc_HKDF_ex
+ 1097              		.syntax unified
+ 1098              		.thumb
+ 1099              		.thumb_func
+ 1100              		.fpu fpv4-sp-d16
+ 1102              	wc_HKDF_ex:
+ 1103              		@ args = 28, pretend = 0, frame = 64
+ 1104              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1105 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 1106 0004 97B0     		sub	sp, sp, #92
+ 1107 0006 0546     		mov	r5, r0
+ 1108 0008 DDE92378 		ldrd	r7, r8, [sp, #140]
+ 1109 000c 8946     		mov	r9, r1
+ 1110 000e 1946     		mov	r1, r3
+ 1111 0010 FFF7FEFF 		bl	wc_HmacSizeByType
+ 1112 0014 041E     		subs	r4, r0, #0
+ARM GAS  /tmp/ccxKhUQ0.s 			page 20
+
+
+ 1113 0016 19DB     		blt	.L153
+ 1114 0018 06AE     		add	r6, sp, #24
+ 1115 001a CDE90026 		strd	r2, r6, [sp]
+ 1116 001e 4B46     		mov	r3, r9
+ 1117 0020 2846     		mov	r0, r5
+ 1118 0022 CDE90278 		strd	r7, r8, [sp, #8]
+ 1119 0026 1E9A     		ldr	r2, [sp, #120]
+ 1120 0028 FFF7FEFF 		bl	wc_HKDF_Extract_ex
+ 1121 002c 68B9     		cbnz	r0, .L155
+ 1122 002e 229B     		ldr	r3, [sp, #136]
+ 1123 0030 2246     		mov	r2, r4
+ 1124 0032 0293     		str	r3, [sp, #8]
+ 1125 0034 219B     		ldr	r3, [sp, #132]
+ 1126 0036 3146     		mov	r1, r6
+ 1127 0038 0193     		str	r3, [sp, #4]
+ 1128 003a 209B     		ldr	r3, [sp, #128]
+ 1129 003c 2846     		mov	r0, r5
+ 1130 003e 0093     		str	r3, [sp]
+ 1131 0040 CDE90378 		strd	r7, r8, [sp, #12]
+ 1132 0044 1F9B     		ldr	r3, [sp, #124]
+ 1133 0046 FFF7FEFF 		bl	wc_HKDF_Expand_ex
+ 1134              	.L155:
+ 1135 004a 0446     		mov	r4, r0
+ 1136              	.L153:
+ 1137 004c 2046     		mov	r0, r4
+ 1138 004e 17B0     		add	sp, sp, #92
+ 1139              		@ sp needed
+ 1140 0050 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1142              		.section	.text.wc_HKDF,"ax",%progbits
+ 1143              		.align	1
+ 1144              		.global	wc_HKDF
+ 1145              		.syntax unified
+ 1146              		.thumb
+ 1147              		.thumb_func
+ 1148              		.fpu fpv4-sp-d16
+ 1150              	wc_HKDF:
+ 1151              		@ args = 20, pretend = 0, frame = 0
+ 1152              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1153 0000 10B5     		push	{r4, lr}
+ 1154 0002 6FF0010C 		mvn	ip, #1
+ 1155 0006 0024     		movs	r4, #0
+ 1156 0008 88B0     		sub	sp, sp, #32
+ 1157 000a CDE9054C 		strd	r4, ip, [sp, #20]
+ 1158 000e 0E9C     		ldr	r4, [sp, #56]
+ 1159 0010 0494     		str	r4, [sp, #16]
+ 1160 0012 0D9C     		ldr	r4, [sp, #52]
+ 1161 0014 0394     		str	r4, [sp, #12]
+ 1162 0016 0C9C     		ldr	r4, [sp, #48]
+ 1163 0018 0294     		str	r4, [sp, #8]
+ 1164 001a 0B9C     		ldr	r4, [sp, #44]
+ 1165 001c 0194     		str	r4, [sp, #4]
+ 1166 001e 0A9C     		ldr	r4, [sp, #40]
+ 1167 0020 0094     		str	r4, [sp]
+ 1168 0022 FFF7FEFF 		bl	wc_HKDF_ex
+ 1169 0026 08B0     		add	sp, sp, #32
+ 1170              		@ sp needed
+ 1171 0028 10BD     		pop	{r4, pc}
+ARM GAS  /tmp/ccxKhUQ0.s 			page 21
+
+
+ 1173              		.section	.rodata.CSWTCH.18,"a"
+ 1174              		.align	1
+ 1175              		.set	.LANCHOR0,. + 0
+ 1178              	CSWTCH.18:
+ 1179 0000 1400     		.short	20
+ 1180 0002 53FF     		.short	-173
+ 1181 0004 2000     		.short	32
+ 1182 0006 53FF     		.short	-173
+ 1183 0008 53FF     		.short	-173
+ 1184 000a 53FF     		.short	-173
+ 1185 000c 1C00     		.short	28
+ 1186 000e 2000     		.short	32
+ 1187 0010 3000     		.short	48
+ 1188 0012 4000     		.short	64
+ 1189              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccxKhUQ0.s 			page 22
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 hmac.c
+     /tmp/ccxKhUQ0.s:16     .text.HmacKeyHashUpdate:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:24     .text.HmacKeyHashUpdate:0000000000000000 HmacKeyHashUpdate
+     /tmp/ccxKhUQ0.s:36     .text.HmacKeyHashUpdate:0000000000000010 $d
+     /tmp/ccxKhUQ0.s:46     .text.HmacKeyHashUpdate:000000000000001a $t
+     /tmp/ccxKhUQ0.s:70     .text.wc_HmacSizeByType:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:77     .text.wc_HmacSizeByType:0000000000000000 wc_HmacSizeByType
+     /tmp/ccxKhUQ0.s:100    .text.wc_HmacSizeByType:0000000000000024 $d
+     /tmp/ccxKhUQ0.s:103    .text._InitHmac:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:110    .text._InitHmac:0000000000000000 _InitHmac
+     /tmp/ccxKhUQ0.s:121    .text._InitHmac:0000000000000010 $d
+     /tmp/ccxKhUQ0.s:131    .text._InitHmac:000000000000001a $t
+     /tmp/ccxKhUQ0.s:171    .text.wc_HmacUpdate:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:178    .text.wc_HmacUpdate:0000000000000000 wc_HmacUpdate
+     /tmp/ccxKhUQ0.s:208    .text.wc_HmacUpdate:000000000000003e $d
+     /tmp/ccxKhUQ0.s:218    .text.wc_HmacUpdate:0000000000000048 $t
+     /tmp/ccxKhUQ0.s:264    .text.wc_HmacFinal:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:271    .text.wc_HmacFinal:0000000000000000 wc_HmacFinal
+     /tmp/ccxKhUQ0.s:297    .text.wc_HmacFinal:000000000000003e $d
+     /tmp/ccxKhUQ0.s:307    .text.wc_HmacFinal:0000000000000048 $t
+     /tmp/ccxKhUQ0.s:452    .text.wc_HmacInit:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:459    .text.wc_HmacInit:0000000000000000 wc_HmacInit
+     /tmp/ccxKhUQ0.s:478    .text.wc_HmacFree:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:485    .text.wc_HmacFree:0000000000000000 wc_HmacFree
+     /tmp/ccxKhUQ0.s:497    .text.wc_HmacFree:0000000000000014 $d
+     /tmp/ccxKhUQ0.s:507    .text.wc_HmacFree:000000000000001e $t
+     /tmp/ccxKhUQ0.s:556    .text.wc_HmacSetKey_ex:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:563    .text.wc_HmacSetKey_ex:0000000000000000 wc_HmacSetKey_ex
+     /tmp/ccxKhUQ0.s:613    .text.wc_HmacSetKey_ex:0000000000000074 $d
+     /tmp/ccxKhUQ0.s:623    .text.wc_HmacSetKey_ex:000000000000007e $t
+     /tmp/ccxKhUQ0.s:800    .text.wc_HmacSetKey:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:807    .text.wc_HmacSetKey:0000000000000000 wc_HmacSetKey
+     /tmp/ccxKhUQ0.s:819    .text.wolfSSL_GetHmacMaxSize:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:826    .text.wolfSSL_GetHmacMaxSize:0000000000000000 wolfSSL_GetHmacMaxSize
+     /tmp/ccxKhUQ0.s:834    .text.wc_HKDF_Extract_ex:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:841    .text.wc_HKDF_Extract_ex:0000000000000000 wc_HKDF_Extract_ex
+     /tmp/ccxKhUQ0.s:903    .text.wc_HKDF_Extract:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:910    .text.wc_HKDF_Extract:0000000000000000 wc_HKDF_Extract
+     /tmp/ccxKhUQ0.s:927    .text.wc_HKDF_Expand_ex:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:934    .text.wc_HKDF_Expand_ex:0000000000000000 wc_HKDF_Expand_ex
+     /tmp/ccxKhUQ0.s:1068   .text.wc_HKDF_Expand:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:1075   .text.wc_HKDF_Expand:0000000000000000 wc_HKDF_Expand
+     /tmp/ccxKhUQ0.s:1095   .text.wc_HKDF_ex:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:1102   .text.wc_HKDF_ex:0000000000000000 wc_HKDF_ex
+     /tmp/ccxKhUQ0.s:1143   .text.wc_HKDF:0000000000000000 $t
+     /tmp/ccxKhUQ0.s:1150   .text.wc_HKDF:0000000000000000 wc_HKDF
+     /tmp/ccxKhUQ0.s:1174   .rodata.CSWTCH.18:0000000000000000 $d
+     /tmp/ccxKhUQ0.s:1178   .rodata.CSWTCH.18:0000000000000000 CSWTCH.18
+
+UNDEFINED SYMBOLS
+wc_ShaUpdate
+wc_Sha256Update
+wc_Sha3_224_Update
+wc_Sha3_256_Update
+wc_Sha3_384_Update
+wc_Sha3_512_Update
+ARM GAS  /tmp/ccxKhUQ0.s 			page 23
+
+
+wc_InitSha_ex
+wc_InitSha256_ex
+wc_InitSha3_224
+wc_InitSha3_256
+wc_InitSha3_384
+wc_InitSha3_512
+wc_ShaFinal
+wc_Sha256Final
+wc_Sha3_224_Final
+wc_Sha3_256_Final
+wc_Sha3_384_Final
+wc_Sha3_512_Final
+memset
+wc_ShaFree
+wc_Sha256Free
+wc_Sha3_224_Free
+wc_Sha3_256_Free
+wc_Sha3_384_Free
+wc_Sha3_512_Free
+memcpy
+wolfSSL_Malloc
+wolfSSL_Free

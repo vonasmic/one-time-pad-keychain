@@ -1,0 +1,157 @@
+ARM GAS  /tmp/ccXMoecN.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_utility_memory_allocate.c"
+  14              		.text
+  15              		.section	.text._ux_utility_memory_allocate,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_utility_memory_allocate
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_utility_memory_allocate:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  29 0002 01BB     		cbnz	r1, .L2
+  30 0004 334B     		ldr	r3, .L22
+  31 0006 1B68     		ldr	r3, [r3]
+  32 0008 1D68     		ldr	r5, [r3]
+  33              	.L3:
+  34 000a 002D     		cmp	r5, #0
+  35 000c 5DD0     		beq	.L1
+  36 000e 002A     		cmp	r2, #0
+  37 0010 5DD0     		beq	.L13
+  38 0012 431C     		adds	r3, r0, #1
+  39 0014 1DD0     		beq	.L14
+  40 0016 0728     		cmp	r0, #7
+  41 0018 38BF     		it	cc
+  42 001a 0720     		movcc	r0, #7
+  43 001c 0746     		mov	r7, r0
+  44              	.L5:
+  45 001e 0732     		adds	r2, r2, #7
+  46 0020 22F00706 		bic	r6, r2, #7
+  47 0024 072F     		cmp	r7, #7
+  48 0026 08BF     		it	eq
+  49 0028 3146     		moveq	r1, r6
+  50 002a 2846     		mov	r0, r5
+  51 002c 18BF     		it	ne
+  52 002e B919     		addne	r1, r7, r6
+  53 0030 FFF7FEFF 		bl	_ux_utility_memory_byte_pool_search
+  54 0034 0446     		mov	r4, r0
+  55 0036 70B9     		cbnz	r0, .L8
+  56 0038 1222     		movs	r2, #18
+  57 003a 0821     		movs	r1, #8
+  58 003c 0220     		movs	r0, #2
+ARM GAS  /tmp/ccXMoecN.s 			page 2
+
+
+  59 003e FFF7FEFF 		bl	_ux_system_error_handler
+  60              	.L12:
+  61 0042 0025     		movs	r5, #0
+  62 0044 41E0     		b	.L1
+  63              	.L2:
+  64 0046 0129     		cmp	r1, #1
+  65 0048 FBD1     		bne	.L12
+  66 004a 224B     		ldr	r3, .L22
+  67 004c 1B68     		ldr	r3, [r3]
+  68 004e 5D68     		ldr	r5, [r3, #4]
+  69 0050 DBE7     		b	.L3
+  70              	.L14:
+  71 0052 0727     		movs	r7, #7
+  72 0054 E3E7     		b	.L5
+  73              	.L8:
+  74 0056 0168     		ldr	r1, [r0]
+  75 0058 00F10803 		add	r3, r0, #8
+  76 005c 0A1A     		subs	r2, r1, r0
+  77 005e 1F42     		tst	r7, r3
+  78 0060 A2F10802 		sub	r2, r2, #8
+  79 0064 12D0     		beq	.L9
+  80 0066 07F10800 		add	r0, r7, #8
+  81 006a 1844     		add	r0, r0, r3
+  82 006c 20EA0707 		bic	r7, r0, r7
+  83 0070 47F8081C 		str	r1, [r7, #-8]
+  84 0074 1849     		ldr	r1, .L22+4
+  85 0076 A7F10803 		sub	r3, r7, #8
+  86 007a 47F8041C 		str	r1, [r7, #-4]
+  87 007e 6968     		ldr	r1, [r5, #4]
+  88 0080 0131     		adds	r1, r1, #1
+  89 0082 6960     		str	r1, [r5, #4]
+  90 0084 2360     		str	r3, [r4]
+  91 0086 1C1B     		subs	r4, r3, r4
+  92 0088 121B     		subs	r2, r2, r4
+  93 008a 1C46     		mov	r4, r3
+  94              	.L9:
+  95 008c 931B     		subs	r3, r2, r6
+  96 008e 132B     		cmp	r3, #19
+  97 0090 0BD9     		bls	.L10
+  98 0092 2168     		ldr	r1, [r4]
+  99 0094 06F10803 		add	r3, r6, #8
+ 100 0098 E218     		adds	r2, r4, r3
+ 101 009a E150     		str	r1, [r4, r3]
+ 102 009c 0E4B     		ldr	r3, .L22+4
+ 103 009e 5360     		str	r3, [r2, #4]
+ 104 00a0 6B68     		ldr	r3, [r5, #4]
+ 105 00a2 0133     		adds	r3, r3, #1
+ 106 00a4 6B60     		str	r3, [r5, #4]
+ 107 00a6 2260     		str	r2, [r4]
+ 108 00a8 3246     		mov	r2, r6
+ 109              	.L10:
+ 110 00aa 2B68     		ldr	r3, [r5]
+ 111 00ac 6560     		str	r5, [r4, #4]
+ 112 00ae 083B     		subs	r3, r3, #8
+ 113 00b0 9B1A     		subs	r3, r3, r2
+ 114 00b2 2B60     		str	r3, [r5]
+ 115 00b4 AB68     		ldr	r3, [r5, #8]
+ARM GAS  /tmp/ccXMoecN.s 			page 3
+
+
+ 116 00b6 0021     		movs	r1, #0
+ 117 00b8 A342     		cmp	r3, r4
+ 118 00ba 04BF     		itt	eq
+ 119 00bc 2368     		ldreq	r3, [r4]
+ 120 00be AB60     		streq	r3, [r5, #8]
+ 121 00c0 04F10805 		add	r5, r4, #8
+ 122 00c4 2846     		mov	r0, r5
+ 123 00c6 FFF7FEFF 		bl	_ux_utility_memory_set
+ 124              	.L1:
+ 125 00ca 2846     		mov	r0, r5
+ 126 00cc F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 127              	.L13:
+ 128 00ce 1546     		mov	r5, r2
+ 129 00d0 FBE7     		b	.L1
+ 130              	.L23:
+ 131 00d2 00BF     		.align	2
+ 132              	.L22:
+ 133 00d4 00000000 		.word	_ux_system
+ 134 00d8 EEEEFFFF 		.word	-4370
+ 136              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccXMoecN.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_utility_memory_allocate.c
+     /tmp/ccXMoecN.s:16     .text._ux_utility_memory_allocate:0000000000000000 $t
+     /tmp/ccXMoecN.s:25     .text._ux_utility_memory_allocate:0000000000000000 _ux_utility_memory_allocate
+     /tmp/ccXMoecN.s:133    .text._ux_utility_memory_allocate:00000000000000d4 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_memory_byte_pool_search
+_ux_system_error_handler
+_ux_utility_memory_set
+_ux_system

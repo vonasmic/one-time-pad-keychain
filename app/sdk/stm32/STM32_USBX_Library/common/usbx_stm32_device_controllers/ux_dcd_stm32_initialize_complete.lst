@@ -1,0 +1,127 @@
+ARM GAS  /tmp/ccMRFr49.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_dcd_stm32_initialize_complete.c"
+  14              		.text
+  15              		.section	.text._ux_dcd_stm32_initialize_complete,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_dcd_stm32_initialize_complete
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_dcd_stm32_initialize_complete:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 70B5     		push	{r4, r5, r6, lr}
+  29 0002 344E     		ldr	r6, .L10
+  30 0004 3468     		ldr	r4, [r6]
+  31 0006 D4F85C31 		ldr	r3, [r4, #348]
+  32 000a E569     		ldr	r5, [r4, #28]
+  33 000c 012B     		cmp	r3, #1
+  34 000e 4BD1     		bne	.L2
+  35 0010 D4F8F430 		ldr	r3, [r4, #244]
+  36 0014 C4F8CC30 		str	r3, [r4, #204]
+  37 0018 D4F8F830 		ldr	r3, [r4, #248]
+  38              	.L9:
+  39 001c 0E22     		movs	r2, #14
+  40 001e 2E49     		ldr	r1, .L10+4
+  41 0020 D4F8CC00 		ldr	r0, [r4, #204]
+  42 0024 C4F8D030 		str	r3, [r4, #208]
+  43 0028 04F12803 		add	r3, r4, #40
+  44 002c FFF7FEFF 		bl	_ux_utility_descriptor_parse
+  45 0030 4FF47A73 		mov	r3, #1000
+  46 0034 C4F89030 		str	r3, [r4, #144]
+  47 0038 A36E     		ldr	r3, [r4, #104]
+  48 003a 04F13C02 		add	r2, r4, #60
+  49 003e E366     		str	r3, [r4, #108]
+  50 0040 94F82F30 		ldrb	r3, [r4, #47]	@ zero_extendqisi2
+  51 0044 6266     		str	r2, [r4, #100]
+  52 0046 0E21     		movs	r1, #14
+  53 0048 A4F84C30 		strh	r3, [r4, #76]	@ movhi
+  54 004c 2367     		str	r3, [r4, #112]
+  55 004e 2046     		mov	r0, r4
+  56 0050 A369     		ldr	r3, [r4, #24]
+  57 0052 9847     		blx	r3
+  58 0054 0021     		movs	r1, #0
+ARM GAS  /tmp/ccMRFr49.s 			page 2
+
+
+  59 0056 D5F8C400 		ldr	r0, [r5, #196]
+  60 005a FFF7FEFF 		bl	HAL_PCD_EP_Flush
+  61 005e 0023     		movs	r3, #0
+  62 0060 94F82F20 		ldrb	r2, [r4, #47]	@ zero_extendqisi2
+  63 0064 1946     		mov	r1, r3
+  64 0066 D5F8C400 		ldr	r0, [r5, #196]
+  65 006a FFF7FEFF 		bl	HAL_PCD_EP_Open
+  66 006e 8021     		movs	r1, #128
+  67 0070 D5F8C400 		ldr	r0, [r5, #196]
+  68 0074 FFF7FEFF 		bl	HAL_PCD_EP_Flush
+  69 0078 0023     		movs	r3, #0
+  70 007a 94F82F20 		ldrb	r2, [r4, #47]	@ zero_extendqisi2
+  71 007e 8021     		movs	r1, #128
+  72 0080 D5F8C400 		ldr	r0, [r5, #196]
+  73 0084 FFF7FEFF 		bl	HAL_PCD_EP_Open
+  74 0088 0023     		movs	r3, #0
+  75 008a 0822     		movs	r2, #8
+  76 008c 0120     		movs	r0, #1
+  77 008e C4E91D32 		strd	r3, r2, [r4, #116]
+  78 0092 2364     		str	r3, [r4, #64]
+  79 0094 3368     		ldr	r3, [r6]
+  80 0096 C4E91700 		strd	r0, r0, [r4, #92]
+  81 009a D3F86431 		ldr	r3, [r3, #356]
+  82 009e 2267     		str	r2, [r4, #112]
+  83 00a0 03B1     		cbz	r3, .L5
+  84 00a2 9847     		blx	r3
+  85              	.L5:
+  86 00a4 0020     		movs	r0, #0
+  87 00a6 70BD     		pop	{r4, r5, r6, pc}
+  88              	.L2:
+  89 00a8 0023     		movs	r3, #0
+  90 00aa C4F85C31 		str	r3, [r4, #348]
+  91 00ae D4F84031 		ldr	r3, [r4, #320]
+  92 00b2 012B     		cmp	r3, #1
+  93 00b4 0BBF     		itete	eq
+  94 00b6 D4F8D430 		ldreq	r3, [r4, #212]
+  95 00ba D4F8DC30 		ldrne	r3, [r4, #220]
+  96 00be C4F8CC30 		streq	r3, [r4, #204]
+  97 00c2 C4F8CC30 		strne	r3, [r4, #204]
+  98 00c6 0CBF     		ite	eq
+  99 00c8 D4F8D830 		ldreq	r3, [r4, #216]
+ 100 00cc D4F8E030 		ldrne	r3, [r4, #224]
+ 101 00d0 A4E7     		b	.L9
+ 102              	.L11:
+ 103 00d2 00BF     		.align	2
+ 104              	.L10:
+ 105 00d4 00000000 		.word	_ux_system_slave
+ 106 00d8 00000000 		.word	_ux_system_device_descriptor_structure
+ 108              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccMRFr49.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_dcd_stm32_initialize_complete.c
+     /tmp/ccMRFr49.s:16     .text._ux_dcd_stm32_initialize_complete:0000000000000000 $t
+     /tmp/ccMRFr49.s:25     .text._ux_dcd_stm32_initialize_complete:0000000000000000 _ux_dcd_stm32_initialize_complete
+     /tmp/ccMRFr49.s:105    .text._ux_dcd_stm32_initialize_complete:00000000000000d4 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_descriptor_parse
+HAL_PCD_EP_Flush
+HAL_PCD_EP_Open
+_ux_system_slave
+_ux_system_device_descriptor_structure

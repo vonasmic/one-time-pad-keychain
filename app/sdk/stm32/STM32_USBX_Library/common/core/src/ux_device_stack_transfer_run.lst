@@ -1,0 +1,146 @@
+ARM GAS  /tmp/ccLlBA3a.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_transfer_run.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_transfer_run,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_transfer_run
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_transfer_run:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 436C     		ldr	r3, [r0, #68]
+  29 0002 70B5     		push	{r4, r5, r6, lr}
+  30 0004 012B     		cmp	r3, #1
+  31 0006 0446     		mov	r4, r0
+  32 0008 04D1     		bne	.L2
+  33 000a 0023     		movs	r3, #0
+  34 000c 4362     		str	r3, [r0, #36]
+  35 000e 0420     		movs	r0, #4
+  36 0010 2063     		str	r0, [r4, #48]
+  37              	.L1:
+  38 0012 70BD     		pop	{r4, r5, r6, pc}
+  39              	.L2:
+  40 0014 264B     		ldr	r3, .L30
+  41 0016 1868     		ldr	r0, [r3]
+  42 0018 436A     		ldr	r3, [r0, #36]
+  43 001a 013B     		subs	r3, r3, #1
+  44 001c 022B     		cmp	r3, #2
+  45 001e 05D9     		bls	.L4
+  46 0020 2523     		movs	r3, #37
+  47 0022 6362     		str	r3, [r4, #36]
+  48              	.L7:
+  49 0024 0023     		movs	r3, #0
+  50 0026 0120     		movs	r0, #1
+  51 0028 2363     		str	r3, [r4, #48]
+  52 002a F2E7     		b	.L1
+  53              	.L4:
+  54 002c 236B     		ldr	r3, [r4, #48]
+  55 002e A568     		ldr	r5, [r4, #8]
+  56 0030 202B     		cmp	r3, #32
+  57 0032 25D0     		beq	.L5
+  58 0034 212B     		cmp	r3, #33
+ARM GAS  /tmp/ccLlBA3a.s 			page 2
+
+
+  59 0036 2BD0     		beq	.L6
+  60 0038 002B     		cmp	r3, #0
+  61 003a F3D1     		bne	.L7
+  62 003c EE7B     		ldrb	r6, [r5, #15]	@ zero_extendqisi2
+  63 003e B607     		lsls	r6, r6, #30
+  64 0040 2FD0     		beq	.L8
+  65 0042 95F90E60 		ldrsb	r6, [r5, #14]
+  66 0046 002E     		cmp	r6, #0
+  67 0048 0DDA     		bge	.L9
+  68 004a 0326     		movs	r6, #3
+  69 004c A662     		str	r6, [r4, #40]
+  70              	.L10:
+  71 004e 61B1     		cbz	r1, .L11
+  72 0050 9142     		cmp	r1, r2
+  73 0052 0AD0     		beq	.L11
+  74 0054 2E8A     		ldrh	r6, [r5, #16]
+  75 0056 B1FBF6F2 		udiv	r2, r1, r6
+  76 005a 06FB1212 		mls	r2, r6, r2, r1
+  77 005e 002A     		cmp	r2, #0
+  78 0060 08BF     		it	eq
+  79 0062 0123     		moveq	r3, #1
+  80 0064 01E0     		b	.L11
+  81              	.L9:
+  82 0066 0222     		movs	r2, #2
+  83 0068 A262     		str	r2, [r4, #40]
+  84              	.L11:
+  85 006a A363     		str	r3, [r4, #56]
+  86 006c 0023     		movs	r3, #0
+  87 006e C4E90513 		strd	r1, r3, [r4, #20]
+  88 0072 E368     		ldr	r3, [r4, #12]
+  89 0074 E161     		str	r1, [r4, #28]
+  90 0076 2361     		str	r3, [r4, #16]
+  91 0078 0123     		movs	r3, #1
+  92 007a 2360     		str	r3, [r4]
+  93 007c 2023     		movs	r3, #32
+  94 007e 2363     		str	r3, [r4, #48]
+  95              	.L5:
+  96 0080 EB7B     		ldrb	r3, [r5, #15]	@ zero_extendqisi2
+  97 0082 9B07     		lsls	r3, r3, #30
+  98 0084 02D0     		beq	.L13
+  99 0086 6B68     		ldr	r3, [r5, #4]
+ 100 0088 022B     		cmp	r3, #2
+ 101 008a 0ED0     		beq	.L14
+ 102              	.L13:
+ 103 008c 2123     		movs	r3, #33
+ 104 008e 2363     		str	r3, [r4, #48]
+ 105              	.L6:
+ 106 0090 2246     		mov	r2, r4
+ 107 0092 0C21     		movs	r1, #12
+ 108 0094 8369     		ldr	r3, [r0, #24]
+ 109 0096 9847     		blx	r3
+ 110 0098 0428     		cmp	r0, #4
+ 111 009a BAD8     		bhi	.L1
+ 112 009c 0023     		movs	r3, #0
+ 113 009e 2363     		str	r3, [r4, #48]
+ 114 00a0 B7E7     		b	.L1
+ 115              	.L8:
+ARM GAS  /tmp/ccLlBA3a.s 			page 3
+
+
+ 116 00a2 A66A     		ldr	r6, [r4, #40]
+ 117 00a4 032E     		cmp	r6, #3
+ 118 00a6 E0D1     		bne	.L11
+ 119 00a8 D1E7     		b	.L10
+ 120              	.L14:
+ 121 00aa 0520     		movs	r0, #5
+ 122 00ac B1E7     		b	.L1
+ 123              	.L31:
+ 124 00ae 00BF     		.align	2
+ 125              	.L30:
+ 126 00b0 00000000 		.word	_ux_system_slave
+ 128              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccLlBA3a.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_transfer_run.c
+     /tmp/ccLlBA3a.s:16     .text._ux_device_stack_transfer_run:0000000000000000 $t
+     /tmp/ccLlBA3a.s:25     .text._ux_device_stack_transfer_run:0000000000000000 _ux_device_stack_transfer_run
+     /tmp/ccLlBA3a.s:126    .text._ux_device_stack_transfer_run:00000000000000b0 $d
+
+UNDEFINED SYMBOLS
+_ux_system_slave

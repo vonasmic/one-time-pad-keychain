@@ -1,0 +1,499 @@
+ARM GAS  /tmp/ccQy0Ynm.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"hash_sha2.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256:
+  26              		@ args = 0, pretend = 0, frame = 40
+  27              		@ frame_needed = 1, uses_anonymous_args = 0
+  28 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  29 0004 1C46     		mov	r4, r3
+  30 0006 03F1040A 		add	r10, r3, #4
+  31 000a 0B33     		adds	r3, r3, #11
+  32 000c 8BB0     		sub	sp, sp, #44
+  33 000e 23F00703 		bic	r3, r3, #7
+  34 0012 00AF     		add	r7, sp, #0
+  35 0014 ADEB030D 		sub	sp, sp, r3
+  36 0018 7860     		str	r0, [r7, #4]
+  37 001a 0D46     		mov	r5, r1
+  38 001c 6846     		mov	r0, sp
+  39 001e 1146     		mov	r1, r2
+  40 0020 2246     		mov	r2, r4
+  41 0022 FFF7FEFF 		bl	memcpy
+  42 0026 E846     		mov	r8, sp
+  43 0028 0021     		movs	r1, #0
+  44 002a 0DEB0403 		add	r3, sp, r4
+  45              	.L2:
+  46 002e 7A68     		ldr	r2, [r7, #4]
+  47 0030 4E01     		lsls	r6, r1, #5
+  48 0032 02EB4119 		add	r9, r2, r1, lsl #5
+  49 0036 06F12002 		add	r2, r6, #32
+  50 003a 9542     		cmp	r5, r2
+  51 003c 01F1010B 		add	fp, r1, #1
+  52 0040 15D2     		bcs	.L3
+  53 0042 B542     		cmp	r5, r6
+  54 0044 0FD9     		bls	.L1
+  55 0046 08EB0400 		add	r0, r8, r4
+  56 004a FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+  57 004e 5246     		mov	r2, r10
+  58 0050 4146     		mov	r1, r8
+ARM GAS  /tmp/ccQy0Ynm.s 			page 2
+
+
+  59 0052 07F10800 		add	r0, r7, #8
+  60 0056 FFF7FEFF 		bl	sha256
+  61 005a 4846     		mov	r0, r9
+  62 005c AA1B     		subs	r2, r5, r6
+  63 005e 07F10801 		add	r1, r7, #8
+  64 0062 FFF7FEFF 		bl	memcpy
+  65              	.L1:
+  66 0066 2C37     		adds	r7, r7, #44
+  67 0068 BD46     		mov	sp, r7
+  68              		@ sp needed
+  69 006a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+  70              	.L3:
+  71 006e 1846     		mov	r0, r3
+  72 0070 3B60     		str	r3, [r7]
+  73 0072 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+  74 0076 4146     		mov	r1, r8
+  75 0078 5246     		mov	r2, r10
+  76 007a 4846     		mov	r0, r9
+  77 007c FFF7FEFF 		bl	sha256
+  78 0080 5946     		mov	r1, fp
+  79 0082 3B68     		ldr	r3, [r7]
+  80 0084 D3E7     		b	.L2
+  82              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_512,"ax",%progbits
+  83              		.align	1
+  84              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_512
+  85              		.syntax unified
+  86              		.thumb
+  87              		.thumb_func
+  88              		.fpu fpv4-sp-d16
+  90              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_512:
+  91              		@ args = 0, pretend = 0, frame = 72
+  92              		@ frame_needed = 1, uses_anonymous_args = 0
+  93 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  94 0004 1C46     		mov	r4, r3
+  95 0006 03F1040A 		add	r10, r3, #4
+  96 000a 0B33     		adds	r3, r3, #11
+  97 000c 93B0     		sub	sp, sp, #76
+  98 000e 23F00703 		bic	r3, r3, #7
+  99 0012 00AF     		add	r7, sp, #0
+ 100 0014 ADEB030D 		sub	sp, sp, r3
+ 101 0018 7860     		str	r0, [r7, #4]
+ 102 001a 0D46     		mov	r5, r1
+ 103 001c 6846     		mov	r0, sp
+ 104 001e 1146     		mov	r1, r2
+ 105 0020 2246     		mov	r2, r4
+ 106 0022 FFF7FEFF 		bl	memcpy
+ 107 0026 E846     		mov	r8, sp
+ 108 0028 0021     		movs	r1, #0
+ 109 002a 0DEB0403 		add	r3, sp, r4
+ 110              	.L6:
+ 111 002e 7A68     		ldr	r2, [r7, #4]
+ 112 0030 8E01     		lsls	r6, r1, #6
+ 113 0032 02EB8119 		add	r9, r2, r1, lsl #6
+ 114 0036 06F14002 		add	r2, r6, #64
+ 115 003a 9542     		cmp	r5, r2
+ 116 003c 01F1010B 		add	fp, r1, #1
+ 117 0040 15D2     		bcs	.L7
+ARM GAS  /tmp/ccQy0Ynm.s 			page 3
+
+
+ 118 0042 B542     		cmp	r5, r6
+ 119 0044 0FD9     		bls	.L5
+ 120 0046 08EB0400 		add	r0, r8, r4
+ 121 004a FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+ 122 004e 5246     		mov	r2, r10
+ 123 0050 4146     		mov	r1, r8
+ 124 0052 07F10800 		add	r0, r7, #8
+ 125 0056 FFF7FEFF 		bl	sha512
+ 126 005a 4846     		mov	r0, r9
+ 127 005c AA1B     		subs	r2, r5, r6
+ 128 005e 07F10801 		add	r1, r7, #8
+ 129 0062 FFF7FEFF 		bl	memcpy
+ 130              	.L5:
+ 131 0066 4C37     		adds	r7, r7, #76
+ 132 0068 BD46     		mov	sp, r7
+ 133              		@ sp needed
+ 134 006a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 135              	.L7:
+ 136 006e 1846     		mov	r0, r3
+ 137 0070 3B60     		str	r3, [r7]
+ 138 0072 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+ 139 0076 4146     		mov	r1, r8
+ 140 0078 5246     		mov	r2, r10
+ 141 007a 4846     		mov	r0, r9
+ 142 007c FFF7FEFF 		bl	sha512
+ 143 0080 5946     		mov	r1, fp
+ 144 0082 3B68     		ldr	r3, [r7]
+ 145 0084 D3E7     		b	.L6
+ 147              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_prf_addr,"ax",%progbits
+ 148              		.align	1
+ 149              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_prf_addr
+ 150              		.syntax unified
+ 151              		.thumb
+ 152              		.thumb_func
+ 153              		.fpu fpv4-sp-d16
+ 155              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_prf_addr:
+ 156              		@ args = 0, pretend = 0, frame = 80
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 159 0002 1446     		mov	r4, r2
+ 160 0004 95B0     		sub	sp, sp, #84
+ 161 0006 0646     		mov	r6, r0
+ 162 0008 0D46     		mov	r5, r1
+ 163 000a 01A8     		add	r0, sp, #4
+ 164 000c 2031     		adds	r1, r1, #32
+ 165 000e FFF7FEFF 		bl	sha256_inc_ctx_clone
+ 166 0012 2246     		mov	r2, r4
+ 167 0014 0AAB     		add	r3, sp, #40
+ 168 0016 04F11007 		add	r7, r4, #16
+ 169              	.L10:
+ 170 001a 1C46     		mov	r4, r3
+ 171 001c 1068     		ldr	r0, [r2]	@ unaligned
+ 172 001e 5168     		ldr	r1, [r2, #4]	@ unaligned
+ 173 0020 0832     		adds	r2, r2, #8
+ 174 0022 03C4     		stmia	r4!, {r0, r1}
+ 175 0024 BA42     		cmp	r2, r7
+ 176 0026 2346     		mov	r3, r4
+ARM GAS  /tmp/ccQy0Ynm.s 			page 4
+
+
+ 177 0028 F7D1     		bne	.L10
+ 178 002a 1068     		ldr	r0, [r2]	@ unaligned
+ 179 002c 05F11003 		add	r3, r5, #16
+ 180 0030 2060     		str	r0, [r4]
+ 181 0032 9288     		ldrh	r2, [r2, #4]	@ unaligned
+ 182 0034 2035     		adds	r5, r5, #32
+ 183 0036 A280     		strh	r2, [r4, #4]	@ unaligned
+ 184 0038 0DF13E02 		add	r2, sp, #62
+ 185              	.L11:
+ 186 003c 53F8041B 		ldr	r1, [r3], #4	@ unaligned
+ 187 0040 AB42     		cmp	r3, r5
+ 188 0042 42F8041B 		str	r1, [r2], #4	@ unaligned
+ 189 0046 F9D1     		bne	.L11
+ 190 0048 2623     		movs	r3, #38
+ 191 004a 0AAA     		add	r2, sp, #40
+ 192 004c 01A9     		add	r1, sp, #4
+ 193 004e 02A8     		add	r0, sp, #8
+ 194 0050 FFF7FEFF 		bl	sha256_inc_finalize
+ 195 0054 3346     		mov	r3, r6
+ 196 0056 02AA     		add	r2, sp, #8
+ 197 0058 06AD     		add	r5, sp, #24
+ 198              	.L12:
+ 199 005a 1446     		mov	r4, r2
+ 200 005c 03CC     		ldmia	r4!, {r0, r1}
+ 201 005e AC42     		cmp	r4, r5
+ 202 0060 1860     		str	r0, [r3]	@ unaligned
+ 203 0062 5960     		str	r1, [r3, #4]	@ unaligned
+ 204 0064 2246     		mov	r2, r4
+ 205 0066 03F10803 		add	r3, r3, #8
+ 206 006a F6D1     		bne	.L12
+ 207 006c 15B0     		add	sp, sp, #84
+ 208              		@ sp needed
+ 209 006e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 211              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random,"ax",%progbits
+ 212              		.align	1
+ 213              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random
+ 214              		.syntax unified
+ 215              		.thumb
+ 216              		.thumb_func
+ 217              		.fpu fpv4-sp-d16
+ 219              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random:
+ 220              		@ args = 8, pretend = 0, frame = 112
+ 221              		@ frame_needed = 0, uses_anonymous_args = 0
+ 222 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 223 0004 9DB0     		sub	sp, sp, #116
+ 224 0006 04AE     		add	r6, sp, #16
+ 225 0008 01F1FF3A 		add	r10, r1, #-1
+ 226 000c 0546     		mov	r5, r0
+ 227 000e 1446     		mov	r4, r2
+ 228 0010 3046     		mov	r0, r6
+ 229 0012 5246     		mov	r2, r10
+ 230 0014 3746     		mov	r7, r6
+ 231 0016 DDF898B0 		ldr	fp, [sp, #152]
+ 232 001a 01F10F08 		add	r8, r1, #15
+ 233              	.L17:
+ 234 001e 12F8011F 		ldrb	r1, [r2, #1]!	@ zero_extendqisi2
+ 235 0022 81F03601 		eor	r1, r1, #54
+ARM GAS  /tmp/ccQy0Ynm.s 			page 5
+
+
+ 236 0026 4245     		cmp	r2, r8
+ 237 0028 00F8011B 		strb	r1, [r0], #1
+ 238 002c F7D1     		bne	.L17
+ 239 002e 0DF12009 		add	r9, sp, #32
+ 240 0032 3022     		movs	r2, #48
+ 241 0034 3621     		movs	r1, #54
+ 242 0036 4846     		mov	r0, r9
+ 243 0038 0193     		str	r3, [sp, #4]
+ 244 003a FFF7FEFF 		bl	memset
+ 245 003e 03A8     		add	r0, sp, #12
+ 246 0040 FFF7FEFF 		bl	sha256_inc_init
+ 247 0044 0122     		movs	r2, #1
+ 248 0046 3146     		mov	r1, r6
+ 249 0048 03A8     		add	r0, sp, #12
+ 250 004a FFF7FEFF 		bl	sha256_inc_blocks
+ 251 004e B446     		mov	ip, r6
+ 252 0050 019B     		ldr	r3, [sp, #4]
+ 253 0052 04F1100E 		add	lr, r4, #16
+ 254              	.L18:
+ 255 0056 6246     		mov	r2, ip
+ 256 0058 2068     		ldr	r0, [r4]	@ unaligned
+ 257 005a 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 258 005c 0834     		adds	r4, r4, #8
+ 259 005e 03C2     		stmia	r2!, {r0, r1}
+ 260 0060 7445     		cmp	r4, lr
+ 261 0062 9446     		mov	ip, r2
+ 262 0064 F7D1     		bne	.L18
+ 263 0066 0BF11004 		add	r4, fp, #16
+ 264 006a 3F2C     		cmp	r4, #63
+ 265 006c 28D8     		bhi	.L19
+ 266 006e 5A46     		mov	r2, fp
+ 267 0070 1946     		mov	r1, r3
+ 268 0072 4846     		mov	r0, r9
+ 269 0074 FFF7FEFF 		bl	memcpy
+ 270 0078 2346     		mov	r3, r4
+ 271 007a 3246     		mov	r2, r6
+ 272              	.L29:
+ 273 007c 03A9     		add	r1, sp, #12
+ 274 007e 14A8     		add	r0, sp, #80
+ 275 0080 FFF7FEFF 		bl	sha256_inc_finalize
+ 276              	.L20:
+ 277 0084 1AF8013F 		ldrb	r3, [r10, #1]!	@ zero_extendqisi2
+ 278 0088 83F05C03 		eor	r3, r3, #92
+ 279 008c C245     		cmp	r10, r8
+ 280 008e 06F8013B 		strb	r3, [r6], #1
+ 281 0092 F7D1     		bne	.L20
+ 282 0094 3022     		movs	r2, #48
+ 283 0096 5C21     		movs	r1, #92
+ 284 0098 4846     		mov	r0, r9
+ 285 009a FFF7FEFF 		bl	memset
+ 286 009e 6022     		movs	r2, #96
+ 287 00a0 3946     		mov	r1, r7
+ 288 00a2 3846     		mov	r0, r7
+ 289 00a4 FFF7FEFF 		bl	sha256
+ 290              	.L23:
+ 291 00a8 3B46     		mov	r3, r7
+ 292 00aa 03CB     		ldmia	r3!, {r0, r1}
+ARM GAS  /tmp/ccQy0Ynm.s 			page 6
+
+
+ 293 00ac 4B45     		cmp	r3, r9
+ 294 00ae 2860     		str	r0, [r5]	@ unaligned
+ 295 00b0 6960     		str	r1, [r5, #4]	@ unaligned
+ 296 00b2 1F46     		mov	r7, r3
+ 297 00b4 05F10805 		add	r5, r5, #8
+ 298 00b8 F6D1     		bne	.L23
+ 299 00ba 1DB0     		add	sp, sp, #116
+ 300              		@ sp needed
+ 301 00bc BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 302              	.L19:
+ 303 00c0 1C46     		mov	r4, r3
+ 304 00c2 4A46     		mov	r2, r9
+ 305 00c4 03F1300C 		add	ip, r3, #48
+ 306              	.L21:
+ 307 00c8 1346     		mov	r3, r2
+ 308 00ca 2068     		ldr	r0, [r4]	@ unaligned
+ 309 00cc 6168     		ldr	r1, [r4, #4]	@ unaligned
+ 310 00ce 0834     		adds	r4, r4, #8
+ 311 00d0 03C3     		stmia	r3!, {r0, r1}
+ 312 00d2 6445     		cmp	r4, ip
+ 313 00d4 1A46     		mov	r2, r3
+ 314 00d6 F7D1     		bne	.L21
+ 315 00d8 0122     		movs	r2, #1
+ 316 00da 3146     		mov	r1, r6
+ 317 00dc 03A8     		add	r0, sp, #12
+ 318 00de FFF7FEFF 		bl	sha256_inc_blocks
+ 319 00e2 2246     		mov	r2, r4
+ 320 00e4 ABF13003 		sub	r3, fp, #48
+ 321 00e8 C8E7     		b	.L29
+ 323              		.section	.text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message,"ax",%progbits
+ 324              		.align	1
+ 325              		.global	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message
+ 326              		.syntax unified
+ 327              		.thumb
+ 328              		.thumb_func
+ 329              		.fpu fpv4-sp-d16
+ 331              	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message:
+ 332              		@ args = 16, pretend = 0, frame = 168
+ 333              		@ frame_needed = 0, uses_anonymous_args = 0
+ 334 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 335 0004 1C46     		mov	r4, r3
+ 336 0006 AAB0     		sub	sp, sp, #168
+ 337 0008 8146     		mov	r9, r0
+ 338 000a 6846     		mov	r0, sp
+ 339 000c 0F46     		mov	r7, r1
+ 340 000e 9046     		mov	r8, r2
+ 341 0010 329D     		ldr	r5, [sp, #200]
+ 342 0012 DDF8D0A0 		ldr	r10, [sp, #208]
+ 343 0016 FFF7FEFF 		bl	sha256_inc_init
+ 344 001a 2346     		mov	r3, r4
+ 345 001c 1AAE     		add	r6, sp, #104
+ 346 001e 04F1100C 		add	ip, r4, #16
+ 347              	.L31:
+ 348 0022 3246     		mov	r2, r6
+ 349 0024 1868     		ldr	r0, [r3]	@ unaligned
+ 350 0026 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 351 0028 0833     		adds	r3, r3, #8
+ARM GAS  /tmp/ccQy0Ynm.s 			page 7
+
+
+ 352 002a 03C2     		stmia	r2!, {r0, r1}
+ 353 002c 6345     		cmp	r3, ip
+ 354 002e 1646     		mov	r6, r2
+ 355 0030 F7D1     		bne	.L31
+ 356 0032 2B46     		mov	r3, r5
+ 357 0034 1EAE     		add	r6, sp, #120
+ 358 0036 05F1200C 		add	ip, r5, #32
+ 359              	.L32:
+ 360 003a 3246     		mov	r2, r6
+ 361 003c 1868     		ldr	r0, [r3]	@ unaligned
+ 362 003e 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 363 0040 0833     		adds	r3, r3, #8
+ 364 0042 03C2     		stmia	r2!, {r0, r1}
+ 365 0044 6345     		cmp	r3, ip
+ 366 0046 1646     		mov	r6, r2
+ 367 0048 F7D1     		bne	.L32
+ 368 004a 0AF13006 		add	r6, r10, #48
+ 369 004e 3F2E     		cmp	r6, #63
+ 370 0050 4AD8     		bhi	.L33
+ 371 0052 5246     		mov	r2, r10
+ 372 0054 3399     		ldr	r1, [sp, #204]
+ 373 0056 26A8     		add	r0, sp, #152
+ 374 0058 FFF7FEFF 		bl	memcpy
+ 375 005c 3346     		mov	r3, r6
+ 376 005e 1AAA     		add	r2, sp, #104
+ 377              	.L45:
+ 378 0060 6946     		mov	r1, sp
+ 379 0062 12A8     		add	r0, sp, #72
+ 380 0064 FFF7FEFF 		bl	sha256_inc_finalize
+ 381 0068 2346     		mov	r3, r4
+ 382 006a 0AAC     		add	r4, sp, #40
+ 383 006c 03F11006 		add	r6, r3, #16
+ 384              	.L36:
+ 385 0070 2246     		mov	r2, r4
+ 386 0072 1868     		ldr	r0, [r3]	@ unaligned
+ 387 0074 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 388 0076 0833     		adds	r3, r3, #8
+ 389 0078 03C2     		stmia	r2!, {r0, r1}
+ 390 007a B342     		cmp	r3, r6
+ 391 007c 1446     		mov	r4, r2
+ 392 007e F7D1     		bne	.L36
+ 393 0080 2B46     		mov	r3, r5
+ 394 0082 0EAC     		add	r4, sp, #56
+ 395 0084 1035     		adds	r5, r5, #16
+ 396              	.L37:
+ 397 0086 2246     		mov	r2, r4
+ 398 0088 1868     		ldr	r0, [r3]	@ unaligned
+ 399 008a 5968     		ldr	r1, [r3, #4]	@ unaligned
+ 400 008c 0833     		adds	r3, r3, #8
+ 401 008e 03C2     		stmia	r2!, {r0, r1}
+ 402 0090 AB42     		cmp	r3, r5
+ 403 0092 1446     		mov	r4, r2
+ 404 0094 F7D1     		bne	.L37
+ 405 0096 4023     		movs	r3, #64
+ 406 0098 0AAA     		add	r2, sp, #40
+ 407 009a 2221     		movs	r1, #34
+ 408 009c 01A8     		add	r0, sp, #4
+ARM GAS  /tmp/ccQy0Ynm.s 			page 8
+
+
+ 409 009e FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256
+ 410 00a2 4B46     		mov	r3, r9
+ 411 00a4 01AA     		add	r2, sp, #4
+ 412 00a6 07AD     		add	r5, sp, #28
+ 413              	.L38:
+ 414 00a8 1446     		mov	r4, r2
+ 415 00aa 03CC     		ldmia	r4!, {r0, r1}
+ 416 00ac AC42     		cmp	r4, r5
+ 417 00ae 1860     		str	r0, [r3]	@ unaligned
+ 418 00b0 5960     		str	r1, [r3, #4]	@ unaligned
+ 419 00b2 2246     		mov	r2, r4
+ 420 00b4 03F10803 		add	r3, r3, #8
+ 421 00b8 F6D1     		bne	.L38
+ 422 00ba 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 423 00bc 0DF11D00 		add	r0, sp, #29
+ 424 00c0 1A70     		strb	r2, [r3]
+ 425 00c2 0821     		movs	r1, #8
+ 426 00c4 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull
+ 427 00c8 21F00041 		bic	r1, r1, #-2147483648
+ 428 00cc C7E90001 		strd	r0, r1, [r7]
+ 429 00d0 0DF12500 		add	r0, sp, #37
+ 430 00d4 0121     		movs	r1, #1
+ 431 00d6 FFF7FEFF 		bl	PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull
+ 432 00da 00F00700 		and	r0, r0, #7
+ 433 00de C8F80000 		str	r0, [r8]
+ 434 00e2 2AB0     		add	sp, sp, #168
+ 435              		@ sp needed
+ 436 00e4 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 437              	.L33:
+ 438 00e8 339E     		ldr	r6, [sp, #204]
+ 439 00ea 26AB     		add	r3, sp, #152
+ 440 00ec 06F1100C 		add	ip, r6, #16
+ 441              	.L35:
+ 442 00f0 1A46     		mov	r2, r3
+ 443 00f2 3068     		ldr	r0, [r6]	@ unaligned
+ 444 00f4 7168     		ldr	r1, [r6, #4]	@ unaligned
+ 445 00f6 0836     		adds	r6, r6, #8
+ 446 00f8 03C2     		stmia	r2!, {r0, r1}
+ 447 00fa 6645     		cmp	r6, ip
+ 448 00fc 1346     		mov	r3, r2
+ 449 00fe F7D1     		bne	.L35
+ 450 0100 0122     		movs	r2, #1
+ 451 0102 6846     		mov	r0, sp
+ 452 0104 1AA9     		add	r1, sp, #104
+ 453 0106 FFF7FEFF 		bl	sha256_inc_blocks
+ 454 010a 3246     		mov	r2, r6
+ 455 010c AAF11003 		sub	r3, r10, #16
+ 456 0110 A6E7     		b	.L45
+ 458              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccQy0Ynm.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 hash_sha2.c
+     /tmp/ccQy0Ynm.s:16     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256:0000000000000000 $t
+     /tmp/ccQy0Ynm.s:25     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_256
+     /tmp/ccQy0Ynm.s:83     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_512:0000000000000000 $t
+     /tmp/ccQy0Ynm.s:90     .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_512:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_mgf1_512
+     /tmp/ccQy0Ynm.s:148    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_prf_addr:0000000000000000 $t
+     /tmp/ccQy0Ynm.s:155    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_prf_addr:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_prf_addr
+     /tmp/ccQy0Ynm.s:212    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random:0000000000000000 $t
+     /tmp/ccQy0Ynm.s:219    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_gen_message_random
+     /tmp/ccQy0Ynm.s:324    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message:0000000000000000 $t
+     /tmp/ccQy0Ynm.s:331    .text.PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message:0000000000000000 PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_hash_message
+
+UNDEFINED SYMBOLS
+memcpy
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_u32_to_bytes
+sha256
+sha512
+sha256_inc_ctx_clone
+sha256_inc_finalize
+memset
+sha256_inc_init
+sha256_inc_blocks
+PQCLEAN_SPHINCSSHA2128FSIMPLE_CLEAN_bytes_to_ull

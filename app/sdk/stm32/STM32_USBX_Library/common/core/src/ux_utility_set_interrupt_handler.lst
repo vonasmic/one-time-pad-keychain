@@ -1,0 +1,41 @@
+ARM GAS  /tmp/ccpjaRhp.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_utility_set_interrupt_handler.c"
+  14              		.text
+  15              		.section	.text._ux_utility_set_interrupt_handler,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_utility_set_interrupt_handler
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_utility_set_interrupt_handler:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 7047     		bx	lr
+  31              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccpjaRhp.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_utility_set_interrupt_handler.c
+     /tmp/ccpjaRhp.s:16     .text._ux_utility_set_interrupt_handler:0000000000000000 $t
+     /tmp/ccpjaRhp.s:25     .text._ux_utility_set_interrupt_handler:0000000000000000 _ux_utility_set_interrupt_handler
+
+NO UNDEFINED SYMBOLS

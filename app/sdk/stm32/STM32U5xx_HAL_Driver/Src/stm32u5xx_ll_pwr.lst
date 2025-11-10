@@ -1,0 +1,55 @@
+ARM GAS  /tmp/ccgJ9VbY.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_ll_pwr.c"
+  14              		.text
+  15              		.section	.text.LL_PWR_DeInit,"ax",%progbits
+  16              		.align	1
+  17              		.global	LL_PWR_DeInit
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	LL_PWR_DeInit:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 0122     		movs	r2, #1
+  30 0002 054B     		ldr	r3, .L2
+  31 0004 0020     		movs	r0, #0
+  32 0006 9A63     		str	r2, [r3, #56]
+  33 0008 FF22     		movs	r2, #255
+  34 000a 9A64     		str	r2, [r3, #72]
+  35 000c 5A6B     		ldr	r2, [r3, #52]
+  36 000e 22F00202 		bic	r2, r2, #2
+  37 0012 5A63     		str	r2, [r3, #52]
+  38 0014 7047     		bx	lr
+  39              	.L3:
+  40 0016 00BF     		.align	2
+  41              	.L2:
+  42 0018 00080246 		.word	1174538240
+  44              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccgJ9VbY.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_ll_pwr.c
+     /tmp/ccgJ9VbY.s:16     .text.LL_PWR_DeInit:0000000000000000 $t
+     /tmp/ccgJ9VbY.s:25     .text.LL_PWR_DeInit:0000000000000000 LL_PWR_DeInit
+     /tmp/ccgJ9VbY.s:42     .text.LL_PWR_DeInit:0000000000000018 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,387 @@
+ARM GAS  /tmp/ccNTJEOs.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_initialize.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_initialize,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_initialize
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_initialize:
+  26              		@ args = 20, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+  29 0004 614F     		ldr	r7, .L40
+  30 0006 3C68     		ldr	r4, [r7]
+  31 0008 C4E93701 		strd	r0, r1, [r4, #220]
+  32 000c 0021     		movs	r1, #0
+  33 000e C4E93523 		strd	r2, r3, [r4, #212]
+  34 0012 089B     		ldr	r3, [sp, #32]
+  35 0014 6422     		movs	r2, #100
+  36 0016 C4F8E430 		str	r3, [r4, #228]
+  37 001a 099B     		ldr	r3, [sp, #36]
+  38 001c 0846     		mov	r0, r1
+  39 001e C4F8E830 		str	r3, [r4, #232]
+  40 0022 0A9B     		ldr	r3, [sp, #40]
+  41 0024 C4F8EC30 		str	r3, [r4, #236]
+  42 0028 0B9B     		ldr	r3, [sp, #44]
+  43 002a C4F8F030 		str	r3, [r4, #240]
+  44 002e 0C9B     		ldr	r3, [sp, #48]
+  45 0030 C4F86431 		str	r3, [r4, #356]
+  46 0034 FFF7FEFF 		bl	_ux_utility_memory_allocate
+  47 0038 0028     		cmp	r0, #0
+  48 003a 7FD0     		beq	.L24
+  49 003c 3B68     		ldr	r3, [r7]
+  50 003e 4FF48072 		mov	r2, #256
+  51 0042 C3F8FC00 		str	r0, [r3, #252]
+  52 0046 0121     		movs	r1, #1
+  53 0048 0020     		movs	r0, #0
+  54 004a FFF7FEFF 		bl	_ux_utility_memory_allocate
+  55 004e A066     		str	r0, [r4, #104]
+  56 0050 0028     		cmp	r0, #0
+  57 0052 5BD0     		beq	.L26
+  58 0054 3B68     		ldr	r3, [r7]
+ARM GAS  /tmp/ccNTJEOs.s 			page 2
+
+
+  59 0056 D3E93505 		ldrd	r0, r5, [r3, #212]
+  60 005a 0023     		movs	r3, #0
+  61 005c 1946     		mov	r1, r3
+  62 005e 1E46     		mov	r6, r3
+  63 0060 9C46     		mov	ip, r3
+  64 0062 9E46     		mov	lr, r3
+  65 0064 1A46     		mov	r2, r3
+  66              	.L4:
+  67 0066 F5B9     		cbnz	r5, .L9
+  68 0068 01EB0308 		add	r8, r1, r3
+  69 006c F045     		cmp	r8, lr
+  70 006e 38BF     		it	cc
+  71 0070 F046     		movcc	r8, lr
+  72 0072 B242     		cmp	r2, r6
+  73 0074 38BF     		it	cc
+  74 0076 3246     		movcc	r2, r6
+  75 0078 002A     		cmp	r2, #0
+  76 007a 3FD1     		bne	.L10
+  77 007c 4222     		movs	r2, #66
+  78 007e 0321     		movs	r1, #3
+  79 0080 0220     		movs	r0, #2
+  80 0082 FFF7FEFF 		bl	_ux_system_error_handler
+  81 0086 4225     		movs	r5, #66
+  82              	.L14:
+  83 0088 D4F8B800 		ldr	r0, [r4, #184]
+  84 008c 08B1     		cbz	r0, .L21
+  85 008e FFF7FEFF 		bl	_ux_utility_memory_free
+  86              	.L21:
+  87 0092 A06E     		ldr	r0, [r4, #104]
+  88 0094 08B1     		cbz	r0, .L22
+  89 0096 FFF7FEFF 		bl	_ux_utility_memory_free
+  90              	.L22:
+  91 009a 3B68     		ldr	r3, [r7]
+  92 009c D3F8FC00 		ldr	r0, [r3, #252]
+  93 00a0 FFF7FEFF 		bl	_ux_utility_memory_free
+  94 00a4 6FE0     		b	.L1
+  95              	.L9:
+  96 00a6 90F80180 		ldrb	r8, [r0, #1]	@ zero_extendqisi2
+  97 00aa 90F80090 		ldrb	r9, [r0]	@ zero_extendqisi2
+  98 00ae B8F1020F 		cmp	r8, #2
+  99 00b2 18D0     		beq	.L5
+ 100 00b4 B8F1040F 		cmp	r8, #4
+ 101 00b8 0DD1     		bne	.L6
+ 102 00ba 90F803A0 		ldrb	r10, [r0, #3]	@ zero_extendqisi2
+ 103 00be 90F80480 		ldrb	r8, [r0, #4]	@ zero_extendqisi2
+ 104 00c2 BAF1000F 		cmp	r10, #0
+ 105 00c6 0AD1     		bne	.L7
+ 106 00c8 1944     		add	r1, r1, r3
+ 107 00ca 0136     		adds	r6, r6, #1
+ 108              	.L8:
+ 109 00cc 8378     		ldrb	r3, [r0, #2]	@ zero_extendqisi2
+ 110 00ce 9C45     		cmp	ip, r3
+ 111 00d0 38BF     		it	cc
+ 112 00d2 9C46     		movcc	ip, r3
+ 113 00d4 4346     		mov	r3, r8
+ 114              	.L6:
+ 115 00d6 A5EB0905 		sub	r5, r5, r9
+ARM GAS  /tmp/ccNTJEOs.s 			page 3
+
+
+ 116 00da 4844     		add	r0, r0, r9
+ 117 00dc C3E7     		b	.L4
+ 118              	.L7:
+ 119 00de 9845     		cmp	r8, r3
+ 120 00e0 38BF     		it	cc
+ 121 00e2 9846     		movcc	r8, r3
+ 122 00e4 F2E7     		b	.L8
+ 123              	.L5:
+ 124 00e6 0B44     		add	r3, r3, r1
+ 125 00e8 B242     		cmp	r2, r6
+ 126 00ea 38BF     		it	cc
+ 127 00ec 3246     		movcc	r2, r6
+ 128 00ee 9E45     		cmp	lr, r3
+ 129 00f0 38BF     		it	cc
+ 130 00f2 9E46     		movcc	lr, r3
+ 131 00f4 0023     		movs	r3, #0
+ 132 00f6 1946     		mov	r1, r3
+ 133 00f8 1E46     		mov	r6, r3
+ 134 00fa ECE7     		b	.L6
+ 135              	.L10:
+ 136 00fc BCF10F0F 		cmp	ip, #15
+ 137 0100 1ED9     		bls	.L12
+ 138 0102 1222     		movs	r2, #18
+ 139 0104 0321     		movs	r1, #3
+ 140 0106 0220     		movs	r0, #2
+ 141 0108 FFF7FEFF 		bl	_ux_system_error_handler
+ 142              	.L26:
+ 143 010c 1225     		movs	r5, #18
+ 144 010e BBE7     		b	.L14
+ 145              	.L17:
+ 146 0110 4FF40072 		mov	r2, #512
+ 147 0114 0121     		movs	r1, #1
+ 148 0116 0020     		movs	r0, #0
+ 149 0118 FFF7FEFF 		bl	_ux_utility_memory_allocate
+ 150 011c F062     		str	r0, [r6, #44]
+ 151 011e 30B1     		cbz	r0, .L16
+ 152 0120 6836     		adds	r6, r6, #104
+ 153 0122 2BE0     		b	.L15
+ 154              	.L20:
+ 155 0124 F06A     		ldr	r0, [r6, #44]
+ 156 0126 08B1     		cbz	r0, .L19
+ 157 0128 FFF7FEFF 		bl	_ux_utility_memory_free
+ 158              	.L19:
+ 159 012c 683E     		subs	r6, r6, #104
+ 160              	.L16:
+ 161 012e D4F8C000 		ldr	r0, [r4, #192]
+ 162 0132 B042     		cmp	r0, r6
+ 163 0134 F6D9     		bls	.L20
+ 164 0136 FFF7FEFF 		bl	_ux_utility_memory_free
+ 165 013a E7E7     		b	.L26
+ 166              	.L24:
+ 167 013c 1225     		movs	r5, #18
+ 168 013e 22E0     		b	.L1
+ 169              	.L12:
+ 170 0140 2023     		movs	r3, #32
+ 171 0142 2946     		mov	r1, r5
+ 172 0144 2846     		mov	r0, r5
+ARM GAS  /tmp/ccNTJEOs.s 			page 4
+
+
+ 173 0146 C4F8BC20 		str	r2, [r4, #188]
+ 174 014a C4F8C480 		str	r8, [r4, #196]
+ 175 014e FFF7FEFF 		bl	_ux_utility_memory_allocate_mulc_safe
+ 176 0152 0028     		cmp	r0, #0
+ 177 0154 DAD0     		beq	.L26
+ 178 0156 C4F8B800 		str	r0, [r4, #184]
+ 179 015a B8F1000F 		cmp	r8, #0
+ 180 015e 12D0     		beq	.L1
+ 181 0160 6823     		movs	r3, #104
+ 182 0162 4246     		mov	r2, r8
+ 183 0164 2946     		mov	r1, r5
+ 184 0166 2846     		mov	r0, r5
+ 185 0168 FFF7FEFF 		bl	_ux_utility_memory_allocate_mulc_safe
+ 186 016c 0646     		mov	r6, r0
+ 187 016e 0028     		cmp	r0, #0
+ 188 0170 CCD0     		beq	.L26
+ 189 0172 6823     		movs	r3, #104
+ 190 0174 03FB08F8 		mul	r8, r3, r8
+ 191 0178 C4F8C000 		str	r0, [r4, #192]
+ 192              	.L15:
+ 193 017c D4F8C020 		ldr	r2, [r4, #192]
+ 194 0180 4244     		add	r2, r2, r8
+ 195 0182 9642     		cmp	r6, r2
+ 196 0184 C4D3     		bcc	.L17
+ 197              	.L1:
+ 198 0186 2846     		mov	r0, r5
+ 199 0188 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 200              	.L41:
+ 201              		.align	2
+ 202              	.L40:
+ 203 018c 00000000 		.word	.LANCHOR0
+ 205              		.section	.text._uxe_device_stack_initialize,"ax",%progbits
+ 206              		.align	1
+ 207              		.global	_uxe_device_stack_initialize
+ 208              		.syntax unified
+ 209              		.thumb
+ 210              		.thumb_func
+ 211              		.fpu fpv4-sp-d16
+ 213              	_uxe_device_stack_initialize:
+ 214              		@ args = 20, pretend = 0, frame = 0
+ 215              		@ frame_needed = 0, uses_anonymous_args = 0
+ 216              		@ link register save eliminated.
+ 217 0000 F0B4     		push	{r4, r5, r6, r7}
+ 218 0002 DDF820C0 		ldr	ip, [sp, #32]
+ 219 0006 DDE90445 		ldrd	r4, r5, [sp, #16]
+ 220 000a DDE90667 		ldrd	r6, r7, [sp, #24]
+ 221 000e 00B9     		cbnz	r0, .L43
+ 222 0010 69B9     		cbnz	r1, .L42
+ 223              	.L43:
+ 224 0012 62B1     		cbz	r2, .L42
+ 225 0014 5BB1     		cbz	r3, .L42
+ 226 0016 04B9     		cbnz	r4, .L45
+ 227 0018 4DB9     		cbnz	r5, .L42
+ 228              	.L45:
+ 229 001a 46B1     		cbz	r6, .L42
+ 230 001c 3FB1     		cbz	r7, .L42
+ 231 001e CDE9077C 		strd	r7, ip, [sp, #28]
+ARM GAS  /tmp/ccNTJEOs.s 			page 5
+
+
+ 232 0022 CDE90556 		strd	r5, r6, [sp, #20]
+ 233 0026 0494     		str	r4, [sp, #16]
+ 234 0028 F0BC     		pop	{r4, r5, r6, r7}
+ 235 002a FFF7FEBF 		b	_ux_device_stack_initialize
+ 236              	.L42:
+ 237 002e FA20     		movs	r0, #250
+ 238 0030 F0BC     		pop	{r4, r5, r6, r7}
+ 239 0032 7047     		bx	lr
+ 241              		.global	_ux_system_slave
+ 242              		.global	_ux_system_device_class_video_name
+ 243              		.global	_ux_system_device_class_ccid_name
+ 244              		.global	_ux_system_device_class_printer_name
+ 245              		.global	_ux_system_slave_class_audio_name
+ 246              		.global	_ux_system_slave_class_dfu_name
+ 247              		.global	_ux_system_slave_class_cdc_ecm_name
+ 248              		.global	_ux_system_slave_class_rndis_name
+ 249              		.global	_ux_system_slave_class_hid_name
+ 250              		.global	_ux_system_slave_class_pima_name
+ 251              		.global	_ux_system_slave_class_dpump_name
+ 252              		.global	_ux_system_slave_class_cdc_acm_name
+ 253              		.global	_ux_system_slave_class_storage_name
+ 254              		.section	.bss._ux_system_slave,"aw",%nobits
+ 255              		.align	2
+ 256              		.set	.LANCHOR0,. + 0
+ 259              	_ux_system_slave:
+ 260 0000 00000000 		.space	4
+ 261              		.section	.data._ux_system_device_class_ccid_name,"aw"
+ 264              	_ux_system_device_class_ccid_name:
+ 265 0000 75785F64 		.ascii	"ux_device_class_ccid\000"
+ 265      65766963 
+ 265      655F636C 
+ 265      6173735F 
+ 265      63636964 
+ 266              		.section	.data._ux_system_device_class_printer_name,"aw"
+ 269              	_ux_system_device_class_printer_name:
+ 270 0000 75785F64 		.ascii	"ux_device_class_printer\000"
+ 270      65766963 
+ 270      655F636C 
+ 270      6173735F 
+ 270      7072696E 
+ 271              		.section	.data._ux_system_device_class_video_name,"aw"
+ 274              	_ux_system_device_class_video_name:
+ 275 0000 75785F64 		.ascii	"ux_device_class_video\000"
+ 275      65766963 
+ 275      655F636C 
+ 275      6173735F 
+ 275      76696465 
+ 276              		.section	.data._ux_system_slave_class_audio_name,"aw"
+ 279              	_ux_system_slave_class_audio_name:
+ 280 0000 75785F73 		.ascii	"ux_slave_class_audio\000"
+ 280      6C617665 
+ 280      5F636C61 
+ 280      73735F61 
+ 280      7564696F 
+ 281              		.section	.data._ux_system_slave_class_cdc_acm_name,"aw"
+ 284              	_ux_system_slave_class_cdc_acm_name:
+ 285 0000 75785F73 		.ascii	"ux_slave_class_cdc_acm\000"
+ARM GAS  /tmp/ccNTJEOs.s 			page 6
+
+
+ 285      6C617665 
+ 285      5F636C61 
+ 285      73735F63 
+ 285      64635F61 
+ 286              		.section	.data._ux_system_slave_class_cdc_ecm_name,"aw"
+ 289              	_ux_system_slave_class_cdc_ecm_name:
+ 290 0000 75785F73 		.ascii	"ux_slave_class_cdc_ecm\000"
+ 290      6C617665 
+ 290      5F636C61 
+ 290      73735F63 
+ 290      64635F65 
+ 291              		.section	.data._ux_system_slave_class_dfu_name,"aw"
+ 294              	_ux_system_slave_class_dfu_name:
+ 295 0000 75785F73 		.ascii	"ux_slave_class_dfu\000"
+ 295      6C617665 
+ 295      5F636C61 
+ 295      73735F64 
+ 295      667500
+ 296              		.section	.data._ux_system_slave_class_dpump_name,"aw"
+ 299              	_ux_system_slave_class_dpump_name:
+ 300 0000 75785F73 		.ascii	"ux_slave_class_dpump\000"
+ 300      6C617665 
+ 300      5F636C61 
+ 300      73735F64 
+ 300      70756D70 
+ 301              		.section	.data._ux_system_slave_class_hid_name,"aw"
+ 304              	_ux_system_slave_class_hid_name:
+ 305 0000 75785F73 		.ascii	"ux_slave_class_hid\000"
+ 305      6C617665 
+ 305      5F636C61 
+ 305      73735F68 
+ 305      696400
+ 306              		.section	.data._ux_system_slave_class_pima_name,"aw"
+ 309              	_ux_system_slave_class_pima_name:
+ 310 0000 75785F73 		.ascii	"ux_slave_class_pima\000"
+ 310      6C617665 
+ 310      5F636C61 
+ 310      73735F70 
+ 310      696D6100 
+ 311              		.section	.data._ux_system_slave_class_rndis_name,"aw"
+ 314              	_ux_system_slave_class_rndis_name:
+ 315 0000 75785F73 		.ascii	"ux_slave_class_rndis\000"
+ 315      6C617665 
+ 315      5F636C61 
+ 315      73735F72 
+ 315      6E646973 
+ 316              		.section	.data._ux_system_slave_class_storage_name,"aw"
+ 319              	_ux_system_slave_class_storage_name:
+ 320 0000 75785F73 		.ascii	"ux_slave_class_storage\000"
+ 320      6C617665 
+ 320      5F636C61 
+ 320      73735F73 
+ 320      746F7261 
+ 321              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccNTJEOs.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_initialize.c
+     /tmp/ccNTJEOs.s:16     .text._ux_device_stack_initialize:0000000000000000 $t
+     /tmp/ccNTJEOs.s:25     .text._ux_device_stack_initialize:0000000000000000 _ux_device_stack_initialize
+     /tmp/ccNTJEOs.s:203    .text._ux_device_stack_initialize:000000000000018c $d
+     /tmp/ccNTJEOs.s:206    .text._uxe_device_stack_initialize:0000000000000000 $t
+     /tmp/ccNTJEOs.s:213    .text._uxe_device_stack_initialize:0000000000000000 _uxe_device_stack_initialize
+     /tmp/ccNTJEOs.s:259    .bss._ux_system_slave:0000000000000000 _ux_system_slave
+     /tmp/ccNTJEOs.s:274    .data._ux_system_device_class_video_name:0000000000000000 _ux_system_device_class_video_name
+     /tmp/ccNTJEOs.s:264    .data._ux_system_device_class_ccid_name:0000000000000000 _ux_system_device_class_ccid_name
+     /tmp/ccNTJEOs.s:269    .data._ux_system_device_class_printer_name:0000000000000000 _ux_system_device_class_printer_name
+     /tmp/ccNTJEOs.s:279    .data._ux_system_slave_class_audio_name:0000000000000000 _ux_system_slave_class_audio_name
+     /tmp/ccNTJEOs.s:294    .data._ux_system_slave_class_dfu_name:0000000000000000 _ux_system_slave_class_dfu_name
+     /tmp/ccNTJEOs.s:289    .data._ux_system_slave_class_cdc_ecm_name:0000000000000000 _ux_system_slave_class_cdc_ecm_name
+     /tmp/ccNTJEOs.s:314    .data._ux_system_slave_class_rndis_name:0000000000000000 _ux_system_slave_class_rndis_name
+     /tmp/ccNTJEOs.s:304    .data._ux_system_slave_class_hid_name:0000000000000000 _ux_system_slave_class_hid_name
+     /tmp/ccNTJEOs.s:309    .data._ux_system_slave_class_pima_name:0000000000000000 _ux_system_slave_class_pima_name
+     /tmp/ccNTJEOs.s:299    .data._ux_system_slave_class_dpump_name:0000000000000000 _ux_system_slave_class_dpump_name
+     /tmp/ccNTJEOs.s:284    .data._ux_system_slave_class_cdc_acm_name:0000000000000000 _ux_system_slave_class_cdc_acm_name
+     /tmp/ccNTJEOs.s:319    .data._ux_system_slave_class_storage_name:0000000000000000 _ux_system_slave_class_storage_name
+     /tmp/ccNTJEOs.s:255    .bss._ux_system_slave:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_memory_allocate
+_ux_system_error_handler
+_ux_utility_memory_free
+_ux_utility_memory_allocate_mulc_safe

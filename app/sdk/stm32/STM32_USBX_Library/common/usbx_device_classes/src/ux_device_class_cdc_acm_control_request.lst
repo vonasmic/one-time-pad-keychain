@@ -1,0 +1,130 @@
+ARM GAS  /tmp/ccmHRIvB.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_class_cdc_acm_control_request.c"
+  14              		.text
+  15              		.section	.text._ux_device_class_cdc_acm_control_request,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_class_cdc_acm_control_request
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_class_cdc_acm_control_request:
+  26              		@ args = 0, pretend = 0, frame = 8
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 036A     		ldr	r3, [r0, #32]
+  29 0002 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+  30 0004 9C6C     		ldr	r4, [r3, #72]
+  31 0006 2C4B     		ldr	r3, .L22
+  32 0008 1D68     		ldr	r5, [r3]
+  33 000a 05F19A00 		add	r0, r5, #154
+  34 000e 95F89970 		ldrb	r7, [r5, #153]	@ zero_extendqisi2
+  35 0012 FFF7FEFF 		bl	_ux_utility_short_get
+  36 0016 0646     		mov	r6, r0
+  37 0018 05F19E00 		add	r0, r5, #158
+  38 001c FFF7FEFF 		bl	_ux_utility_short_get
+  39 0020 212F     		cmp	r7, #33
+  40 0022 1AD0     		beq	.L2
+  41 0024 222F     		cmp	r7, #34
+  42 0026 04D0     		beq	.L3
+  43 0028 202F     		cmp	r7, #32
+  44 002a 36D0     		beq	.L4
+  45 002c FF20     		movs	r0, #255
+  46              	.L1:
+  47 002e 03B0     		add	sp, sp, #12
+  48              		@ sp needed
+  49 0030 F0BD     		pop	{r4, r5, r6, r7, pc}
+  50              	.L3:
+  51 0032 0023     		movs	r3, #0
+  52 0034 F207     		lsls	r2, r6, #31
+  53 0036 84F84B30 		strb	r3, [r4, #75]
+  54 003a 84F84C30 		strb	r3, [r4, #76]
+  55 003e 44BF     		itt	mi
+  56 0040 0123     		movmi	r3, #1
+  57 0042 84F84B30 		strbmi	r3, [r4, #75]
+  58 0046 B307     		lsls	r3, r6, #30
+ARM GAS  /tmp/ccmHRIvB.s 			page 2
+
+
+  59 0048 02D5     		bpl	.L21
+  60 004a 0123     		movs	r3, #1
+  61 004c 84F84C30 		strb	r3, [r4, #76]
+  62              	.L21:
+  63 0050 E368     		ldr	r3, [r4, #12]
+  64 0052 03B3     		cbz	r3, .L20
+  65 0054 2046     		mov	r0, r4
+  66 0056 9847     		blx	r3
+  67 0058 1DE0     		b	.L20
+  68              	.L2:
+  69 005a 616C     		ldr	r1, [r4, #68]
+  70 005c 0190     		str	r0, [sp, #4]
+  71 005e A86E     		ldr	r0, [r5, #104]
+  72 0060 FFF7FEFF 		bl	_ux_utility_long_put
+  73 0064 94F84810 		ldrb	r1, [r4, #72]	@ zero_extendqisi2
+  74 0068 AB6E     		ldr	r3, [r5, #104]
+  75 006a 019A     		ldr	r2, [sp, #4]
+  76 006c 1971     		strb	r1, [r3, #4]
+  77 006e 94F84910 		ldrb	r1, [r4, #73]	@ zero_extendqisi2
+  78 0072 AB6E     		ldr	r3, [r5, #104]
+  79 0074 072A     		cmp	r2, #7
+  80 0076 5971     		strb	r1, [r3, #5]
+  81 0078 94F84A10 		ldrb	r1, [r4, #74]	@ zero_extendqisi2
+  82 007c AB6E     		ldr	r3, [r5, #104]
+  83 007e 05F15C00 		add	r0, r5, #92
+  84 0082 9971     		strb	r1, [r3, #6]
+  85 0084 4FF00303 		mov	r3, #3
+  86 0088 1146     		mov	r1, r2
+  87 008a C5F88430 		str	r3, [r5, #132]
+  88 008e 28BF     		it	cs
+  89 0090 0721     		movcs	r1, #7
+  90 0092 FFF7FEFF 		bl	_ux_device_stack_transfer_request
+  91              	.L20:
+  92 0096 0020     		movs	r0, #0
+  93 0098 C9E7     		b	.L1
+  94              	.L4:
+  95 009a A86E     		ldr	r0, [r5, #104]
+  96 009c FFF7FEFF 		bl	_ux_utility_long_get
+  97 00a0 AB6E     		ldr	r3, [r5, #104]
+  98 00a2 6064     		str	r0, [r4, #68]
+  99 00a4 1A79     		ldrb	r2, [r3, #4]	@ zero_extendqisi2
+ 100 00a6 84F84820 		strb	r2, [r4, #72]
+ 101 00aa 5A79     		ldrb	r2, [r3, #5]	@ zero_extendqisi2
+ 102 00ac 84F84920 		strb	r2, [r4, #73]
+ 103 00b0 9B79     		ldrb	r3, [r3, #6]	@ zero_extendqisi2
+ 104 00b2 84F84A30 		strb	r3, [r4, #74]
+ 105 00b6 CBE7     		b	.L21
+ 106              	.L23:
+ 107              		.align	2
+ 108              	.L22:
+ 109 00b8 00000000 		.word	_ux_system_slave
+ 111              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccmHRIvB.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_class_cdc_acm_control_request.c
+     /tmp/ccmHRIvB.s:16     .text._ux_device_class_cdc_acm_control_request:0000000000000000 $t
+     /tmp/ccmHRIvB.s:25     .text._ux_device_class_cdc_acm_control_request:0000000000000000 _ux_device_class_cdc_acm_control_request
+     /tmp/ccmHRIvB.s:109    .text._ux_device_class_cdc_acm_control_request:00000000000000b8 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_short_get
+_ux_utility_long_put
+_ux_device_stack_transfer_request
+_ux_utility_long_get
+_ux_system_slave

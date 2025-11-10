@@ -1,0 +1,754 @@
+ARM GAS  /tmp/ccTFjPYn.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"polyvec.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+  29 0004 0646     		mov	r6, r0
+  30 0006 8A46     		mov	r10, r1
+  31 0008 0025     		movs	r5, #0
+  32 000a 4FF4A059 		mov	r9, #5120
+  33              	.L2:
+  34 000e 0024     		movs	r4, #0
+  35 0010 09FB0568 		mla	r8, r9, r5, r6
+  36 0014 2F02     		lsls	r7, r5, #8
+  37 0016 BFB2     		uxth	r7, r7
+  38              	.L3:
+  39 0018 3A19     		adds	r2, r7, r4
+  40 001a 08EB8420 		add	r0, r8, r4, lsl #10
+  41 001e 5146     		mov	r1, r10
+  42 0020 92B2     		uxth	r2, r2
+  43 0022 0134     		adds	r4, r4, #1
+  44 0024 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_uniform
+  45 0028 052C     		cmp	r4, #5
+  46 002a F5D1     		bne	.L3
+  47 002c 0135     		adds	r5, r5, #1
+  48 002e 062D     		cmp	r5, #6
+  49 0030 EDD1     		bne	.L2
+  50 0032 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+  52              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta,"ax",%progbits
+  53              		.align	1
+  54              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  58              		.fpu fpv4-sp-d16
+  60              	PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta:
+ARM GAS  /tmp/ccTFjPYn.s 			page 2
+
+
+  61              		@ args = 0, pretend = 0, frame = 0
+  62              		@ frame_needed = 0, uses_anonymous_args = 0
+  63 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  64 0002 0546     		mov	r5, r0
+  65 0004 0F46     		mov	r7, r1
+  66 0006 1646     		mov	r6, r2
+  67 0008 0024     		movs	r4, #0
+  68              	.L7:
+  69 000a 3219     		adds	r2, r6, r4
+  70 000c 05EB8420 		add	r0, r5, r4, lsl #10
+  71 0010 3946     		mov	r1, r7
+  72 0012 92B2     		uxth	r2, r2
+  73 0014 0134     		adds	r4, r4, #1
+  74 0016 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_uniform_eta
+  75 001a 052C     		cmp	r4, #5
+  76 001c F5D1     		bne	.L7
+  77 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+  79              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1,"ax",%progbits
+  80              		.align	1
+  81              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1
+  82              		.syntax unified
+  83              		.thumb
+  84              		.thumb_func
+  85              		.fpu fpv4-sp-d16
+  87              	PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1:
+  88              		@ args = 0, pretend = 0, frame = 0
+  89              		@ frame_needed = 0, uses_anonymous_args = 0
+  90 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  91 0002 0646     		mov	r6, r0
+  92 0004 0F46     		mov	r7, r1
+  93 0006 0025     		movs	r5, #0
+  94 0008 02EB8202 		add	r2, r2, r2, lsl #2
+  95 000c 94B2     		uxth	r4, r2
+  96              	.L10:
+  97 000e 6219     		adds	r2, r4, r5
+  98 0010 06EB8520 		add	r0, r6, r5, lsl #10
+  99 0014 3946     		mov	r1, r7
+ 100 0016 92B2     		uxth	r2, r2
+ 101 0018 0135     		adds	r5, r5, #1
+ 102 001a FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_uniform_gamma1
+ 103 001e 052D     		cmp	r5, #5
+ 104 0020 F5D1     		bne	.L10
+ 105 0022 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 107              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce,"ax",%progbits
+ 108              		.align	1
+ 109              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce
+ 110              		.syntax unified
+ 111              		.thumb
+ 112              		.thumb_func
+ 113              		.fpu fpv4-sp-d16
+ 115              	PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce:
+ 116              		@ args = 0, pretend = 0, frame = 0
+ 117              		@ frame_needed = 0, uses_anonymous_args = 0
+ 118 0000 38B5     		push	{r3, r4, r5, lr}
+ 119 0002 0446     		mov	r4, r0
+ 120 0004 00F5A055 		add	r5, r0, #5120
+ 121              	.L13:
+ARM GAS  /tmp/ccTFjPYn.s 			page 3
+
+
+ 122 0008 2046     		mov	r0, r4
+ 123 000a 04F58064 		add	r4, r4, #1024
+ 124 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_reduce
+ 125 0012 AC42     		cmp	r4, r5
+ 126 0014 F8D1     		bne	.L13
+ 127 0016 38BD     		pop	{r3, r4, r5, pc}
+ 129              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_add,"ax",%progbits
+ 130              		.align	1
+ 131              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_add
+ 132              		.syntax unified
+ 133              		.thumb
+ 134              		.thumb_func
+ 135              		.fpu fpv4-sp-d16
+ 137              	PQCLEAN_MLDSA65_CLEAN_polyvecl_add:
+ 138              		@ args = 0, pretend = 0, frame = 0
+ 139              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 141 0002 0546     		mov	r5, r0
+ 142 0004 0E46     		mov	r6, r1
+ 143 0006 1746     		mov	r7, r2
+ 144 0008 0024     		movs	r4, #0
+ 145              	.L16:
+ 146 000a 3A19     		adds	r2, r7, r4
+ 147 000c 3119     		adds	r1, r6, r4
+ 148 000e 2819     		adds	r0, r5, r4
+ 149 0010 04F58064 		add	r4, r4, #1024
+ 150 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_add
+ 151 0018 B4F5A05F 		cmp	r4, #5120
+ 152 001c F5D1     		bne	.L16
+ 153 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 155              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt,"ax",%progbits
+ 156              		.align	1
+ 157              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+ 158              		.syntax unified
+ 159              		.thumb
+ 160              		.thumb_func
+ 161              		.fpu fpv4-sp-d16
+ 163              	PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt:
+ 164              		@ args = 0, pretend = 0, frame = 0
+ 165              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166 0000 38B5     		push	{r3, r4, r5, lr}
+ 167 0002 0446     		mov	r4, r0
+ 168 0004 00F5A055 		add	r5, r0, #5120
+ 169              	.L19:
+ 170 0008 2046     		mov	r0, r4
+ 171 000a 04F58064 		add	r4, r4, #1024
+ 172 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_ntt
+ 173 0012 AC42     		cmp	r4, r5
+ 174 0014 F8D1     		bne	.L19
+ 175 0016 38BD     		pop	{r3, r4, r5, pc}
+ 177              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont,"ax",%progbits
+ 178              		.align	1
+ 179              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont
+ 180              		.syntax unified
+ 181              		.thumb
+ 182              		.thumb_func
+ 183              		.fpu fpv4-sp-d16
+ARM GAS  /tmp/ccTFjPYn.s 			page 4
+
+
+ 185              	PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont:
+ 186              		@ args = 0, pretend = 0, frame = 0
+ 187              		@ frame_needed = 0, uses_anonymous_args = 0
+ 188 0000 38B5     		push	{r3, r4, r5, lr}
+ 189 0002 0446     		mov	r4, r0
+ 190 0004 00F5A055 		add	r5, r0, #5120
+ 191              	.L22:
+ 192 0008 2046     		mov	r0, r4
+ 193 000a 04F58064 		add	r4, r4, #1024
+ 194 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_invntt_tomont
+ 195 0012 AC42     		cmp	r4, r5
+ 196 0014 F8D1     		bne	.L22
+ 197 0016 38BD     		pop	{r3, r4, r5, pc}
+ 199              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery,"ax",%progbits
+ 200              		.align	1
+ 201              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery
+ 202              		.syntax unified
+ 203              		.thumb
+ 204              		.thumb_func
+ 205              		.fpu fpv4-sp-d16
+ 207              	PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery:
+ 208              		@ args = 0, pretend = 0, frame = 0
+ 209              		@ frame_needed = 0, uses_anonymous_args = 0
+ 210 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 211 0002 0546     		mov	r5, r0
+ 212 0004 0F46     		mov	r7, r1
+ 213 0006 1646     		mov	r6, r2
+ 214 0008 0024     		movs	r4, #0
+ 215              	.L25:
+ 216 000a 3219     		adds	r2, r6, r4
+ 217 000c 2819     		adds	r0, r5, r4
+ 218 000e 3946     		mov	r1, r7
+ 219 0010 04F58064 		add	r4, r4, #1024
+ 220 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_pointwise_montgomery
+ 221 0018 B4F5A05F 		cmp	r4, #5120
+ 222 001c F5D1     		bne	.L25
+ 223 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 225              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery,"ax",%progbits
+ 226              		.align	1
+ 227              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery
+ 228              		.syntax unified
+ 229              		.thumb
+ 230              		.thumb_func
+ 231              		.fpu fpv4-sp-d16
+ 233              	PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery:
+ 234              		@ args = 0, pretend = 0, frame = 1024
+ 235              		@ frame_needed = 0, uses_anonymous_args = 0
+ 236 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 237 0002 ADF2044D 		subw	sp, sp, #1028
+ 238 0006 0546     		mov	r5, r0
+ 239 0008 0E46     		mov	r6, r1
+ 240 000a 1746     		mov	r7, r2
+ 241 000c 4FF48064 		mov	r4, #1024
+ 242 0010 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_pointwise_montgomery
+ 243              	.L28:
+ 244 0014 3A19     		adds	r2, r7, r4
+ 245 0016 3119     		adds	r1, r6, r4
+ARM GAS  /tmp/ccTFjPYn.s 			page 5
+
+
+ 246 0018 6846     		mov	r0, sp
+ 247 001a FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_pointwise_montgomery
+ 248 001e 04F58064 		add	r4, r4, #1024
+ 249 0022 6A46     		mov	r2, sp
+ 250 0024 2946     		mov	r1, r5
+ 251 0026 2846     		mov	r0, r5
+ 252 0028 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_add
+ 253 002c B4F5A05F 		cmp	r4, #5120
+ 254 0030 F0D1     		bne	.L28
+ 255 0032 0DF2044D 		addw	sp, sp, #1028
+ 256              		@ sp needed
+ 257 0036 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 259              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery,"ax",%progbits
+ 260              		.align	1
+ 261              		.global	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery
+ 262              		.syntax unified
+ 263              		.thumb
+ 264              		.thumb_func
+ 265              		.fpu fpv4-sp-d16
+ 267              	PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery:
+ 268              		@ args = 0, pretend = 0, frame = 0
+ 269              		@ frame_needed = 0, uses_anonymous_args = 0
+ 270 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 271 0002 1746     		mov	r7, r2
+ 272 0004 0446     		mov	r4, r0
+ 273 0006 0D46     		mov	r5, r1
+ 274 0008 00F5C056 		add	r6, r0, #6144
+ 275              	.L31:
+ 276 000c 2946     		mov	r1, r5
+ 277 000e 2046     		mov	r0, r4
+ 278 0010 3A46     		mov	r2, r7
+ 279 0012 04F58064 		add	r4, r4, #1024
+ 280 0016 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery
+ 281 001a B442     		cmp	r4, r6
+ 282 001c 05F5A055 		add	r5, r5, #5120
+ 283 0020 F4D1     		bne	.L31
+ 284 0022 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 286              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm,"ax",%progbits
+ 287              		.align	1
+ 288              		.global	PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm
+ 289              		.syntax unified
+ 290              		.thumb
+ 291              		.thumb_func
+ 292              		.fpu fpv4-sp-d16
+ 294              	PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm:
+ 295              		@ args = 0, pretend = 0, frame = 0
+ 296              		@ frame_needed = 0, uses_anonymous_args = 0
+ 297 0000 70B5     		push	{r4, r5, r6, lr}
+ 298 0002 0E46     		mov	r6, r1
+ 299 0004 0446     		mov	r4, r0
+ 300 0006 00F5A055 		add	r5, r0, #5120
+ 301              	.L35:
+ 302 000a 3146     		mov	r1, r6
+ 303 000c 2046     		mov	r0, r4
+ 304 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_chknorm
+ 305 0012 20B9     		cbnz	r0, .L36
+ 306 0014 04F58064 		add	r4, r4, #1024
+ARM GAS  /tmp/ccTFjPYn.s 			page 6
+
+
+ 307 0018 AC42     		cmp	r4, r5
+ 308 001a F6D1     		bne	.L35
+ 309              	.L33:
+ 310 001c 70BD     		pop	{r4, r5, r6, pc}
+ 311              	.L36:
+ 312 001e 0120     		movs	r0, #1
+ 313 0020 FCE7     		b	.L33
+ 315              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta,"ax",%progbits
+ 316              		.align	1
+ 317              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta
+ 318              		.syntax unified
+ 319              		.thumb
+ 320              		.thumb_func
+ 321              		.fpu fpv4-sp-d16
+ 323              	PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta:
+ 324              		@ args = 0, pretend = 0, frame = 0
+ 325              		@ frame_needed = 0, uses_anonymous_args = 0
+ 326 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 327 0002 0546     		mov	r5, r0
+ 328 0004 0F46     		mov	r7, r1
+ 329 0006 1646     		mov	r6, r2
+ 330 0008 0024     		movs	r4, #0
+ 331              	.L39:
+ 332 000a 3219     		adds	r2, r6, r4
+ 333 000c 05EB8420 		add	r0, r5, r4, lsl #10
+ 334 0010 3946     		mov	r1, r7
+ 335 0012 92B2     		uxth	r2, r2
+ 336 0014 0134     		adds	r4, r4, #1
+ 337 0016 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_uniform_eta
+ 338 001a 062C     		cmp	r4, #6
+ 339 001c F5D1     		bne	.L39
+ 340 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 342              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_reduce,"ax",%progbits
+ 343              		.align	1
+ 344              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+ 345              		.syntax unified
+ 346              		.thumb
+ 347              		.thumb_func
+ 348              		.fpu fpv4-sp-d16
+ 350              	PQCLEAN_MLDSA65_CLEAN_polyveck_reduce:
+ 351              		@ args = 0, pretend = 0, frame = 0
+ 352              		@ frame_needed = 0, uses_anonymous_args = 0
+ 353 0000 38B5     		push	{r3, r4, r5, lr}
+ 354 0002 0446     		mov	r4, r0
+ 355 0004 00F5C055 		add	r5, r0, #6144
+ 356              	.L42:
+ 357 0008 2046     		mov	r0, r4
+ 358 000a 04F58064 		add	r4, r4, #1024
+ 359 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_reduce
+ 360 0012 AC42     		cmp	r4, r5
+ 361 0014 F8D1     		bne	.L42
+ 362 0016 38BD     		pop	{r3, r4, r5, pc}
+ 364              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_caddq,"ax",%progbits
+ 365              		.align	1
+ 366              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_caddq
+ 367              		.syntax unified
+ 368              		.thumb
+ARM GAS  /tmp/ccTFjPYn.s 			page 7
+
+
+ 369              		.thumb_func
+ 370              		.fpu fpv4-sp-d16
+ 372              	PQCLEAN_MLDSA65_CLEAN_polyveck_caddq:
+ 373              		@ args = 0, pretend = 0, frame = 0
+ 374              		@ frame_needed = 0, uses_anonymous_args = 0
+ 375 0000 38B5     		push	{r3, r4, r5, lr}
+ 376 0002 0446     		mov	r4, r0
+ 377 0004 00F5C055 		add	r5, r0, #6144
+ 378              	.L45:
+ 379 0008 2046     		mov	r0, r4
+ 380 000a 04F58064 		add	r4, r4, #1024
+ 381 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_caddq
+ 382 0012 AC42     		cmp	r4, r5
+ 383 0014 F8D1     		bne	.L45
+ 384 0016 38BD     		pop	{r3, r4, r5, pc}
+ 386              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_add,"ax",%progbits
+ 387              		.align	1
+ 388              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_add
+ 389              		.syntax unified
+ 390              		.thumb
+ 391              		.thumb_func
+ 392              		.fpu fpv4-sp-d16
+ 394              	PQCLEAN_MLDSA65_CLEAN_polyveck_add:
+ 395              		@ args = 0, pretend = 0, frame = 0
+ 396              		@ frame_needed = 0, uses_anonymous_args = 0
+ 397 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 398 0002 0546     		mov	r5, r0
+ 399 0004 0E46     		mov	r6, r1
+ 400 0006 1746     		mov	r7, r2
+ 401 0008 0024     		movs	r4, #0
+ 402              	.L48:
+ 403 000a 3A19     		adds	r2, r7, r4
+ 404 000c 3119     		adds	r1, r6, r4
+ 405 000e 2819     		adds	r0, r5, r4
+ 406 0010 04F58064 		add	r4, r4, #1024
+ 407 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_add
+ 408 0018 B4F5C05F 		cmp	r4, #6144
+ 409 001c F5D1     		bne	.L48
+ 410 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 412              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_sub,"ax",%progbits
+ 413              		.align	1
+ 414              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_sub
+ 415              		.syntax unified
+ 416              		.thumb
+ 417              		.thumb_func
+ 418              		.fpu fpv4-sp-d16
+ 420              	PQCLEAN_MLDSA65_CLEAN_polyveck_sub:
+ 421              		@ args = 0, pretend = 0, frame = 0
+ 422              		@ frame_needed = 0, uses_anonymous_args = 0
+ 423 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 424 0002 0546     		mov	r5, r0
+ 425 0004 0E46     		mov	r6, r1
+ 426 0006 1746     		mov	r7, r2
+ 427 0008 0024     		movs	r4, #0
+ 428              	.L51:
+ 429 000a 3A19     		adds	r2, r7, r4
+ 430 000c 3119     		adds	r1, r6, r4
+ARM GAS  /tmp/ccTFjPYn.s 			page 8
+
+
+ 431 000e 2819     		adds	r0, r5, r4
+ 432 0010 04F58064 		add	r4, r4, #1024
+ 433 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_sub
+ 434 0018 B4F5C05F 		cmp	r4, #6144
+ 435 001c F5D1     		bne	.L51
+ 436 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 438              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl,"ax",%progbits
+ 439              		.align	1
+ 440              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl
+ 441              		.syntax unified
+ 442              		.thumb
+ 443              		.thumb_func
+ 444              		.fpu fpv4-sp-d16
+ 446              	PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl:
+ 447              		@ args = 0, pretend = 0, frame = 0
+ 448              		@ frame_needed = 0, uses_anonymous_args = 0
+ 449 0000 38B5     		push	{r3, r4, r5, lr}
+ 450 0002 0446     		mov	r4, r0
+ 451 0004 00F5C055 		add	r5, r0, #6144
+ 452              	.L54:
+ 453 0008 2046     		mov	r0, r4
+ 454 000a 04F58064 		add	r4, r4, #1024
+ 455 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_shiftl
+ 456 0012 AC42     		cmp	r4, r5
+ 457 0014 F8D1     		bne	.L54
+ 458 0016 38BD     		pop	{r3, r4, r5, pc}
+ 460              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_ntt,"ax",%progbits
+ 461              		.align	1
+ 462              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_ntt
+ 463              		.syntax unified
+ 464              		.thumb
+ 465              		.thumb_func
+ 466              		.fpu fpv4-sp-d16
+ 468              	PQCLEAN_MLDSA65_CLEAN_polyveck_ntt:
+ 469              		@ args = 0, pretend = 0, frame = 0
+ 470              		@ frame_needed = 0, uses_anonymous_args = 0
+ 471 0000 38B5     		push	{r3, r4, r5, lr}
+ 472 0002 0446     		mov	r4, r0
+ 473 0004 00F5C055 		add	r5, r0, #6144
+ 474              	.L57:
+ 475 0008 2046     		mov	r0, r4
+ 476 000a 04F58064 		add	r4, r4, #1024
+ 477 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_ntt
+ 478 0012 AC42     		cmp	r4, r5
+ 479 0014 F8D1     		bne	.L57
+ 480 0016 38BD     		pop	{r3, r4, r5, pc}
+ 482              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont,"ax",%progbits
+ 483              		.align	1
+ 484              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+ 485              		.syntax unified
+ 486              		.thumb
+ 487              		.thumb_func
+ 488              		.fpu fpv4-sp-d16
+ 490              	PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont:
+ 491              		@ args = 0, pretend = 0, frame = 0
+ 492              		@ frame_needed = 0, uses_anonymous_args = 0
+ 493 0000 38B5     		push	{r3, r4, r5, lr}
+ARM GAS  /tmp/ccTFjPYn.s 			page 9
+
+
+ 494 0002 0446     		mov	r4, r0
+ 495 0004 00F5C055 		add	r5, r0, #6144
+ 496              	.L60:
+ 497 0008 2046     		mov	r0, r4
+ 498 000a 04F58064 		add	r4, r4, #1024
+ 499 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_invntt_tomont
+ 500 0012 AC42     		cmp	r4, r5
+ 501 0014 F8D1     		bne	.L60
+ 502 0016 38BD     		pop	{r3, r4, r5, pc}
+ 504              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery,"ax",%progbits
+ 505              		.align	1
+ 506              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery
+ 507              		.syntax unified
+ 508              		.thumb
+ 509              		.thumb_func
+ 510              		.fpu fpv4-sp-d16
+ 512              	PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery:
+ 513              		@ args = 0, pretend = 0, frame = 0
+ 514              		@ frame_needed = 0, uses_anonymous_args = 0
+ 515 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 516 0002 0546     		mov	r5, r0
+ 517 0004 0F46     		mov	r7, r1
+ 518 0006 1646     		mov	r6, r2
+ 519 0008 0024     		movs	r4, #0
+ 520              	.L63:
+ 521 000a 3219     		adds	r2, r6, r4
+ 522 000c 2819     		adds	r0, r5, r4
+ 523 000e 3946     		mov	r1, r7
+ 524 0010 04F58064 		add	r4, r4, #1024
+ 525 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_pointwise_montgomery
+ 526 0018 B4F5C05F 		cmp	r4, #6144
+ 527 001c F5D1     		bne	.L63
+ 528 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 530              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm,"ax",%progbits
+ 531              		.align	1
+ 532              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm
+ 533              		.syntax unified
+ 534              		.thumb
+ 535              		.thumb_func
+ 536              		.fpu fpv4-sp-d16
+ 538              	PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm:
+ 539              		@ args = 0, pretend = 0, frame = 0
+ 540              		@ frame_needed = 0, uses_anonymous_args = 0
+ 541 0000 70B5     		push	{r4, r5, r6, lr}
+ 542 0002 0E46     		mov	r6, r1
+ 543 0004 0446     		mov	r4, r0
+ 544 0006 00F5C055 		add	r5, r0, #6144
+ 545              	.L67:
+ 546 000a 3146     		mov	r1, r6
+ 547 000c 2046     		mov	r0, r4
+ 548 000e FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_chknorm
+ 549 0012 20B9     		cbnz	r0, .L68
+ 550 0014 04F58064 		add	r4, r4, #1024
+ 551 0018 AC42     		cmp	r4, r5
+ 552 001a F6D1     		bne	.L67
+ 553              	.L65:
+ 554 001c 70BD     		pop	{r4, r5, r6, pc}
+ARM GAS  /tmp/ccTFjPYn.s 			page 10
+
+
+ 555              	.L68:
+ 556 001e 0120     		movs	r0, #1
+ 557 0020 FCE7     		b	.L65
+ 559              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_power2round,"ax",%progbits
+ 560              		.align	1
+ 561              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_power2round
+ 562              		.syntax unified
+ 563              		.thumb
+ 564              		.thumb_func
+ 565              		.fpu fpv4-sp-d16
+ 567              	PQCLEAN_MLDSA65_CLEAN_polyveck_power2round:
+ 568              		@ args = 0, pretend = 0, frame = 0
+ 569              		@ frame_needed = 0, uses_anonymous_args = 0
+ 570 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 571 0002 0546     		mov	r5, r0
+ 572 0004 0E46     		mov	r6, r1
+ 573 0006 1746     		mov	r7, r2
+ 574 0008 0024     		movs	r4, #0
+ 575              	.L71:
+ 576 000a 3A19     		adds	r2, r7, r4
+ 577 000c 3119     		adds	r1, r6, r4
+ 578 000e 2819     		adds	r0, r5, r4
+ 579 0010 04F58064 		add	r4, r4, #1024
+ 580 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_power2round
+ 581 0018 B4F5C05F 		cmp	r4, #6144
+ 582 001c F5D1     		bne	.L71
+ 583 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 585              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_decompose,"ax",%progbits
+ 586              		.align	1
+ 587              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_decompose
+ 588              		.syntax unified
+ 589              		.thumb
+ 590              		.thumb_func
+ 591              		.fpu fpv4-sp-d16
+ 593              	PQCLEAN_MLDSA65_CLEAN_polyveck_decompose:
+ 594              		@ args = 0, pretend = 0, frame = 0
+ 595              		@ frame_needed = 0, uses_anonymous_args = 0
+ 596 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 597 0002 0546     		mov	r5, r0
+ 598 0004 0E46     		mov	r6, r1
+ 599 0006 1746     		mov	r7, r2
+ 600 0008 0024     		movs	r4, #0
+ 601              	.L74:
+ 602 000a 3A19     		adds	r2, r7, r4
+ 603 000c 3119     		adds	r1, r6, r4
+ 604 000e 2819     		adds	r0, r5, r4
+ 605 0010 04F58064 		add	r4, r4, #1024
+ 606 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_decompose
+ 607 0018 B4F5C05F 		cmp	r4, #6144
+ 608 001c F5D1     		bne	.L74
+ 609 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 611              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint,"ax",%progbits
+ 612              		.align	1
+ 613              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint
+ 614              		.syntax unified
+ 615              		.thumb
+ 616              		.thumb_func
+ARM GAS  /tmp/ccTFjPYn.s 			page 11
+
+
+ 617              		.fpu fpv4-sp-d16
+ 619              	PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint:
+ 620              		@ args = 0, pretend = 0, frame = 0
+ 621              		@ frame_needed = 0, uses_anonymous_args = 0
+ 622 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 623 0004 0024     		movs	r4, #0
+ 624 0006 0646     		mov	r6, r0
+ 625 0008 0F46     		mov	r7, r1
+ 626 000a 9046     		mov	r8, r2
+ 627 000c 2546     		mov	r5, r4
+ 628              	.L77:
+ 629 000e 08EB0402 		add	r2, r8, r4
+ 630 0012 3919     		adds	r1, r7, r4
+ 631 0014 3019     		adds	r0, r6, r4
+ 632 0016 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_make_hint
+ 633 001a 04F58064 		add	r4, r4, #1024
+ 634 001e B4F5C05F 		cmp	r4, #6144
+ 635 0022 0544     		add	r5, r5, r0
+ 636 0024 F3D1     		bne	.L77
+ 637 0026 2846     		mov	r0, r5
+ 638 0028 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 640              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint,"ax",%progbits
+ 641              		.align	1
+ 642              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint
+ 643              		.syntax unified
+ 644              		.thumb
+ 645              		.thumb_func
+ 646              		.fpu fpv4-sp-d16
+ 648              	PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint:
+ 649              		@ args = 0, pretend = 0, frame = 0
+ 650              		@ frame_needed = 0, uses_anonymous_args = 0
+ 651 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 652 0002 0546     		mov	r5, r0
+ 653 0004 0E46     		mov	r6, r1
+ 654 0006 1746     		mov	r7, r2
+ 655 0008 0024     		movs	r4, #0
+ 656              	.L80:
+ 657 000a 3A19     		adds	r2, r7, r4
+ 658 000c 3119     		adds	r1, r6, r4
+ 659 000e 2819     		adds	r0, r5, r4
+ 660 0010 04F58064 		add	r4, r4, #1024
+ 661 0014 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_poly_use_hint
+ 662 0018 B4F5C05F 		cmp	r4, #6144
+ 663 001c F5D1     		bne	.L80
+ 664 001e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 666              		.section	.text.PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1,"ax",%progbits
+ 667              		.align	1
+ 668              		.global	PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1
+ 669              		.syntax unified
+ 670              		.thumb
+ 671              		.thumb_func
+ 672              		.fpu fpv4-sp-d16
+ 674              	PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1:
+ 675              		@ args = 0, pretend = 0, frame = 0
+ 676              		@ frame_needed = 0, uses_anonymous_args = 0
+ 677 0000 70B5     		push	{r4, r5, r6, lr}
+ 678 0002 0446     		mov	r4, r0
+ARM GAS  /tmp/ccTFjPYn.s 			page 12
+
+
+ 679 0004 0D46     		mov	r5, r1
+ 680 0006 00F54076 		add	r6, r0, #768
+ 681              	.L83:
+ 682 000a 2946     		mov	r1, r5
+ 683 000c 2046     		mov	r0, r4
+ 684 000e 8034     		adds	r4, r4, #128
+ 685 0010 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_polyw1_pack
+ 686 0014 B442     		cmp	r4, r6
+ 687 0016 05F58065 		add	r5, r5, #1024
+ 688 001a F6D1     		bne	.L83
+ 689 001c 70BD     		pop	{r4, r5, r6, pc}
+ 691              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccTFjPYn.s 			page 13
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 polyvec.c
+     /tmp/ccTFjPYn.s:16     .text.PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand:0000000000000000 $t
+     /tmp/ccTFjPYn.s:25     .text.PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_expand
+     /tmp/ccTFjPYn.s:53     .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta:0000000000000000 $t
+     /tmp/ccTFjPYn.s:60     .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_eta
+     /tmp/ccTFjPYn.s:80     .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1:0000000000000000 $t
+     /tmp/ccTFjPYn.s:87     .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_uniform_gamma1
+     /tmp/ccTFjPYn.s:108    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce:0000000000000000 $t
+     /tmp/ccTFjPYn.s:115    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_reduce
+     /tmp/ccTFjPYn.s:130    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_add:0000000000000000 $t
+     /tmp/ccTFjPYn.s:137    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_add:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_add
+     /tmp/ccTFjPYn.s:156    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt:0000000000000000 $t
+     /tmp/ccTFjPYn.s:163    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_ntt
+     /tmp/ccTFjPYn.s:178    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont:0000000000000000 $t
+     /tmp/ccTFjPYn.s:185    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_invntt_tomont
+     /tmp/ccTFjPYn.s:200    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery:0000000000000000 $t
+     /tmp/ccTFjPYn.s:207    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_poly_montgomery
+     /tmp/ccTFjPYn.s:226    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery:0000000000000000 $t
+     /tmp/ccTFjPYn.s:233    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_pointwise_acc_montgomery
+     /tmp/ccTFjPYn.s:260    .text.PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery:0000000000000000 $t
+     /tmp/ccTFjPYn.s:267    .text.PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvec_matrix_pointwise_montgomery
+     /tmp/ccTFjPYn.s:287    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm:0000000000000000 $t
+     /tmp/ccTFjPYn.s:294    .text.PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyvecl_chknorm
+     /tmp/ccTFjPYn.s:316    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta:0000000000000000 $t
+     /tmp/ccTFjPYn.s:323    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_uniform_eta
+     /tmp/ccTFjPYn.s:343    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_reduce:0000000000000000 $t
+     /tmp/ccTFjPYn.s:350    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_reduce:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_reduce
+     /tmp/ccTFjPYn.s:365    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_caddq:0000000000000000 $t
+     /tmp/ccTFjPYn.s:372    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_caddq:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_caddq
+     /tmp/ccTFjPYn.s:387    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_add:0000000000000000 $t
+     /tmp/ccTFjPYn.s:394    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_add:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_add
+     /tmp/ccTFjPYn.s:413    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_sub:0000000000000000 $t
+     /tmp/ccTFjPYn.s:420    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_sub:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_sub
+     /tmp/ccTFjPYn.s:439    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl:0000000000000000 $t
+     /tmp/ccTFjPYn.s:446    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_shiftl
+     /tmp/ccTFjPYn.s:461    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_ntt:0000000000000000 $t
+     /tmp/ccTFjPYn.s:468    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_ntt:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_ntt
+     /tmp/ccTFjPYn.s:483    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont:0000000000000000 $t
+     /tmp/ccTFjPYn.s:490    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_invntt_tomont
+     /tmp/ccTFjPYn.s:505    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery:0000000000000000 $t
+     /tmp/ccTFjPYn.s:512    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_pointwise_poly_montgomery
+     /tmp/ccTFjPYn.s:531    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm:0000000000000000 $t
+     /tmp/ccTFjPYn.s:538    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_chknorm
+     /tmp/ccTFjPYn.s:560    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_power2round:0000000000000000 $t
+     /tmp/ccTFjPYn.s:567    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_power2round:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_power2round
+     /tmp/ccTFjPYn.s:586    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_decompose:0000000000000000 $t
+     /tmp/ccTFjPYn.s:593    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_decompose:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_decompose
+     /tmp/ccTFjPYn.s:612    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint:0000000000000000 $t
+     /tmp/ccTFjPYn.s:619    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_make_hint
+     /tmp/ccTFjPYn.s:641    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint:0000000000000000 $t
+     /tmp/ccTFjPYn.s:648    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_use_hint
+     /tmp/ccTFjPYn.s:667    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1:0000000000000000 $t
+     /tmp/ccTFjPYn.s:674    .text.PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1:0000000000000000 PQCLEAN_MLDSA65_CLEAN_polyveck_pack_w1
+
+UNDEFINED SYMBOLS
+PQCLEAN_MLDSA65_CLEAN_poly_uniform
+ARM GAS  /tmp/ccTFjPYn.s 			page 14
+
+
+PQCLEAN_MLDSA65_CLEAN_poly_uniform_eta
+PQCLEAN_MLDSA65_CLEAN_poly_uniform_gamma1
+PQCLEAN_MLDSA65_CLEAN_poly_reduce
+PQCLEAN_MLDSA65_CLEAN_poly_add
+PQCLEAN_MLDSA65_CLEAN_poly_ntt
+PQCLEAN_MLDSA65_CLEAN_poly_invntt_tomont
+PQCLEAN_MLDSA65_CLEAN_poly_pointwise_montgomery
+PQCLEAN_MLDSA65_CLEAN_poly_chknorm
+PQCLEAN_MLDSA65_CLEAN_poly_caddq
+PQCLEAN_MLDSA65_CLEAN_poly_sub
+PQCLEAN_MLDSA65_CLEAN_poly_shiftl
+PQCLEAN_MLDSA65_CLEAN_poly_power2round
+PQCLEAN_MLDSA65_CLEAN_poly_decompose
+PQCLEAN_MLDSA65_CLEAN_poly_make_hint
+PQCLEAN_MLDSA65_CLEAN_poly_use_hint
+PQCLEAN_MLDSA65_CLEAN_polyw1_pack

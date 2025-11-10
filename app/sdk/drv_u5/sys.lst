@@ -1,0 +1,347 @@
+ARM GAS  /tmp/ccl4avJg.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"sys.c"
+  14              		.text
+  15              		.section	.text.sys_init,"ax",%progbits
+  16              		.align	1
+  17              		.global	sys_init
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	sys_init:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 104A     		ldr	r2, .L2
+  30 0002 1149     		ldr	r1, .L2+4
+  31 0004 1368     		ldr	r3, [r2]
+  32 0006 43F48073 		orr	r3, r3, #256
+  33 000a 1360     		str	r3, [r2]
+  34 000c 0F4B     		ldr	r3, .L2+8
+  35 000e D3F89420 		ldr	r2, [r3, #148]
+  36 0012 42F00402 		orr	r2, r2, #4
+  37 0016 C3F89420 		str	r2, [r3, #148]
+  38 001a D3F8A820 		ldr	r2, [r3, #168]
+  39 001e 42F00202 		orr	r2, r2, #2
+  40 0022 C3F8A820 		str	r2, [r3, #168]
+  41 0026 0A4A     		ldr	r2, .L2+12
+  42 0028 1369     		ldr	r3, [r2, #16]
+  43 002a 43F08053 		orr	r3, r3, #268435456
+  44 002e 1361     		str	r3, [r2, #16]
+  45 0030 CA68     		ldr	r2, [r1, #12]
+  46 0032 084B     		ldr	r3, .L2+16
+  47 0034 22F4E062 		bic	r2, r2, #1792
+  48 0038 1204     		lsls	r2, r2, #16
+  49 003a 120C     		lsrs	r2, r2, #16
+  50 003c 1343     		orrs	r3, r3, r2
+  51 003e CB60     		str	r3, [r1, #12]
+  52 0040 7047     		bx	lr
+  53              	.L3:
+  54 0042 00BF     		.align	2
+  55              	.L2:
+  56 0044 00200240 		.word	1073881088
+  57 0048 00ED00E0 		.word	-536810240
+  58 004c 000C0246 		.word	1174539264
+ARM GAS  /tmp/ccl4avJg.s 			page 2
+
+
+  59 0050 00080246 		.word	1174538240
+  60 0054 0003FA05 		.word	100270848
+  62              		.section	.text.sys_clock_config,"ax",%progbits
+  63              		.align	1
+  64              		.global	sys_clock_config
+  65              		.syntax unified
+  66              		.thumb
+  67              		.thumb_func
+  68              		.fpu fpv4-sp-d16
+  70              	sys_clock_config:
+  71              		@ args = 0, pretend = 0, frame = 8
+  72              		@ frame_needed = 0, uses_anonymous_args = 0
+  73 0000 584A     		ldr	r2, .L21
+  74 0002 13B5     		push	{r0, r1, r4, lr}
+  75 0004 1368     		ldr	r3, [r2]
+  76 0006 23F00F03 		bic	r3, r3, #15
+  77 000a 43F00303 		orr	r3, r3, #3
+  78 000e 1360     		str	r3, [r2]
+  79              	.L5:
+  80 0010 1368     		ldr	r3, [r2]
+  81 0012 03F00F03 		and	r3, r3, #15
+  82 0016 032B     		cmp	r3, #3
+  83 0018 FAD1     		bne	.L5
+  84 001a 534A     		ldr	r2, .L21+4
+  85 001c D368     		ldr	r3, [r2, #12]
+  86 001e 23F44033 		bic	r3, r3, #196608
+  87 0022 43F48033 		orr	r3, r3, #65536
+  88 0026 D360     		str	r3, [r2, #12]
+  89              	.L6:
+  90 0028 D368     		ldr	r3, [r2, #12]
+  91 002a 1804     		lsls	r0, r3, #16
+  92 002c FCD5     		bpl	.L6
+  93 002e 4F4B     		ldr	r3, .L21+8
+  94 0030 1A68     		ldr	r2, [r3]
+  95 0032 42F48032 		orr	r2, r2, #65536
+  96 0036 1A60     		str	r2, [r3]
+  97              	.L7:
+  98 0038 1A68     		ldr	r2, [r3]
+  99 003a 9103     		lsls	r1, r2, #14
+ 100 003c FCD5     		bpl	.L7
+ 101 003e 1A68     		ldr	r2, [r3]
+ 102 0040 42F48052 		orr	r2, r2, #4096
+ 103 0044 1A60     		str	r2, [r3]
+ 104 0046 494B     		ldr	r3, .L21+8
+ 105              	.L8:
+ 106 0048 1A68     		ldr	r2, [r3]
+ 107 004a 9204     		lsls	r2, r2, #18
+ 108 004c FCD5     		bpl	.L8
+ 109 004e 4649     		ldr	r1, .L21+4
+ 110 0050 464C     		ldr	r4, .L21+8
+ 111 0052 8A6A     		ldr	r2, [r1, #40]
+ 112 0054 42F00102 		orr	r2, r2, #1
+ 113 0058 8A62     		str	r2, [r1, #40]
+ 114 005a 9A6A     		ldr	r2, [r3, #40]
+ 115 005c 22F47062 		bic	r2, r2, #3840
+ 116 0060 22F00302 		bic	r2, r2, #3
+ 117 0064 42F48172 		orr	r2, r2, #258
+ARM GAS  /tmp/ccl4avJg.s 			page 3
+
+
+ 118 0068 42F00102 		orr	r2, r2, #1
+ 119 006c 9A62     		str	r2, [r3, #40]
+ 120 006e 596B     		ldr	r1, [r3, #52]
+ 121 0070 3F4A     		ldr	r2, .L21+12
+ 122 0072 0A40     		ands	r2, r2, r1
+ 123 0074 42F0E062 		orr	r2, r2, #117440512
+ 124 0078 42F05F02 		orr	r2, r2, #95
+ 125 007c 5A63     		str	r2, [r3, #52]
+ 126 007e 9A6A     		ldr	r2, [r3, #40]
+ 127 0080 42F48022 		orr	r2, r2, #262144
+ 128 0084 9A62     		str	r2, [r3, #40]
+ 129 0086 9A6A     		ldr	r2, [r3, #40]
+ 130 0088 22F47042 		bic	r2, r2, #61440
+ 131 008c 9A62     		str	r2, [r3, #40]
+ 132 008e 9A6A     		ldr	r2, [r3, #40]
+ 133 0090 22F00C02 		bic	r2, r2, #12
+ 134 0094 9A62     		str	r2, [r3, #40]
+ 135 0096 1A68     		ldr	r2, [r3]
+ 136 0098 42F08072 		orr	r2, r2, #16777216
+ 137 009c 1A60     		str	r2, [r3]
+ 138              	.L9:
+ 139 009e 2368     		ldr	r3, [r4]
+ 140 00a0 9B01     		lsls	r3, r3, #6
+ 141 00a2 FCD5     		bpl	.L9
+ 142 00a4 E369     		ldr	r3, [r4, #28]
+ 143 00a6 43F00303 		orr	r3, r3, #3
+ 144 00aa E361     		str	r3, [r4, #28]
+ 145              	.L10:
+ 146 00ac E369     		ldr	r3, [r4, #28]
+ 147 00ae 03F00C03 		and	r3, r3, #12
+ 148 00b2 0C2B     		cmp	r3, #12
+ 149 00b4 FAD1     		bne	.L10
+ 150 00b6 236A     		ldr	r3, [r4, #32]
+ 151 00b8 2E48     		ldr	r0, .L21+16
+ 152 00ba 23F00F03 		bic	r3, r3, #15
+ 153 00be 2362     		str	r3, [r4, #32]
+ 154 00c0 236A     		ldr	r3, [r4, #32]
+ 155 00c2 23F07003 		bic	r3, r3, #112
+ 156 00c6 2362     		str	r3, [r4, #32]
+ 157 00c8 236A     		ldr	r3, [r4, #32]
+ 158 00ca 23F4E063 		bic	r3, r3, #1792
+ 159 00ce 2362     		str	r3, [r4, #32]
+ 160 00d0 636A     		ldr	r3, [r4, #36]
+ 161 00d2 23F07003 		bic	r3, r3, #112
+ 162 00d6 6362     		str	r3, [r4, #36]
+ 163 00d8 FFF7FEFF 		bl	LL_SetSystemCoreClock
+ 164 00dc D4F89C30 		ldr	r3, [r4, #156]
+ 165 00e0 43F08073 		orr	r3, r3, #16777216
+ 166 00e4 C4F89C30 		str	r3, [r4, #156]
+ 167 00e8 D4F89C30 		ldr	r3, [r4, #156]
+ 168 00ec 03F08073 		and	r3, r3, #16777216
+ 169 00f0 0193     		str	r3, [sp, #4]
+ 170 00f2 019B     		ldr	r3, [sp, #4]
+ 171 00f4 636F     		ldr	r3, [r4, #116]
+ 172 00f6 43F08073 		orr	r3, r3, #16777216
+ 173 00fa 6367     		str	r3, [r4, #116]
+ 174 00fc 636F     		ldr	r3, [r4, #116]
+ARM GAS  /tmp/ccl4avJg.s 			page 4
+
+
+ 175 00fe 23F08073 		bic	r3, r3, #16777216
+ 176 0102 6367     		str	r3, [r4, #116]
+ 177 0104 1C4B     		ldr	r3, .L21+20
+ 178 0106 5A68     		ldr	r2, [r3, #4]
+ 179 0108 22F0E062 		bic	r2, r2, #117440512
+ 180 010c 5A60     		str	r2, [r3, #4]
+ 181 010e 5A68     		ldr	r2, [r3, #4]
+ 182 0110 22F00042 		bic	r2, r2, #-2147483648
+ 183 0114 5A60     		str	r2, [r3, #4]
+ 184 0116 5A68     		ldr	r2, [r3, #4]
+ 185 0118 22F04052 		bic	r2, r2, #805306368
+ 186 011c 42F00052 		orr	r2, r2, #536870912
+ 187 0120 5A60     		str	r2, [r3, #4]
+ 188 0122 5A68     		ldr	r2, [r3, #4]
+ 189 0124 120C     		lsrs	r2, r2, #16
+ 190 0126 1204     		lsls	r2, r2, #16
+ 191 0128 42F43B42 		orr	r2, r2, #47872
+ 192 012c 42F07F02 		orr	r2, r2, #127
+ 193 0130 5A60     		str	r2, [r3, #4]
+ 194 0132 5A68     		ldr	r2, [r3, #4]
+ 195 0134 22F47F02 		bic	r2, r2, #16711680
+ 196 0138 42F40812 		orr	r2, r2, #2228224
+ 197 013c 5A60     		str	r2, [r3, #4]
+ 198 013e 1A68     		ldr	r2, [r3]
+ 199 0140 22F4FE42 		bic	r2, r2, #32512
+ 200 0144 42F40052 		orr	r2, r2, #8192
+ 201 0148 1A60     		str	r2, [r3]
+ 202 014a 03F52933 		add	r3, r3, #173056
+ 203 014e 1A68     		ldr	r2, [r3]
+ 204 0150 22F00402 		bic	r2, r2, #4
+ 205 0154 1A60     		str	r2, [r3]
+ 206 0156 1A68     		ldr	r2, [r3]
+ 207 0158 42F00102 		orr	r2, r2, #1
+ 208 015c 1A60     		str	r2, [r3]
+ 209 015e 02B0     		add	sp, sp, #8
+ 210              		@ sp needed
+ 211 0160 10BD     		pop	{r4, pc}
+ 212              	.L22:
+ 213 0162 00BF     		.align	2
+ 214              	.L21:
+ 215 0164 00200240 		.word	1073881088
+ 216 0168 00080246 		.word	1174538240
+ 217 016c 000C0246 		.word	1174539264
+ 218 0170 00FEFF80 		.word	-2130706944
+ 219 0174 006CDC02 		.word	48000000
+ 220 0178 00600040 		.word	1073766400
+ 222              		.section	.text.sys_usb_clock_config,"ax",%progbits
+ 223              		.align	1
+ 224              		.global	sys_usb_clock_config
+ 225              		.syntax unified
+ 226              		.thumb
+ 227              		.thumb_func
+ 228              		.fpu fpv4-sp-d16
+ 230              	sys_usb_clock_config:
+ 231              		@ args = 0, pretend = 0, frame = 0
+ 232              		@ frame_needed = 0, uses_anonymous_args = 0
+ 233              		@ link register save eliminated.
+ARM GAS  /tmp/ccl4avJg.s 			page 5
+
+
+ 234 0000 034A     		ldr	r2, .L24
+ 235 0002 D2F8E030 		ldr	r3, [r2, #224]
+ 236 0006 23F04063 		bic	r3, r3, #201326592
+ 237 000a C2F8E030 		str	r3, [r2, #224]
+ 238 000e 7047     		bx	lr
+ 239              	.L25:
+ 240              		.align	2
+ 241              	.L24:
+ 242 0010 000C0246 		.word	1174539264
+ 244              		.section	.text.sys_get_hclk,"ax",%progbits
+ 245              		.align	1
+ 246              		.global	sys_get_hclk
+ 247              		.syntax unified
+ 248              		.thumb
+ 249              		.thumb_func
+ 250              		.fpu fpv4-sp-d16
+ 252              	sys_get_hclk:
+ 253              		@ args = 0, pretend = 0, frame = 0
+ 254              		@ frame_needed = 0, uses_anonymous_args = 0
+ 255              		@ link register save eliminated.
+ 256 0000 014B     		ldr	r3, .L27
+ 257 0002 1868     		ldr	r0, [r3]
+ 258 0004 7047     		bx	lr
+ 259              	.L28:
+ 260 0006 00BF     		.align	2
+ 261              	.L27:
+ 262 0008 00000000 		.word	SystemCoreClock
+ 264              		.section	.text.sys_flash_size,"ax",%progbits
+ 265              		.align	1
+ 266              		.global	sys_flash_size
+ 267              		.syntax unified
+ 268              		.thumb
+ 269              		.thumb_func
+ 270              		.fpu fpv4-sp-d16
+ 272              	sys_flash_size:
+ 273              		@ args = 0, pretend = 0, frame = 0
+ 274              		@ frame_needed = 0, uses_anonymous_args = 0
+ 275              		@ link register save eliminated.
+ 276 0000 014B     		ldr	r3, .L30
+ 277 0002 B3F8A007 		ldrh	r0, [r3, #1952]
+ 278 0006 7047     		bx	lr
+ 279              	.L31:
+ 280              		.align	2
+ 281              	.L30:
+ 282 0008 0000FA0B 		.word	200933376
+ 284              		.section	.text.HAL_Delay,"ax",%progbits
+ 285              		.align	1
+ 286              		.global	HAL_Delay
+ 287              		.syntax unified
+ 288              		.thumb
+ 289              		.thumb_func
+ 290              		.fpu fpv4-sp-d16
+ 292              	HAL_Delay:
+ 293              		@ args = 0, pretend = 0, frame = 0
+ 294              		@ frame_needed = 0, uses_anonymous_args = 0
+ 295              		@ link register save eliminated.
+ 296 0000 FFF7FEBF 		b	time_delay_ms
+ARM GAS  /tmp/ccl4avJg.s 			page 6
+
+
+ 298              		.section	.text.HAL_GetTick,"ax",%progbits
+ 299              		.align	1
+ 300              		.global	HAL_GetTick
+ 301              		.syntax unified
+ 302              		.thumb
+ 303              		.thumb_func
+ 304              		.fpu fpv4-sp-d16
+ 306              	HAL_GetTick:
+ 307              		@ args = 0, pretend = 0, frame = 0
+ 308              		@ frame_needed = 0, uses_anonymous_args = 0
+ 309 0000 08B5     		push	{r3, lr}
+ 310 0002 FFF7FEFF 		bl	timer_get_time
+ 311 0006 08BD     		pop	{r3, pc}
+ 313              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccl4avJg.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 sys.c
+     /tmp/ccl4avJg.s:16     .text.sys_init:0000000000000000 $t
+     /tmp/ccl4avJg.s:25     .text.sys_init:0000000000000000 sys_init
+     /tmp/ccl4avJg.s:56     .text.sys_init:0000000000000044 $d
+     /tmp/ccl4avJg.s:63     .text.sys_clock_config:0000000000000000 $t
+     /tmp/ccl4avJg.s:70     .text.sys_clock_config:0000000000000000 sys_clock_config
+     /tmp/ccl4avJg.s:215    .text.sys_clock_config:0000000000000164 $d
+     /tmp/ccl4avJg.s:223    .text.sys_usb_clock_config:0000000000000000 $t
+     /tmp/ccl4avJg.s:230    .text.sys_usb_clock_config:0000000000000000 sys_usb_clock_config
+     /tmp/ccl4avJg.s:242    .text.sys_usb_clock_config:0000000000000010 $d
+     /tmp/ccl4avJg.s:245    .text.sys_get_hclk:0000000000000000 $t
+     /tmp/ccl4avJg.s:252    .text.sys_get_hclk:0000000000000000 sys_get_hclk
+     /tmp/ccl4avJg.s:262    .text.sys_get_hclk:0000000000000008 $d
+     /tmp/ccl4avJg.s:265    .text.sys_flash_size:0000000000000000 $t
+     /tmp/ccl4avJg.s:272    .text.sys_flash_size:0000000000000000 sys_flash_size
+     /tmp/ccl4avJg.s:282    .text.sys_flash_size:0000000000000008 $d
+     /tmp/ccl4avJg.s:285    .text.HAL_Delay:0000000000000000 $t
+     /tmp/ccl4avJg.s:292    .text.HAL_Delay:0000000000000000 HAL_Delay
+     /tmp/ccl4avJg.s:299    .text.HAL_GetTick:0000000000000000 $t
+     /tmp/ccl4avJg.s:306    .text.HAL_GetTick:0000000000000000 HAL_GetTick
+
+UNDEFINED SYMBOLS
+LL_SetSystemCoreClock
+SystemCoreClock
+time_delay_ms
+timer_get_time

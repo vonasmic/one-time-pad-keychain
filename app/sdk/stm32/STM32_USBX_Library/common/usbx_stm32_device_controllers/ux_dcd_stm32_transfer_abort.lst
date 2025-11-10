@@ -1,0 +1,52 @@
+ARM GAS  /tmp/ccUmr63h.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_dcd_stm32_transfer_abort.c"
+  14              		.text
+  15              		.section	.text._ux_dcd_stm32_transfer_abort,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_dcd_stm32_transfer_abort
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_dcd_stm32_transfer_abort:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 38B5     		push	{r3, r4, r5, lr}
+  29 0002 0446     		mov	r4, r0
+  30 0004 8D68     		ldr	r5, [r1, #8]
+  31 0006 D0F8C400 		ldr	r0, [r0, #196]
+  32 000a A97B     		ldrb	r1, [r5, #14]	@ zero_extendqisi2
+  33 000c FFF7FEFF 		bl	HAL_PCD_EP_Abort
+  34 0010 A97B     		ldrb	r1, [r5, #14]	@ zero_extendqisi2
+  35 0012 D4F8C400 		ldr	r0, [r4, #196]
+  36 0016 FFF7FEFF 		bl	HAL_PCD_EP_Flush
+  37 001a 0020     		movs	r0, #0
+  38 001c 38BD     		pop	{r3, r4, r5, pc}
+  40              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccUmr63h.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_dcd_stm32_transfer_abort.c
+     /tmp/ccUmr63h.s:16     .text._ux_dcd_stm32_transfer_abort:0000000000000000 $t
+     /tmp/ccUmr63h.s:25     .text._ux_dcd_stm32_transfer_abort:0000000000000000 _ux_dcd_stm32_transfer_abort
+
+UNDEFINED SYMBOLS
+HAL_PCD_EP_Abort
+HAL_PCD_EP_Flush

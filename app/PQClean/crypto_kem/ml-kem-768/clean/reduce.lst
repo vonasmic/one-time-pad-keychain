@@ -1,0 +1,74 @@
+ARM GAS  /tmp/ccUPS3u2.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"reduce.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLKEM768_CLEAN_montgomery_reduce,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLKEM768_CLEAN_montgomery_reduce:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 4FF2FF22 		movw	r2, #62207
+  30 0004 00EB4003 		add	r3, r0, r0, lsl #1
+  31 0008 03EBC303 		add	r3, r3, r3, lsl #3
+  32 000c 03EBC303 		add	r3, r3, r3, lsl #3
+  33 0010 00EB0323 		add	r3, r0, r3, lsl #8
+  34 0014 13FB0200 		smlabb	r0, r3, r2, r0
+  35 0018 0014     		asrs	r0, r0, #16
+  36 001a 7047     		bx	lr
+  38              		.section	.text.PQCLEAN_MLKEM768_CLEAN_barrett_reduce,"ax",%progbits
+  39              		.align	1
+  40              		.global	PQCLEAN_MLKEM768_CLEAN_barrett_reduce
+  41              		.syntax unified
+  42              		.thumb
+  43              		.thumb_func
+  44              		.fpu fpv4-sp-d16
+  46              	PQCLEAN_MLKEM768_CLEAN_barrett_reduce:
+  47              		@ args = 0, pretend = 0, frame = 0
+  48              		@ frame_needed = 0, uses_anonymous_args = 0
+  49              		@ link register save eliminated.
+  50 0000 4FF00072 		mov	r2, #33554432
+  51 0004 44F6BF63 		movw	r3, #20159
+  52 0008 10FB0323 		smlabb	r3, r0, r3, r2
+  53 000c 9B16     		asrs	r3, r3, #26
+  54 000e 03EB4302 		add	r2, r3, r3, lsl #1
+  55 0012 03EB8202 		add	r2, r3, r2, lsl #2
+  56 0016 03EB0223 		add	r3, r3, r2, lsl #8
+  57 001a C01A     		subs	r0, r0, r3
+  58 001c 00B2     		sxth	r0, r0
+  59 001e 7047     		bx	lr
+  61              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccUPS3u2.s 			page 2
+
+
+ARM GAS  /tmp/ccUPS3u2.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 reduce.c
+     /tmp/ccUPS3u2.s:16     .text.PQCLEAN_MLKEM768_CLEAN_montgomery_reduce:0000000000000000 $t
+     /tmp/ccUPS3u2.s:25     .text.PQCLEAN_MLKEM768_CLEAN_montgomery_reduce:0000000000000000 PQCLEAN_MLKEM768_CLEAN_montgomery_reduce
+     /tmp/ccUPS3u2.s:39     .text.PQCLEAN_MLKEM768_CLEAN_barrett_reduce:0000000000000000 $t
+     /tmp/ccUPS3u2.s:46     .text.PQCLEAN_MLKEM768_CLEAN_barrett_reduce:0000000000000000 PQCLEAN_MLKEM768_CLEAN_barrett_reduce
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,1370 @@
+ARM GAS  /tmp/cckIsuPv.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"wc_mlkem.c"
+  14              		.text
+  15              		.section	.text.ForceZero,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	ForceZero:
+  25              		@ args = 0, pretend = 0, frame = 8
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+  28 0002 0346     		mov	r3, r0
+  29 0004 0C46     		mov	r4, r1
+  30 0006 BFF35B8F 		dmb	ish
+  31 000a 0022     		movs	r2, #0
+  32              	.L2:
+  33 000c 13F00301 		ands	r1, r3, #3
+  34 0010 13D1     		bne	.L4
+  35 0012 24F00305 		bic	r5, r4, #3
+  36 0016 2A46     		mov	r2, r5
+  37 0018 1846     		mov	r0, r3
+  38 001a 0191     		str	r1, [sp, #4]
+  39 001c FFF7FEFF 		bl	memset
+  40 0020 6FF00302 		mvn	r2, #3
+  41 0024 A608     		lsrs	r6, r4, #2
+  42 0026 02FB0642 		mla	r2, r2, r6, r4
+  43 002a 0199     		ldr	r1, [sp, #4]
+  44 002c 2844     		add	r0, r0, r5
+  45 002e FFF7FEFF 		bl	memset
+  46 0032 BFF35B8F 		dmb	ish
+  47              	.L1:
+  48 0036 02B0     		add	sp, sp, #8
+  49              		@ sp needed
+  50 0038 70BD     		pop	{r4, r5, r6, pc}
+  51              	.L4:
+  52 003a 002C     		cmp	r4, #0
+  53 003c FBD0     		beq	.L1
+  54 003e 03F8012B 		strb	r2, [r3], #1
+  55 0042 013C     		subs	r4, r4, #1
+  56 0044 E2E7     		b	.L2
+  58              		.section	.text.mlkemkey_encapsulate,"ax",%progbits
+  59              		.align	1
+ARM GAS  /tmp/cckIsuPv.s 			page 2
+
+
+  60              		.syntax unified
+  61              		.thumb
+  62              		.thumb_func
+  63              		.fpu fpv4-sp-d16
+  65              	mlkemkey_encapsulate:
+  66              		@ args = 0, pretend = 0, frame = 16
+  67              		@ frame_needed = 0, uses_anonymous_args = 0
+  68 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  69 0004 0746     		mov	r7, r0
+  70 0006 0068     		ldr	r0, [r0]
+  71 0008 8BB0     		sub	sp, sp, #44
+  72 000a 0228     		cmp	r0, #2
+  73 000c 1546     		mov	r5, r2
+  74 000e 9846     		mov	r8, r3
+  75 0010 0791     		str	r1, [sp, #28]
+  76 0012 1AD8     		bhi	.L16
+  77 0014 374B     		ldr	r3, .L20
+  78 0016 841C     		adds	r4, r0, #2
+  79 0018 33F81030 		ldrh	r3, [r3, r0, lsl #1]
+  80 001c 0530     		adds	r0, r0, #5
+  81 001e 6043     		muls	r0, r4, r0
+  82 0020 0330     		adds	r0, r0, #3
+  83 0022 4002     		lsls	r0, r0, #9
+  84 0024 0993     		str	r3, [sp, #36]
+  85 0026 FFF7FEFF 		bl	wolfSSL_Malloc
+  86 002a 0799     		ldr	r1, [sp, #28]
+  87 002c 0646     		mov	r6, r0
+  88 002e 78B9     		cbnz	r0, .L18
+  89 0030 6FF07C05 		mvn	r5, #124
+  90 0034 5AE0     		b	.L9
+  91              	.L13:
+  92 0036 032C     		cmp	r4, #3
+  93 0038 4DD0     		beq	.L19
+  94 003a 4046     		mov	r0, r8
+  95 003c FFF7FEFF 		bl	mlkem_vec_compress_11
+  96 0040 5146     		mov	r1, r10
+  97 0042 3846     		mov	r0, r7
+  98 0044 FFF7FEFF 		bl	mlkem_compress_5
+  99 0048 4DE0     		b	.L12
+ 100              	.L16:
+ 101 004a 6FF0AD05 		mvn	r5, #173
+ 102 004e 4DE0     		b	.L9
+ 103              	.L18:
+ 104 0050 04FB04F9 		mul	r9, r4, r4
+ 105 0054 00EB442B 		add	fp, r0, r4, lsl #9
+ 106 0058 0BEB4929 		add	r9, fp, r9, lsl #9
+ 107 005c 09F50073 		add	r3, r9, #512
+ 108 0060 4846     		mov	r0, r9
+ 109 0062 0793     		str	r3, [sp, #28]
+ 110 0064 07F5D47A 		add	r10, r7, #424
+ 111 0068 03EB4423 		add	r3, r3, r4, lsl #9
+ 112 006c 0893     		str	r3, [sp, #32]
+ 113 006e FFF7FEFF 		bl	mlkem_from_msg
+ 114 0072 5046     		mov	r0, r10
+ 115 0074 FFF7FEFF 		bl	mlkem_prf_init
+ 116 0078 089B     		ldr	r3, [sp, #32]
+ 117 007a 0195     		str	r5, [sp, #4]
+ARM GAS  /tmp/cckIsuPv.s 			page 3
+
+
+ 118 007c 0093     		str	r3, [sp]
+ 119 007e 3246     		mov	r2, r6
+ 120 0080 2146     		mov	r1, r4
+ 121 0082 5046     		mov	r0, r10
+ 122 0084 079B     		ldr	r3, [sp, #28]
+ 123 0086 FFF7FEFF 		bl	mlkem_get_noise
+ 124 008a 0546     		mov	r5, r0
+ 125 008c 58BB     		cbnz	r0, .L12
+ 126 008e 0123     		movs	r3, #1
+ 127 0090 2246     		mov	r2, r4
+ 128 0092 0093     		str	r3, [sp]
+ 129 0094 5946     		mov	r1, fp
+ 130 0096 5046     		mov	r0, r10
+ 131 0098 07F59A53 		add	r3, r7, #4928
+ 132 009c FFF7FEFF 		bl	mlkem_gen_matrix
+ 133 00a0 0546     		mov	r5, r0
+ 134 00a2 00BB     		cbnz	r0, .L12
+ 135 00a4 089B     		ldr	r3, [sp, #32]
+ 136 00a6 07F53460 		add	r0, r7, #2880
+ 137 00aa 03F50071 		add	r1, r3, #512
+ 138 00ae 6302     		lsls	r3, r4, #9
+ 139 00b0 0B44     		add	r3, r3, r1
+ 140 00b2 9A46     		mov	r10, r3
+ 141 00b4 089B     		ldr	r3, [sp, #32]
+ 142 00b6 5246     		mov	r2, r10
+ 143 00b8 0293     		str	r3, [sp, #8]
+ 144 00ba 079B     		ldr	r3, [sp, #28]
+ 145 00bc CDE90394 		strd	r9, r4, [sp, #12]
+ 146 00c0 CDE90063 		strd	r6, r3, [sp]
+ 147 00c4 5B46     		mov	r3, fp
+ 148 00c6 0791     		str	r1, [sp, #28]
+ 149 00c8 FFF7FEFF 		bl	mlkem_encapsulate
+ 150 00cc 099F     		ldr	r7, [sp, #36]
+ 151 00ce 022C     		cmp	r4, #2
+ 152 00d0 0799     		ldr	r1, [sp, #28]
+ 153 00d2 4744     		add	r7, r7, r8
+ 154 00d4 AFD1     		bne	.L13
+ 155              	.L19:
+ 156 00d6 4046     		mov	r0, r8
+ 157 00d8 2246     		mov	r2, r4
+ 158 00da FFF7FEFF 		bl	mlkem_vec_compress_10
+ 159 00de 5146     		mov	r1, r10
+ 160 00e0 3846     		mov	r0, r7
+ 161 00e2 FFF7FEFF 		bl	mlkem_compress_4
+ 162              	.L12:
+ 163 00e6 3046     		mov	r0, r6
+ 164 00e8 FFF7FEFF 		bl	wolfSSL_Free
+ 165              	.L9:
+ 166 00ec 2846     		mov	r0, r5
+ 167 00ee 0BB0     		add	sp, sp, #44
+ 168              		@ sp needed
+ 169 00f0 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 170              	.L21:
+ 171              		.align	2
+ 172              	.L20:
+ 173 00f4 00000000 		.word	.LANCHOR0
+ 175              		.section	.text.mlkemkey_decapsulate,"ax",%progbits
+ARM GAS  /tmp/cckIsuPv.s 			page 4
+
+
+ 176              		.align	1
+ 177              		.syntax unified
+ 178              		.thumb
+ 179              		.thumb_func
+ 180              		.fpu fpv4-sp-d16
+ 182              	mlkemkey_decapsulate:
+ 183              		@ args = 0, pretend = 0, frame = 8
+ 184              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 186 0004 0468     		ldr	r4, [r0]
+ 187 0006 85B0     		sub	sp, sp, #20
+ 188 0008 022C     		cmp	r4, #2
+ 189 000a 0646     		mov	r6, r0
+ 190 000c 0F46     		mov	r7, r1
+ 191 000e 0392     		str	r2, [sp, #12]
+ 192 0010 16D8     		bhi	.L29
+ 193 0012 1F4B     		ldr	r3, .L34
+ 194 0014 04F10208 		add	r8, r4, #2
+ 195 0018 33F81490 		ldrh	r9, [r3, r4, lsl #1]
+ 196 001c 0334     		adds	r4, r4, #3
+ 197 001e 6402     		lsls	r4, r4, #9
+ 198 0020 2046     		mov	r0, r4
+ 199 0022 FFF7FEFF 		bl	wolfSSL_Malloc
+ 200 0026 0399     		ldr	r1, [sp, #12]
+ 201 0028 0546     		mov	r5, r0
+ 202 002a 60B9     		cbnz	r0, .L31
+ 203 002c 6FF07C00 		mvn	r0, #124
+ 204 0030 2BE0     		b	.L22
+ 205              	.L26:
+ 206 0032 FFF7FEFF 		bl	mlkem_vec_decompress_11
+ 207 0036 4946     		mov	r1, r9
+ 208 0038 2046     		mov	r0, r4
+ 209 003a FFF7FEFF 		bl	mlkem_decompress_5
+ 210 003e 13E0     		b	.L25
+ 211              	.L29:
+ 212 0040 6FF0AD00 		mvn	r0, #173
+ 213 0044 21E0     		b	.L22
+ 214              	.L31:
+ 215 0046 A4F50074 		sub	r4, r4, #512
+ 216 004a B8F1020F 		cmp	r8, #2
+ 217 004e 8944     		add	r9, r9, r1
+ 218 0050 0444     		add	r4, r4, r0
+ 219 0052 02D0     		beq	.L33
+ 220 0054 B8F1030F 		cmp	r8, #3
+ 221 0058 EBD1     		bne	.L26
+ 222              	.L33:
+ 223 005a 4246     		mov	r2, r8
+ 224 005c FFF7FEFF 		bl	mlkem_vec_decompress_10
+ 225 0060 4946     		mov	r1, r9
+ 226 0062 2046     		mov	r0, r4
+ 227 0064 FFF7FEFF 		bl	mlkem_decompress_4
+ 228              	.L25:
+ 229 0068 2346     		mov	r3, r4
+ 230 006a 2A46     		mov	r2, r5
+ 231 006c 2946     		mov	r1, r5
+ 232 006e 06F55070 		add	r0, r6, #832
+ 233 0072 CDF80080 		str	r8, [sp]
+ARM GAS  /tmp/cckIsuPv.s 			page 5
+
+
+ 234 0076 FFF7FEFF 		bl	mlkem_decapsulate
+ 235 007a 2946     		mov	r1, r5
+ 236 007c 3846     		mov	r0, r7
+ 237 007e FFF7FEFF 		bl	mlkem_to_msg
+ 238 0082 2846     		mov	r0, r5
+ 239 0084 FFF7FEFF 		bl	wolfSSL_Free
+ 240 0088 0020     		movs	r0, #0
+ 241              	.L22:
+ 242 008a 05B0     		add	sp, sp, #20
+ 243              		@ sp needed
+ 244 008c BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 245              	.L35:
+ 246              		.align	2
+ 247              	.L34:
+ 248 0090 00000000 		.word	CSWTCH.21
+ 250              		.section	.text.wc_MlKemKey_Init,"ax",%progbits
+ 251              		.align	1
+ 252              		.global	wc_MlKemKey_Init
+ 253              		.syntax unified
+ 254              		.thumb
+ 255              		.thumb_func
+ 256              		.fpu fpv4-sp-d16
+ 258              	wc_MlKemKey_Init:
+ 259              		@ args = 0, pretend = 0, frame = 0
+ 260              		@ frame_needed = 0, uses_anonymous_args = 0
+ 261 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 262 0002 1546     		mov	r5, r2
+ 263 0004 1E46     		mov	r6, r3
+ 264 0006 0446     		mov	r4, r0
+ 265 0008 F8B1     		cbz	r0, .L39
+ 266 000a 0229     		cmp	r1, #2
+ 267 000c 1DD8     		bhi	.L39
+ 268 000e C0E90012 		strd	r1, r2, [r0]
+ 269 0012 0021     		movs	r1, #0
+ 270 0014 00F5D477 		add	r7, r0, #424
+ 271 0018 8160     		str	r1, [r0, #8]
+ 272 001a 4FF4CC72 		mov	r2, #408
+ 273 001e 3846     		mov	r0, r7
+ 274 0020 FFF7FEFF 		bl	memset
+ 275 0024 04F11000 		add	r0, r4, #16
+ 276 0028 3246     		mov	r2, r6
+ 277 002a 2946     		mov	r1, r5
+ 278 002c FFF7FEFF 		bl	mlkem_hash_new
+ 279 0030 0446     		mov	r4, r0
+ 280 0032 40B9     		cbnz	r0, .L36
+ 281 0034 3246     		mov	r2, r6
+ 282 0036 2946     		mov	r1, r5
+ 283 0038 3846     		mov	r0, r7
+ 284 003a FFF7FEFF 		bl	mlkem_prf_new
+ 285 003e 0446     		mov	r4, r0
+ 286 0040 08B9     		cbnz	r0, .L36
+ 287 0042 FFF7FEFF 		bl	mlkem_init
+ 288              	.L36:
+ 289 0046 2046     		mov	r0, r4
+ 290 0048 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 291              	.L39:
+ 292 004a 6FF0AC04 		mvn	r4, #172
+ARM GAS  /tmp/cckIsuPv.s 			page 6
+
+
+ 293 004e FAE7     		b	.L36
+ 295              		.section	.text.wc_MlKemKey_New,"ax",%progbits
+ 296              		.align	1
+ 297              		.global	wc_MlKemKey_New
+ 298              		.syntax unified
+ 299              		.thumb
+ 300              		.thumb_func
+ 301              		.fpu fpv4-sp-d16
+ 303              	wc_MlKemKey_New:
+ 304              		@ args = 0, pretend = 0, frame = 8
+ 305              		@ frame_needed = 0, uses_anonymous_args = 0
+ 306 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+ 307 0002 0546     		mov	r5, r0
+ 308 0004 4FF49D50 		mov	r0, #5024
+ 309 0008 0E46     		mov	r6, r1
+ 310 000a 0192     		str	r2, [sp, #4]
+ 311 000c FFF7FEFF 		bl	wolfSSL_Malloc
+ 312 0010 0446     		mov	r4, r0
+ 313 0012 48B1     		cbz	r0, .L40
+ 314 0014 3246     		mov	r2, r6
+ 315 0016 2946     		mov	r1, r5
+ 316 0018 019B     		ldr	r3, [sp, #4]
+ 317 001a FFF7FEFF 		bl	wc_MlKemKey_Init
+ 318 001e 18B1     		cbz	r0, .L40
+ 319 0020 2046     		mov	r0, r4
+ 320 0022 FFF7FEFF 		bl	wolfSSL_Free
+ 321 0026 0024     		movs	r4, #0
+ 322              	.L40:
+ 323 0028 2046     		mov	r0, r4
+ 324 002a 02B0     		add	sp, sp, #8
+ 325              		@ sp needed
+ 326 002c 70BD     		pop	{r4, r5, r6, pc}
+ 328              		.section	.text.wc_MlKemKey_Free,"ax",%progbits
+ 329              		.align	1
+ 330              		.global	wc_MlKemKey_Free
+ 331              		.syntax unified
+ 332              		.thumb
+ 333              		.thumb_func
+ 334              		.fpu fpv4-sp-d16
+ 336              	wc_MlKemKey_Free:
+ 337              		@ args = 0, pretend = 0, frame = 8
+ 338              		@ frame_needed = 0, uses_anonymous_args = 0
+ 339 0000 37B5     		push	{r0, r1, r2, r4, r5, lr}
+ 340 0002 0446     		mov	r4, r0
+ 341 0004 F0B1     		cbz	r0, .L49
+ 342 0006 00F5D475 		add	r5, r0, #424
+ 343 000a 2846     		mov	r0, r5
+ 344 000c FFF7FEFF 		bl	mlkem_prf_free
+ 345 0010 04F11000 		add	r0, r4, #16
+ 346 0014 0190     		str	r0, [sp, #4]
+ 347 0016 FFF7FEFF 		bl	mlkem_hash_free
+ 348 001a 4FF4CC71 		mov	r1, #408
+ 349 001e 0198     		ldr	r0, [sp, #4]
+ 350 0020 FFF7FEFF 		bl	ForceZero
+ 351 0024 4FF4CC71 		mov	r1, #408
+ 352 0028 2846     		mov	r0, r5
+ 353 002a FFF7FEFF 		bl	ForceZero
+ARM GAS  /tmp/cckIsuPv.s 			page 7
+
+
+ 354 002e 4FF40061 		mov	r1, #2048
+ 355 0032 04F55070 		add	r0, r4, #832
+ 356 0036 FFF7FEFF 		bl	ForceZero
+ 357 003a 2021     		movs	r1, #32
+ 358 003c 04F59C50 		add	r0, r4, #4992
+ 359 0040 FFF7FEFF 		bl	ForceZero
+ 360              	.L49:
+ 361 0044 0020     		movs	r0, #0
+ 362 0046 03B0     		add	sp, sp, #12
+ 363              		@ sp needed
+ 364 0048 30BD     		pop	{r4, r5, pc}
+ 366              		.section	.text.wc_MlKemKey_Delete,"ax",%progbits
+ 367              		.align	1
+ 368              		.global	wc_MlKemKey_Delete
+ 369              		.syntax unified
+ 370              		.thumb
+ 371              		.thumb_func
+ 372              		.fpu fpv4-sp-d16
+ 374              	wc_MlKemKey_Delete:
+ 375              		@ args = 0, pretend = 0, frame = 0
+ 376              		@ frame_needed = 0, uses_anonymous_args = 0
+ 377 0000 38B5     		push	{r3, r4, r5, lr}
+ 378 0002 0C46     		mov	r4, r1
+ 379 0004 0546     		mov	r5, r0
+ 380 0006 40B1     		cbz	r0, .L55
+ 381 0008 FFF7FEFF 		bl	wc_MlKemKey_Free
+ 382 000c 2846     		mov	r0, r5
+ 383 000e FFF7FEFF 		bl	wolfSSL_Free
+ 384 0012 0020     		movs	r0, #0
+ 385 0014 24B1     		cbz	r4, .L56
+ 386 0016 2060     		str	r0, [r4]
+ 387              	.L53:
+ 388 0018 38BD     		pop	{r3, r4, r5, pc}
+ 389              	.L55:
+ 390 001a 6FF0AC00 		mvn	r0, #172
+ 391 001e FBE7     		b	.L53
+ 392              	.L56:
+ 393 0020 2046     		mov	r0, r4
+ 394 0022 F9E7     		b	.L53
+ 396              		.section	.text.wc_MlKemKey_MakeKeyWithRandom,"ax",%progbits
+ 397              		.align	1
+ 398              		.global	wc_MlKemKey_MakeKeyWithRandom
+ 399              		.syntax unified
+ 400              		.thumb
+ 401              		.thumb_func
+ 402              		.fpu fpv4-sp-d16
+ 404              	wc_MlKemKey_MakeKeyWithRandom:
+ 405              		@ args = 0, pretend = 0, frame = 72
+ 406              		@ frame_needed = 0, uses_anonymous_args = 0
+ 407 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 408 0004 2DED028B 		vpush.64	{d8}
+ 409 0008 8946     		mov	r9, r1
+ 410 000a 0546     		mov	r5, r0
+ 411 000c 95B0     		sub	sp, sp, #84
+ 412 000e 90B1     		cbz	r0, .L66
+ 413 0010 89B1     		cbz	r1, .L66
+ 414 0012 402A     		cmp	r2, #64
+ARM GAS  /tmp/cckIsuPv.s 			page 8
+
+
+ 415 0014 12D1     		bne	.L67
+ 416 0016 0023     		movs	r3, #0
+ 417 0018 8360     		str	r3, [r0, #8]
+ 418 001a 0068     		ldr	r0, [r0]
+ 419 001c 0228     		cmp	r0, #2
+ 420 001e 10D8     		bhi	.L68
+ 421 0020 871C     		adds	r7, r0, #2
+ 422 0022 0330     		adds	r0, r0, #3
+ 423 0024 7843     		muls	r0, r7, r0
+ 424 0026 4002     		lsls	r0, r0, #9
+ 425 0028 FFF7FEFF 		bl	wolfSSL_Malloc
+ 426 002c 0646     		mov	r6, r0
+ 427 002e 58B9     		cbnz	r0, .L72
+ 428 0030 6FF07C04 		mvn	r4, #124
+ 429 0034 63E0     		b	.L57
+ 430              	.L66:
+ 431 0036 6FF0AC04 		mvn	r4, #172
+ 432 003a 60E0     		b	.L57
+ 433              	.L67:
+ 434 003c 6FF08304 		mvn	r4, #131
+ 435 0040 5DE0     		b	.L57
+ 436              	.L68:
+ 437 0042 6FF0AD04 		mvn	r4, #173
+ 438 0046 5AE0     		b	.L57
+ 439              	.L72:
+ 440 0048 0123     		movs	r3, #1
+ 441 004a 0DF10C08 		add	r8, sp, #12
+ 442 004e 0093     		str	r3, [sp]
+ 443 0050 2022     		movs	r2, #32
+ 444 0052 4346     		mov	r3, r8
+ 445 0054 4946     		mov	r1, r9
+ 446 0056 00EB472A 		add	r10, r0, r7, lsl #9
+ 447 005a CDF80480 		str	r8, [sp, #4]
+ 448 005e 05F11000 		add	r0, r5, #16
+ 449 0062 8DF80C70 		strb	r7, [sp, #12]
+ 450 0066 FFF7FEFF 		bl	mlkem_hash512
+ 451 006a 0446     		mov	r4, r0
+ 452 006c 0028     		cmp	r0, #0
+ 453 006e 43D1     		bne	.L64
+ 454 0070 05F53463 		add	r3, r5, #2880
+ 455 0074 08EE103A 		vmov	s16, r3	@ int
+ 456 0078 C446     		mov	ip, r8
+ 457 007a 05F5507B 		add	fp, r5, #832
+ 458 007e 05F59A52 		add	r2, r5, #4928
+ 459 0082 0BAC     		add	r4, sp, #44
+ 460              	.L60:
+ 461 0084 6346     		mov	r3, ip
+ 462 0086 03CB     		ldmia	r3!, {r0, r1}
+ 463 0088 A342     		cmp	r3, r4
+ 464 008a 1060     		str	r0, [r2]	@ unaligned
+ 465 008c 5160     		str	r1, [r2, #4]	@ unaligned
+ 466 008e 9C46     		mov	ip, r3
+ 467 0090 02F10802 		add	r2, r2, #8
+ 468 0094 F6D1     		bne	.L60
+ 469 0096 09F12003 		add	r3, r9, #32
+ 470 009a 05F59C52 		add	r2, r5, #4992
+ 471 009e 09F14009 		add	r9, r9, #64
+ARM GAS  /tmp/cckIsuPv.s 			page 9
+
+
+ 472              	.L61:
+ 473 00a2 53F8041B 		ldr	r1, [r3], #4	@ unaligned
+ 474 00a6 4B45     		cmp	r3, r9
+ 475 00a8 42F8041B 		str	r1, [r2], #4	@ unaligned
+ 476 00ac F9D1     		bne	.L61
+ 477 00ae 05F5D479 		add	r9, r5, #424
+ 478 00b2 4846     		mov	r0, r9
+ 479 00b4 FFF7FEFF 		bl	mlkem_prf_init
+ 480 00b8 0023     		movs	r3, #0
+ 481 00ba 0194     		str	r4, [sp, #4]
+ 482 00bc 0093     		str	r3, [sp]
+ 483 00be 5A46     		mov	r2, fp
+ 484 00c0 3346     		mov	r3, r6
+ 485 00c2 3946     		mov	r1, r7
+ 486 00c4 4846     		mov	r0, r9
+ 487 00c6 FFF7FEFF 		bl	mlkem_get_noise
+ 488 00ca 0446     		mov	r4, r0
+ 489 00cc A0B9     		cbnz	r0, .L64
+ 490 00ce 0090     		str	r0, [sp]
+ 491 00d0 4346     		mov	r3, r8
+ 492 00d2 3A46     		mov	r2, r7
+ 493 00d4 5146     		mov	r1, r10
+ 494 00d6 4846     		mov	r0, r9
+ 495 00d8 FFF7FEFF 		bl	mlkem_gen_matrix
+ 496 00dc 0446     		mov	r4, r0
+ 497 00de 58B9     		cbnz	r0, .L64
+ 498 00e0 5346     		mov	r3, r10
+ 499 00e2 3246     		mov	r2, r6
+ 500 00e4 18EE101A 		vmov	r1, s16	@ int
+ 501 00e8 5846     		mov	r0, fp
+ 502 00ea 0097     		str	r7, [sp]
+ 503 00ec FFF7FEFF 		bl	mlkem_keygen
+ 504 00f0 AB68     		ldr	r3, [r5, #8]
+ 505 00f2 43F00303 		orr	r3, r3, #3
+ 506 00f6 AB60     		str	r3, [r5, #8]
+ 507              	.L64:
+ 508 00f8 3046     		mov	r0, r6
+ 509 00fa FFF7FEFF 		bl	wolfSSL_Free
+ 510              	.L57:
+ 511 00fe 2046     		mov	r0, r4
+ 512 0100 15B0     		add	sp, sp, #84
+ 513              		@ sp needed
+ 514 0102 BDEC028B 		vldm	sp!, {d8}
+ 515 0106 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 517              		.section	.text.wc_MlKemKey_MakeKey,"ax",%progbits
+ 518              		.align	1
+ 519              		.global	wc_MlKemKey_MakeKey
+ 520              		.syntax unified
+ 521              		.thumb
+ 522              		.thumb_func
+ 523              		.fpu fpv4-sp-d16
+ 525              	wc_MlKemKey_MakeKey:
+ 526              		@ args = 0, pretend = 0, frame = 64
+ 527              		@ frame_needed = 0, uses_anonymous_args = 0
+ 528 0000 30B5     		push	{r4, r5, lr}
+ 529 0002 0B46     		mov	r3, r1
+ 530 0004 0546     		mov	r5, r0
+ARM GAS  /tmp/cckIsuPv.s 			page 10
+
+
+ 531 0006 91B0     		sub	sp, sp, #68
+ 532 0008 A0B1     		cbz	r0, .L76
+ 533 000a 99B1     		cbz	r1, .L76
+ 534 000c 4022     		movs	r2, #64
+ 535 000e 6946     		mov	r1, sp
+ 536 0010 1846     		mov	r0, r3
+ 537 0012 FFF7FEFF 		bl	wc_RNG_GenerateBlock
+ 538 0016 0446     		mov	r4, r0
+ 539 0018 28B9     		cbnz	r0, .L74
+ 540 001a 4022     		movs	r2, #64
+ 541 001c 6946     		mov	r1, sp
+ 542 001e 2846     		mov	r0, r5
+ 543 0020 FFF7FEFF 		bl	wc_MlKemKey_MakeKeyWithRandom
+ 544 0024 0446     		mov	r4, r0
+ 545              	.L74:
+ 546 0026 6846     		mov	r0, sp
+ 547 0028 4021     		movs	r1, #64
+ 548 002a FFF7FEFF 		bl	ForceZero
+ 549 002e 2046     		mov	r0, r4
+ 550 0030 11B0     		add	sp, sp, #68
+ 551              		@ sp needed
+ 552 0032 30BD     		pop	{r4, r5, pc}
+ 553              	.L76:
+ 554 0034 6FF0AC04 		mvn	r4, #172
+ 555 0038 F5E7     		b	.L74
+ 557              		.section	.text.wc_MlKemKey_CipherTextSize,"ax",%progbits
+ 558              		.align	1
+ 559              		.global	wc_MlKemKey_CipherTextSize
+ 560              		.syntax unified
+ 561              		.thumb
+ 562              		.thumb_func
+ 563              		.fpu fpv4-sp-d16
+ 565              	wc_MlKemKey_CipherTextSize:
+ 566              		@ args = 0, pretend = 0, frame = 0
+ 567              		@ frame_needed = 0, uses_anonymous_args = 0
+ 568              		@ link register save eliminated.
+ 569 0000 90B1     		cbz	r0, .L82
+ 570 0002 89B1     		cbz	r1, .L82
+ 571 0004 0068     		ldr	r0, [r0]
+ 572 0006 0128     		cmp	r0, #1
+ 573 0008 06D0     		beq	.L79
+ 574 000a 0228     		cmp	r0, #2
+ 575 000c 09D0     		beq	.L80
+ 576 000e 70B9     		cbnz	r0, .L83
+ 577 0010 4FF44073 		mov	r3, #768
+ 578 0014 0B60     		str	r3, [r1]
+ 579 0016 7047     		bx	lr
+ 580              	.L79:
+ 581 0018 4FF48863 		mov	r3, #1088
+ 582              	.L84:
+ 583 001c 0020     		movs	r0, #0
+ 584 001e 0B60     		str	r3, [r1]
+ 585 0020 7047     		bx	lr
+ 586              	.L80:
+ 587 0022 4FF4C463 		mov	r3, #1568
+ 588 0026 F9E7     		b	.L84
+ 589              	.L82:
+ARM GAS  /tmp/cckIsuPv.s 			page 11
+
+
+ 590 0028 6FF0AC00 		mvn	r0, #172
+ 591 002c 7047     		bx	lr
+ 592              	.L83:
+ 593 002e 6FF0AD00 		mvn	r0, #173
+ 594 0032 7047     		bx	lr
+ 596              		.section	.text.wc_MlKemKey_SharedSecretSize,"ax",%progbits
+ 597              		.align	1
+ 598              		.global	wc_MlKemKey_SharedSecretSize
+ 599              		.syntax unified
+ 600              		.thumb
+ 601              		.thumb_func
+ 602              		.fpu fpv4-sp-d16
+ 604              	wc_MlKemKey_SharedSecretSize:
+ 605              		@ args = 0, pretend = 0, frame = 0
+ 606              		@ frame_needed = 0, uses_anonymous_args = 0
+ 607              		@ link register save eliminated.
+ 608 0000 2023     		movs	r3, #32
+ 609 0002 0020     		movs	r0, #0
+ 610 0004 0B60     		str	r3, [r1]
+ 611 0006 7047     		bx	lr
+ 613              		.section	.text.wc_MlKemKey_Decapsulate,"ax",%progbits
+ 614              		.align	1
+ 615              		.global	wc_MlKemKey_Decapsulate
+ 616              		.syntax unified
+ 617              		.thumb
+ 618              		.thumb_func
+ 619              		.fpu fpv4-sp-d16
+ 621              	wc_MlKemKey_Decapsulate:
+ 622              		@ args = 0, pretend = 0, frame = 112
+ 623              		@ frame_needed = 0, uses_anonymous_args = 0
+ 624 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 625 0004 0E46     		mov	r6, r1
+ 626 0006 9046     		mov	r8, r2
+ 627 0008 0446     		mov	r4, r0
+ 628 000a 9FB0     		sub	sp, sp, #124
+ 629 000c 0028     		cmp	r0, #0
+ 630 000e 5AD0     		beq	.L95
+ 631 0010 0029     		cmp	r1, #0
+ 632 0012 58D0     		beq	.L95
+ 633 0014 002A     		cmp	r2, #0
+ 634 0016 56D0     		beq	.L95
+ 635 0018 0268     		ldr	r2, [r0]
+ 636 001a 022A     		cmp	r2, #2
+ 637 001c 56D8     		bhi	.L96
+ 638 001e 2E49     		ldr	r1, .L101
+ 639 0020 31F812A0 		ldrh	r10, [r1, r2, lsl #1]
+ 640 0024 9A45     		cmp	r10, r3
+ 641 0026 54D1     		bne	.L97
+ 642 0028 5046     		mov	r0, r10
+ 643 002a FFF7FEFF 		bl	wolfSSL_Malloc
+ 644 002e 0746     		mov	r7, r0
+ 645 0030 10B9     		cbnz	r0, .L100
+ 646 0032 6FF07C03 		mvn	r3, #124
+ 647 0036 42E0     		b	.L86
+ 648              	.L100:
+ 649 0038 05AD     		add	r5, sp, #20
+ 650 003a 4246     		mov	r2, r8
+ARM GAS  /tmp/cckIsuPv.s 			page 12
+
+
+ 651 003c 2946     		mov	r1, r5
+ 652 003e 2046     		mov	r0, r4
+ 653 0040 FFF7FEFF 		bl	mlkemkey_decapsulate
+ 654 0044 0346     		mov	r3, r0
+ 655 0046 A8BB     		cbnz	r0, .L90
+ 656 0048 2022     		movs	r2, #32
+ 657 004a 0DF13409 		add	r9, sp, #52
+ 658 004e 04F59B53 		add	r3, r4, #4960
+ 659 0052 2946     		mov	r1, r5
+ 660 0054 CDF80490 		str	r9, [sp, #4]
+ 661 0058 0092     		str	r2, [sp]
+ 662 005a 04F11000 		add	r0, r4, #16
+ 663 005e FFF7FEFF 		bl	mlkem_hash512
+ 664 0062 0346     		mov	r3, r0
+ 665 0064 30BB     		cbnz	r0, .L90
+ 666 0066 3B46     		mov	r3, r7
+ 667 0068 2946     		mov	r1, r5
+ 668 006a 2046     		mov	r0, r4
+ 669 006c 15AA     		add	r2, sp, #84
+ 670 006e FFF7FEFF 		bl	mlkemkey_encapsulate
+ 671 0072 0346     		mov	r3, r0
+ 672 0074 F0B9     		cbnz	r0, .L90
+ 673 0076 5246     		mov	r2, r10
+ 674 0078 3946     		mov	r1, r7
+ 675 007a 4046     		mov	r0, r8
+ 676 007c FFF7FEFF 		bl	mlkem_cmp
+ 677 0080 5346     		mov	r3, r10
+ 678 0082 8346     		mov	fp, r0
+ 679 0084 4246     		mov	r2, r8
+ 680 0086 0095     		str	r5, [sp]
+ 681 0088 04F59C51 		add	r1, r4, #4992
+ 682 008c 04F5D470 		add	r0, r4, #424
+ 683 0090 FFF7FEFF 		bl	mlkem_derive_secret
+ 684 0094 0346     		mov	r3, r0
+ 685 0096 68B9     		cbnz	r0, .L90
+ 686 0098 701E     		subs	r0, r6, #1
+ 687 009a 1F36     		adds	r6, r6, #31
+ 688              	.L91:
+ 689 009c 19F8014B 		ldrb	r4, [r9], #1	@ zero_extendqisi2
+ 690 00a0 15F8012B 		ldrb	r2, [r5], #1	@ zero_extendqisi2
+ 691 00a4 6240     		eors	r2, r2, r4
+ 692 00a6 02EA0B02 		and	r2, r2, fp
+ 693 00aa 6240     		eors	r2, r2, r4
+ 694 00ac 00F8012F 		strb	r2, [r0, #1]!
+ 695 00b0 B042     		cmp	r0, r6
+ 696 00b2 F3D1     		bne	.L91
+ 697              	.L90:
+ 698 00b4 3846     		mov	r0, r7
+ 699 00b6 0393     		str	r3, [sp, #12]
+ 700 00b8 FFF7FEFF 		bl	wolfSSL_Free
+ 701 00bc 039B     		ldr	r3, [sp, #12]
+ 702              	.L86:
+ 703 00be 1846     		mov	r0, r3
+ 704 00c0 1FB0     		add	sp, sp, #124
+ 705              		@ sp needed
+ 706 00c2 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 707              	.L95:
+ARM GAS  /tmp/cckIsuPv.s 			page 13
+
+
+ 708 00c6 6FF0AC03 		mvn	r3, #172
+ 709 00ca F8E7     		b	.L86
+ 710              	.L96:
+ 711 00cc 6FF0AD03 		mvn	r3, #173
+ 712 00d0 F5E7     		b	.L86
+ 713              	.L97:
+ 714 00d2 6FF08303 		mvn	r3, #131
+ 715 00d6 F2E7     		b	.L86
+ 716              	.L102:
+ 717              		.align	2
+ 718              	.L101:
+ 719 00d8 00000000 		.word	.LANCHOR1
+ 721              		.section	.text.wc_MlKemKey_DecodePrivateKey,"ax",%progbits
+ 722              		.align	1
+ 723              		.global	wc_MlKemKey_DecodePrivateKey
+ 724              		.syntax unified
+ 725              		.thumb
+ 726              		.thumb_func
+ 727              		.fpu fpv4-sp-d16
+ 729              	wc_MlKemKey_DecodePrivateKey:
+ 730              		@ args = 0, pretend = 0, frame = 8
+ 731              		@ frame_needed = 0, uses_anonymous_args = 0
+ 732 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+ 733 0002 0C46     		mov	r4, r1
+ 734 0004 0546     		mov	r5, r0
+ 735 0006 0028     		cmp	r0, #0
+ 736 0008 42D0     		beq	.L109
+ 737 000a 0029     		cmp	r1, #0
+ 738 000c 40D0     		beq	.L109
+ 739 000e 0368     		ldr	r3, [r0]
+ 740 0010 022B     		cmp	r3, #2
+ 741 0012 40D8     		bhi	.L110
+ 742 0014 4FF44070 		mov	r0, #768
+ 743 0018 5843     		muls	r0, r3, r0
+ 744 001a 00F5CC60 		add	r0, r0, #1632
+ 745 001e 9042     		cmp	r0, r2
+ 746 0020 3CD1     		bne	.L111
+ 747 0022 4FF4C076 		mov	r6, #384
+ 748 0026 9A1C     		adds	r2, r3, #2
+ 749 0028 05F55070 		add	r0, r5, #832
+ 750 002c 0192     		str	r2, [sp, #4]
+ 751 002e FFF7FEFF 		bl	mlkem_from_bytes
+ 752 0032 019A     		ldr	r2, [sp, #4]
+ 753 0034 05F53460 		add	r0, r5, #2880
+ 754 0038 5643     		muls	r6, r2, r6
+ 755 003a 3444     		add	r4, r4, r6
+ 756 003c 2146     		mov	r1, r4
+ 757 003e FFF7FEFF 		bl	mlkem_from_bytes
+ 758 0042 A119     		adds	r1, r4, r6
+ 759 0044 05F59A52 		add	r2, r5, #4928
+ 760 0048 05F59B53 		add	r3, r5, #4960
+ 761              	.L105:
+ 762 004c 11F8010B 		ldrb	r0, [r1], #1	@ zero_extendqisi2
+ 763 0050 02F8010B 		strb	r0, [r2], #1
+ 764 0054 9342     		cmp	r3, r2
+ 765 0056 F9D1     		bne	.L105
+ 766 0058 06F12001 		add	r1, r6, #32
+ARM GAS  /tmp/cckIsuPv.s 			page 14
+
+
+ 767 005c 2144     		add	r1, r1, r4
+ 768 005e 01F12002 		add	r2, r1, #32
+ 769              	.L106:
+ 770 0062 51F8040B 		ldr	r0, [r1], #4	@ unaligned
+ 771 0066 9142     		cmp	r1, r2
+ 772 0068 43F8040B 		str	r0, [r3], #4	@ unaligned
+ 773 006c F9D1     		bne	.L106
+ 774 006e 05F59C53 		add	r3, r5, #4992
+ 775 0072 01F12002 		add	r2, r1, #32
+ 776              	.L107:
+ 777 0076 51F8040B 		ldr	r0, [r1], #4	@ unaligned
+ 778 007a 9142     		cmp	r1, r2
+ 779 007c 43F8040B 		str	r0, [r3], #4	@ unaligned
+ 780 0080 F9D1     		bne	.L107
+ 781 0082 0020     		movs	r0, #0
+ 782 0084 AB68     		ldr	r3, [r5, #8]
+ 783 0086 43F00703 		orr	r3, r3, #7
+ 784 008a AB60     		str	r3, [r5, #8]
+ 785              	.L103:
+ 786 008c 02B0     		add	sp, sp, #8
+ 787              		@ sp needed
+ 788 008e 70BD     		pop	{r4, r5, r6, pc}
+ 789              	.L109:
+ 790 0090 6FF0AC00 		mvn	r0, #172
+ 791 0094 FAE7     		b	.L103
+ 792              	.L110:
+ 793 0096 6FF0AD00 		mvn	r0, #173
+ 794 009a F7E7     		b	.L103
+ 795              	.L111:
+ 796 009c 6FF08300 		mvn	r0, #131
+ 797 00a0 F4E7     		b	.L103
+ 799              		.section	.text.wc_MlKemKey_DecodePublicKey,"ax",%progbits
+ 800              		.align	1
+ 801              		.global	wc_MlKemKey_DecodePublicKey
+ 802              		.syntax unified
+ 803              		.thumb
+ 804              		.thumb_func
+ 805              		.fpu fpv4-sp-d16
+ 807              	wc_MlKemKey_DecodePublicKey:
+ 808              		@ args = 0, pretend = 0, frame = 0
+ 809              		@ frame_needed = 0, uses_anonymous_args = 0
+ 810 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 811 0002 0E46     		mov	r6, r1
+ 812 0004 1746     		mov	r7, r2
+ 813 0006 0446     		mov	r4, r0
+ 814 0008 40B3     		cbz	r0, .L119
+ 815 000a 39B3     		cbz	r1, .L119
+ 816 000c 0268     		ldr	r2, [r0]
+ 817 000e 022A     		cmp	r2, #2
+ 818 0010 27D8     		bhi	.L120
+ 819 0012 4FF4C075 		mov	r5, #384
+ 820 0016 5543     		muls	r5, r2, r5
+ 821 0018 05F54873 		add	r3, r5, #800
+ 822 001c BB42     		cmp	r3, r7
+ 823 001e 23D1     		bne	.L121
+ 824 0020 0232     		adds	r2, r2, #2
+ 825 0022 00F53460 		add	r0, r0, #2880
+ARM GAS  /tmp/cckIsuPv.s 			page 15
+
+
+ 826 0026 05F54075 		add	r5, r5, #768
+ 827 002a FFF7FEFF 		bl	mlkem_from_bytes
+ 828 002e 3544     		add	r5, r5, r6
+ 829 0030 04F59A52 		add	r2, r4, #4928
+ 830 0034 04F59B53 		add	r3, r4, #4960
+ 831              	.L117:
+ 832 0038 15F8011B 		ldrb	r1, [r5], #1	@ zero_extendqisi2
+ 833 003c 02F8011B 		strb	r1, [r2], #1
+ 834 0040 9342     		cmp	r3, r2
+ 835 0042 F9D1     		bne	.L117
+ 836 0044 3A46     		mov	r2, r7
+ 837 0046 3146     		mov	r1, r6
+ 838 0048 04F11000 		add	r0, r4, #16
+ 839 004c FFF7FEFF 		bl	mlkem_hash256
+ 840 0050 18B9     		cbnz	r0, .L115
+ 841 0052 A368     		ldr	r3, [r4, #8]
+ 842 0054 43F00603 		orr	r3, r3, #6
+ 843 0058 A360     		str	r3, [r4, #8]
+ 844              	.L115:
+ 845 005a F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 846              	.L119:
+ 847 005c 6FF0AC00 		mvn	r0, #172
+ 848 0060 FBE7     		b	.L115
+ 849              	.L120:
+ 850 0062 6FF0AD00 		mvn	r0, #173
+ 851 0066 F8E7     		b	.L115
+ 852              	.L121:
+ 853 0068 6FF08300 		mvn	r0, #131
+ 854 006c F5E7     		b	.L115
+ 856              		.section	.text.wc_MlKemKey_PrivateKeySize,"ax",%progbits
+ 857              		.align	1
+ 858              		.global	wc_MlKemKey_PrivateKeySize
+ 859              		.syntax unified
+ 860              		.thumb
+ 861              		.thumb_func
+ 862              		.fpu fpv4-sp-d16
+ 864              	wc_MlKemKey_PrivateKeySize:
+ 865              		@ args = 0, pretend = 0, frame = 0
+ 866              		@ frame_needed = 0, uses_anonymous_args = 0
+ 867              		@ link register save eliminated.
+ 868 0000 90B1     		cbz	r0, .L128
+ 869 0002 89B1     		cbz	r1, .L128
+ 870 0004 0068     		ldr	r0, [r0]
+ 871 0006 0128     		cmp	r0, #1
+ 872 0008 06D0     		beq	.L125
+ 873 000a 0228     		cmp	r0, #2
+ 874 000c 09D0     		beq	.L126
+ 875 000e 70B9     		cbnz	r0, .L129
+ 876 0010 4FF4CC63 		mov	r3, #1632
+ 877 0014 0B60     		str	r3, [r1]
+ 878 0016 7047     		bx	lr
+ 879              	.L125:
+ 880 0018 4FF41663 		mov	r3, #2400
+ 881              	.L130:
+ 882 001c 0020     		movs	r0, #0
+ 883 001e 0B60     		str	r3, [r1]
+ 884 0020 7047     		bx	lr
+ARM GAS  /tmp/cckIsuPv.s 			page 16
+
+
+ 885              	.L126:
+ 886 0022 4FF44663 		mov	r3, #3168
+ 887 0026 F9E7     		b	.L130
+ 888              	.L128:
+ 889 0028 6FF0AC00 		mvn	r0, #172
+ 890 002c 7047     		bx	lr
+ 891              	.L129:
+ 892 002e 6FF0AD00 		mvn	r0, #173
+ 893 0032 7047     		bx	lr
+ 895              		.section	.text.wc_MlKemKey_PublicKeySize,"ax",%progbits
+ 896              		.align	1
+ 897              		.global	wc_MlKemKey_PublicKeySize
+ 898              		.syntax unified
+ 899              		.thumb
+ 900              		.thumb_func
+ 901              		.fpu fpv4-sp-d16
+ 903              	wc_MlKemKey_PublicKeySize:
+ 904              		@ args = 0, pretend = 0, frame = 0
+ 905              		@ frame_needed = 0, uses_anonymous_args = 0
+ 906              		@ link register save eliminated.
+ 907 0000 90B1     		cbz	r0, .L136
+ 908 0002 89B1     		cbz	r1, .L136
+ 909 0004 0068     		ldr	r0, [r0]
+ 910 0006 0128     		cmp	r0, #1
+ 911 0008 06D0     		beq	.L133
+ 912 000a 0228     		cmp	r0, #2
+ 913 000c 09D0     		beq	.L134
+ 914 000e 70B9     		cbnz	r0, .L137
+ 915 0010 4FF44873 		mov	r3, #800
+ 916 0014 0B60     		str	r3, [r1]
+ 917 0016 7047     		bx	lr
+ 918              	.L133:
+ 919 0018 4FF49463 		mov	r3, #1184
+ 920              	.L138:
+ 921 001c 0020     		movs	r0, #0
+ 922 001e 0B60     		str	r3, [r1]
+ 923 0020 7047     		bx	lr
+ 924              	.L134:
+ 925 0022 4FF4C463 		mov	r3, #1568
+ 926 0026 F9E7     		b	.L138
+ 927              	.L136:
+ 928 0028 6FF0AC00 		mvn	r0, #172
+ 929 002c 7047     		bx	lr
+ 930              	.L137:
+ 931 002e 6FF0AD00 		mvn	r0, #173
+ 932 0032 7047     		bx	lr
+ 934              		.section	.text.wc_MlKemKey_EncodePublicKey,"ax",%progbits
+ 935              		.align	1
+ 936              		.global	wc_MlKemKey_EncodePublicKey
+ 937              		.syntax unified
+ 938              		.thumb
+ 939              		.thumb_func
+ 940              		.fpu fpv4-sp-d16
+ 942              	wc_MlKemKey_EncodePublicKey:
+ 943              		@ args = 0, pretend = 0, frame = 0
+ 944              		@ frame_needed = 0, uses_anonymous_args = 0
+ 945 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ARM GAS  /tmp/cckIsuPv.s 			page 17
+
+
+ 946 0002 0E46     		mov	r6, r1
+ 947 0004 1746     		mov	r7, r2
+ 948 0006 0446     		mov	r4, r0
+ 949 0008 90B3     		cbz	r0, .L146
+ 950 000a 89B3     		cbz	r1, .L146
+ 951 000c 8368     		ldr	r3, [r0, #8]
+ 952 000e 9907     		lsls	r1, r3, #30
+ 953 0010 2ED5     		bpl	.L146
+ 954 0012 0268     		ldr	r2, [r0]
+ 955 0014 022A     		cmp	r2, #2
+ 956 0016 2ED8     		bhi	.L147
+ 957 0018 4FF4C075 		mov	r5, #384
+ 958 001c 5543     		muls	r5, r2, r5
+ 959 001e 05F54873 		add	r3, r5, #800
+ 960 0022 BB42     		cmp	r3, r7
+ 961 0024 2AD1     		bne	.L148
+ 962 0026 0232     		adds	r2, r2, #2
+ 963 0028 00F53461 		add	r1, r0, #2880
+ 964 002c 05F54075 		add	r5, r5, #768
+ 965 0030 3046     		mov	r0, r6
+ 966 0032 FFF7FEFF 		bl	mlkem_to_bytes
+ 967 0036 3544     		add	r5, r5, r6
+ 968 0038 04F59A52 		add	r2, r4, #4928
+ 969 003c 04F59B53 		add	r3, r4, #4960
+ 970              	.L141:
+ 971 0040 12F8011B 		ldrb	r1, [r2], #1	@ zero_extendqisi2
+ 972 0044 9342     		cmp	r3, r2
+ 973 0046 05F8011B 		strb	r1, [r5], #1
+ 974 004a F9D1     		bne	.L141
+ 975 004c A268     		ldr	r2, [r4, #8]
+ 976 004e 5207     		lsls	r2, r2, #29
+ 977 0050 05D5     		bpl	.L142
+ 978              	.L143:
+ 979 0052 0020     		movs	r0, #0
+ 980 0054 A368     		ldr	r3, [r4, #8]
+ 981 0056 43F00403 		orr	r3, r3, #4
+ 982 005a A360     		str	r3, [r4, #8]
+ 983              	.L139:
+ 984 005c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 985              	.L142:
+ 986 005e 3A46     		mov	r2, r7
+ 987 0060 3146     		mov	r1, r6
+ 988 0062 04F11000 		add	r0, r4, #16
+ 989 0066 FFF7FEFF 		bl	mlkem_hash256
+ 990 006a 0028     		cmp	r0, #0
+ 991 006c F1D0     		beq	.L143
+ 992 006e F5E7     		b	.L139
+ 993              	.L146:
+ 994 0070 6FF0AC00 		mvn	r0, #172
+ 995 0074 F2E7     		b	.L139
+ 996              	.L147:
+ 997 0076 6FF0AD00 		mvn	r0, #173
+ 998 007a EFE7     		b	.L139
+ 999              	.L148:
+ 1000 007c 6FF08300 		mvn	r0, #131
+ 1001 0080 ECE7     		b	.L139
+ 1003              		.section	.text.wc_MlKemKey_EncapsulateWithRandom,"ax",%progbits
+ARM GAS  /tmp/cckIsuPv.s 			page 18
+
+
+ 1004              		.align	1
+ 1005              		.global	wc_MlKemKey_EncapsulateWithRandom
+ 1006              		.syntax unified
+ 1007              		.thumb
+ 1008              		.thumb_func
+ 1009              		.fpu fpv4-sp-d16
+ 1011              	wc_MlKemKey_EncapsulateWithRandom:
+ 1012              		@ args = 4, pretend = 0, frame = 72
+ 1013              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1014 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 1015 0004 8A46     		mov	r10, r1
+ 1016 0006 1746     		mov	r7, r2
+ 1017 0008 9946     		mov	r9, r3
+ 1018 000a 0546     		mov	r5, r0
+ 1019 000c 94B0     		sub	sp, sp, #80
+ 1020 000e D8B1     		cbz	r0, .L164
+ 1021 0010 D1B1     		cbz	r1, .L164
+ 1022 0012 CAB1     		cbz	r2, .L164
+ 1023 0014 C3B1     		cbz	r3, .L164
+ 1024 0016 1C9B     		ldr	r3, [sp, #112]
+ 1025 0018 202B     		cmp	r3, #32
+ 1026 001a 18D1     		bne	.L165
+ 1027 001c 8368     		ldr	r3, [r0, #8]
+ 1028 001e 0DF10C08 		add	r8, sp, #12
+ 1029 0022 13F0040F 		tst	r3, #4
+ 1030 0026 26D1     		bne	.L155
+ 1031 0028 4146     		mov	r1, r8
+ 1032 002a FFF7FEFF 		bl	wc_MlKemKey_PublicKeySize
+ 1033 002e 0446     		mov	r4, r0
+ 1034 0030 30B9     		cbnz	r0, .L153
+ 1035 0032 0398     		ldr	r0, [sp, #12]
+ 1036 0034 FFF7FEFF 		bl	wolfSSL_Malloc
+ 1037 0038 0646     		mov	r6, r0
+ 1038 003a 70B9     		cbnz	r0, .L157
+ 1039 003c 6FF07C04 		mvn	r4, #124
+ 1040              	.L153:
+ 1041 0040 2046     		mov	r0, r4
+ 1042 0042 14B0     		add	sp, sp, #80
+ 1043              		@ sp needed
+ 1044 0044 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 1045              	.L164:
+ 1046 0048 6FF0AC04 		mvn	r4, #172
+ 1047 004c F8E7     		b	.L153
+ 1048              	.L165:
+ 1049 004e 6FF08304 		mvn	r4, #131
+ 1050 0052 F5E7     		b	.L153
+ 1051              	.L166:
+ 1052 0054 6FF0BF04 		mvn	r4, #191
+ 1053 0058 F2E7     		b	.L153
+ 1054              	.L157:
+ 1055 005a 0146     		mov	r1, r0
+ 1056 005c 039A     		ldr	r2, [sp, #12]
+ 1057 005e 2846     		mov	r0, r5
+ 1058 0060 FFF7FEFF 		bl	wc_MlKemKey_EncodePublicKey
+ 1059 0064 0446     		mov	r4, r0
+ 1060 0066 3046     		mov	r0, r6
+ 1061 0068 FFF7FEFF 		bl	wolfSSL_Free
+ARM GAS  /tmp/cckIsuPv.s 			page 19
+
+
+ 1062 006c 002C     		cmp	r4, #0
+ 1063 006e E7D1     		bne	.L153
+ 1064 0070 AB68     		ldr	r3, [r5, #8]
+ 1065 0072 5B07     		lsls	r3, r3, #29
+ 1066 0074 EED5     		bpl	.L166
+ 1067              	.L155:
+ 1068 0076 2022     		movs	r2, #32
+ 1069 0078 4946     		mov	r1, r9
+ 1070 007a CDF80480 		str	r8, [sp, #4]
+ 1071 007e 0092     		str	r2, [sp]
+ 1072 0080 05F59B53 		add	r3, r5, #4960
+ 1073 0084 05F11000 		add	r0, r5, #16
+ 1074 0088 FFF7FEFF 		bl	mlkem_hash512
+ 1075 008c 0446     		mov	r4, r0
+ 1076 008e 0028     		cmp	r0, #0
+ 1077 0090 D6D1     		bne	.L153
+ 1078 0092 0BAE     		add	r6, sp, #44
+ 1079 0094 5346     		mov	r3, r10
+ 1080 0096 3246     		mov	r2, r6
+ 1081 0098 4946     		mov	r1, r9
+ 1082 009a 2846     		mov	r0, r5
+ 1083 009c FFF7FEFF 		bl	mlkemkey_encapsulate
+ 1084 00a0 0446     		mov	r4, r0
+ 1085 00a2 0028     		cmp	r0, #0
+ 1086 00a4 CCD1     		bne	.L153
+ 1087 00a6 3D46     		mov	r5, r7
+ 1088              	.L158:
+ 1089 00a8 4346     		mov	r3, r8
+ 1090 00aa 03CB     		ldmia	r3!, {r0, r1}
+ 1091 00ac B342     		cmp	r3, r6
+ 1092 00ae 2860     		str	r0, [r5]	@ unaligned
+ 1093 00b0 6960     		str	r1, [r5, #4]	@ unaligned
+ 1094 00b2 9846     		mov	r8, r3
+ 1095 00b4 05F10805 		add	r5, r5, #8
+ 1096 00b8 F6D1     		bne	.L158
+ 1097 00ba C1E7     		b	.L153
+ 1099              		.section	.text.wc_MlKemKey_Encapsulate,"ax",%progbits
+ 1100              		.align	1
+ 1101              		.global	wc_MlKemKey_Encapsulate
+ 1102              		.syntax unified
+ 1103              		.thumb
+ 1104              		.thumb_func
+ 1105              		.fpu fpv4-sp-d16
+ 1107              	wc_MlKemKey_Encapsulate:
+ 1108              		@ args = 0, pretend = 0, frame = 32
+ 1109              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1110 0000 70B5     		push	{r4, r5, r6, lr}
+ 1111 0002 0D46     		mov	r5, r1
+ 1112 0004 1646     		mov	r6, r2
+ 1113 0006 0446     		mov	r4, r0
+ 1114 0008 8AB0     		sub	sp, sp, #40
+ 1115 000a 90B1     		cbz	r0, .L173
+ 1116 000c 89B1     		cbz	r1, .L173
+ 1117 000e 82B1     		cbz	r2, .L173
+ 1118 0010 7BB1     		cbz	r3, .L173
+ 1119 0012 2022     		movs	r2, #32
+ 1120 0014 1846     		mov	r0, r3
+ARM GAS  /tmp/cckIsuPv.s 			page 20
+
+
+ 1121 0016 02A9     		add	r1, sp, #8
+ 1122 0018 FFF7FEFF 		bl	wc_RNG_GenerateBlock
+ 1123 001c 38B9     		cbnz	r0, .L168
+ 1124 001e 2023     		movs	r3, #32
+ 1125 0020 3246     		mov	r2, r6
+ 1126 0022 0093     		str	r3, [sp]
+ 1127 0024 2946     		mov	r1, r5
+ 1128 0026 2046     		mov	r0, r4
+ 1129 0028 02AB     		add	r3, sp, #8
+ 1130 002a FFF7FEFF 		bl	wc_MlKemKey_EncapsulateWithRandom
+ 1131              	.L168:
+ 1132 002e 0AB0     		add	sp, sp, #40
+ 1133              		@ sp needed
+ 1134 0030 70BD     		pop	{r4, r5, r6, pc}
+ 1135              	.L173:
+ 1136 0032 6FF0AC00 		mvn	r0, #172
+ 1137 0036 FAE7     		b	.L168
+ 1139              		.section	.text.wc_MlKemKey_EncodePrivateKey,"ax",%progbits
+ 1140              		.align	1
+ 1141              		.global	wc_MlKemKey_EncodePrivateKey
+ 1142              		.syntax unified
+ 1143              		.thumb
+ 1144              		.thumb_func
+ 1145              		.fpu fpv4-sp-d16
+ 1147              	wc_MlKemKey_EncodePrivateKey:
+ 1148              		@ args = 0, pretend = 0, frame = 0
+ 1149              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1150 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1151 0004 9446     		mov	ip, r2
+ 1152 0006 0D46     		mov	r5, r1
+ 1153 0008 0446     		mov	r4, r0
+ 1154 000a 0028     		cmp	r0, #0
+ 1155 000c 52D0     		beq	.L182
+ 1156 000e 0029     		cmp	r1, #0
+ 1157 0010 50D0     		beq	.L182
+ 1158 0012 8368     		ldr	r3, [r0, #8]
+ 1159 0014 03F00303 		and	r3, r3, #3
+ 1160 0018 032B     		cmp	r3, #3
+ 1161 001a 4BD1     		bne	.L182
+ 1162 001c 0368     		ldr	r3, [r0]
+ 1163 001e 022B     		cmp	r3, #2
+ 1164 0020 4BD8     		bhi	.L183
+ 1165 0022 4FF4C076 		mov	r6, #384
+ 1166 0026 4FF44071 		mov	r1, #768
+ 1167 002a 5E43     		muls	r6, r3, r6
+ 1168 002c 9A1C     		adds	r2, r3, #2
+ 1169 002e 4B43     		muls	r3, r1, r3
+ 1170 0030 03F5CC63 		add	r3, r3, #1632
+ 1171 0034 6345     		cmp	r3, ip
+ 1172 0036 06F54877 		add	r7, r6, #800
+ 1173 003a 41D1     		bne	.L184
+ 1174 003c 06F54076 		add	r6, r6, #768
+ 1175 0040 00F55071 		add	r1, r0, #832
+ 1176 0044 2846     		mov	r0, r5
+ 1177 0046 3544     		add	r5, r5, r6
+ 1178 0048 FFF7FEFF 		bl	mlkem_to_bytes
+ 1179 004c 3A46     		mov	r2, r7
+ARM GAS  /tmp/cckIsuPv.s 			page 21
+
+
+ 1180 004e 2946     		mov	r1, r5
+ 1181 0050 2046     		mov	r0, r4
+ 1182 0052 FFF7FEFF 		bl	wc_MlKemKey_EncodePublicKey
+ 1183 0056 0646     		mov	r6, r0
+ 1184 0058 F0B9     		cbnz	r0, .L174
+ 1185 005a A368     		ldr	r3, [r4, #8]
+ 1186 005c 04F59B58 		add	r8, r4, #4960
+ 1187 0060 5B07     		lsls	r3, r3, #29
+ 1188 0062 1CD5     		bpl	.L176
+ 1189              	.L179:
+ 1190 0064 A368     		ldr	r3, [r4, #8]
+ 1191 0066 3D44     		add	r5, r5, r7
+ 1192 0068 43F00403 		orr	r3, r3, #4
+ 1193 006c A360     		str	r3, [r4, #8]
+ 1194 006e 2A46     		mov	r2, r5
+ 1195 0070 4346     		mov	r3, r8
+ 1196 0072 08F12001 		add	r1, r8, #32
+ 1197              	.L177:
+ 1198 0076 53F8040B 		ldr	r0, [r3], #4	@ unaligned
+ 1199 007a 8B42     		cmp	r3, r1
+ 1200 007c 42F8040B 		str	r0, [r2], #4	@ unaligned
+ 1201 0080 F9D1     		bne	.L177
+ 1202 0082 04F59C53 		add	r3, r4, #4992
+ 1203 0086 2035     		adds	r5, r5, #32
+ 1204 0088 04F59D54 		add	r4, r4, #5024
+ 1205              	.L178:
+ 1206 008c 53F8042B 		ldr	r2, [r3], #4	@ unaligned
+ 1207 0090 A342     		cmp	r3, r4
+ 1208 0092 45F8042B 		str	r2, [r5], #4	@ unaligned
+ 1209 0096 F9D1     		bne	.L178
+ 1210              	.L174:
+ 1211 0098 3046     		mov	r0, r6
+ 1212 009a BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1213              	.L176:
+ 1214 009e 4346     		mov	r3, r8
+ 1215 00a0 3A46     		mov	r2, r7
+ 1216 00a2 2946     		mov	r1, r5
+ 1217 00a4 04F11000 		add	r0, r4, #16
+ 1218 00a8 FFF7FEFF 		bl	mlkem_hash256
+ 1219 00ac 0028     		cmp	r0, #0
+ 1220 00ae D9D0     		beq	.L179
+ 1221 00b0 0646     		mov	r6, r0
+ 1222 00b2 F1E7     		b	.L174
+ 1223              	.L182:
+ 1224 00b4 6FF0AC06 		mvn	r6, #172
+ 1225 00b8 EEE7     		b	.L174
+ 1226              	.L183:
+ 1227 00ba 6FF0AD06 		mvn	r6, #173
+ 1228 00be EBE7     		b	.L174
+ 1229              	.L184:
+ 1230 00c0 6FF08306 		mvn	r6, #131
+ 1231 00c4 E8E7     		b	.L174
+ 1233              		.set	CSWTCH.21,CSWTCH.19
+ 1234              		.global	mlkem_opt_blocker
+ 1235              		.section	.bss.mlkem_opt_blocker,"aw",%nobits
+ 1236              		.align	1
+ 1239              	mlkem_opt_blocker:
+ARM GAS  /tmp/cckIsuPv.s 			page 22
+
+
+ 1240 0000 0000     		.space	2
+ 1241              		.section	.rodata.CSWTCH.19,"a"
+ 1242              		.align	1
+ 1243              		.set	.LANCHOR0,. + 0
+ 1246              	CSWTCH.19:
+ 1247 0000 8002     		.short	640
+ 1248 0002 C003     		.short	960
+ 1249 0004 8005     		.short	1408
+ 1250              		.section	.rodata.CSWTCH.32,"a"
+ 1251              		.align	1
+ 1252              		.set	.LANCHOR1,. + 0
+ 1255              	CSWTCH.32:
+ 1256 0000 0003     		.short	768
+ 1257 0002 4004     		.short	1088
+ 1258 0004 2006     		.short	1568
+ 1259              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cckIsuPv.s 			page 23
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 wc_mlkem.c
+     /tmp/cckIsuPv.s:16     .text.ForceZero:0000000000000000 $t
+     /tmp/cckIsuPv.s:24     .text.ForceZero:0000000000000000 ForceZero
+     /tmp/cckIsuPv.s:59     .text.mlkemkey_encapsulate:0000000000000000 $t
+     /tmp/cckIsuPv.s:65     .text.mlkemkey_encapsulate:0000000000000000 mlkemkey_encapsulate
+     /tmp/cckIsuPv.s:173    .text.mlkemkey_encapsulate:00000000000000f4 $d
+     /tmp/cckIsuPv.s:176    .text.mlkemkey_decapsulate:0000000000000000 $t
+     /tmp/cckIsuPv.s:182    .text.mlkemkey_decapsulate:0000000000000000 mlkemkey_decapsulate
+     /tmp/cckIsuPv.s:248    .text.mlkemkey_decapsulate:0000000000000090 $d
+                .rodata.CSWTCH.19:0000000000000000 CSWTCH.21
+     /tmp/cckIsuPv.s:251    .text.wc_MlKemKey_Init:0000000000000000 $t
+     /tmp/cckIsuPv.s:258    .text.wc_MlKemKey_Init:0000000000000000 wc_MlKemKey_Init
+     /tmp/cckIsuPv.s:296    .text.wc_MlKemKey_New:0000000000000000 $t
+     /tmp/cckIsuPv.s:303    .text.wc_MlKemKey_New:0000000000000000 wc_MlKemKey_New
+     /tmp/cckIsuPv.s:329    .text.wc_MlKemKey_Free:0000000000000000 $t
+     /tmp/cckIsuPv.s:336    .text.wc_MlKemKey_Free:0000000000000000 wc_MlKemKey_Free
+     /tmp/cckIsuPv.s:367    .text.wc_MlKemKey_Delete:0000000000000000 $t
+     /tmp/cckIsuPv.s:374    .text.wc_MlKemKey_Delete:0000000000000000 wc_MlKemKey_Delete
+     /tmp/cckIsuPv.s:397    .text.wc_MlKemKey_MakeKeyWithRandom:0000000000000000 $t
+     /tmp/cckIsuPv.s:404    .text.wc_MlKemKey_MakeKeyWithRandom:0000000000000000 wc_MlKemKey_MakeKeyWithRandom
+     /tmp/cckIsuPv.s:518    .text.wc_MlKemKey_MakeKey:0000000000000000 $t
+     /tmp/cckIsuPv.s:525    .text.wc_MlKemKey_MakeKey:0000000000000000 wc_MlKemKey_MakeKey
+     /tmp/cckIsuPv.s:558    .text.wc_MlKemKey_CipherTextSize:0000000000000000 $t
+     /tmp/cckIsuPv.s:565    .text.wc_MlKemKey_CipherTextSize:0000000000000000 wc_MlKemKey_CipherTextSize
+     /tmp/cckIsuPv.s:597    .text.wc_MlKemKey_SharedSecretSize:0000000000000000 $t
+     /tmp/cckIsuPv.s:604    .text.wc_MlKemKey_SharedSecretSize:0000000000000000 wc_MlKemKey_SharedSecretSize
+     /tmp/cckIsuPv.s:614    .text.wc_MlKemKey_Decapsulate:0000000000000000 $t
+     /tmp/cckIsuPv.s:621    .text.wc_MlKemKey_Decapsulate:0000000000000000 wc_MlKemKey_Decapsulate
+     /tmp/cckIsuPv.s:719    .text.wc_MlKemKey_Decapsulate:00000000000000d8 $d
+     /tmp/cckIsuPv.s:722    .text.wc_MlKemKey_DecodePrivateKey:0000000000000000 $t
+     /tmp/cckIsuPv.s:729    .text.wc_MlKemKey_DecodePrivateKey:0000000000000000 wc_MlKemKey_DecodePrivateKey
+     /tmp/cckIsuPv.s:800    .text.wc_MlKemKey_DecodePublicKey:0000000000000000 $t
+     /tmp/cckIsuPv.s:807    .text.wc_MlKemKey_DecodePublicKey:0000000000000000 wc_MlKemKey_DecodePublicKey
+     /tmp/cckIsuPv.s:857    .text.wc_MlKemKey_PrivateKeySize:0000000000000000 $t
+     /tmp/cckIsuPv.s:864    .text.wc_MlKemKey_PrivateKeySize:0000000000000000 wc_MlKemKey_PrivateKeySize
+     /tmp/cckIsuPv.s:896    .text.wc_MlKemKey_PublicKeySize:0000000000000000 $t
+     /tmp/cckIsuPv.s:903    .text.wc_MlKemKey_PublicKeySize:0000000000000000 wc_MlKemKey_PublicKeySize
+     /tmp/cckIsuPv.s:935    .text.wc_MlKemKey_EncodePublicKey:0000000000000000 $t
+     /tmp/cckIsuPv.s:942    .text.wc_MlKemKey_EncodePublicKey:0000000000000000 wc_MlKemKey_EncodePublicKey
+     /tmp/cckIsuPv.s:1004   .text.wc_MlKemKey_EncapsulateWithRandom:0000000000000000 $t
+     /tmp/cckIsuPv.s:1011   .text.wc_MlKemKey_EncapsulateWithRandom:0000000000000000 wc_MlKemKey_EncapsulateWithRandom
+     /tmp/cckIsuPv.s:1100   .text.wc_MlKemKey_Encapsulate:0000000000000000 $t
+     /tmp/cckIsuPv.s:1107   .text.wc_MlKemKey_Encapsulate:0000000000000000 wc_MlKemKey_Encapsulate
+     /tmp/cckIsuPv.s:1140   .text.wc_MlKemKey_EncodePrivateKey:0000000000000000 $t
+     /tmp/cckIsuPv.s:1147   .text.wc_MlKemKey_EncodePrivateKey:0000000000000000 wc_MlKemKey_EncodePrivateKey
+     /tmp/cckIsuPv.s:1246   .rodata.CSWTCH.19:0000000000000000 CSWTCH.19
+     /tmp/cckIsuPv.s:1239   .bss.mlkem_opt_blocker:0000000000000000 mlkem_opt_blocker
+     /tmp/cckIsuPv.s:1236   .bss.mlkem_opt_blocker:0000000000000000 $d
+     /tmp/cckIsuPv.s:1242   .rodata.CSWTCH.19:0000000000000000 $d
+     /tmp/cckIsuPv.s:1251   .rodata.CSWTCH.32:0000000000000000 $d
+     /tmp/cckIsuPv.s:1255   .rodata.CSWTCH.32:0000000000000000 CSWTCH.32
+
+UNDEFINED SYMBOLS
+memset
+wolfSSL_Malloc
+mlkem_vec_compress_11
+ARM GAS  /tmp/cckIsuPv.s 			page 24
+
+
+mlkem_compress_5
+mlkem_from_msg
+mlkem_prf_init
+mlkem_get_noise
+mlkem_gen_matrix
+mlkem_encapsulate
+mlkem_vec_compress_10
+mlkem_compress_4
+wolfSSL_Free
+mlkem_vec_decompress_11
+mlkem_decompress_5
+mlkem_vec_decompress_10
+mlkem_decompress_4
+mlkem_decapsulate
+mlkem_to_msg
+mlkem_hash_new
+mlkem_prf_new
+mlkem_init
+mlkem_prf_free
+mlkem_hash_free
+mlkem_hash512
+mlkem_keygen
+wc_RNG_GenerateBlock
+mlkem_cmp
+mlkem_derive_secret
+mlkem_from_bytes
+mlkem_hash256
+mlkem_to_bytes

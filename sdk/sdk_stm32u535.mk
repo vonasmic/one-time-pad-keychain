@@ -53,8 +53,14 @@ C_SOURCES =  \
   $(STM32_HAL)/Src/stm32u5xx_hal_cortex.c \
   $(STM32_HAL)/Src/stm32u5xx_hal_dma.c \
   $(STM32_HAL)/Src/stm32u5xx_hal_dma_ex.c \
+  $(STM32_HAL)/Src/stm32u5xx_hal_cryp.c \
+  $(STM32_HAL)/Src/stm32u5xx_hal_cryp_ex.c \
   $(STM32_HAL)/Src/stm32u5xx_hal_pcd.c \
   $(STM32_HAL)/Src/stm32u5xx_hal_pcd_ex.c \
+  $(STM32_HAL)/Src/stm32u5xx_hal_rng.c \
+  $(STM32_HAL)/Src/stm32u5xx_hal_rng_ex.c \
+  $(STM32_HAL)/Src/stm32u5xx_hal_hash.c \
+  $(STM32_HAL)/Src/stm32u5xx_hal_hash_ex.c \
   $(STM32_HAL)/Src/stm32u5xx_hal_spi.c \
   $(STM32_HAL)/Src/stm32u5xx_hal_spi_ex.c \
   \

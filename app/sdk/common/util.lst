@@ -1,0 +1,235 @@
+ARM GAS  /tmp/ccjVbGvL.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"util.c"
+  14              		.text
+  15              		.section	.text._hex_to_bin,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	_hex_to_bin:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27              		@ link register save eliminated.
+  28 0000 A0F13003 		sub	r3, r0, #48
+  29 0004 DAB2     		uxtb	r2, r3
+  30 0006 092A     		cmp	r2, #9
+  31 0008 01D8     		bhi	.L2
+  32 000a 1846     		mov	r0, r3
+  33 000c 7047     		bx	lr
+  34              	.L2:
+  35 000e A0F16103 		sub	r3, r0, #97
+  36 0012 052B     		cmp	r3, #5
+  37 0014 01D8     		bhi	.L4
+  38 0016 5738     		subs	r0, r0, #87
+  39 0018 7047     		bx	lr
+  40              	.L4:
+  41 001a A0F14103 		sub	r3, r0, #65
+  42 001e 052B     		cmp	r3, #5
+  43 0020 94BF     		ite	ls
+  44 0022 3738     		subls	r0, r0, #55
+  45 0024 4FF0FF30 		movhi	r0, #-1
+  46 0028 7047     		bx	lr
+  48              		.section	.text.strnicmp,"ax",%progbits
+  49              		.align	1
+  50              		.global	strnicmp
+  51              		.syntax unified
+  52              		.thumb
+  53              		.thumb_func
+  54              		.fpu fpv4-sp-d16
+  56              	strnicmp:
+  57              		@ args = 0, pretend = 0, frame = 0
+  58              		@ frame_needed = 0, uses_anonymous_args = 0
+  59 0000 30B5     		push	{r4, r5, lr}
+  60 0002 0139     		subs	r1, r1, #1
+ARM GAS  /tmp/ccjVbGvL.s 			page 2
+
+
+  61 0004 441E     		subs	r4, r0, #1
+  62              	.L7:
+  63 0006 0AB9     		cbnz	r2, .L14
+  64 0008 1046     		mov	r0, r2
+  65 000a 18E0     		b	.L9
+  66              	.L14:
+  67 000c 14F8010F 		ldrb	r0, [r4, #1]!	@ zero_extendqisi2
+  68 0010 11F8013F 		ldrb	r3, [r1, #1]!	@ zero_extendqisi2
+  69 0014 9842     		cmp	r0, r3
+  70 0016 03D1     		bne	.L8
+  71 0018 88B1     		cbz	r0, .L9
+  72              	.L10:
+  73 001a 013A     		subs	r2, r2, #1
+  74 001c D2B2     		uxtb	r2, r2
+  75 001e F2E7     		b	.L7
+  76              	.L8:
+  77 0020 A0F14105 		sub	r5, r0, #65
+  78 0024 192D     		cmp	r5, #25
+  79 0026 04D8     		bhi	.L11
+  80 0028 00F12005 		add	r5, r0, #32
+  81 002c EDB2     		uxtb	r5, r5
+  82 002e AB42     		cmp	r3, r5
+  83 0030 F3D0     		beq	.L10
+  84              	.L11:
+  85 0032 A3F14105 		sub	r5, r3, #65
+  86 0036 192D     		cmp	r5, #25
+  87 0038 02D9     		bls	.L12
+  88              	.L13:
+  89 003a C01A     		subs	r0, r0, r3
+  90 003c C0B2     		uxtb	r0, r0
+  91              	.L9:
+  92 003e 30BD     		pop	{r4, r5, pc}
+  93              	.L12:
+  94 0040 03F12005 		add	r5, r3, #32
+  95 0044 EDB2     		uxtb	r5, r5
+  96 0046 A842     		cmp	r0, r5
+  97 0048 F7D1     		bne	.L13
+  98 004a E6E7     		b	.L10
+ 100              		.section	.text.is_char,"ax",%progbits
+ 101              		.align	1
+ 102              		.global	is_char
+ 103              		.syntax unified
+ 104              		.thumb
+ 105              		.thumb_func
+ 106              		.fpu fpv4-sp-d16
+ 108              	is_char:
+ 109              		@ args = 0, pretend = 0, frame = 0
+ 110              		@ frame_needed = 0, uses_anonymous_args = 0
+ 111              		@ link register save eliminated.
+ 112 0000 20F02003 		bic	r3, r0, #32
+ 113 0004 413B     		subs	r3, r3, #65
+ 114 0006 192B     		cmp	r3, #25
+ 115 0008 0AD9     		bls	.L22
+ 116 000a A0F13003 		sub	r3, r0, #48
+ 117 000e 092B     		cmp	r3, #9
+ 118 0010 06D9     		bls	.L22
+ 119 0012 2A28     		cmp	r0, #42
+ARM GAS  /tmp/ccjVbGvL.s 			page 3
+
+
+ 120 0014 04D0     		beq	.L22
+ 121 0016 A0F12303 		sub	r3, r0, #35
+ 122 001a 5842     		rsbs	r0, r3, #0
+ 123 001c 5841     		adcs	r0, r0, r3
+ 124 001e 7047     		bx	lr
+ 125              	.L22:
+ 126 0020 0120     		movs	r0, #1
+ 127 0022 7047     		bx	lr
+ 129              		.section	.text.is_number,"ax",%progbits
+ 130              		.align	1
+ 131              		.global	is_number
+ 132              		.syntax unified
+ 133              		.thumb
+ 134              		.thumb_func
+ 135              		.fpu fpv4-sp-d16
+ 137              	is_number:
+ 138              		@ args = 0, pretend = 0, frame = 0
+ 139              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140              		@ link register save eliminated.
+ 141 0000 0246     		mov	r2, r0
+ 142 0002 0020     		movs	r0, #0
+ 143              	.L24:
+ 144 0004 8842     		cmp	r0, r1
+ 145 0006 08DA     		bge	.L23
+ 146 0008 135C     		ldrb	r3, [r2, r0]	@ zero_extendqisi2
+ 147 000a 03B9     		cbnz	r3, .L26
+ 148 000c 7047     		bx	lr
+ 149              	.L26:
+ 150 000e 303B     		subs	r3, r3, #48
+ 151 0010 092B     		cmp	r3, #9
+ 152 0012 01D8     		bhi	.L27
+ 153 0014 0130     		adds	r0, r0, #1
+ 154 0016 F5E7     		b	.L24
+ 155              	.L27:
+ 156 0018 0020     		movs	r0, #0
+ 157              	.L23:
+ 158 001a 7047     		bx	lr
+ 160              		.section	.text.is_hex,"ax",%progbits
+ 161              		.align	1
+ 162              		.global	is_hex
+ 163              		.syntax unified
+ 164              		.thumb
+ 165              		.thumb_func
+ 166              		.fpu fpv4-sp-d16
+ 168              	is_hex:
+ 169              		@ args = 0, pretend = 0, frame = 0
+ 170              		@ frame_needed = 0, uses_anonymous_args = 0
+ 171 0000 08B5     		push	{r3, lr}
+ 172 0002 FFF7FEFF 		bl	_hex_to_bin
+ 173 0006 C043     		mvns	r0, r0
+ 174 0008 C00F     		lsrs	r0, r0, #31
+ 175 000a 08BD     		pop	{r3, pc}
+ 177              		.section	.text.hex_to_bin,"ax",%progbits
+ 178              		.align	1
+ 179              		.global	hex_to_bin
+ 180              		.syntax unified
+ 181              		.thumb
+ARM GAS  /tmp/ccjVbGvL.s 			page 4
+
+
+ 182              		.thumb_func
+ 183              		.fpu fpv4-sp-d16
+ 185              	hex_to_bin:
+ 186              		@ args = 0, pretend = 0, frame = 0
+ 187              		@ frame_needed = 0, uses_anonymous_args = 0
+ 188 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 189 0002 0546     		mov	r5, r0
+ 190 0004 1646     		mov	r6, r2
+ 191 0006 0027     		movs	r7, #0
+ 192 0008 0231     		adds	r1, r1, #2
+ 193              	.L31:
+ 194 000a B742     		cmp	r7, r6
+ 195 000c 01DB     		blt	.L34
+ 196              	.L30:
+ 197 000e 3846     		mov	r0, r7
+ 198 0010 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 199              	.L34:
+ 200 0012 11F8020C 		ldrb	r0, [r1, #-2]	@ zero_extendqisi2
+ 201 0016 FFF7FEFF 		bl	_hex_to_bin
+ 202 001a 041E     		subs	r4, r0, #0
+ 203 001c F7DB     		blt	.L30
+ 204 001e 11F8010C 		ldrb	r0, [r1, #-1]	@ zero_extendqisi2
+ 205 0022 FFF7FEFF 		bl	_hex_to_bin
+ 206 0026 2401     		lsls	r4, r4, #4
+ 207 0028 0028     		cmp	r0, #0
+ 208 002a E4B2     		uxtb	r4, r4
+ 209 002c 01F10201 		add	r1, r1, #2
+ 210 0030 EDDB     		blt	.L30
+ 211 0032 0443     		orrs	r4, r4, r0
+ 212 0034 EC55     		strb	r4, [r5, r7]
+ 213 0036 0137     		adds	r7, r7, #1
+ 214 0038 E7E7     		b	.L31
+ 216              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccjVbGvL.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 util.c
+     /tmp/ccjVbGvL.s:16     .text._hex_to_bin:0000000000000000 $t
+     /tmp/ccjVbGvL.s:24     .text._hex_to_bin:0000000000000000 _hex_to_bin
+     /tmp/ccjVbGvL.s:49     .text.strnicmp:0000000000000000 $t
+     /tmp/ccjVbGvL.s:56     .text.strnicmp:0000000000000000 strnicmp
+     /tmp/ccjVbGvL.s:101    .text.is_char:0000000000000000 $t
+     /tmp/ccjVbGvL.s:108    .text.is_char:0000000000000000 is_char
+     /tmp/ccjVbGvL.s:130    .text.is_number:0000000000000000 $t
+     /tmp/ccjVbGvL.s:137    .text.is_number:0000000000000000 is_number
+     /tmp/ccjVbGvL.s:161    .text.is_hex:0000000000000000 $t
+     /tmp/ccjVbGvL.s:168    .text.is_hex:0000000000000000 is_hex
+     /tmp/ccjVbGvL.s:178    .text.hex_to_bin:0000000000000000 $t
+     /tmp/ccjVbGvL.s:185    .text.hex_to_bin:0000000000000000 hex_to_bin
+
+NO UNDEFINED SYMBOLS

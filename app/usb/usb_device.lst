@@ -1,0 +1,477 @@
+ARM GAS  /tmp/cciyBUFw.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"usb_device.c"
+  14              		.text
+  15              		.section	.text.usbd_change_function,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	usbd_change_function:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27              		@ link register save eliminated.
+  28 0000 0020     		movs	r0, #0
+  29 0002 7047     		bx	lr
+  31              		.section	.text.HAL_PCD_MspInit,"ax",%progbits
+  32              		.align	1
+  33              		.global	HAL_PCD_MspInit
+  34              		.syntax unified
+  35              		.thumb
+  36              		.thumb_func
+  37              		.fpu fpv4-sp-d16
+  39              	HAL_PCD_MspInit:
+  40              		@ args = 0, pretend = 0, frame = 8
+  41              		@ frame_needed = 0, uses_anonymous_args = 0
+  42              		@ link register save eliminated.
+  43 0000 0268     		ldr	r2, [r0]
+  44 0002 0C4B     		ldr	r3, .L4
+  45 0004 82B0     		sub	sp, sp, #8
+  46 0006 9A42     		cmp	r2, r3
+  47 0008 11D1     		bne	.L2
+  48 000a 0721     		movs	r1, #7
+  49 000c 4920     		movs	r0, #73
+  50 000e 0A4B     		ldr	r3, .L4+4
+  51 0010 D3F8A420 		ldr	r2, [r3, #164]
+  52 0014 42F08072 		orr	r2, r2, #16777216
+  53 0018 C3F8A420 		str	r2, [r3, #164]
+  54 001c D3F8A430 		ldr	r3, [r3, #164]
+  55 0020 03F08073 		and	r3, r3, #16777216
+  56 0024 0193     		str	r3, [sp, #4]
+  57 0026 019B     		ldr	r3, [sp, #4]
+  58 0028 02B0     		add	sp, sp, #8
+  59              		@ sp needed
+  60 002a FFF7FEBF 		b	irq_enable
+ARM GAS  /tmp/cciyBUFw.s 			page 2
+
+
+  61              	.L2:
+  62 002e 02B0     		add	sp, sp, #8
+  63              		@ sp needed
+  64 0030 7047     		bx	lr
+  65              	.L5:
+  66 0032 00BF     		.align	2
+  67              	.L4:
+  68 0034 00600140 		.word	1073831936
+  69 0038 000C0246 		.word	1174539264
+  71              		.section	.rodata.usb_device_init.str1.1,"aMS",%progbits,1
+  72              	.LC0:
+  73 0000 4552524F 		.ascii	"ERROR:CDC init failed\000"
+  73      523A4344 
+  73      4320696E 
+  73      69742066 
+  73      61696C65 
+  74              	.LC1:
+  75 0016 0D00     		.ascii	"\015\000"
+  76              	.LC2:
+  77 0018 4552524F 		.ascii	"ERROR:ux_dcd init failed\000"
+  77      523A7578 
+  77      5F646364 
+  77      20696E69 
+  77      74206661 
+  78              		.section	.text.usb_device_init,"ax",%progbits
+  79              		.align	1
+  80              		.global	usb_device_init
+  81              		.syntax unified
+  82              		.thumb
+  83              		.thumb_func
+  84              		.fpu fpv4-sp-d16
+  86              	usb_device_init:
+  87              		@ args = 0, pretend = 0, frame = 24
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89 0000 4748     		ldr	r0, .L18
+  90 0002 484B     		ldr	r3, .L18+4
+  91 0004 30B5     		push	{r4, r5, lr}
+  92 0006 0360     		str	r3, [r0]
+  93 0008 0823     		movs	r3, #8
+  94 000a 0371     		strb	r3, [r0, #4]
+  95 000c 0223     		movs	r3, #2
+  96 000e C371     		strb	r3, [r0, #7]
+  97 0010 4372     		strb	r3, [r0, #9]
+  98 0012 0023     		movs	r3, #0
+  99 0014 8DB0     		sub	sp, sp, #52
+ 100 0016 4381     		strh	r3, [r0, #10]	@ movhi
+ 101 0018 C360     		str	r3, [r0, #12]
+ 102 001a 0374     		strb	r3, [r0, #16]
+ 103 001c FFF7FEFF 		bl	HAL_PCD_Init
+ 104 0020 08B1     		cbz	r0, .L7
+ 105 0022 FFF7FEFF 		bl	Error_Handler
+ 106              	.L7:
+ 107 0026 0023     		movs	r3, #0
+ 108 0028 4FF40051 		mov	r1, #8192
+ 109 002c 1A46     		mov	r2, r3
+ 110 002e 3E48     		ldr	r0, .L18+8
+ 111 0030 FFF7FEFF 		bl	_uxe_system_initialize
+ARM GAS  /tmp/cciyBUFw.s 			page 3
+
+
+ 112 0034 0446     		mov	r4, r0
+ 113 0036 0028     		cmp	r0, #0
+ 114 0038 35D0     		beq	.L8
+ 115              	.L10:
+ 116 003a 3C48     		ldr	r0, .L18+12
+ 117 003c FFF7FEFF 		bl	printf
+ 118 0040 3B48     		ldr	r0, .L18+16
+ 119 0042 FFF7FEFF 		bl	puts
+ 120              	.L9:
+ 121 0046 0022     		movs	r2, #0
+ 122 0048 1423     		movs	r3, #20
+ 123 004a 1146     		mov	r1, r2
+ 124 004c 3448     		ldr	r0, .L18
+ 125 004e FFF7FEFF 		bl	HAL_PCDEx_PMAConfig
+ 126 0052 5423     		movs	r3, #84
+ 127 0054 0022     		movs	r2, #0
+ 128 0056 8021     		movs	r1, #128
+ 129 0058 3148     		ldr	r0, .L18
+ 130 005a FFF7FEFF 		bl	HAL_PCDEx_PMAConfig
+ 131 005e 9423     		movs	r3, #148
+ 132 0060 0022     		movs	r2, #0
+ 133 0062 8121     		movs	r1, #129
+ 134 0064 2E48     		ldr	r0, .L18
+ 135 0066 FFF7FEFF 		bl	HAL_PCDEx_PMAConfig
+ 136 006a D423     		movs	r3, #212
+ 137 006c 0022     		movs	r2, #0
+ 138 006e 0121     		movs	r1, #1
+ 139 0070 2B48     		ldr	r0, .L18
+ 140 0072 FFF7FEFF 		bl	HAL_PCDEx_PMAConfig
+ 141 0076 8221     		movs	r1, #130
+ 142 0078 4FF48A73 		mov	r3, #276
+ 143 007c 0022     		movs	r2, #0
+ 144 007e 2848     		ldr	r0, .L18
+ 145 0080 FFF7FEFF 		bl	HAL_PCDEx_PMAConfig
+ 146 0084 2649     		ldr	r1, .L18
+ 147 0086 2748     		ldr	r0, .L18+4
+ 148 0088 FFF7FEFF 		bl	_ux_dcd_stm32_initialize
+ 149 008c 28B1     		cbz	r0, .L11
+ 150 008e 2948     		ldr	r0, .L18+20
+ 151 0090 FFF7FEFF 		bl	printf
+ 152 0094 2648     		ldr	r0, .L18+16
+ 153 0096 FFF7FEFF 		bl	puts
+ 154              	.L11:
+ 155 009a 2148     		ldr	r0, .L18
+ 156 009c 0DB0     		add	sp, sp, #52
+ 157              		@ sp needed
+ 158 009e BDE83040 		pop	{r4, r5, lr}
+ 159 00a2 FFF7FEBF 		b	HAL_PCD_Start
+ 160              	.L8:
+ 161 00a6 08A9     		add	r1, sp, #32
+ 162 00a8 0120     		movs	r0, #1
+ 163 00aa FFF7FEFF 		bl	USBD_Get_Device_Framework_Speed
+ 164 00ae 09A9     		add	r1, sp, #36
+ 165 00b0 0546     		mov	r5, r0
+ 166 00b2 2046     		mov	r0, r4
+ 167 00b4 FFF7FEFF 		bl	USBD_Get_Device_Framework_Speed
+ 168 00b8 0790     		str	r0, [sp, #28]
+ARM GAS  /tmp/cciyBUFw.s 			page 4
+
+
+ 169 00ba 0AA8     		add	r0, sp, #40
+ 170 00bc FFF7FEFF 		bl	USBD_Get_String_Framework
+ 171 00c0 0446     		mov	r4, r0
+ 172 00c2 0BA8     		add	r0, sp, #44
+ 173 00c4 FFF7FEFF 		bl	USBD_Get_Language_Id_Framework
+ 174 00c8 DDE90721 		ldrd	r2, r1, [sp, #28]
+ 175 00cc 1A4B     		ldr	r3, .L18+24
+ 176 00ce 0493     		str	r3, [sp, #16]
+ 177 00d0 0B9B     		ldr	r3, [sp, #44]
+ 178 00d2 CDE90203 		strd	r0, r3, [sp, #8]
+ 179 00d6 0A9B     		ldr	r3, [sp, #40]
+ 180 00d8 2846     		mov	r0, r5
+ 181 00da CDE90043 		strd	r4, r3, [sp]
+ 182 00de 099B     		ldr	r3, [sp, #36]
+ 183 00e0 FFF7FEFF 		bl	_ux_device_stack_initialize
+ 184 00e4 0146     		mov	r1, r0
+ 185 00e6 0028     		cmp	r0, #0
+ 186 00e8 A7D1     		bne	.L10
+ 187 00ea 144C     		ldr	r4, .L18+28
+ 188 00ec 144B     		ldr	r3, .L18+32
+ 189 00ee 0790     		str	r0, [sp, #28]
+ 190 00f0 2360     		str	r3, [r4]
+ 191 00f2 144B     		ldr	r3, .L18+36
+ 192 00f4 0220     		movs	r0, #2
+ 193 00f6 6360     		str	r3, [r4, #4]
+ 194 00f8 134B     		ldr	r3, .L18+40
+ 195 00fa 144D     		ldr	r5, .L18+44
+ 196 00fc A360     		str	r3, [r4, #8]
+ 197 00fe FFF7FEFF 		bl	USBD_Get_Configuration_Number
+ 198 0102 0799     		ldr	r1, [sp, #28]
+ 199 0104 2860     		str	r0, [r5]
+ 200 0106 0220     		movs	r0, #2
+ 201 0108 FFF7FEFF 		bl	USBD_Get_Interface_Number
+ 202 010c 0094     		str	r4, [sp]
+ 203 010e 0346     		mov	r3, r0
+ 204 0110 2A68     		ldr	r2, [r5]
+ 205 0112 0F49     		ldr	r1, .L18+48
+ 206 0114 0F48     		ldr	r0, .L18+52
+ 207 0116 FFF7FEFF 		bl	_ux_device_stack_class_register
+ 208 011a 0028     		cmp	r0, #0
+ 209 011c 93D0     		beq	.L9
+ 210 011e 8CE7     		b	.L10
+ 211              	.L19:
+ 212              		.align	2
+ 213              	.L18:
+ 214 0120 00000000 		.word	.LANCHOR0
+ 215 0124 00600140 		.word	1073831936
+ 216 0128 00000000 		.word	usb_mem_pool_buffer
+ 217 012c 00000000 		.word	.LC0
+ 218 0130 16000000 		.word	.LC1
+ 219 0134 18000000 		.word	.LC2
+ 220 0138 00000000 		.word	usbd_change_function
+ 221 013c 00000000 		.word	.LANCHOR1
+ 222 0140 00000000 		.word	ux_device_cdc_acm_activate
+ 223 0144 00000000 		.word	ux_device_cdc_acm_deactivate
+ 224 0148 00000000 		.word	ux_device_cdc_acm_parameterchange
+ 225 014c 00000000 		.word	.LANCHOR2
+ARM GAS  /tmp/cciyBUFw.s 			page 5
+
+
+ 226 0150 00000000 		.word	_ux_device_class_cdc_acm_entry
+ 227 0154 00000000 		.word	_ux_system_slave_class_cdc_acm_name
+ 229              		.section	.text.usb_device_task,"ax",%progbits
+ 230              		.align	1
+ 231              		.global	usb_device_task
+ 232              		.syntax unified
+ 233              		.thumb
+ 234              		.thumb_func
+ 235              		.fpu fpv4-sp-d16
+ 237              	usb_device_task:
+ 238              		@ args = 0, pretend = 0, frame = 0
+ 239              		@ frame_needed = 0, uses_anonymous_args = 0
+ 240 0000 08B5     		push	{r3, lr}
+ 241 0002 FFF7FEFF 		bl	_ux_device_stack_tasks_run
+ 242 0006 BDE80840 		pop	{r3, lr}
+ 243 000a FFF7FEBF 		b	ux_device_cdc_acm_task
+ 245              		.section	.text.usb_cdc_rx_init,"ax",%progbits
+ 246              		.align	1
+ 247              		.global	usb_cdc_rx_init
+ 248              		.syntax unified
+ 249              		.thumb
+ 250              		.thumb_func
+ 251              		.fpu fpv4-sp-d16
+ 253              	usb_cdc_rx_init:
+ 254              		@ args = 0, pretend = 0, frame = 0
+ 255              		@ frame_needed = 0, uses_anonymous_args = 0
+ 256 0000 08B5     		push	{r3, lr}
+ 257 0002 FFF7FEFF 		bl	ux_device_cdc_acm_rx_init
+ 258 0006 0120     		movs	r0, #1
+ 259 0008 08BD     		pop	{r3, pc}
+ 261              		.section	.text.usb_device_connected,"ax",%progbits
+ 262              		.align	1
+ 263              		.global	usb_device_connected
+ 264              		.syntax unified
+ 265              		.thumb
+ 266              		.thumb_func
+ 267              		.fpu fpv4-sp-d16
+ 269              	usb_device_connected:
+ 270              		@ args = 0, pretend = 0, frame = 0
+ 271              		@ frame_needed = 0, uses_anonymous_args = 0
+ 272              		@ link register save eliminated.
+ 273 0000 FFF7FEBF 		b	ux_device_cdc_acm_connected
+ 275              		.section	.text.usb_cdc_tx,"ax",%progbits
+ 276              		.align	1
+ 277              		.global	usb_cdc_tx
+ 278              		.syntax unified
+ 279              		.thumb
+ 280              		.thumb_func
+ 281              		.fpu fpv4-sp-d16
+ 283              	usb_cdc_tx:
+ 284              		@ args = 0, pretend = 0, frame = 0
+ 285              		@ frame_needed = 0, uses_anonymous_args = 0
+ 286 0000 08B5     		push	{r3, lr}
+ 287 0002 FFF7FEFF 		bl	ux_device_cdc_acm_tx
+ 288 0006 80F00100 		eor	r0, r0, #1
+ 289 000a 4042     		rsbs	r0, r0, #0
+ 290 000c C0B2     		uxtb	r0, r0
+ARM GAS  /tmp/cciyBUFw.s 			page 6
+
+
+ 291 000e 08BD     		pop	{r3, pc}
+ 293              		.section	.text.usb_cdc_tx_busy,"ax",%progbits
+ 294              		.align	1
+ 295              		.global	usb_cdc_tx_busy
+ 296              		.syntax unified
+ 297              		.thumb
+ 298              		.thumb_func
+ 299              		.fpu fpv4-sp-d16
+ 301              	usb_cdc_tx_busy:
+ 302              		@ args = 0, pretend = 0, frame = 0
+ 303              		@ frame_needed = 0, uses_anonymous_args = 0
+ 304              		@ link register save eliminated.
+ 305 0000 0020     		movs	r0, #0
+ 306 0002 7047     		bx	lr
+ 308              		.section	.text._ux_utility_interrupt_disable,"ax",%progbits
+ 309              		.align	1
+ 310              		.global	_ux_utility_interrupt_disable
+ 311              		.syntax unified
+ 312              		.thumb
+ 313              		.thumb_func
+ 314              		.fpu fpv4-sp-d16
+ 316              	_ux_utility_interrupt_disable:
+ 317              		@ args = 0, pretend = 0, frame = 0
+ 318              		@ frame_needed = 0, uses_anonymous_args = 0
+ 319              		@ link register save eliminated.
+ 320              		.syntax unified
+ 321              	@ 1208 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 322 0000 EFF31080 		MRS r0, primask
+ 323              	@ 0 "" 2
+ 324              	@ 962 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 325 0004 72B6     		cpsid i
+ 326              	@ 0 "" 2
+ 327              		.thumb
+ 328              		.syntax unified
+ 329 0006 7047     		bx	lr
+ 331              		.section	.text._ux_utility_interrupt_restore,"ax",%progbits
+ 332              		.align	1
+ 333              		.global	_ux_utility_interrupt_restore
+ 334              		.syntax unified
+ 335              		.thumb
+ 336              		.thumb_func
+ 337              		.fpu fpv4-sp-d16
+ 339              	_ux_utility_interrupt_restore:
+ 340              		@ args = 0, pretend = 0, frame = 0
+ 341              		@ frame_needed = 0, uses_anonymous_args = 0
+ 342              		@ link register save eliminated.
+ 343              		.syntax unified
+ 344              	@ 1236 "../sdk/stm32/CMSIS/inc/cmsis_gcc.h" 1
+ 345 0000 80F31088 		MSR primask, r0
+ 346              	@ 0 "" 2
+ 347              		.thumb
+ 348              		.syntax unified
+ 349 0004 7047     		bx	lr
+ 351              		.section	.text.USB_IRQHandler,"ax",%progbits
+ 352              		.align	1
+ 353              		.global	USB_IRQHandler
+ 354              		.syntax unified
+ARM GAS  /tmp/cciyBUFw.s 			page 7
+
+
+ 355              		.thumb
+ 356              		.thumb_func
+ 357              		.fpu fpv4-sp-d16
+ 359              	USB_IRQHandler:
+ 360              		@ args = 0, pretend = 0, frame = 0
+ 361              		@ frame_needed = 0, uses_anonymous_args = 0
+ 362              		@ link register save eliminated.
+ 363 0000 0148     		ldr	r0, .L28
+ 364 0002 FFF7FEBF 		b	HAL_PCD_IRQHandler
+ 365              	.L29:
+ 366 0006 00BF     		.align	2
+ 367              	.L28:
+ 368 0008 00000000 		.word	.LANCHOR0
+ 370              		.global	hpcd_usb_drd_fs
+ 371              		.section	.bss.cdc_acm_configuration_number,"aw",%nobits
+ 372              		.align	2
+ 373              		.set	.LANCHOR2,. + 0
+ 376              	cdc_acm_configuration_number:
+ 377 0000 00000000 		.space	4
+ 378              		.section	.bss.cdc_acm_parameter,"aw",%nobits
+ 379              		.align	2
+ 380              		.set	.LANCHOR1,. + 0
+ 383              	cdc_acm_parameter:
+ 384 0000 00000000 		.space	12
+ 384      00000000 
+ 384      00000000 
+ 385              		.section	.bss.hpcd_usb_drd_fs,"aw",%nobits
+ 386              		.align	2
+ 387              		.set	.LANCHOR0,. + 0
+ 390              	hpcd_usb_drd_fs:
+ 391 0000 00000000 		.space	740
+ 391      00000000 
+ 391      00000000 
+ 391      00000000 
+ 391      00000000 
+ 392              		.section	.bss.usb_mem_pool_buffer,"aw",%nobits
+ 393              		.align	2
+ 396              	usb_mem_pool_buffer:
+ 397 0000 00000000 		.space	8192
+ 397      00000000 
+ 397      00000000 
+ 397      00000000 
+ 397      00000000 
+ 398              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cciyBUFw.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 usb_device.c
+     /tmp/cciyBUFw.s:16     .text.usbd_change_function:0000000000000000 $t
+     /tmp/cciyBUFw.s:24     .text.usbd_change_function:0000000000000000 usbd_change_function
+     /tmp/cciyBUFw.s:32     .text.HAL_PCD_MspInit:0000000000000000 $t
+     /tmp/cciyBUFw.s:39     .text.HAL_PCD_MspInit:0000000000000000 HAL_PCD_MspInit
+     /tmp/cciyBUFw.s:68     .text.HAL_PCD_MspInit:0000000000000034 $d
+     /tmp/cciyBUFw.s:79     .text.usb_device_init:0000000000000000 $t
+     /tmp/cciyBUFw.s:86     .text.usb_device_init:0000000000000000 usb_device_init
+     /tmp/cciyBUFw.s:214    .text.usb_device_init:0000000000000120 $d
+     /tmp/cciyBUFw.s:396    .bss.usb_mem_pool_buffer:0000000000000000 usb_mem_pool_buffer
+     /tmp/cciyBUFw.s:230    .text.usb_device_task:0000000000000000 $t
+     /tmp/cciyBUFw.s:237    .text.usb_device_task:0000000000000000 usb_device_task
+     /tmp/cciyBUFw.s:246    .text.usb_cdc_rx_init:0000000000000000 $t
+     /tmp/cciyBUFw.s:253    .text.usb_cdc_rx_init:0000000000000000 usb_cdc_rx_init
+     /tmp/cciyBUFw.s:262    .text.usb_device_connected:0000000000000000 $t
+     /tmp/cciyBUFw.s:269    .text.usb_device_connected:0000000000000000 usb_device_connected
+     /tmp/cciyBUFw.s:276    .text.usb_cdc_tx:0000000000000000 $t
+     /tmp/cciyBUFw.s:283    .text.usb_cdc_tx:0000000000000000 usb_cdc_tx
+     /tmp/cciyBUFw.s:294    .text.usb_cdc_tx_busy:0000000000000000 $t
+     /tmp/cciyBUFw.s:301    .text.usb_cdc_tx_busy:0000000000000000 usb_cdc_tx_busy
+     /tmp/cciyBUFw.s:309    .text._ux_utility_interrupt_disable:0000000000000000 $t
+     /tmp/cciyBUFw.s:316    .text._ux_utility_interrupt_disable:0000000000000000 _ux_utility_interrupt_disable
+     /tmp/cciyBUFw.s:332    .text._ux_utility_interrupt_restore:0000000000000000 $t
+     /tmp/cciyBUFw.s:339    .text._ux_utility_interrupt_restore:0000000000000000 _ux_utility_interrupt_restore
+     /tmp/cciyBUFw.s:352    .text.USB_IRQHandler:0000000000000000 $t
+     /tmp/cciyBUFw.s:359    .text.USB_IRQHandler:0000000000000000 USB_IRQHandler
+     /tmp/cciyBUFw.s:368    .text.USB_IRQHandler:0000000000000008 $d
+     /tmp/cciyBUFw.s:390    .bss.hpcd_usb_drd_fs:0000000000000000 hpcd_usb_drd_fs
+     /tmp/cciyBUFw.s:372    .bss.cdc_acm_configuration_number:0000000000000000 $d
+     /tmp/cciyBUFw.s:376    .bss.cdc_acm_configuration_number:0000000000000000 cdc_acm_configuration_number
+     /tmp/cciyBUFw.s:379    .bss.cdc_acm_parameter:0000000000000000 $d
+     /tmp/cciyBUFw.s:383    .bss.cdc_acm_parameter:0000000000000000 cdc_acm_parameter
+     /tmp/cciyBUFw.s:386    .bss.hpcd_usb_drd_fs:0000000000000000 $d
+     /tmp/cciyBUFw.s:393    .bss.usb_mem_pool_buffer:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+irq_enable
+HAL_PCD_Init
+Error_Handler
+_uxe_system_initialize
+printf
+puts
+HAL_PCDEx_PMAConfig
+_ux_dcd_stm32_initialize
+HAL_PCD_Start
+USBD_Get_Device_Framework_Speed
+USBD_Get_String_Framework
+USBD_Get_Language_Id_Framework
+_ux_device_stack_initialize
+USBD_Get_Configuration_Number
+USBD_Get_Interface_Number
+_ux_device_stack_class_register
+ux_device_cdc_acm_activate
+ux_device_cdc_acm_deactivate
+ux_device_cdc_acm_parameterchange
+_ux_device_class_cdc_acm_entry
+ARM GAS  /tmp/cciyBUFw.s 			page 9
+
+
+_ux_system_slave_class_cdc_acm_name
+_ux_device_stack_tasks_run
+ux_device_cdc_acm_task
+ux_device_cdc_acm_rx_init
+ux_device_cdc_acm_connected
+ux_device_cdc_acm_tx
+HAL_PCD_IRQHandler

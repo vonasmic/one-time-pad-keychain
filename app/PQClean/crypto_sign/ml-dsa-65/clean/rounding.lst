@@ -1,0 +1,151 @@
+ARM GAS  /tmp/ccx9cWi1.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"rounding.c"
+  14              		.text
+  15              		.section	.text.PQCLEAN_MLDSA65_CLEAN_power2round,"ax",%progbits
+  16              		.align	1
+  17              		.global	PQCLEAN_MLDSA65_CLEAN_power2round
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	PQCLEAN_MLDSA65_CLEAN_power2round:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 01F6FF72 		addw	r2, r1, #4095
+  30 0004 22F4FF53 		bic	r3, r2, #8160
+  31 0008 23F01F03 		bic	r3, r3, #31
+  32 000c C91A     		subs	r1, r1, r3
+  33 000e 0160     		str	r1, [r0]
+  34 0010 5013     		asrs	r0, r2, #13
+  35 0012 7047     		bx	lr
+  37              		.section	.text.PQCLEAN_MLDSA65_CLEAN_decompose,"ax",%progbits
+  38              		.align	1
+  39              		.global	PQCLEAN_MLDSA65_CLEAN_decompose
+  40              		.syntax unified
+  41              		.thumb
+  42              		.thumb_func
+  43              		.fpu fpv4-sp-d16
+  45              	PQCLEAN_MLDSA65_CLEAN_decompose:
+  46              		@ args = 0, pretend = 0, frame = 0
+  47              		@ frame_needed = 0, uses_anonymous_args = 0
+  48 0000 01F17F03 		add	r3, r1, #127
+  49 0004 DB11     		asrs	r3, r3, #7
+  50 0006 03EB8323 		add	r3, r3, r3, lsl #10
+  51 000a 03F50013 		add	r3, r3, #2097152
+  52 000e C3F38353 		ubfx	r3, r3, #22, #4
+  53 0012 A3EB8322 		sub	r2, r3, r3, lsl #10
+  54 0016 10B5     		push	{r4, lr}
+  55 0018 01EB4221 		add	r1, r1, r2, lsl #9
+  56 001c C1F57F14 		rsb	r4, r1, #4177920
+  57 0020 044A     		ldr	r2, .L3
+  58 0022 04F54054 		add	r4, r4, #12288
+  59 0026 02EAE472 		and	r2, r2, r4, asr #31
+  60 002a 891A     		subs	r1, r1, r2
+ARM GAS  /tmp/ccx9cWi1.s 			page 2
+
+
+  61 002c 0160     		str	r1, [r0]
+  62 002e 1846     		mov	r0, r3
+  63 0030 10BD     		pop	{r4, pc}
+  64              	.L4:
+  65 0032 00BF     		.align	2
+  66              	.L3:
+  67 0034 01E07F00 		.word	8380417
+  69              		.section	.text.PQCLEAN_MLDSA65_CLEAN_make_hint,"ax",%progbits
+  70              		.align	1
+  71              		.global	PQCLEAN_MLDSA65_CLEAN_make_hint
+  72              		.syntax unified
+  73              		.thumb
+  74              		.thumb_func
+  75              		.fpu fpv4-sp-d16
+  77              	PQCLEAN_MLDSA65_CLEAN_make_hint:
+  78              		@ args = 0, pretend = 0, frame = 0
+  79              		@ frame_needed = 0, uses_anonymous_args = 0
+  80              		@ link register save eliminated.
+  81 0000 084A     		ldr	r2, .L9
+  82 0002 00F57F33 		add	r3, r0, #261120
+  83 0006 03F54073 		add	r3, r3, #768
+  84 000a 9342     		cmp	r3, r2
+  85 000c 06D8     		bhi	.L7
+  86 000e 064B     		ldr	r3, .L9+4
+  87 0010 9842     		cmp	r0, r3
+  88 0012 05D1     		bne	.L8
+  89 0014 081E     		subs	r0, r1, #0
+  90 0016 18BF     		it	ne
+  91 0018 0120     		movne	r0, #1
+  92 001a 7047     		bx	lr
+  93              	.L7:
+  94 001c 0120     		movs	r0, #1
+  95 001e 7047     		bx	lr
+  96              	.L8:
+  97 0020 0020     		movs	r0, #0
+  98 0022 7047     		bx	lr
+  99              	.L10:
+ 100              		.align	2
+ 101              	.L9:
+ 102 0024 00FE0700 		.word	523776
+ 103 0028 0001FCFF 		.word	-261888
+ 105              		.section	.text.PQCLEAN_MLDSA65_CLEAN_use_hint,"ax",%progbits
+ 106              		.align	1
+ 107              		.global	PQCLEAN_MLDSA65_CLEAN_use_hint
+ 108              		.syntax unified
+ 109              		.thumb
+ 110              		.thumb_func
+ 111              		.fpu fpv4-sp-d16
+ 113              	PQCLEAN_MLDSA65_CLEAN_use_hint:
+ 114              		@ args = 0, pretend = 0, frame = 8
+ 115              		@ frame_needed = 0, uses_anonymous_args = 0
+ 116 0000 13B5     		push	{r0, r1, r4, lr}
+ 117 0002 0C46     		mov	r4, r1
+ 118 0004 0146     		mov	r1, r0
+ 119 0006 01A8     		add	r0, sp, #4
+ 120 0008 FFF7FEFF 		bl	PQCLEAN_MLDSA65_CLEAN_decompose
+ 121 000c 3CB1     		cbz	r4, .L11
+ARM GAS  /tmp/ccx9cWi1.s 			page 3
+
+
+ 122 000e 019B     		ldr	r3, [sp, #4]
+ 123 0010 002B     		cmp	r3, #0
+ 124 0012 CCBF     		ite	gt
+ 125 0014 0130     		addgt	r0, r0, #1
+ 126 0016 00F1FF30 		addle	r0, r0, #-1
+ 127 001a 00F00F00 		and	r0, r0, #15
+ 128              	.L11:
+ 129 001e 02B0     		add	sp, sp, #8
+ 130              		@ sp needed
+ 131 0020 10BD     		pop	{r4, pc}
+ 133              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccx9cWi1.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 rounding.c
+     /tmp/ccx9cWi1.s:16     .text.PQCLEAN_MLDSA65_CLEAN_power2round:0000000000000000 $t
+     /tmp/ccx9cWi1.s:25     .text.PQCLEAN_MLDSA65_CLEAN_power2round:0000000000000000 PQCLEAN_MLDSA65_CLEAN_power2round
+     /tmp/ccx9cWi1.s:38     .text.PQCLEAN_MLDSA65_CLEAN_decompose:0000000000000000 $t
+     /tmp/ccx9cWi1.s:45     .text.PQCLEAN_MLDSA65_CLEAN_decompose:0000000000000000 PQCLEAN_MLDSA65_CLEAN_decompose
+     /tmp/ccx9cWi1.s:67     .text.PQCLEAN_MLDSA65_CLEAN_decompose:0000000000000034 $d
+     /tmp/ccx9cWi1.s:70     .text.PQCLEAN_MLDSA65_CLEAN_make_hint:0000000000000000 $t
+     /tmp/ccx9cWi1.s:77     .text.PQCLEAN_MLDSA65_CLEAN_make_hint:0000000000000000 PQCLEAN_MLDSA65_CLEAN_make_hint
+     /tmp/ccx9cWi1.s:102    .text.PQCLEAN_MLDSA65_CLEAN_make_hint:0000000000000024 $d
+     /tmp/ccx9cWi1.s:106    .text.PQCLEAN_MLDSA65_CLEAN_use_hint:0000000000000000 $t
+     /tmp/ccx9cWi1.s:113    .text.PQCLEAN_MLDSA65_CLEAN_use_hint:0000000000000000 PQCLEAN_MLDSA65_CLEAN_use_hint
+
+NO UNDEFINED SYMBOLS

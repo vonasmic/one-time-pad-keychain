@@ -1,0 +1,102 @@
+ARM GAS  /tmp/cccYiRHX.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_device_stack_disconnect.c"
+  14              		.text
+  15              		.section	.text._ux_device_stack_disconnect,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_device_stack_disconnect
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_device_stack_disconnect:
+  26              		@ args = 0, pretend = 0, frame = 48
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  29 0004 194F     		ldr	r7, .L16
+  30 0006 8CB0     		sub	sp, sp, #48
+  31 0008 3C68     		ldr	r4, [r7]
+  32 000a 666A     		ldr	r6, [r4, #36]
+  33 000c 032E     		cmp	r6, #3
+  34 000e 28D1     		bne	.L2
+  35 0010 D4F8B450 		ldr	r5, [r4, #180]
+  36              	.L3:
+  37 0014 B5B9     		cbnz	r5, .L5
+  38 0016 0123     		movs	r3, #1
+  39 0018 6362     		str	r3, [r4, #36]
+  40              	.L6:
+  41 001a 0F21     		movs	r1, #15
+  42 001c 2046     		mov	r0, r4
+  43 001e A369     		ldr	r3, [r4, #24]
+  44 0020 04F13C02 		add	r2, r4, #60
+  45 0024 9847     		blx	r3
+  46 0026 0546     		mov	r5, r0
+  47              	.L7:
+  48 0028 0023     		movs	r3, #0
+  49 002a C4F8A430 		str	r3, [r4, #164]
+  50 002e 6362     		str	r3, [r4, #36]
+  51 0030 3B68     		ldr	r3, [r7]
+  52 0032 D3F86431 		ldr	r3, [r3, #356]
+  53 0036 0BB1     		cbz	r3, .L1
+  54 0038 0A20     		movs	r0, #10
+  55 003a 9847     		blx	r3
+  56              	.L1:
+  57 003c 2846     		mov	r0, r5
+  58 003e 0CB0     		add	sp, sp, #48
+ARM GAS  /tmp/cccYiRHX.s 			page 2
+
+
+  59              		@ sp needed
+  60 0040 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+  61              	.L5:
+  62 0044 6B68     		ldr	r3, [r5, #4]
+  63 0046 0196     		str	r6, [sp, #4]
+  64 0048 0395     		str	r5, [sp, #12]
+  65 004a 0993     		str	r3, [sp, #36]
+  66 004c 13B1     		cbz	r3, .L4
+  67 004e 5B6C     		ldr	r3, [r3, #68]
+  68 0050 01A8     		add	r0, sp, #4
+  69 0052 9847     		blx	r3
+  70              	.L4:
+  71 0054 D5F81880 		ldr	r8, [r5, #24]
+  72 0058 2846     		mov	r0, r5
+  73 005a FFF7FEFF 		bl	_ux_device_stack_interface_delete
+  74 005e 4546     		mov	r5, r8
+  75 0060 D8E7     		b	.L3
+  76              	.L2:
+  77 0062 012E     		cmp	r6, #1
+  78 0064 D9D0     		beq	.L6
+  79 0066 FF25     		movs	r5, #255
+  80 0068 DEE7     		b	.L7
+  81              	.L17:
+  82 006a 00BF     		.align	2
+  83              	.L16:
+  84 006c 00000000 		.word	_ux_system_slave
+  86              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cccYiRHX.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_device_stack_disconnect.c
+     /tmp/cccYiRHX.s:16     .text._ux_device_stack_disconnect:0000000000000000 $t
+     /tmp/cccYiRHX.s:25     .text._ux_device_stack_disconnect:0000000000000000 _ux_device_stack_disconnect
+     /tmp/cccYiRHX.s:84     .text._ux_device_stack_disconnect:000000000000006c $d
+
+UNDEFINED SYMBOLS
+_ux_device_stack_interface_delete
+_ux_system_slave

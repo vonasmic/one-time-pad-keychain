@@ -1,0 +1,52 @@
+ARM GAS  /tmp/cc8Dm71E.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_dcd_stm32_interrupt_handler.c"
+  14              		.text
+  15              		.section	.text._ux_dcd_stm32_interrupt_handler,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_dcd_stm32_interrupt_handler
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_dcd_stm32_interrupt_handler:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 034B     		ldr	r3, .L2
+  30 0002 1B68     		ldr	r3, [r3]
+  31 0004 DB69     		ldr	r3, [r3, #28]
+  32 0006 D3F8C400 		ldr	r0, [r3, #196]
+  33 000a FFF7FEBF 		b	HAL_PCD_IRQHandler
+  34              	.L3:
+  35 000e 00BF     		.align	2
+  36              	.L2:
+  37 0010 00000000 		.word	_ux_system_slave
+  39              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cc8Dm71E.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_dcd_stm32_interrupt_handler.c
+     /tmp/cc8Dm71E.s:16     .text._ux_dcd_stm32_interrupt_handler:0000000000000000 $t
+     /tmp/cc8Dm71E.s:25     .text._ux_dcd_stm32_interrupt_handler:0000000000000000 _ux_dcd_stm32_interrupt_handler
+     /tmp/cc8Dm71E.s:37     .text._ux_dcd_stm32_interrupt_handler:0000000000000010 $d
+
+UNDEFINED SYMBOLS
+HAL_PCD_IRQHandler
+_ux_system_slave

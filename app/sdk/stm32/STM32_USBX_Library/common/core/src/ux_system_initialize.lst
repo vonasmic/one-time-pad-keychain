@@ -1,0 +1,309 @@
+ARM GAS  /tmp/cccTa8jZ.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ux_system_initialize.c"
+  14              		.text
+  15              		.section	.text._ux_system_initialize,"ax",%progbits
+  16              		.align	1
+  17              		.global	_ux_system_initialize
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	_ux_system_initialize:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  29 0004 8846     		mov	r8, r1
+  30 0006 1646     		mov	r6, r2
+  31 0008 1C46     		mov	r4, r3
+  32 000a 0546     		mov	r5, r0
+  33 000c 0028     		cmp	r0, #0
+  34 000e 3CD0     		beq	.L7
+  35 0010 0029     		cmp	r1, #0
+  36 0012 3AD0     		beq	.L7
+  37 0014 0A46     		mov	r2, r1
+  38 0016 0021     		movs	r1, #0
+  39 0018 FFF7FEFF 		bl	_ux_utility_memory_set
+  40 001c 1D4F     		ldr	r7, .L14
+  41 001e 1E4A     		ldr	r2, .L14+4
+  42 0020 05F11803 		add	r3, r5, #24
+  43 0024 05F5C470 		add	r0, r5, #392
+  44 0028 3D60     		str	r5, [r7]
+  45 002a 1360     		str	r3, [r2]
+  46 002c 2860     		str	r0, [r5]
+  47 002e 86B1     		cbz	r6, .L9
+  48 0030 7CB1     		cbz	r4, .L9
+  49 0032 4FF4D873 		mov	r3, #432
+  50 0036 05F5CE72 		add	r2, r5, #412
+  51              	.L3:
+  52 003a 2B44     		add	r3, r3, r5
+  53 003c 0733     		adds	r3, r3, #7
+  54 003e 6A60     		str	r2, [r5, #4]
+  55 0040 23F00701 		bic	r1, r3, #7
+  56 0044 4544     		add	r5, r5, r8
+  57 0046 A942     		cmp	r1, r5
+  58 0048 07D3     		bcc	.L4
+ARM GAS  /tmp/cccTa8jZ.s 			page 2
+
+
+  59              	.L5:
+  60 004a 1224     		movs	r4, #18
+  61              	.L2:
+  62 004c 2046     		mov	r0, r4
+  63 004e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+  64              	.L9:
+  65 0052 0246     		mov	r2, r0
+  66 0054 4FF4CE73 		mov	r3, #412
+  67 0058 EFE7     		b	.L3
+  68              	.L4:
+  69 005a 6A1A     		subs	r2, r5, r1
+  70 005c FFF7FEFF 		bl	_ux_utility_memory_byte_pool_create
+  71 0060 AEB1     		cbz	r6, .L10
+  72 0062 002C     		cmp	r4, #0
+  73 0064 F2D0     		beq	.L2
+  74 0066 2246     		mov	r2, r4
+  75 0068 0021     		movs	r1, #0
+  76 006a 3046     		mov	r0, r6
+  77 006c FFF7FEFF 		bl	_ux_utility_memory_set
+  78 0070 F11D     		adds	r1, r6, #7
+  79 0072 21F00701 		bic	r1, r1, #7
+  80 0076 3219     		adds	r2, r6, r4
+  81 0078 9142     		cmp	r1, r2
+  82 007a E6D2     		bcs	.L5
+  83 007c 3B68     		ldr	r3, [r7]
+  84 007e 521A     		subs	r2, r2, r1
+  85 0080 5868     		ldr	r0, [r3, #4]
+  86 0082 FFF7FEFF 		bl	_ux_utility_memory_byte_pool_create
+  87 0086 0024     		movs	r4, #0
+  88 0088 E0E7     		b	.L2
+  89              	.L7:
+  90 008a FA24     		movs	r4, #250
+  91 008c DEE7     		b	.L2
+  92              	.L10:
+  93 008e 3446     		mov	r4, r6
+  94 0090 DCE7     		b	.L2
+  95              	.L15:
+  96 0092 00BF     		.align	2
+  97              	.L14:
+  98 0094 00000000 		.word	.LANCHOR0
+  99 0098 00000000 		.word	_ux_system_slave
+ 101              		.section	.text._uxe_system_initialize,"ax",%progbits
+ 102              		.align	1
+ 103              		.global	_uxe_system_initialize
+ 104              		.syntax unified
+ 105              		.thumb
+ 106              		.thumb_func
+ 107              		.fpu fpv4-sp-d16
+ 109              	_uxe_system_initialize:
+ 110              		@ args = 0, pretend = 0, frame = 0
+ 111              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112              		@ link register save eliminated.
+ 113 0000 10B4     		push	{r4}
+ 114 0002 20B1     		cbz	r0, .L16
+ 115 0004 19B1     		cbz	r1, .L16
+ 116 0006 5DF8044B 		ldr	r4, [sp], #4
+ 117 000a FFF7FEBF 		b	_ux_system_initialize
+ARM GAS  /tmp/cccTa8jZ.s 			page 3
+
+
+ 118              	.L16:
+ 119 000e FA20     		movs	r0, #250
+ 120 0010 5DF8044B 		ldr	r4, [sp], #4
+ 121 0014 7047     		bx	lr
+ 123              		.global	_ux_system_container_id_descriptor_structure
+ 124              		.global	_ux_system_usb_2_0_extension_descriptor_structure
+ 125              		.global	_ux_system_bos_descriptor_structure
+ 126              		.global	_ux_system_ecm_interface_descriptor_structure
+ 127              		.global	_ux_system_class_pima_object_structure
+ 128              		.global	_ux_system_class_pima_storage_structure
+ 129              		.global	_ux_system_hid_descriptor_structure
+ 130              		.global	_ux_system_hub_descriptor_structure
+ 131              		.global	_ux_system_class_audio_streaming_endpoint_descriptor_structure
+ 132              		.global	_ux_system_class_audio_streaming_interface_descriptor_structure
+ 133              		.global	_ux_system_class_audio_feature_unit_descriptor_structure
+ 134              		.global	_ux_system_class_audio_output_terminal_descriptor_structure
+ 135              		.global	_ux_system_class_audio_input_terminal_descriptor_structure
+ 136              		.global	_ux_system_class_audio_interface_descriptor_structure
+ 137              		.global	_ux_system_dfu_functional_descriptor_structure
+ 138              		.global	_ux_system_string_descriptor_structure
+ 139              		.global	_ux_system_interface_association_descriptor_structure
+ 140              		.global	_ux_system_interface_descriptor_structure
+ 141              		.global	_ux_system_configuration_descriptor_structure
+ 142              		.global	_ux_system_device_descriptor_structure
+ 143              		.global	_ux_system_endpoint_descriptor_structure
+ 144              		.global	_ux_system_otg
+ 145              		.global	_ux_system
+ 146              		.global	_ux_version_id
+ 147              		.section	.bss._ux_system,"aw",%nobits
+ 148              		.align	2
+ 149              		.set	.LANCHOR0,. + 0
+ 152              	_ux_system:
+ 153 0000 00000000 		.space	4
+ 154              		.section	.bss._ux_system_otg,"aw",%nobits
+ 155              		.align	2
+ 158              	_ux_system_otg:
+ 159 0000 00000000 		.space	4
+ 160              		.section	.data._ux_system_bos_descriptor_structure,"aw"
+ 163              	_ux_system_bos_descriptor_structure:
+ 164 0000 01010201 		.ascii	"\001\001\002\001"
+ 165              		.section	.data._ux_system_class_audio_feature_unit_descriptor_structure,"aw"
+ 168              	_ux_system_class_audio_feature_unit_descriptor_structure:
+ 169 0000 01010101 		.ascii	"\001\001\001\001\001\001\001"
+ 169      010101
+ 170              		.section	.data._ux_system_class_audio_input_terminal_descriptor_structure,"aw"
+ 173              	_ux_system_class_audio_input_terminal_descriptor_structure:
+ 174 0000 01010101 		.ascii	"\001\001\001\001\002\001\001\002\001\001"
+ 174      02010102 
+ 174      0101
+ 175              		.section	.data._ux_system_class_audio_interface_descriptor_structure,"aw"
+ 178              	_ux_system_class_audio_interface_descriptor_structure:
+ 179 0000 01010101 		.ascii	"\001\001\001\001\001\001\001\001"
+ 179      01010101 
+ 180              		.section	.data._ux_system_class_audio_output_terminal_descriptor_structure,"aw"
+ 183              	_ux_system_class_audio_output_terminal_descriptor_structure:
+ 184 0000 01010101 		.ascii	"\001\001\001\001\002\001\001\001"
+ 184      02010101 
+ARM GAS  /tmp/cccTa8jZ.s 			page 4
+
+
+ 185              		.section	.data._ux_system_class_audio_streaming_endpoint_descriptor_structure,"aw"
+ 188              	_ux_system_class_audio_streaming_endpoint_descriptor_structure:
+ 189 0000 01010101 		.ascii	"\001\001\001\001\001\001"
+ 189      0101
+ 190              		.section	.data._ux_system_class_audio_streaming_interface_descriptor_structure,"aw"
+ 193              	_ux_system_class_audio_streaming_interface_descriptor_structure:
+ 194 0000 01010101 		.ascii	"\001\001\001\001\001\001"
+ 194      0101
+ 195              		.section	.data._ux_system_class_pima_object_structure,"aw"
+ 198              	_ux_system_class_pima_object_structure:
+ 199 0000 04020204 		.ascii	"\004\002\002\004\002\004\004\004\004\004\004\004\002"
+ 199      02040404 
+ 199      04040404 
+ 199      02
+ 200 000d 0404     		.ascii	"\004\004"
+ 201              		.section	.data._ux_system_class_pima_storage_structure,"aw"
+ 204              	_ux_system_class_pima_storage_structure:
+ 205 0000 02020204 		.ascii	"\002\002\002\004\004\004\004\004"
+ 205      04040404 
+ 206              		.section	.data._ux_system_configuration_descriptor_structure,"aw"
+ 209              	_ux_system_configuration_descriptor_structure:
+ 210 0000 01010201 		.ascii	"\001\001\002\001\001\001\001\001"
+ 210      01010101 
+ 211              		.section	.data._ux_system_container_id_descriptor_structure,"aw"
+ 214              	_ux_system_container_id_descriptor_structure:
+ 215 0000 01010101 		.ascii	"\001\001\001\001\004\004\004\004"
+ 215      04040404 
+ 216              		.section	.data._ux_system_device_descriptor_structure,"aw"
+ 219              	_ux_system_device_descriptor_structure:
+ 220 0000 01010201 		.ascii	"\001\001\002\001\001\001\001\002\002\002\001\001\001"
+ 220      01010102 
+ 220      02020101 
+ 220      01
+ 221 000d 01       		.ascii	"\001"
+ 222              		.section	.data._ux_system_dfu_functional_descriptor_structure,"aw"
+ 225              	_ux_system_dfu_functional_descriptor_structure:
+ 226 0000 01010102 		.ascii	"\001\001\001\002\002\002"
+ 226      0202
+ 227              		.section	.data._ux_system_ecm_interface_descriptor_structure,"aw"
+ 230              	_ux_system_ecm_interface_descriptor_structure:
+ 231 0000 01010101 		.ascii	"\001\001\001\001\004\002\002\001"
+ 231      04020201 
+ 232              		.section	.data._ux_system_endpoint_descriptor_structure,"aw"
+ 235              	_ux_system_endpoint_descriptor_structure:
+ 236 0000 01010101 		.ascii	"\001\001\001\001\002\001"
+ 236      0201
+ 237              		.section	.data._ux_system_hid_descriptor_structure,"aw"
+ 240              	_ux_system_hid_descriptor_structure:
+ 241 0000 01010201 		.ascii	"\001\001\002\001\001\001\002"
+ 241      010102
+ 242              		.section	.data._ux_system_hub_descriptor_structure,"aw"
+ 245              	_ux_system_hub_descriptor_structure:
+ 246 0000 01010102 		.ascii	"\001\001\001\002\001\001\001\001"
+ 246      01010101 
+ 247              		.section	.data._ux_system_interface_association_descriptor_structure,"aw"
+ 250              	_ux_system_interface_association_descriptor_structure:
+ 251 0000 01010101 		.ascii	"\001\001\001\001\001\001\001\001"
+ARM GAS  /tmp/cccTa8jZ.s 			page 5
+
+
+ 251      01010101 
+ 252              		.section	.data._ux_system_interface_descriptor_structure,"aw"
+ 255              	_ux_system_interface_descriptor_structure:
+ 256 0000 01010101 		.ascii	"\001\001\001\001\001\001\001\001\001"
+ 256      01010101 
+ 256      01
+ 257              		.section	.data._ux_system_string_descriptor_structure,"aw"
+ 260              	_ux_system_string_descriptor_structure:
+ 261 0000 010102   		.ascii	"\001\001\002"
+ 262              		.section	.data._ux_system_usb_2_0_extension_descriptor_structure,"aw"
+ 265              	_ux_system_usb_2_0_extension_descriptor_structure:
+ 266 0000 01010104 		.ascii	"\001\001\001\004"
+ 267              		.section	.data._ux_version_id,"aw"
+ 270              	_ux_version_id:
+ 271 0000 436F7079 		.ascii	"Copyright (c) Microsoft Corporation. All rights res"
+ 271      72696768 
+ 271      74202863 
+ 271      29204D69 
+ 271      63726F73 
+ 272 0033 65727665 		.ascii	"erved. * USBX Generic Version 6.4.0 *\000"
+ 272      642E202A 
+ 272      20555342 
+ 272      58204765 
+ 272      6E657269 
+ 273              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/cccTa8jZ.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ux_system_initialize.c
+     /tmp/cccTa8jZ.s:16     .text._ux_system_initialize:0000000000000000 $t
+     /tmp/cccTa8jZ.s:25     .text._ux_system_initialize:0000000000000000 _ux_system_initialize
+     /tmp/cccTa8jZ.s:98     .text._ux_system_initialize:0000000000000094 $d
+     /tmp/cccTa8jZ.s:102    .text._uxe_system_initialize:0000000000000000 $t
+     /tmp/cccTa8jZ.s:109    .text._uxe_system_initialize:0000000000000000 _uxe_system_initialize
+     /tmp/cccTa8jZ.s:214    .data._ux_system_container_id_descriptor_structure:0000000000000000 _ux_system_container_id_descriptor_structure
+     /tmp/cccTa8jZ.s:265    .data._ux_system_usb_2_0_extension_descriptor_structure:0000000000000000 _ux_system_usb_2_0_extension_descriptor_structure
+     /tmp/cccTa8jZ.s:163    .data._ux_system_bos_descriptor_structure:0000000000000000 _ux_system_bos_descriptor_structure
+     /tmp/cccTa8jZ.s:230    .data._ux_system_ecm_interface_descriptor_structure:0000000000000000 _ux_system_ecm_interface_descriptor_structure
+     /tmp/cccTa8jZ.s:198    .data._ux_system_class_pima_object_structure:0000000000000000 _ux_system_class_pima_object_structure
+     /tmp/cccTa8jZ.s:204    .data._ux_system_class_pima_storage_structure:0000000000000000 _ux_system_class_pima_storage_structure
+     /tmp/cccTa8jZ.s:240    .data._ux_system_hid_descriptor_structure:0000000000000000 _ux_system_hid_descriptor_structure
+     /tmp/cccTa8jZ.s:245    .data._ux_system_hub_descriptor_structure:0000000000000000 _ux_system_hub_descriptor_structure
+     /tmp/cccTa8jZ.s:188    .data._ux_system_class_audio_streaming_endpoint_descriptor_structure:0000000000000000 _ux_system_class_audio_streaming_endpoint_descriptor_structure
+     /tmp/cccTa8jZ.s:193    .data._ux_system_class_audio_streaming_interface_descriptor_structure:0000000000000000 _ux_system_class_audio_streaming_interface_descriptor_structure
+     /tmp/cccTa8jZ.s:168    .data._ux_system_class_audio_feature_unit_descriptor_structure:0000000000000000 _ux_system_class_audio_feature_unit_descriptor_structure
+     /tmp/cccTa8jZ.s:183    .data._ux_system_class_audio_output_terminal_descriptor_structure:0000000000000000 _ux_system_class_audio_output_terminal_descriptor_structure
+     /tmp/cccTa8jZ.s:173    .data._ux_system_class_audio_input_terminal_descriptor_structure:0000000000000000 _ux_system_class_audio_input_terminal_descriptor_structure
+     /tmp/cccTa8jZ.s:178    .data._ux_system_class_audio_interface_descriptor_structure:0000000000000000 _ux_system_class_audio_interface_descriptor_structure
+     /tmp/cccTa8jZ.s:225    .data._ux_system_dfu_functional_descriptor_structure:0000000000000000 _ux_system_dfu_functional_descriptor_structure
+     /tmp/cccTa8jZ.s:260    .data._ux_system_string_descriptor_structure:0000000000000000 _ux_system_string_descriptor_structure
+     /tmp/cccTa8jZ.s:250    .data._ux_system_interface_association_descriptor_structure:0000000000000000 _ux_system_interface_association_descriptor_structure
+     /tmp/cccTa8jZ.s:255    .data._ux_system_interface_descriptor_structure:0000000000000000 _ux_system_interface_descriptor_structure
+     /tmp/cccTa8jZ.s:209    .data._ux_system_configuration_descriptor_structure:0000000000000000 _ux_system_configuration_descriptor_structure
+     /tmp/cccTa8jZ.s:219    .data._ux_system_device_descriptor_structure:0000000000000000 _ux_system_device_descriptor_structure
+     /tmp/cccTa8jZ.s:235    .data._ux_system_endpoint_descriptor_structure:0000000000000000 _ux_system_endpoint_descriptor_structure
+     /tmp/cccTa8jZ.s:158    .bss._ux_system_otg:0000000000000000 _ux_system_otg
+     /tmp/cccTa8jZ.s:152    .bss._ux_system:0000000000000000 _ux_system
+     /tmp/cccTa8jZ.s:270    .data._ux_version_id:0000000000000000 _ux_version_id
+     /tmp/cccTa8jZ.s:148    .bss._ux_system:0000000000000000 $d
+     /tmp/cccTa8jZ.s:155    .bss._ux_system_otg:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+_ux_utility_memory_set
+_ux_utility_memory_byte_pool_create
+_ux_system_slave

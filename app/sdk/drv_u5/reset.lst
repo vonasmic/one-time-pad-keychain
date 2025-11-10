@@ -1,0 +1,96 @@
+ARM GAS  /tmp/ccxHV3G0.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"reset.c"
+  14              		.text
+  15              		.section	.text.reset_get_type,"ax",%progbits
+  16              		.align	1
+  17              		.global	reset_get_type
+  18              		.arch armv8-m.main
+  19              		.arch_extension dsp
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	reset_get_type:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28              		@ link register save eliminated.
+  29 0000 0A4A     		ldr	r2, .L6
+  30 0002 0B4B     		ldr	r3, .L6+4
+  31 0004 D3F8F430 		ldr	r3, [r3, #244]
+  32 0008 D2F80411 		ldr	r1, [r2, #260]
+  33 000c 4BF29802 		movw	r2, #45208
+  34 0010 9142     		cmp	r1, r2
+  35 0012 07D0     		beq	.L3
+  36 0014 13F0C04F 		tst	r3, #1610612736
+  37 0018 06D1     		bne	.L4
+  38 001a 002B     		cmp	r3, #0
+  39 001c ACBF     		ite	ge
+  40 001e 0020     		movge	r0, #0
+  41 0020 0320     		movlt	r0, #3
+  42 0022 7047     		bx	lr
+  43              	.L3:
+  44 0024 0120     		movs	r0, #1
+  45 0026 7047     		bx	lr
+  46              	.L4:
+  47 0028 0220     		movs	r0, #2
+  48 002a 7047     		bx	lr
+  49              	.L7:
+  50              		.align	2
+  51              	.L6:
+  52 002c 007C0046 		.word	1174436864
+  53 0030 000C0246 		.word	1174539264
+  55              		.section	.text.reset_clear,"ax",%progbits
+  56              		.align	1
+  57              		.global	reset_clear
+  58              		.syntax unified
+  59              		.thumb
+ARM GAS  /tmp/ccxHV3G0.s 			page 2
+
+
+  60              		.thumb_func
+  61              		.fpu fpv4-sp-d16
+  63              	reset_clear:
+  64              		@ args = 0, pretend = 0, frame = 0
+  65              		@ frame_needed = 0, uses_anonymous_args = 0
+  66              		@ link register save eliminated.
+  67 0000 054A     		ldr	r2, .L9
+  68 0002 D2F8F430 		ldr	r3, [r2, #244]
+  69 0006 43F40003 		orr	r3, r3, #8388608
+  70 000a C2F8F430 		str	r3, [r2, #244]
+  71 000e 0022     		movs	r2, #0
+  72 0010 024B     		ldr	r3, .L9+4
+  73 0012 C3F80421 		str	r2, [r3, #260]
+  74 0016 7047     		bx	lr
+  75              	.L10:
+  76              		.align	2
+  77              	.L9:
+  78 0018 000C0246 		.word	1174539264
+  79 001c 007C0046 		.word	1174436864
+  81              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccxHV3G0.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 reset.c
+     /tmp/ccxHV3G0.s:16     .text.reset_get_type:0000000000000000 $t
+     /tmp/ccxHV3G0.s:25     .text.reset_get_type:0000000000000000 reset_get_type
+     /tmp/ccxHV3G0.s:52     .text.reset_get_type:000000000000002c $d
+     /tmp/ccxHV3G0.s:56     .text.reset_clear:0000000000000000 $t
+     /tmp/ccxHV3G0.s:63     .text.reset_clear:0000000000000000 reset_clear
+     /tmp/ccxHV3G0.s:78     .text.reset_clear:0000000000000018 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,2503 @@
+ARM GAS  /tmp/ccOB813v.s 			page 1
+
+
+   1              		.cpu cortex-m33
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"stm32u5xx_ll_rcc.c"
+  14              		.text
+  15              		.section	.text.LL_RCC_HSI_IsReady,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv8-m.main
+  18              		.arch_extension dsp
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu fpv4-sp-d16
+  24              	LL_RCC_HSI_IsReady:
+  25              		@ args = 0, pretend = 0, frame = 0
+  26              		@ frame_needed = 0, uses_anonymous_args = 0
+  27              		@ link register save eliminated.
+  28 0000 024B     		ldr	r3, .L2
+  29 0002 1868     		ldr	r0, [r3]
+  30 0004 C0F38020 		ubfx	r0, r0, #10, #1
+  31 0008 7047     		bx	lr
+  32              	.L3:
+  33 000a 00BF     		.align	2
+  34              	.L2:
+  35 000c 000C0246 		.word	1174539264
+  37              		.section	.text.LL_RCC_HSI48_IsReady,"ax",%progbits
+  38              		.align	1
+  39              		.syntax unified
+  40              		.thumb
+  41              		.thumb_func
+  42              		.fpu fpv4-sp-d16
+  44              	LL_RCC_HSI48_IsReady:
+  45              		@ args = 0, pretend = 0, frame = 0
+  46              		@ frame_needed = 0, uses_anonymous_args = 0
+  47              		@ link register save eliminated.
+  48 0000 024B     		ldr	r3, .L5
+  49 0002 1868     		ldr	r0, [r3]
+  50 0004 C0F34030 		ubfx	r0, r0, #13, #1
+  51 0008 7047     		bx	lr
+  52              	.L6:
+  53 000a 00BF     		.align	2
+  54              	.L5:
+  55 000c 000C0246 		.word	1174539264
+  57              		.section	.text.LL_RCC_LSE_IsReady,"ax",%progbits
+  58              		.align	1
+  59              		.syntax unified
+  60              		.thumb
+  61              		.thumb_func
+ARM GAS  /tmp/ccOB813v.s 			page 2
+
+
+  62              		.fpu fpv4-sp-d16
+  64              	LL_RCC_LSE_IsReady:
+  65              		@ args = 0, pretend = 0, frame = 0
+  66              		@ frame_needed = 0, uses_anonymous_args = 0
+  67              		@ link register save eliminated.
+  68 0000 024B     		ldr	r3, .L8
+  69 0002 D3F8F000 		ldr	r0, [r3, #240]
+  70 0006 C0F34000 		ubfx	r0, r0, #1, #1
+  71 000a 7047     		bx	lr
+  72              	.L9:
+  73              		.align	2
+  74              	.L8:
+  75 000c 000C0246 		.word	1174539264
+  77              		.section	.text.LL_RCC_MSI_IsEnabledRangeSelect,"ax",%progbits
+  78              		.align	1
+  79              		.syntax unified
+  80              		.thumb
+  81              		.thumb_func
+  82              		.fpu fpv4-sp-d16
+  84              	LL_RCC_MSI_IsEnabledRangeSelect:
+  85              		@ args = 0, pretend = 0, frame = 0
+  86              		@ frame_needed = 0, uses_anonymous_args = 0
+  87              		@ link register save eliminated.
+  88 0000 024B     		ldr	r3, .L11
+  89 0002 9868     		ldr	r0, [r3, #8]
+  90 0004 C0F3C050 		ubfx	r0, r0, #23, #1
+  91 0008 7047     		bx	lr
+  92              	.L12:
+  93 000a 00BF     		.align	2
+  94              	.L11:
+  95 000c 000C0246 		.word	1174539264
+  97              		.section	.text.LL_RCC_PLL1_IsReady,"ax",%progbits
+  98              		.align	1
+  99              		.syntax unified
+ 100              		.thumb
+ 101              		.thumb_func
+ 102              		.fpu fpv4-sp-d16
+ 104              	LL_RCC_PLL1_IsReady:
+ 105              		@ args = 0, pretend = 0, frame = 0
+ 106              		@ frame_needed = 0, uses_anonymous_args = 0
+ 107              		@ link register save eliminated.
+ 108 0000 024B     		ldr	r3, .L14
+ 109 0002 1868     		ldr	r0, [r3]
+ 110 0004 C0F34060 		ubfx	r0, r0, #25, #1
+ 111 0008 7047     		bx	lr
+ 112              	.L15:
+ 113 000a 00BF     		.align	2
+ 114              	.L14:
+ 115 000c 000C0246 		.word	1174539264
+ 117              		.section	.text.LL_RCC_PLL1_IsEnabledDomain_SAI,"ax",%progbits
+ 118              		.align	1
+ 119              		.syntax unified
+ 120              		.thumb
+ 121              		.thumb_func
+ 122              		.fpu fpv4-sp-d16
+ 124              	LL_RCC_PLL1_IsEnabledDomain_SAI:
+ 125              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  /tmp/ccOB813v.s 			page 3
+
+
+ 126              		@ frame_needed = 0, uses_anonymous_args = 0
+ 127              		@ link register save eliminated.
+ 128 0000 024B     		ldr	r3, .L17
+ 129 0002 986A     		ldr	r0, [r3, #40]
+ 130 0004 C0F30040 		ubfx	r0, r0, #16, #1
+ 131 0008 7047     		bx	lr
+ 132              	.L18:
+ 133 000a 00BF     		.align	2
+ 134              	.L17:
+ 135 000c 000C0246 		.word	1174539264
+ 137              		.section	.text.LL_RCC_PLL1_IsEnabledDomain_48M,"ax",%progbits
+ 138              		.align	1
+ 139              		.syntax unified
+ 140              		.thumb
+ 141              		.thumb_func
+ 142              		.fpu fpv4-sp-d16
+ 144              	LL_RCC_PLL1_IsEnabledDomain_48M:
+ 145              		@ args = 0, pretend = 0, frame = 0
+ 146              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147              		@ link register save eliminated.
+ 148 0000 024B     		ldr	r3, .L20
+ 149 0002 986A     		ldr	r0, [r3, #40]
+ 150 0004 C0F34040 		ubfx	r0, r0, #17, #1
+ 151 0008 7047     		bx	lr
+ 152              	.L21:
+ 153 000a 00BF     		.align	2
+ 154              	.L20:
+ 155 000c 000C0246 		.word	1174539264
+ 157              		.section	.text.LL_RCC_PLL2_IsReady,"ax",%progbits
+ 158              		.align	1
+ 159              		.syntax unified
+ 160              		.thumb
+ 161              		.thumb_func
+ 162              		.fpu fpv4-sp-d16
+ 164              	LL_RCC_PLL2_IsReady:
+ 165              		@ args = 0, pretend = 0, frame = 0
+ 166              		@ frame_needed = 0, uses_anonymous_args = 0
+ 167              		@ link register save eliminated.
+ 168 0000 024B     		ldr	r3, .L23
+ 169 0002 1868     		ldr	r0, [r3]
+ 170 0004 C0F3C060 		ubfx	r0, r0, #27, #1
+ 171 0008 7047     		bx	lr
+ 172              	.L24:
+ 173 000a 00BF     		.align	2
+ 174              	.L23:
+ 175 000c 000C0246 		.word	1174539264
+ 177              		.section	.text.RCC_GetHCLKClockFreq,"ax",%progbits
+ 178              		.align	1
+ 179              		.syntax unified
+ 180              		.thumb
+ 181              		.thumb_func
+ 182              		.fpu fpv4-sp-d16
+ 184              	RCC_GetHCLKClockFreq:
+ 185              		@ args = 0, pretend = 0, frame = 0
+ 186              		@ frame_needed = 0, uses_anonymous_args = 0
+ 187              		@ link register save eliminated.
+ 188 0000 034B     		ldr	r3, .L26
+ARM GAS  /tmp/ccOB813v.s 			page 4
+
+
+ 189 0002 044A     		ldr	r2, .L26+4
+ 190 0004 1B6A     		ldr	r3, [r3, #32]
+ 191 0006 03F00F03 		and	r3, r3, #15
+ 192 000a D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 193 000c D840     		lsrs	r0, r0, r3
+ 194 000e 7047     		bx	lr
+ 195              	.L27:
+ 196              		.align	2
+ 197              	.L26:
+ 198 0010 000C0246 		.word	1174539264
+ 199 0014 00000000 		.word	AHBPrescTable
+ 201              		.section	.text.RCC_GetPCLK1ClockFreq,"ax",%progbits
+ 202              		.align	1
+ 203              		.syntax unified
+ 204              		.thumb
+ 205              		.thumb_func
+ 206              		.fpu fpv4-sp-d16
+ 208              	RCC_GetPCLK1ClockFreq:
+ 209              		@ args = 0, pretend = 0, frame = 0
+ 210              		@ frame_needed = 0, uses_anonymous_args = 0
+ 211              		@ link register save eliminated.
+ 212 0000 034B     		ldr	r3, .L29
+ 213 0002 044A     		ldr	r2, .L29+4
+ 214 0004 1B6A     		ldr	r3, [r3, #32]
+ 215 0006 C3F30213 		ubfx	r3, r3, #4, #3
+ 216 000a D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 217 000c D840     		lsrs	r0, r0, r3
+ 218 000e 7047     		bx	lr
+ 219              	.L30:
+ 220              		.align	2
+ 221              	.L29:
+ 222 0010 000C0246 		.word	1174539264
+ 223 0014 00000000 		.word	APBPrescTable
+ 225              		.section	.text.RCC_GetPCLK3ClockFreq,"ax",%progbits
+ 226              		.align	1
+ 227              		.syntax unified
+ 228              		.thumb
+ 229              		.thumb_func
+ 230              		.fpu fpv4-sp-d16
+ 232              	RCC_GetPCLK3ClockFreq:
+ 233              		@ args = 0, pretend = 0, frame = 0
+ 234              		@ frame_needed = 0, uses_anonymous_args = 0
+ 235              		@ link register save eliminated.
+ 236 0000 034B     		ldr	r3, .L32
+ 237 0002 044A     		ldr	r2, .L32+4
+ 238 0004 5B6A     		ldr	r3, [r3, #36]
+ 239 0006 C3F30213 		ubfx	r3, r3, #4, #3
+ 240 000a D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 241 000c D840     		lsrs	r0, r0, r3
+ 242 000e 7047     		bx	lr
+ 243              	.L33:
+ 244              		.align	2
+ 245              	.L32:
+ 246 0010 000C0246 		.word	1174539264
+ 247 0014 00000000 		.word	APBPrescTable
+ 249              		.section	.text.RCC_GetSystemClockFreq,"ax",%progbits
+ 250              		.align	1
+ARM GAS  /tmp/ccOB813v.s 			page 5
+
+
+ 251              		.syntax unified
+ 252              		.thumb
+ 253              		.thumb_func
+ 254              		.fpu fpv4-sp-d16
+ 256              	RCC_GetSystemClockFreq:
+ 257              		@ args = 0, pretend = 0, frame = 0
+ 258              		@ frame_needed = 0, uses_anonymous_args = 0
+ 259 0000 414A     		ldr	r2, .L74
+ 260 0002 10B5     		push	{r4, lr}
+ 261 0004 D169     		ldr	r1, [r2, #28]
+ 262 0006 01F00C01 		and	r1, r1, #12
+ 263 000a 0829     		cmp	r1, #8
+ 264 000c 78D0     		beq	.L62
+ 265 000e 12D8     		bhi	.L36
+ 266 0010 0029     		cmp	r1, #0
+ 267 0012 39D0     		beq	.L37
+ 268 0014 0429     		cmp	r1, #4
+ 269 0016 75D0     		beq	.L63
+ 270              	.L38:
+ 271 0018 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 272 001c 0128     		cmp	r0, #1
+ 273 001e 3A4A     		ldr	r2, .L74
+ 274 0020 3A49     		ldr	r1, .L74+4
+ 275 0022 62D1     		bne	.L57
+ 276 0024 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 277 0028 0128     		cmp	r0, #1
+ 278 002a 5AD1     		bne	.L58
+ 279 002c 9368     		ldr	r3, [r2, #8]
+ 280 002e 1B0F     		lsrs	r3, r3, #28
+ 281              	.L61:
+ 282 0030 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 283 0034 37E0     		b	.L34
+ 284              	.L36:
+ 285 0036 0C29     		cmp	r1, #12
+ 286 0038 EED1     		bne	.L38
+ 287 003a 936A     		ldr	r3, [r2, #40]
+ 288 003c 03F00303 		and	r3, r3, #3
+ 289 0040 022B     		cmp	r3, #2
+ 290 0042 4AD0     		beq	.L64
+ 291 0044 032B     		cmp	r3, #3
+ 292 0046 4AD0     		beq	.L65
+ 293 0048 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 294 004c 0128     		cmp	r0, #1
+ 295 004e 2F49     		ldr	r1, .L74+4
+ 296 0050 38D1     		bne	.L52
+ 297 0052 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 298 0056 0128     		cmp	r0, #1
+ 299 0058 30D1     		bne	.L53
+ 300 005a 9368     		ldr	r3, [r2, #8]
+ 301 005c 1B0F     		lsrs	r3, r3, #28
+ 302              	.L56:
+ 303 005e 51F82330 		ldr	r3, [r1, r3, lsl #2]
+ 304              	.L45:
+ 305 0062 2948     		ldr	r0, .L74
+ 306 0064 826A     		ldr	r2, [r0, #40]
+ 307 0066 416B     		ldr	r1, [r0, #52]
+ 308 0068 C2F30322 		ubfx	r2, r2, #8, #4
+ARM GAS  /tmp/ccOB813v.s 			page 6
+
+
+ 309 006c 0132     		adds	r2, r2, #1
+ 310 006e B3FBF2F3 		udiv	r3, r3, r2
+ 311 0072 C1F30802 		ubfx	r2, r1, #0, #9
+ 312 0076 02FB0333 		mla	r3, r2, r3, r3
+ 313 007a 406B     		ldr	r0, [r0, #52]
+ 314 007c C0F30660 		ubfx	r0, r0, #24, #7
+ 315 0080 0130     		adds	r0, r0, #1
+ 316 0082 B3FBF0F0 		udiv	r0, r3, r0
+ 317 0086 0EE0     		b	.L34
+ 318              	.L37:
+ 319 0088 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 320 008c 0128     		cmp	r0, #1
+ 321 008e 1F4C     		ldr	r4, .L74+4
+ 322 0090 0AD1     		bne	.L40
+ 323 0092 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 324 0096 0128     		cmp	r0, #1
+ 325 0098 0ABF     		itet	eq
+ 326 009a 9168     		ldreq	r1, [r2, #8]
+ 327 009c D2F8F430 		ldrne	r3, [r2, #244]
+ 328 00a0 090F     		lsreq	r1, r1, #28
+ 329              	.L44:
+ 330 00a2 54F82100 		ldr	r0, [r4, r1, lsl #2]
+ 331              	.L34:
+ 332 00a6 10BD     		pop	{r4, pc}
+ 333              	.L40:
+ 334 00a8 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 335 00ac 0128     		cmp	r0, #1
+ 336 00ae 16BF     		itet	ne
+ 337 00b0 D2F8F410 		ldrne	r1, [r2, #244]
+ 338 00b4 9368     		ldreq	r3, [r2, #8]
+ 339 00b6 C1F30331 		ubfxne	r1, r1, #12, #4
+ 340 00ba F2E7     		b	.L44
+ 341              	.L53:
+ 342 00bc D2F8F430 		ldr	r3, [r2, #244]
+ 343              	.L66:
+ 344 00c0 0023     		movs	r3, #0
+ 345 00c2 CCE7     		b	.L56
+ 346              	.L52:
+ 347 00c4 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 348 00c8 0128     		cmp	r0, #1
+ 349 00ca 01D1     		bne	.L55
+ 350 00cc 9368     		ldr	r3, [r2, #8]
+ 351 00ce F7E7     		b	.L66
+ 352              	.L55:
+ 353 00d0 D2F8F430 		ldr	r3, [r2, #244]
+ 354 00d4 C3F30333 		ubfx	r3, r3, #12, #4
+ 355 00d8 C1E7     		b	.L56
+ 356              	.L64:
+ 357 00da 0D4B     		ldr	r3, .L74+8
+ 358 00dc C1E7     		b	.L45
+ 359              	.L65:
+ 360 00de 0D4B     		ldr	r3, .L74+12
+ 361 00e0 BFE7     		b	.L45
+ 362              	.L58:
+ 363 00e2 D2F8F430 		ldr	r3, [r2, #244]
+ 364              	.L69:
+ 365 00e6 0023     		movs	r3, #0
+ARM GAS  /tmp/ccOB813v.s 			page 7
+
+
+ 366 00e8 A2E7     		b	.L61
+ 367              	.L57:
+ 368 00ea FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 369 00ee 0128     		cmp	r0, #1
+ 370 00f0 01D1     		bne	.L60
+ 371 00f2 9368     		ldr	r3, [r2, #8]
+ 372 00f4 F7E7     		b	.L69
+ 373              	.L60:
+ 374 00f6 D2F8F430 		ldr	r3, [r2, #244]
+ 375 00fa C3F30333 		ubfx	r3, r3, #12, #4
+ 376 00fe 97E7     		b	.L61
+ 377              	.L62:
+ 378 0100 0448     		ldr	r0, .L74+12
+ 379 0102 D0E7     		b	.L34
+ 380              	.L63:
+ 381 0104 0248     		ldr	r0, .L74+8
+ 382 0106 CEE7     		b	.L34
+ 383              	.L75:
+ 384              		.align	2
+ 385              	.L74:
+ 386 0108 000C0246 		.word	1174539264
+ 387 010c 00000000 		.word	MSIRangeTable
+ 388 0110 0024F400 		.word	16000000
+ 389 0114 00127A00 		.word	8000000
+ 391              		.section	.text.RCC_PLL2_GetFreqDomain_SAI,"ax",%progbits
+ 392              		.align	1
+ 393              		.syntax unified
+ 394              		.thumb
+ 395              		.thumb_func
+ 396              		.fpu fpv4-sp-d16
+ 398              	RCC_PLL2_GetFreqDomain_SAI:
+ 399              		@ args = 0, pretend = 0, frame = 0
+ 400              		@ frame_needed = 0, uses_anonymous_args = 0
+ 401 0000 204A     		ldr	r2, .L101
+ 402 0002 38B5     		push	{r3, r4, r5, lr}
+ 403 0004 D36A     		ldr	r3, [r2, #44]
+ 404 0006 03F00303 		and	r3, r3, #3
+ 405 000a 022B     		cmp	r3, #2
+ 406 000c 33D0     		beq	.L90
+ 407 000e 032B     		cmp	r3, #3
+ 408 0010 33D0     		beq	.L91
+ 409 0012 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 410 0016 0128     		cmp	r0, #1
+ 411 0018 1B49     		ldr	r1, .L101+4
+ 412 001a 21D1     		bne	.L84
+ 413 001c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 414 0020 0128     		cmp	r0, #1
+ 415 0022 19D1     		bne	.L85
+ 416 0024 9368     		ldr	r3, [r2, #8]
+ 417 0026 1B0F     		lsrs	r3, r3, #28
+ 418              	.L88:
+ 419 0028 51F82330 		ldr	r3, [r1, r3, lsl #2]
+ 420              	.L77:
+ 421 002c 154C     		ldr	r4, .L101
+ 422 002e E06B     		ldr	r0, [r4, #60]
+ 423 0030 E16B     		ldr	r1, [r4, #60]
+ 424 0032 C0F30800 		ubfx	r0, r0, #0, #9
+ARM GAS  /tmp/ccOB813v.s 			page 8
+
+
+ 425 0036 421C     		adds	r2, r0, #1
+ 426 0038 072A     		cmp	r2, #7
+ 427 003a 20D9     		bls	.L93
+ 428 003c C1F34621 		ubfx	r1, r1, #9, #7
+ 429 0040 4D1C     		adds	r5, r1, #1
+ 430 0042 E1B1     		cbz	r1, .L93
+ 431 0044 E06A     		ldr	r0, [r4, #44]
+ 432 0046 C0F30320 		ubfx	r0, r0, #8, #4
+ 433 004a 0130     		adds	r0, r0, #1
+ 434 004c B3FBF0F0 		udiv	r0, r3, r0
+ 435 0050 5043     		muls	r0, r2, r0
+ 436 0052 B0FBF5F0 		udiv	r0, r0, r5
+ 437              	.L76:
+ 438 0056 38BD     		pop	{r3, r4, r5, pc}
+ 439              	.L85:
+ 440 0058 D2F8F430 		ldr	r3, [r2, #244]
+ 441              	.L94:
+ 442 005c 0023     		movs	r3, #0
+ 443 005e E3E7     		b	.L88
+ 444              	.L84:
+ 445 0060 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 446 0064 0128     		cmp	r0, #1
+ 447 0066 01D1     		bne	.L87
+ 448 0068 9368     		ldr	r3, [r2, #8]
+ 449 006a F7E7     		b	.L94
+ 450              	.L87:
+ 451 006c D2F8F430 		ldr	r3, [r2, #244]
+ 452 0070 C3F30333 		ubfx	r3, r3, #12, #4
+ 453 0074 D8E7     		b	.L88
+ 454              	.L90:
+ 455 0076 054B     		ldr	r3, .L101+8
+ 456 0078 D8E7     		b	.L77
+ 457              	.L91:
+ 458 007a 054B     		ldr	r3, .L101+12
+ 459 007c D6E7     		b	.L77
+ 460              	.L93:
+ 461 007e 0020     		movs	r0, #0
+ 462 0080 E9E7     		b	.L76
+ 463              	.L102:
+ 464 0082 00BF     		.align	2
+ 465              	.L101:
+ 466 0084 000C0246 		.word	1174539264
+ 467 0088 00000000 		.word	MSIRangeTable
+ 468 008c 0024F400 		.word	16000000
+ 469 0090 00127A00 		.word	8000000
+ 471              		.section	.text.RCC_PLL3_GetFreqDomain_48M,"ax",%progbits
+ 472              		.align	1
+ 473              		.syntax unified
+ 474              		.thumb
+ 475              		.thumb_func
+ 476              		.fpu fpv4-sp-d16
+ 478              	RCC_PLL3_GetFreqDomain_48M:
+ 479              		@ args = 0, pretend = 0, frame = 0
+ 480              		@ frame_needed = 0, uses_anonymous_args = 0
+ 481 0000 1D4A     		ldr	r2, .L125
+ 482 0002 08B5     		push	{r3, lr}
+ 483 0004 136B     		ldr	r3, [r2, #48]
+ARM GAS  /tmp/ccOB813v.s 			page 9
+
+
+ 484 0006 03F00303 		and	r3, r3, #3
+ 485 000a 022B     		cmp	r3, #2
+ 486 000c 30D0     		beq	.L116
+ 487 000e 032B     		cmp	r3, #3
+ 488 0010 30D0     		beq	.L117
+ 489 0012 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 490 0016 0128     		cmp	r0, #1
+ 491 0018 1849     		ldr	r1, .L125+4
+ 492 001a 1ED1     		bne	.L111
+ 493 001c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 494 0020 0128     		cmp	r0, #1
+ 495 0022 16D1     		bne	.L112
+ 496 0024 9368     		ldr	r3, [r2, #8]
+ 497 0026 1B0F     		lsrs	r3, r3, #28
+ 498              	.L115:
+ 499 0028 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 500              	.L104:
+ 501 002c 124B     		ldr	r3, .L125
+ 502 002e 1A6B     		ldr	r2, [r3, #48]
+ 503 0030 596C     		ldr	r1, [r3, #68]
+ 504 0032 C2F30322 		ubfx	r2, r2, #8, #4
+ 505 0036 0132     		adds	r2, r2, #1
+ 506 0038 B0FBF2F0 		udiv	r0, r0, r2
+ 507 003c C1F30802 		ubfx	r2, r1, #0, #9
+ 508 0040 02FB0000 		mla	r0, r2, r0, r0
+ 509 0044 5B6C     		ldr	r3, [r3, #68]
+ 510 0046 C3F30643 		ubfx	r3, r3, #16, #7
+ 511 004a 0133     		adds	r3, r3, #1
+ 512 004c B0FBF3F0 		udiv	r0, r0, r3
+ 513 0050 08BD     		pop	{r3, pc}
+ 514              	.L112:
+ 515 0052 D2F8F430 		ldr	r3, [r2, #244]
+ 516              	.L118:
+ 517 0056 0023     		movs	r3, #0
+ 518 0058 E6E7     		b	.L115
+ 519              	.L111:
+ 520 005a FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 521 005e 0128     		cmp	r0, #1
+ 522 0060 01D1     		bne	.L114
+ 523 0062 9368     		ldr	r3, [r2, #8]
+ 524 0064 F7E7     		b	.L118
+ 525              	.L114:
+ 526 0066 D2F8F430 		ldr	r3, [r2, #244]
+ 527 006a C3F30333 		ubfx	r3, r3, #12, #4
+ 528 006e DBE7     		b	.L115
+ 529              	.L116:
+ 530 0070 0348     		ldr	r0, .L125+8
+ 531 0072 DBE7     		b	.L104
+ 532              	.L117:
+ 533 0074 0348     		ldr	r0, .L125+12
+ 534 0076 D9E7     		b	.L104
+ 535              	.L126:
+ 536              		.align	2
+ 537              	.L125:
+ 538 0078 000C0246 		.word	1174539264
+ 539 007c 00000000 		.word	MSIRangeTable
+ 540 0080 0024F400 		.word	16000000
+ARM GAS  /tmp/ccOB813v.s 			page 10
+
+
+ 541 0084 00127A00 		.word	8000000
+ 543              		.section	.text.RCC_PLL2_GetFreqDomain_48M,"ax",%progbits
+ 544              		.align	1
+ 545              		.syntax unified
+ 546              		.thumb
+ 547              		.thumb_func
+ 548              		.fpu fpv4-sp-d16
+ 550              	RCC_PLL2_GetFreqDomain_48M:
+ 551              		@ args = 0, pretend = 0, frame = 0
+ 552              		@ frame_needed = 0, uses_anonymous_args = 0
+ 553 0000 1D4A     		ldr	r2, .L149
+ 554 0002 08B5     		push	{r3, lr}
+ 555 0004 D36A     		ldr	r3, [r2, #44]
+ 556 0006 03F00303 		and	r3, r3, #3
+ 557 000a 022B     		cmp	r3, #2
+ 558 000c 30D0     		beq	.L140
+ 559 000e 032B     		cmp	r3, #3
+ 560 0010 30D0     		beq	.L141
+ 561 0012 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 562 0016 0128     		cmp	r0, #1
+ 563 0018 1849     		ldr	r1, .L149+4
+ 564 001a 1ED1     		bne	.L135
+ 565 001c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 566 0020 0128     		cmp	r0, #1
+ 567 0022 16D1     		bne	.L136
+ 568 0024 9368     		ldr	r3, [r2, #8]
+ 569 0026 1B0F     		lsrs	r3, r3, #28
+ 570              	.L139:
+ 571 0028 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 572              	.L128:
+ 573 002c 124B     		ldr	r3, .L149
+ 574 002e DA6A     		ldr	r2, [r3, #44]
+ 575 0030 D96B     		ldr	r1, [r3, #60]
+ 576 0032 C2F30322 		ubfx	r2, r2, #8, #4
+ 577 0036 0132     		adds	r2, r2, #1
+ 578 0038 B0FBF2F0 		udiv	r0, r0, r2
+ 579 003c C1F30802 		ubfx	r2, r1, #0, #9
+ 580 0040 02FB0000 		mla	r0, r2, r0, r0
+ 581 0044 DB6B     		ldr	r3, [r3, #60]
+ 582 0046 C3F30643 		ubfx	r3, r3, #16, #7
+ 583 004a 0133     		adds	r3, r3, #1
+ 584 004c B0FBF3F0 		udiv	r0, r0, r3
+ 585 0050 08BD     		pop	{r3, pc}
+ 586              	.L136:
+ 587 0052 D2F8F430 		ldr	r3, [r2, #244]
+ 588              	.L142:
+ 589 0056 0023     		movs	r3, #0
+ 590 0058 E6E7     		b	.L139
+ 591              	.L135:
+ 592 005a FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 593 005e 0128     		cmp	r0, #1
+ 594 0060 01D1     		bne	.L138
+ 595 0062 9368     		ldr	r3, [r2, #8]
+ 596 0064 F7E7     		b	.L142
+ 597              	.L138:
+ 598 0066 D2F8F430 		ldr	r3, [r2, #244]
+ 599 006a C3F30333 		ubfx	r3, r3, #12, #4
+ARM GAS  /tmp/ccOB813v.s 			page 11
+
+
+ 600 006e DBE7     		b	.L139
+ 601              	.L140:
+ 602 0070 0348     		ldr	r0, .L149+8
+ 603 0072 DBE7     		b	.L128
+ 604              	.L141:
+ 605 0074 0348     		ldr	r0, .L149+12
+ 606 0076 D9E7     		b	.L128
+ 607              	.L150:
+ 608              		.align	2
+ 609              	.L149:
+ 610 0078 000C0246 		.word	1174539264
+ 611 007c 00000000 		.word	MSIRangeTable
+ 612 0080 0024F400 		.word	16000000
+ 613 0084 00127A00 		.word	8000000
+ 615              		.thumb_set RCC_PLL2_GetFreqDomain_ADC,RCC_PLL2_GetFreqDomain_48M
+ 616              		.section	.text.RCC_PLL1_GetFreqDomain_48M,"ax",%progbits
+ 617              		.align	1
+ 618              		.syntax unified
+ 619              		.thumb
+ 620              		.thumb_func
+ 621              		.fpu fpv4-sp-d16
+ 623              	RCC_PLL1_GetFreqDomain_48M:
+ 624              		@ args = 0, pretend = 0, frame = 0
+ 625              		@ frame_needed = 0, uses_anonymous_args = 0
+ 626 0000 1D4A     		ldr	r2, .L173
+ 627 0002 08B5     		push	{r3, lr}
+ 628 0004 936A     		ldr	r3, [r2, #40]
+ 629 0006 03F00303 		and	r3, r3, #3
+ 630 000a 022B     		cmp	r3, #2
+ 631 000c 30D0     		beq	.L164
+ 632 000e 032B     		cmp	r3, #3
+ 633 0010 30D0     		beq	.L165
+ 634 0012 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 635 0016 0128     		cmp	r0, #1
+ 636 0018 1849     		ldr	r1, .L173+4
+ 637 001a 1ED1     		bne	.L159
+ 638 001c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 639 0020 0128     		cmp	r0, #1
+ 640 0022 16D1     		bne	.L160
+ 641 0024 9368     		ldr	r3, [r2, #8]
+ 642 0026 1B0F     		lsrs	r3, r3, #28
+ 643              	.L163:
+ 644 0028 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 645              	.L152:
+ 646 002c 124B     		ldr	r3, .L173
+ 647 002e 9A6A     		ldr	r2, [r3, #40]
+ 648 0030 596B     		ldr	r1, [r3, #52]
+ 649 0032 C2F30322 		ubfx	r2, r2, #8, #4
+ 650 0036 0132     		adds	r2, r2, #1
+ 651 0038 B0FBF2F0 		udiv	r0, r0, r2
+ 652 003c C1F30802 		ubfx	r2, r1, #0, #9
+ 653 0040 02FB0000 		mla	r0, r2, r0, r0
+ 654 0044 5B6B     		ldr	r3, [r3, #52]
+ 655 0046 C3F30643 		ubfx	r3, r3, #16, #7
+ 656 004a 0133     		adds	r3, r3, #1
+ 657 004c B0FBF3F0 		udiv	r0, r0, r3
+ 658 0050 08BD     		pop	{r3, pc}
+ARM GAS  /tmp/ccOB813v.s 			page 12
+
+
+ 659              	.L160:
+ 660 0052 D2F8F430 		ldr	r3, [r2, #244]
+ 661              	.L166:
+ 662 0056 0023     		movs	r3, #0
+ 663 0058 E6E7     		b	.L163
+ 664              	.L159:
+ 665 005a FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 666 005e 0128     		cmp	r0, #1
+ 667 0060 01D1     		bne	.L162
+ 668 0062 9368     		ldr	r3, [r2, #8]
+ 669 0064 F7E7     		b	.L166
+ 670              	.L162:
+ 671 0066 D2F8F430 		ldr	r3, [r2, #244]
+ 672 006a C3F30333 		ubfx	r3, r3, #12, #4
+ 673 006e DBE7     		b	.L163
+ 674              	.L164:
+ 675 0070 0348     		ldr	r0, .L173+8
+ 676 0072 DBE7     		b	.L152
+ 677              	.L165:
+ 678 0074 0348     		ldr	r0, .L173+12
+ 679 0076 D9E7     		b	.L152
+ 680              	.L174:
+ 681              		.align	2
+ 682              	.L173:
+ 683 0078 000C0246 		.word	1174539264
+ 684 007c 00000000 		.word	MSIRangeTable
+ 685 0080 0024F400 		.word	16000000
+ 686 0084 00127A00 		.word	8000000
+ 688              		.section	.text.RCC_PLL1_GetFreqDomain_SAI,"ax",%progbits
+ 689              		.align	1
+ 690              		.syntax unified
+ 691              		.thumb
+ 692              		.thumb_func
+ 693              		.fpu fpv4-sp-d16
+ 695              	RCC_PLL1_GetFreqDomain_SAI:
+ 696              		@ args = 0, pretend = 0, frame = 0
+ 697              		@ frame_needed = 0, uses_anonymous_args = 0
+ 698 0000 204A     		ldr	r2, .L200
+ 699 0002 38B5     		push	{r3, r4, r5, lr}
+ 700 0004 936A     		ldr	r3, [r2, #40]
+ 701 0006 03F00303 		and	r3, r3, #3
+ 702 000a 022B     		cmp	r3, #2
+ 703 000c 33D0     		beq	.L189
+ 704 000e 032B     		cmp	r3, #3
+ 705 0010 33D0     		beq	.L190
+ 706 0012 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 707 0016 0128     		cmp	r0, #1
+ 708 0018 1B49     		ldr	r1, .L200+4
+ 709 001a 21D1     		bne	.L183
+ 710 001c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 711 0020 0128     		cmp	r0, #1
+ 712 0022 19D1     		bne	.L184
+ 713 0024 9368     		ldr	r3, [r2, #8]
+ 714 0026 1B0F     		lsrs	r3, r3, #28
+ 715              	.L187:
+ 716 0028 51F82330 		ldr	r3, [r1, r3, lsl #2]
+ 717              	.L176:
+ARM GAS  /tmp/ccOB813v.s 			page 13
+
+
+ 718 002c 154C     		ldr	r4, .L200
+ 719 002e 606B     		ldr	r0, [r4, #52]
+ 720 0030 616B     		ldr	r1, [r4, #52]
+ 721 0032 C0F30800 		ubfx	r0, r0, #0, #9
+ 722 0036 421C     		adds	r2, r0, #1
+ 723 0038 072A     		cmp	r2, #7
+ 724 003a 20D9     		bls	.L192
+ 725 003c C1F34621 		ubfx	r1, r1, #9, #7
+ 726 0040 4D1C     		adds	r5, r1, #1
+ 727 0042 E1B1     		cbz	r1, .L192
+ 728 0044 A06A     		ldr	r0, [r4, #40]
+ 729 0046 C0F30320 		ubfx	r0, r0, #8, #4
+ 730 004a 0130     		adds	r0, r0, #1
+ 731 004c B3FBF0F0 		udiv	r0, r3, r0
+ 732 0050 5043     		muls	r0, r2, r0
+ 733 0052 B0FBF5F0 		udiv	r0, r0, r5
+ 734              	.L175:
+ 735 0056 38BD     		pop	{r3, r4, r5, pc}
+ 736              	.L184:
+ 737 0058 D2F8F430 		ldr	r3, [r2, #244]
+ 738              	.L193:
+ 739 005c 0023     		movs	r3, #0
+ 740 005e E3E7     		b	.L187
+ 741              	.L183:
+ 742 0060 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 743 0064 0128     		cmp	r0, #1
+ 744 0066 01D1     		bne	.L186
+ 745 0068 9368     		ldr	r3, [r2, #8]
+ 746 006a F7E7     		b	.L193
+ 747              	.L186:
+ 748 006c D2F8F430 		ldr	r3, [r2, #244]
+ 749 0070 C3F30333 		ubfx	r3, r3, #12, #4
+ 750 0074 D8E7     		b	.L187
+ 751              	.L189:
+ 752 0076 054B     		ldr	r3, .L200+8
+ 753 0078 D8E7     		b	.L176
+ 754              	.L190:
+ 755 007a 054B     		ldr	r3, .L200+12
+ 756 007c D6E7     		b	.L176
+ 757              	.L192:
+ 758 007e 0020     		movs	r0, #0
+ 759 0080 E9E7     		b	.L175
+ 760              	.L201:
+ 761 0082 00BF     		.align	2
+ 762              	.L200:
+ 763 0084 000C0246 		.word	1174539264
+ 764 0088 00000000 		.word	MSIRangeTable
+ 765 008c 0024F400 		.word	16000000
+ 766 0090 00127A00 		.word	8000000
+ 768              		.section	.text.LL_RCC_DeInit,"ax",%progbits
+ 769              		.align	1
+ 770              		.global	LL_RCC_DeInit
+ 771              		.syntax unified
+ 772              		.thumb
+ 773              		.thumb_func
+ 774              		.fpu fpv4-sp-d16
+ 776              	LL_RCC_DeInit:
+ARM GAS  /tmp/ccOB813v.s 			page 14
+
+
+ 777              		@ args = 0, pretend = 0, frame = 0
+ 778              		@ frame_needed = 0, uses_anonymous_args = 0
+ 779              		@ link register save eliminated.
+ 780 0000 1B4B     		ldr	r3, .L208
+ 781 0002 1A68     		ldr	r2, [r3]
+ 782 0004 42F00102 		orr	r2, r2, #1
+ 783 0008 1A60     		str	r2, [r3]
+ 784              	.L203:
+ 785 000a 1A68     		ldr	r2, [r3]
+ 786 000c 5207     		lsls	r2, r2, #29
+ 787 000e FCD5     		bpl	.L203
+ 788 0010 9A68     		ldr	r2, [r3, #8]
+ 789 0012 22F07042 		bic	r2, r2, #-268435456
+ 790 0016 42F08042 		orr	r2, r2, #1073741824
+ 791 001a 9A60     		str	r2, [r3, #8]
+ 792 001c DA68     		ldr	r2, [r3, #12]
+ 793 001e 22F4F842 		bic	r2, r2, #31744
+ 794 0022 DA60     		str	r2, [r3, #12]
+ 795 0024 1A69     		ldr	r2, [r3, #16]
+ 796 0026 22F4F812 		bic	r2, r2, #2031616
+ 797 002a 42F48002 		orr	r2, r2, #4194304
+ 798 002e 1A61     		str	r2, [r3, #16]
+ 799 0030 0022     		movs	r2, #0
+ 800 0032 DA61     		str	r2, [r3, #28]
+ 801 0034 1A62     		str	r2, [r3, #32]
+ 802 0036 5A62     		str	r2, [r3, #36]
+ 803 0038 1968     		ldr	r1, [r3]
+ 804 003a 0E4A     		ldr	r2, .L208+4
+ 805 003c 0A40     		ands	r2, r2, r1
+ 806 003e 1A60     		str	r2, [r3]
+ 807 0040 0B4B     		ldr	r3, .L208
+ 808              	.L204:
+ 809 0042 1868     		ldr	r0, [r3]
+ 810 0044 10F02850 		ands	r0, r0, #704643072
+ 811 0048 FBD1     		bne	.L204
+ 812 004a 0B4A     		ldr	r2, .L208+8
+ 813 004c 5A63     		str	r2, [r3, #52]
+ 814 004e DA63     		str	r2, [r3, #60]
+ 815 0050 5A64     		str	r2, [r3, #68]
+ 816 0052 1A68     		ldr	r2, [r3]
+ 817 0054 22F48022 		bic	r2, r2, #262144
+ 818 0058 1A60     		str	r2, [r3]
+ 819 005a 40F6FF52 		movw	r2, #3583
+ 820 005e 1865     		str	r0, [r3, #80]
+ 821 0060 9A65     		str	r2, [r3, #88]
+ 822 0062 D3F8F420 		ldr	r2, [r3, #244]
+ 823 0066 42F40002 		orr	r2, r2, #8388608
+ 824 006a C3F8F420 		str	r2, [r3, #244]
+ 825 006e 7047     		bx	lr
+ 826              	.L209:
+ 827              		.align	2
+ 828              	.L208:
+ 829 0070 000C0246 		.word	1174539264
+ 830 0074 FFFCFEEA 		.word	-352387841
+ 831 0078 80020101 		.word	16843392
+ 833              		.section	.text.LL_RCC_GetSystemClocksFreq,"ax",%progbits
+ 834              		.align	1
+ARM GAS  /tmp/ccOB813v.s 			page 15
+
+
+ 835              		.global	LL_RCC_GetSystemClocksFreq
+ 836              		.syntax unified
+ 837              		.thumb
+ 838              		.thumb_func
+ 839              		.fpu fpv4-sp-d16
+ 841              	LL_RCC_GetSystemClocksFreq:
+ 842              		@ args = 0, pretend = 0, frame = 0
+ 843              		@ frame_needed = 0, uses_anonymous_args = 0
+ 844 0000 10B5     		push	{r4, lr}
+ 845 0002 0446     		mov	r4, r0
+ 846 0004 FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 847 0008 2060     		str	r0, [r4]
+ 848 000a FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 849 000e 6060     		str	r0, [r4, #4]
+ 850 0010 FFF7FEFF 		bl	RCC_GetPCLK1ClockFreq
+ 851 0014 074B     		ldr	r3, .L211
+ 852 0016 A060     		str	r0, [r4, #8]
+ 853 0018 1B6A     		ldr	r3, [r3, #32]
+ 854 001a 074A     		ldr	r2, .L211+4
+ 855 001c C3F30223 		ubfx	r3, r3, #8, #3
+ 856 0020 6068     		ldr	r0, [r4, #4]
+ 857 0022 D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 858 0024 20FA03F3 		lsr	r3, r0, r3
+ 859 0028 E360     		str	r3, [r4, #12]
+ 860 002a FFF7FEFF 		bl	RCC_GetPCLK3ClockFreq
+ 861 002e 2061     		str	r0, [r4, #16]
+ 862 0030 10BD     		pop	{r4, pc}
+ 863              	.L212:
+ 864 0032 00BF     		.align	2
+ 865              	.L211:
+ 866 0034 000C0246 		.word	1174539264
+ 867 0038 00000000 		.word	APBPrescTable
+ 869              		.section	.text.LL_RCC_GetUSARTClockFreq,"ax",%progbits
+ 870              		.align	1
+ 871              		.global	LL_RCC_GetUSARTClockFreq
+ 872              		.syntax unified
+ 873              		.thumb
+ 874              		.thumb_func
+ 875              		.fpu fpv4-sp-d16
+ 877              	LL_RCC_GetUSARTClockFreq:
+ 878              		@ args = 0, pretend = 0, frame = 0
+ 879              		@ frame_needed = 0, uses_anonymous_args = 0
+ 880 0000 0328     		cmp	r0, #3
+ 881 0002 08B5     		push	{r3, lr}
+ 882 0004 27D1     		bne	.L214
+ 883 0006 224B     		ldr	r3, .L229
+ 884 0008 D3F8E03C 		ldr	r3, [r3, #3296]
+ 885 000c 03F00303 		and	r3, r3, #3
+ 886 0010 022B     		cmp	r3, #2
+ 887 0012 07D0     		beq	.L215
+ 888 0014 032B     		cmp	r3, #3
+ 889 0016 0BD0     		beq	.L216
+ 890 0018 012B     		cmp	r3, #1
+ 891 001a 10D1     		bne	.L217
+ 892              	.L220:
+ 893 001c BDE80840 		pop	{r3, lr}
+ 894 0020 FFF7FEBF 		b	RCC_GetSystemClockFreq
+ARM GAS  /tmp/ccOB813v.s 			page 16
+
+
+ 895              	.L215:
+ 896 0024 FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 897 0028 0128     		cmp	r0, #1
+ 898 002a 2ED0     		beq	.L221
+ 899              	.L219:
+ 900 002c 0020     		movs	r0, #0
+ 901              	.L213:
+ 902 002e 08BD     		pop	{r3, pc}
+ 903              	.L216:
+ 904 0030 FFF7FEFF 		bl	LL_RCC_LSE_IsReady
+ 905 0034 0128     		cmp	r0, #1
+ 906 0036 F9D1     		bne	.L219
+ 907 0038 4FF40040 		mov	r0, #32768
+ 908 003c F7E7     		b	.L213
+ 909              	.L217:
+ 910 003e FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 911 0042 FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 912 0046 134B     		ldr	r3, .L229+4
+ 913 0048 134A     		ldr	r2, .L229+8
+ 914 004a 1B6A     		ldr	r3, [r3, #32]
+ 915 004c C3F30223 		ubfx	r3, r3, #8, #3
+ 916 0050 D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 917 0052 D840     		lsrs	r0, r0, r3
+ 918 0054 EBE7     		b	.L213
+ 919              	.L214:
+ 920 0056 114B     		ldr	r3, .L229+12
+ 921 0058 9842     		cmp	r0, r3
+ 922 005a E7D1     		bne	.L219
+ 923 005c 0C4B     		ldr	r3, .L229
+ 924 005e 104A     		ldr	r2, .L229+16
+ 925 0060 D3F8E03C 		ldr	r3, [r3, #3296]
+ 926 0064 C3F30113 		ubfx	r3, r3, #4, #2
+ 927 0068 43F48023 		orr	r3, r3, #262144
+ 928 006c 9342     		cmp	r3, r2
+ 929 006e D9D0     		beq	.L215
+ 930 0070 8342     		cmp	r3, r0
+ 931 0072 DDD0     		beq	.L216
+ 932 0074 013A     		subs	r2, r2, #1
+ 933 0076 9342     		cmp	r3, r2
+ 934 0078 D0D0     		beq	.L220
+ 935 007a FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 936 007e FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 937 0082 BDE80840 		pop	{r3, lr}
+ 938 0086 FFF7FEBF 		b	RCC_GetPCLK1ClockFreq
+ 939              	.L221:
+ 940 008a 0648     		ldr	r0, .L229+20
+ 941 008c CFE7     		b	.L213
+ 942              	.L230:
+ 943 008e 00BF     		.align	2
+ 944              	.L229:
+ 945 0090 00000246 		.word	1174536192
+ 946 0094 000C0246 		.word	1174539264
+ 947 0098 00000000 		.word	APBPrescTable
+ 948 009c 03000400 		.word	262147
+ 949 00a0 02000400 		.word	262146
+ 950 00a4 0024F400 		.word	16000000
+ 952              		.section	.text.LL_RCC_GetUARTClockFreq,"ax",%progbits
+ARM GAS  /tmp/ccOB813v.s 			page 17
+
+
+ 953              		.align	1
+ 954              		.global	LL_RCC_GetUARTClockFreq
+ 955              		.syntax unified
+ 956              		.thumb
+ 957              		.thumb_func
+ 958              		.fpu fpv4-sp-d16
+ 960              	LL_RCC_GetUARTClockFreq:
+ 961              		@ args = 0, pretend = 0, frame = 0
+ 962              		@ frame_needed = 0, uses_anonymous_args = 0
+ 963 0000 C028     		cmp	r0, #192
+ 964 0002 08B5     		push	{r3, lr}
+ 965 0004 2CD1     		bne	.L232
+ 966 0006 234B     		ldr	r3, .L260
+ 967 0008 234A     		ldr	r2, .L260+4
+ 968 000a D3F8E030 		ldr	r3, [r3, #224]
+ 969 000e 03F0C003 		and	r3, r3, #192
+ 970 0012 43F44003 		orr	r3, r3, #12582912
+ 971 0016 9342     		cmp	r3, r2
+ 972 0018 14D0     		beq	.L233
+ 973 001a 09D8     		bhi	.L234
+ 974 001c B3F5400F 		cmp	r3, #12582912
+ 975 0020 16D0     		beq	.L235
+ 976 0022 403A     		subs	r2, r2, #64
+ 977              	.L257:
+ 978 0024 9342     		cmp	r3, r2
+ 979 0026 11D1     		bne	.L255
+ 980 0028 BDE80840 		pop	{r3, lr}
+ 981 002c FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 982              	.L234:
+ 983 0030 B3F1C01F 		cmp	r3, #12583104
+ 984              	.L259:
+ 985 0034 0AD1     		bne	.L255
+ 986 0036 FFF7FEFF 		bl	LL_RCC_LSE_IsReady
+ 987 003a 0128     		cmp	r0, #1
+ 988 003c 06D1     		bne	.L255
+ 989 003e 4FF40040 		mov	r0, #32768
+ 990 0042 04E0     		b	.L231
+ 991              	.L233:
+ 992 0044 FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 993 0048 0128     		cmp	r0, #1
+ 994 004a 20D0     		beq	.L241
+ 995              	.L255:
+ 996 004c 0020     		movs	r0, #0
+ 997              	.L231:
+ 998 004e 08BD     		pop	{r3, pc}
+ 999              	.L235:
+ 1000 0050 FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1001 0054 FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1002 0058 BDE80840 		pop	{r3, lr}
+ 1003 005c FFF7FEBF 		b	RCC_GetPCLK1ClockFreq
+ 1004              	.L232:
+ 1005 0060 B0F5407F 		cmp	r0, #768
+ 1006 0064 F2D1     		bne	.L255
+ 1007 0066 0B4B     		ldr	r3, .L260
+ 1008 0068 0C4A     		ldr	r2, .L260+8
+ 1009 006a D3F8E030 		ldr	r3, [r3, #224]
+ 1010 006e 03F44073 		and	r3, r3, #768
+ARM GAS  /tmp/ccOB813v.s 			page 18
+
+
+ 1011 0072 43F04073 		orr	r3, r3, #50331648
+ 1012 0076 9342     		cmp	r3, r2
+ 1013 0078 E4D0     		beq	.L233
+ 1014 007a 05D8     		bhi	.L240
+ 1015 007c B3F1407F 		cmp	r3, #50331648
+ 1016 0080 E6D0     		beq	.L235
+ 1017 0082 A2F58072 		sub	r2, r2, #256
+ 1018 0086 CDE7     		b	.L257
+ 1019              	.L240:
+ 1020 0088 B3F1032F 		cmp	r3, #50332416
+ 1021 008c D2E7     		b	.L259
+ 1022              	.L241:
+ 1023 008e 0448     		ldr	r0, .L260+12
+ 1024 0090 DDE7     		b	.L231
+ 1025              	.L261:
+ 1026 0092 00BF     		.align	2
+ 1027              	.L260:
+ 1028 0094 000C0246 		.word	1174539264
+ 1029 0098 8000C000 		.word	12583040
+ 1030 009c 00020003 		.word	50332160
+ 1031 00a0 0024F400 		.word	16000000
+ 1033              		.section	.text.LL_RCC_GetSPIClockFreq,"ax",%progbits
+ 1034              		.align	1
+ 1035              		.global	LL_RCC_GetSPIClockFreq
+ 1036              		.syntax unified
+ 1037              		.thumb
+ 1038              		.thumb_func
+ 1039              		.fpu fpv4-sp-d16
+ 1041              	LL_RCC_GetSPIClockFreq:
+ 1042              		@ args = 0, pretend = 0, frame = 0
+ 1043              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1044 0000 08B5     		push	{r3, lr}
+ 1045 0002 3F4B     		ldr	r3, .L303
+ 1046 0004 9842     		cmp	r0, r3
+ 1047 0006 24D1     		bne	.L263
+ 1048 0008 3E4B     		ldr	r3, .L303+4
+ 1049 000a 3F4A     		ldr	r2, .L303+8
+ 1050 000c D3F8E03C 		ldr	r3, [r3, #3296]
+ 1051 0010 C3F30153 		ubfx	r3, r3, #20, #2
+ 1052 0014 43F4A013 		orr	r3, r3, #1310720
+ 1053 0018 9342     		cmp	r3, r2
+ 1054 001a 08D0     		beq	.L264
+ 1055 001c 8342     		cmp	r3, r0
+ 1056 001e 4ED0     		beq	.L283
+ 1057 0020 013A     		subs	r2, r2, #1
+ 1058 0022 9342     		cmp	r3, r2
+ 1059 0024 09D1     		bne	.L266
+ 1060              	.L275:
+ 1061 0026 BDE80840 		pop	{r3, lr}
+ 1062 002a FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 1063              	.L264:
+ 1064 002e FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 1065 0032 0128     		cmp	r0, #1
+ 1066 0034 62D0     		beq	.L290
+ 1067              	.L282:
+ 1068 0036 0020     		movs	r0, #0
+ 1069              	.L262:
+ARM GAS  /tmp/ccOB813v.s 			page 19
+
+
+ 1070 0038 08BD     		pop	{r3, pc}
+ 1071              	.L266:
+ 1072 003a FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1073 003e FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1074 0042 324B     		ldr	r3, .L303+12
+ 1075 0044 324A     		ldr	r2, .L303+16
+ 1076 0046 1B6A     		ldr	r3, [r3, #32]
+ 1077 0048 C3F30223 		ubfx	r3, r3, #8, #3
+ 1078 004c D35C     		ldrb	r3, [r2, r3]	@ zero_extendqisi2
+ 1079 004e D840     		lsrs	r0, r0, r3
+ 1080 0050 F2E7     		b	.L262
+ 1081              	.L263:
+ 1082 0052 304B     		ldr	r3, .L303+20
+ 1083 0054 9842     		cmp	r0, r3
+ 1084 0056 16D1     		bne	.L273
+ 1085 0058 2A4B     		ldr	r3, .L303+4
+ 1086 005a 2F4A     		ldr	r2, .L303+24
+ 1087 005c D3F8E03C 		ldr	r3, [r3, #3296]
+ 1088 0060 C3F30143 		ubfx	r3, r3, #16, #2
+ 1089 0064 43F48013 		orr	r3, r3, #1048576
+ 1090 0068 9342     		cmp	r3, r2
+ 1091 006a E0D0     		beq	.L264
+ 1092 006c 8342     		cmp	r3, r0
+ 1093 006e 26D0     		beq	.L283
+ 1094 0070 013A     		subs	r2, r2, #1
+ 1095 0072 9342     		cmp	r3, r2
+ 1096 0074 D7D0     		beq	.L275
+ 1097 0076 FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1098 007a FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1099 007e BDE80840 		pop	{r3, lr}
+ 1100 0082 FFF7FEBF 		b	RCC_GetPCLK1ClockFreq
+ 1101              	.L273:
+ 1102 0086 254B     		ldr	r3, .L303+28
+ 1103 0088 9842     		cmp	r0, r3
+ 1104 008a D4D1     		bne	.L282
+ 1105 008c 1D4B     		ldr	r3, .L303+4
+ 1106 008e 244A     		ldr	r2, .L303+32
+ 1107 0090 D3F8E83C 		ldr	r3, [r3, #3304]
+ 1108 0094 C3F3C103 		ubfx	r3, r3, #3, #2
+ 1109 0098 43F00063 		orr	r3, r3, #134217728
+ 1110 009c 43F44033 		orr	r3, r3, #196608
+ 1111 00a0 9342     		cmp	r3, r2
+ 1112 00a2 C4D0     		beq	.L264
+ 1113 00a4 8342     		cmp	r3, r0
+ 1114 00a6 0AD0     		beq	.L283
+ 1115 00a8 013A     		subs	r2, r2, #1
+ 1116 00aa 9342     		cmp	r3, r2
+ 1117 00ac BBD0     		beq	.L275
+ 1118 00ae FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1119 00b2 FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1120 00b6 BDE80840 		pop	{r3, lr}
+ 1121 00ba FFF7FEBF 		b	RCC_GetPCLK3ClockFreq
+ 1122              	.L283:
+ 1123 00be FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1124 00c2 0128     		cmp	r0, #1
+ 1125 00c4 114A     		ldr	r2, .L303+12
+ 1126 00c6 1749     		ldr	r1, .L303+36
+ARM GAS  /tmp/ccOB813v.s 			page 20
+
+
+ 1127 00c8 0DD1     		bne	.L285
+ 1128 00ca FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1129 00ce 0128     		cmp	r0, #1
+ 1130 00d0 05D1     		bne	.L286
+ 1131 00d2 9368     		ldr	r3, [r2, #8]
+ 1132 00d4 C3F30363 		ubfx	r3, r3, #24, #4
+ 1133              	.L289:
+ 1134 00d8 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 1135 00dc ACE7     		b	.L262
+ 1136              	.L286:
+ 1137 00de D2F8F430 		ldr	r3, [r2, #244]
+ 1138              	.L293:
+ 1139 00e2 0023     		movs	r3, #0
+ 1140 00e4 F8E7     		b	.L289
+ 1141              	.L285:
+ 1142 00e6 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1143 00ea 0128     		cmp	r0, #1
+ 1144 00ec 01D1     		bne	.L288
+ 1145 00ee 9368     		ldr	r3, [r2, #8]
+ 1146 00f0 F7E7     		b	.L293
+ 1147              	.L288:
+ 1148 00f2 D2F8F430 		ldr	r3, [r2, #244]
+ 1149 00f6 C3F30323 		ubfx	r3, r3, #8, #4
+ 1150 00fa EDE7     		b	.L289
+ 1151              	.L290:
+ 1152 00fc 0A48     		ldr	r0, .L303+40
+ 1153 00fe 9BE7     		b	.L262
+ 1154              	.L304:
+ 1155              		.align	2
+ 1156              	.L303:
+ 1157 0100 03001400 		.word	1310723
+ 1158 0104 00000246 		.word	1174536192
+ 1159 0108 02001400 		.word	1310722
+ 1160 010c 000C0246 		.word	1174539264
+ 1161 0110 00000000 		.word	APBPrescTable
+ 1162 0114 03001000 		.word	1048579
+ 1163 0118 02001000 		.word	1048578
+ 1164 011c 03000308 		.word	134414339
+ 1165 0120 02000308 		.word	134414338
+ 1166 0124 00000000 		.word	MSIRangeTable
+ 1167 0128 0024F400 		.word	16000000
+ 1169              		.section	.text.LL_RCC_GetI2CClockFreq,"ax",%progbits
+ 1170              		.align	1
+ 1171              		.global	LL_RCC_GetI2CClockFreq
+ 1172              		.syntax unified
+ 1173              		.thumb
+ 1174              		.thumb_func
+ 1175              		.fpu fpv4-sp-d16
+ 1177              	LL_RCC_GetI2CClockFreq:
+ 1178              		@ args = 0, pretend = 0, frame = 0
+ 1179              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1180 0000 08B5     		push	{r3, lr}
+ 1181 0002 3C4B     		ldr	r3, .L363
+ 1182 0004 9842     		cmp	r0, r3
+ 1183 0006 20D1     		bne	.L306
+ 1184 0008 3B4B     		ldr	r3, .L363+4
+ 1185 000a 3C4A     		ldr	r2, .L363+8
+ARM GAS  /tmp/ccOB813v.s 			page 21
+
+
+ 1186 000c D3F8E03C 		ldr	r3, [r3, #3296]
+ 1187 0010 C3F38123 		ubfx	r3, r3, #10, #2
+ 1188 0014 43F42023 		orr	r3, r3, #655360
+ 1189              	.L360:
+ 1190 0018 9342     		cmp	r3, r2
+ 1191 001a 08D0     		beq	.L307
+ 1192 001c 8342     		cmp	r3, r0
+ 1193 001e 48D0     		beq	.L333
+ 1194 0020 013A     		subs	r2, r2, #1
+ 1195 0022 9342     		cmp	r3, r2
+ 1196 0024 09D1     		bne	.L309
+ 1197              	.L318:
+ 1198 0026 BDE80840 		pop	{r3, lr}
+ 1199 002a FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 1200              	.L307:
+ 1201 002e FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 1202 0032 0128     		cmp	r0, #1
+ 1203 0034 5CD0     		beq	.L339
+ 1204              	.L332:
+ 1205 0036 0020     		movs	r0, #0
+ 1206              	.L305:
+ 1207 0038 08BD     		pop	{r3, pc}
+ 1208              	.L309:
+ 1209 003a FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1210 003e FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1211 0042 BDE80840 		pop	{r3, lr}
+ 1212 0046 FFF7FEBF 		b	RCC_GetPCLK1ClockFreq
+ 1213              	.L306:
+ 1214 004a 2D4B     		ldr	r3, .L363+12
+ 1215 004c 9842     		cmp	r0, r3
+ 1216 004e 08D1     		bne	.L316
+ 1217 0050 294B     		ldr	r3, .L363+4
+ 1218 0052 2C4A     		ldr	r2, .L363+16
+ 1219 0054 D3F8E03C 		ldr	r3, [r3, #3296]
+ 1220 0058 C3F30133 		ubfx	r3, r3, #12, #2
+ 1221 005c 43F44023 		orr	r3, r3, #786432
+ 1222 0060 DAE7     		b	.L360
+ 1223              	.L316:
+ 1224 0062 294B     		ldr	r3, .L363+20
+ 1225 0064 9842     		cmp	r0, r3
+ 1226 0066 18D1     		bne	.L324
+ 1227 0068 234B     		ldr	r3, .L363+4
+ 1228 006a 284A     		ldr	r2, .L363+24
+ 1229 006c D3F8E83C 		ldr	r3, [r3, #3304]
+ 1230 0070 C3F38113 		ubfx	r3, r3, #6, #2
+ 1231 0074 43F00063 		orr	r3, r3, #134217728
+ 1232 0078 43F4C023 		orr	r3, r3, #393216
+ 1233 007c 9342     		cmp	r3, r2
+ 1234 007e D6D0     		beq	.L307
+ 1235 0080 8342     		cmp	r3, r0
+ 1236 0082 16D0     		beq	.L333
+ 1237 0084 013A     		subs	r2, r2, #1
+ 1238 0086 9342     		cmp	r3, r2
+ 1239 0088 CDD0     		beq	.L318
+ 1240 008a FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1241 008e FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1242 0092 BDE80840 		pop	{r3, lr}
+ARM GAS  /tmp/ccOB813v.s 			page 22
+
+
+ 1243 0096 FFF7FEBF 		b	RCC_GetPCLK3ClockFreq
+ 1244              	.L324:
+ 1245 009a 1D4B     		ldr	r3, .L363+28
+ 1246 009c 9842     		cmp	r0, r3
+ 1247 009e CAD1     		bne	.L332
+ 1248 00a0 154B     		ldr	r3, .L363+4
+ 1249 00a2 1C4A     		ldr	r2, .L363+32
+ 1250 00a4 D3F8E03C 		ldr	r3, [r3, #3296]
+ 1251 00a8 C3F38133 		ubfx	r3, r3, #14, #2
+ 1252 00ac 43F46023 		orr	r3, r3, #917504
+ 1253 00b0 B2E7     		b	.L360
+ 1254              	.L333:
+ 1255 00b2 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1256 00b6 0128     		cmp	r0, #1
+ 1257 00b8 174A     		ldr	r2, .L363+36
+ 1258 00ba 1849     		ldr	r1, .L363+40
+ 1259 00bc 0DD1     		bne	.L334
+ 1260 00be FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1261 00c2 0128     		cmp	r0, #1
+ 1262 00c4 05D1     		bne	.L335
+ 1263 00c6 9368     		ldr	r3, [r2, #8]
+ 1264 00c8 C3F30363 		ubfx	r3, r3, #24, #4
+ 1265              	.L338:
+ 1266 00cc 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 1267 00d0 B2E7     		b	.L305
+ 1268              	.L335:
+ 1269 00d2 D2F8F430 		ldr	r3, [r2, #244]
+ 1270              	.L344:
+ 1271 00d6 0023     		movs	r3, #0
+ 1272 00d8 F8E7     		b	.L338
+ 1273              	.L334:
+ 1274 00da FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1275 00de 0128     		cmp	r0, #1
+ 1276 00e0 01D1     		bne	.L337
+ 1277 00e2 9368     		ldr	r3, [r2, #8]
+ 1278 00e4 F7E7     		b	.L344
+ 1279              	.L337:
+ 1280 00e6 D2F8F430 		ldr	r3, [r2, #244]
+ 1281 00ea C3F30323 		ubfx	r3, r3, #8, #4
+ 1282 00ee EDE7     		b	.L338
+ 1283              	.L339:
+ 1284 00f0 0B48     		ldr	r0, .L363+44
+ 1285 00f2 A1E7     		b	.L305
+ 1286              	.L364:
+ 1287              		.align	2
+ 1288              	.L363:
+ 1289 00f4 03000A00 		.word	655363
+ 1290 00f8 00000246 		.word	1174536192
+ 1291 00fc 02000A00 		.word	655362
+ 1292 0100 03000C00 		.word	786435
+ 1293 0104 02000C00 		.word	786434
+ 1294 0108 03000608 		.word	134610947
+ 1295 010c 02000608 		.word	134610946
+ 1296 0110 03000E00 		.word	917507
+ 1297 0114 02000E00 		.word	917506
+ 1298 0118 000C0246 		.word	1174539264
+ 1299 011c 00000000 		.word	MSIRangeTable
+ARM GAS  /tmp/ccOB813v.s 			page 23
+
+
+ 1300 0120 0024F400 		.word	16000000
+ 1302              		.section	.text.LL_RCC_GetLPUARTClockFreq,"ax",%progbits
+ 1303              		.align	1
+ 1304              		.global	LL_RCC_GetLPUARTClockFreq
+ 1305              		.syntax unified
+ 1306              		.thumb
+ 1307              		.thumb_func
+ 1308              		.fpu fpv4-sp-d16
+ 1310              	LL_RCC_GetLPUARTClockFreq:
+ 1311              		@ args = 0, pretend = 0, frame = 0
+ 1312              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1313 0000 08B5     		push	{r3, lr}
+ 1314 0002 124B     		ldr	r3, .L376
+ 1315 0004 D3F8E830 		ldr	r3, [r3, #232]
+ 1316 0008 1840     		ands	r0, r0, r3
+ 1317 000a 0328     		cmp	r0, #3
+ 1318 000c 0BD8     		bhi	.L373
+ 1319 000e DFE800F0 		tbb	[pc, r0]
+ 1320              	.L368:
+ 1321 0012 13       		.byte	(.L371-.L368)/2
+ 1322 0013 02       		.byte	(.L370-.L368)/2
+ 1323 0014 06       		.byte	(.L369-.L368)/2
+ 1324 0015 0C       		.byte	(.L367-.L368)/2
+ 1325              		.p2align 1
+ 1326              	.L370:
+ 1327 0016 BDE80840 		pop	{r3, lr}
+ 1328 001a FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 1329              	.L369:
+ 1330 001e FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 1331 0022 0128     		cmp	r0, #1
+ 1332 0024 10D0     		beq	.L374
+ 1333              	.L373:
+ 1334 0026 0020     		movs	r0, #0
+ 1335              	.L365:
+ 1336 0028 08BD     		pop	{r3, pc}
+ 1337              	.L367:
+ 1338 002a FFF7FEFF 		bl	LL_RCC_LSE_IsReady
+ 1339 002e 0128     		cmp	r0, #1
+ 1340 0030 F9D1     		bne	.L373
+ 1341 0032 4FF40040 		mov	r0, #32768
+ 1342 0036 F7E7     		b	.L365
+ 1343              	.L371:
+ 1344 0038 FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1345 003c FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1346 0040 BDE80840 		pop	{r3, lr}
+ 1347 0044 FFF7FEBF 		b	RCC_GetPCLK3ClockFreq
+ 1348              	.L374:
+ 1349 0048 0148     		ldr	r0, .L376+4
+ 1350 004a EDE7     		b	.L365
+ 1351              	.L377:
+ 1352              		.align	2
+ 1353              	.L376:
+ 1354 004c 000C0246 		.word	1174539264
+ 1355 0050 0024F400 		.word	16000000
+ 1357              		.section	.text.LL_RCC_GetLPTIMClockFreq,"ax",%progbits
+ 1358              		.align	1
+ 1359              		.global	LL_RCC_GetLPTIMClockFreq
+ARM GAS  /tmp/ccOB813v.s 			page 24
+
+
+ 1360              		.syntax unified
+ 1361              		.thumb
+ 1362              		.thumb_func
+ 1363              		.fpu fpv4-sp-d16
+ 1365              	LL_RCC_GetLPTIMClockFreq:
+ 1366              		@ args = 0, pretend = 0, frame = 0
+ 1367              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1368 0000 08B5     		push	{r3, lr}
+ 1369 0002 3C4B     		ldr	r3, .L425
+ 1370 0004 9842     		cmp	r0, r3
+ 1371 0006 24D1     		bne	.L379
+ 1372 0008 3B4B     		ldr	r3, .L425+4
+ 1373 000a 3C4A     		ldr	r2, .L425+8
+ 1374 000c D3F8E83C 		ldr	r3, [r3, #3304]
+ 1375 0010 C3F38123 		ubfx	r3, r3, #10, #2
+ 1376 0014 43F00063 		orr	r3, r3, #134217728
+ 1377 0018 43F42023 		orr	r3, r3, #655360
+ 1378              	.L424:
+ 1379 001c 9342     		cmp	r3, r2
+ 1380 001e 0BD0     		beq	.L380
+ 1381 0020 8342     		cmp	r3, r0
+ 1382 0022 0FD0     		beq	.L381
+ 1383 0024 013A     		subs	r2, r2, #1
+ 1384 0026 9342     		cmp	r3, r2
+ 1385 0028 44D1     		bne	.L393
+ 1386              	.L411:
+ 1387 002a 354B     		ldr	r3, .L425+12
+ 1388 002c D3F8F020 		ldr	r2, [r3, #240]
+ 1389 0030 1201     		lsls	r2, r2, #4
+ 1390 0032 36D4     		bmi	.L410
+ 1391              	.L385:
+ 1392 0034 0020     		movs	r0, #0
+ 1393              	.L378:
+ 1394 0036 08BD     		pop	{r3, pc}
+ 1395              	.L380:
+ 1396 0038 FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 1397 003c 0128     		cmp	r0, #1
+ 1398 003e F9D1     		bne	.L385
+ 1399 0040 3048     		ldr	r0, .L425+16
+ 1400 0042 F8E7     		b	.L378
+ 1401              	.L381:
+ 1402 0044 FFF7FEFF 		bl	LL_RCC_LSE_IsReady
+ 1403 0048 0128     		cmp	r0, #1
+ 1404 004a F3D1     		bne	.L385
+ 1405 004c 4FF40040 		mov	r0, #32768
+ 1406 0050 F1E7     		b	.L378
+ 1407              	.L379:
+ 1408 0052 2D4B     		ldr	r3, .L425+20
+ 1409 0054 9842     		cmp	r0, r3
+ 1410 0056 16D1     		bne	.L391
+ 1411 0058 274B     		ldr	r3, .L425+4
+ 1412 005a 2C4A     		ldr	r2, .L425+24
+ 1413 005c D3F8E03C 		ldr	r3, [r3, #3296]
+ 1414 0060 C3F38143 		ubfx	r3, r3, #18, #2
+ 1415 0064 43F49013 		orr	r3, r3, #1179648
+ 1416 0068 9342     		cmp	r3, r2
+ 1417 006a E5D0     		beq	.L380
+ARM GAS  /tmp/ccOB813v.s 			page 25
+
+
+ 1418 006c 8342     		cmp	r3, r0
+ 1419 006e E9D0     		beq	.L381
+ 1420 0070 013A     		subs	r2, r2, #1
+ 1421 0072 9342     		cmp	r3, r2
+ 1422 0074 D9D0     		beq	.L411
+ 1423 0076 FFF7FEFF 		bl	RCC_GetSystemClockFreq
+ 1424 007a FFF7FEFF 		bl	RCC_GetHCLKClockFreq
+ 1425 007e BDE80840 		pop	{r3, lr}
+ 1426 0082 FFF7FEBF 		b	RCC_GetPCLK1ClockFreq
+ 1427              	.L391:
+ 1428 0086 224B     		ldr	r3, .L425+28
+ 1429 0088 9842     		cmp	r0, r3
+ 1430 008a D3D1     		bne	.L385
+ 1431 008c 1A4B     		ldr	r3, .L425+4
+ 1432 008e 214A     		ldr	r2, .L425+32
+ 1433 0090 D3F8E83C 		ldr	r3, [r3, #3304]
+ 1434 0094 C3F30123 		ubfx	r3, r3, #8, #2
+ 1435 0098 43F00063 		orr	r3, r3, #134217728
+ 1436 009c 43F40023 		orr	r3, r3, #524288
+ 1437 00a0 BCE7     		b	.L424
+ 1438              	.L410:
+ 1439 00a2 D3F8F030 		ldr	r3, [r3, #240]
+ 1440 00a6 13F0805F 		tst	r3, #268435456
+ 1441 00aa 0CBF     		ite	eq
+ 1442 00ac 4FF4FA40 		moveq	r0, #32000
+ 1443 00b0 FA20     		movne	r0, #250
+ 1444 00b2 C0E7     		b	.L378
+ 1445              	.L393:
+ 1446 00b4 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1447 00b8 0128     		cmp	r0, #1
+ 1448 00ba 114A     		ldr	r2, .L425+12
+ 1449 00bc 1649     		ldr	r1, .L425+36
+ 1450 00be 0DD1     		bne	.L394
+ 1451 00c0 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1452 00c4 0128     		cmp	r0, #1
+ 1453 00c6 05D1     		bne	.L395
+ 1454 00c8 9368     		ldr	r3, [r2, #8]
+ 1455 00ca C3F30363 		ubfx	r3, r3, #24, #4
+ 1456              	.L398:
+ 1457 00ce 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 1458 00d2 B0E7     		b	.L378
+ 1459              	.L395:
+ 1460 00d4 D2F8F430 		ldr	r3, [r2, #244]
+ 1461              	.L412:
+ 1462 00d8 0023     		movs	r3, #0
+ 1463 00da F8E7     		b	.L398
+ 1464              	.L394:
+ 1465 00dc FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1466 00e0 0128     		cmp	r0, #1
+ 1467 00e2 01D1     		bne	.L397
+ 1468 00e4 9368     		ldr	r3, [r2, #8]
+ 1469 00e6 F7E7     		b	.L412
+ 1470              	.L397:
+ 1471 00e8 D2F8F430 		ldr	r3, [r2, #244]
+ 1472 00ec C3F30323 		ubfx	r3, r3, #8, #4
+ 1473 00f0 EDE7     		b	.L398
+ 1474              	.L426:
+ARM GAS  /tmp/ccOB813v.s 			page 26
+
+
+ 1475 00f2 00BF     		.align	2
+ 1476              	.L425:
+ 1477 00f4 03000A08 		.word	134873091
+ 1478 00f8 00000246 		.word	1174536192
+ 1479 00fc 02000A08 		.word	134873090
+ 1480 0100 000C0246 		.word	1174539264
+ 1481 0104 0024F400 		.word	16000000
+ 1482 0108 03001200 		.word	1179651
+ 1483 010c 02001200 		.word	1179650
+ 1484 0110 03000808 		.word	134742019
+ 1485 0114 02000808 		.word	134742018
+ 1486 0118 00000000 		.word	MSIRangeTable
+ 1488              		.section	.text.LL_RCC_GetSAIClockFreq,"ax",%progbits
+ 1489              		.align	1
+ 1490              		.global	LL_RCC_GetSAIClockFreq
+ 1491              		.syntax unified
+ 1492              		.thumb
+ 1493              		.thumb_func
+ 1494              		.fpu fpv4-sp-d16
+ 1496              	LL_RCC_GetSAIClockFreq:
+ 1497              		@ args = 0, pretend = 0, frame = 0
+ 1498              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1499 0000 E028     		cmp	r0, #224
+ 1500 0002 38B5     		push	{r3, r4, r5, lr}
+ 1501 0004 01D0     		beq	.L428
+ 1502              	.L465:
+ 1503 0006 0020     		movs	r0, #0
+ 1504              	.L427:
+ 1505 0008 38BD     		pop	{r3, r4, r5, pc}
+ 1506              	.L428:
+ 1507 000a 3A4A     		ldr	r2, .L473
+ 1508 000c 3A49     		ldr	r1, .L473+4
+ 1509 000e D2F8E430 		ldr	r3, [r2, #228]
+ 1510 0012 03F0E003 		and	r3, r3, #224
+ 1511 0016 43F46003 		orr	r3, r3, #14680064
+ 1512 001a 8B42     		cmp	r3, r1
+ 1513 001c 5DD0     		beq	.L430
+ 1514 001e 37D8     		bhi	.L431
+ 1515 0020 B3F5600F 		cmp	r3, #14680064
+ 1516 0024 3BD0     		beq	.L432
+ 1517 0026 2039     		subs	r1, r1, #32
+ 1518 0028 8B42     		cmp	r3, r1
+ 1519 002a ECD1     		bne	.L465
+ 1520 002c 1368     		ldr	r3, [r2]
+ 1521 002e 9900     		lsls	r1, r3, #2
+ 1522 0030 E9D5     		bpl	.L465
+ 1523 0032 136B     		ldr	r3, [r2, #48]
+ 1524 0034 DB03     		lsls	r3, r3, #15
+ 1525 0036 E6D5     		bpl	.L465
+ 1526 0038 136B     		ldr	r3, [r2, #48]
+ 1527 003a 03F00303 		and	r3, r3, #3
+ 1528 003e 022B     		cmp	r3, #2
+ 1529 0040 47D0     		beq	.L448
+ 1530 0042 032B     		cmp	r3, #3
+ 1531 0044 47D0     		beq	.L449
+ 1532 0046 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1533 004a 0128     		cmp	r0, #1
+ARM GAS  /tmp/ccOB813v.s 			page 27
+
+
+ 1534 004c 2B4A     		ldr	r2, .L473+8
+ 1535 004e 2949     		ldr	r1, .L473
+ 1536 0050 34D1     		bne	.L442
+ 1537 0052 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1538 0056 0128     		cmp	r0, #1
+ 1539 0058 2CD1     		bne	.L443
+ 1540 005a 8B68     		ldr	r3, [r1, #8]
+ 1541 005c 1B0F     		lsrs	r3, r3, #28
+ 1542              	.L446:
+ 1543 005e 52F82330 		ldr	r3, [r2, r3, lsl #2]
+ 1544              	.L435:
+ 1545 0062 244C     		ldr	r4, .L473
+ 1546 0064 606C     		ldr	r0, [r4, #68]
+ 1547 0066 616C     		ldr	r1, [r4, #68]
+ 1548 0068 C0F30800 		ubfx	r0, r0, #0, #9
+ 1549 006c 421C     		adds	r2, r0, #1
+ 1550 006e 072A     		cmp	r2, #7
+ 1551 0070 C9D9     		bls	.L465
+ 1552 0072 C1F34621 		ubfx	r1, r1, #9, #7
+ 1553 0076 4D1C     		adds	r5, r1, #1
+ 1554 0078 0029     		cmp	r1, #0
+ 1555 007a C4D0     		beq	.L465
+ 1556 007c 206B     		ldr	r0, [r4, #48]
+ 1557 007e C0F30320 		ubfx	r0, r0, #8, #4
+ 1558 0082 0130     		adds	r0, r0, #1
+ 1559 0084 B3FBF0F0 		udiv	r0, r3, r0
+ 1560 0088 5043     		muls	r0, r2, r0
+ 1561 008a B0FBF5F0 		udiv	r0, r0, r5
+ 1562 008e BBE7     		b	.L427
+ 1563              	.L431:
+ 1564 0090 4BF68030 		movw	r0, #48000
+ 1565 0094 1A4A     		ldr	r2, .L473+12
+ 1566 0096 9342     		cmp	r3, r2
+ 1567 0098 18BF     		it	ne
+ 1568 009a 0020     		movne	r0, #0
+ 1569 009c B4E7     		b	.L427
+ 1570              	.L432:
+ 1571 009e FFF7FEFF 		bl	LL_RCC_PLL2_IsReady
+ 1572 00a2 0128     		cmp	r0, #1
+ 1573 00a4 AFD1     		bne	.L465
+ 1574 00a6 D36A     		ldr	r3, [r2, #44]
+ 1575 00a8 D803     		lsls	r0, r3, #15
+ 1576 00aa ACD5     		bpl	.L465
+ 1577 00ac BDE83840 		pop	{r3, r4, r5, lr}
+ 1578 00b0 FFF7FEBF 		b	RCC_PLL2_GetFreqDomain_SAI
+ 1579              	.L443:
+ 1580 00b4 D1F8F430 		ldr	r3, [r1, #244]
+ 1581              	.L466:
+ 1582 00b8 0023     		movs	r3, #0
+ 1583 00ba D0E7     		b	.L446
+ 1584              	.L442:
+ 1585 00bc FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1586 00c0 0128     		cmp	r0, #1
+ 1587 00c2 01D1     		bne	.L445
+ 1588 00c4 8B68     		ldr	r3, [r1, #8]
+ 1589 00c6 F7E7     		b	.L466
+ 1590              	.L445:
+ARM GAS  /tmp/ccOB813v.s 			page 28
+
+
+ 1591 00c8 D1F8F430 		ldr	r3, [r1, #244]
+ 1592 00cc C3F30333 		ubfx	r3, r3, #12, #4
+ 1593 00d0 C5E7     		b	.L446
+ 1594              	.L448:
+ 1595 00d2 0C4B     		ldr	r3, .L473+16
+ 1596 00d4 C5E7     		b	.L435
+ 1597              	.L449:
+ 1598 00d6 0C4B     		ldr	r3, .L473+20
+ 1599 00d8 C3E7     		b	.L435
+ 1600              	.L430:
+ 1601 00da FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 1602 00de 0128     		cmp	r0, #1
+ 1603 00e0 91D1     		bne	.L465
+ 1604 00e2 FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_SAI
+ 1605 00e6 0028     		cmp	r0, #0
+ 1606 00e8 8DD0     		beq	.L465
+ 1607 00ea BDE83840 		pop	{r3, r4, r5, lr}
+ 1608 00ee FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_SAI
+ 1609              	.L474:
+ 1610 00f2 00BF     		.align	2
+ 1611              	.L473:
+ 1612 00f4 000C0246 		.word	1174539264
+ 1613 00f8 4000E000 		.word	14680128
+ 1614 00fc 00000000 		.word	MSIRangeTable
+ 1615 0100 6000E000 		.word	14680160
+ 1616 0104 0024F400 		.word	16000000
+ 1617 0108 00127A00 		.word	8000000
+ 1619              		.section	.text.LL_RCC_GetSDMMCClockFreq,"ax",%progbits
+ 1620              		.align	1
+ 1621              		.global	LL_RCC_GetSDMMCClockFreq
+ 1622              		.syntax unified
+ 1623              		.thumb
+ 1624              		.thumb_func
+ 1625              		.fpu fpv4-sp-d16
+ 1627              	LL_RCC_GetSDMMCClockFreq:
+ 1628              		@ args = 0, pretend = 0, frame = 0
+ 1629              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1630 0000 284A     		ldr	r2, .L500
+ 1631 0002 08B5     		push	{r3, lr}
+ 1632 0004 D2F8E030 		ldr	r3, [r2, #224]
+ 1633 0008 1840     		ands	r0, r0, r3
+ 1634 000a B0F1006F 		cmp	r0, #134217728
+ 1635 000e 27D0     		beq	.L476
+ 1636 0010 06D8     		bhi	.L477
+ 1637 0012 0028     		cmp	r0, #0
+ 1638 0014 3FD0     		beq	.L478
+ 1639 0016 B0F1806F 		cmp	r0, #67108864
+ 1640 001a 16D0     		beq	.L479
+ 1641              	.L483:
+ 1642 001c 0020     		movs	r0, #0
+ 1643              	.L475:
+ 1644 001e 08BD     		pop	{r3, pc}
+ 1645              	.L477:
+ 1646 0020 B0F1406F 		cmp	r0, #201326592
+ 1647 0024 FAD1     		bne	.L483
+ 1648 0026 1368     		ldr	r3, [r2]
+ 1649 0028 5B07     		lsls	r3, r3, #29
+ARM GAS  /tmp/ccOB813v.s 			page 29
+
+
+ 1650 002a F7D5     		bpl	.L483
+ 1651 002c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1652 0030 0128     		cmp	r0, #1
+ 1653 0032 1D49     		ldr	r1, .L500+4
+ 1654 0034 24D1     		bne	.L484
+ 1655 0036 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1656 003a 0128     		cmp	r0, #1
+ 1657 003c 1CD1     		bne	.L485
+ 1658 003e 9368     		ldr	r3, [r2, #8]
+ 1659 0040 C3F30363 		ubfx	r3, r3, #24, #4
+ 1660              	.L488:
+ 1661 0044 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 1662 0048 E9E7     		b	.L475
+ 1663              	.L479:
+ 1664 004a FFF7FEFF 		bl	LL_RCC_PLL2_IsReady
+ 1665 004e 0128     		cmp	r0, #1
+ 1666 0050 E4D1     		bne	.L483
+ 1667 0052 D36A     		ldr	r3, [r2, #44]
+ 1668 0054 9A03     		lsls	r2, r3, #14
+ 1669 0056 E1D5     		bpl	.L483
+ 1670 0058 BDE80840 		pop	{r3, lr}
+ 1671 005c FFF7FEBF 		b	RCC_PLL2_GetFreqDomain_48M
+ 1672              	.L476:
+ 1673 0060 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 1674 0064 0128     		cmp	r0, #1
+ 1675 0066 D9D1     		bne	.L483
+ 1676 0068 FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_48M
+ 1677 006c 0028     		cmp	r0, #0
+ 1678 006e D5D0     		beq	.L483
+ 1679 0070 BDE80840 		pop	{r3, lr}
+ 1680 0074 FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_48M
+ 1681              	.L485:
+ 1682 0078 D2F8F430 		ldr	r3, [r2, #244]
+ 1683              	.L499:
+ 1684 007c 0023     		movs	r3, #0
+ 1685 007e E1E7     		b	.L488
+ 1686              	.L484:
+ 1687 0080 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1688 0084 0128     		cmp	r0, #1
+ 1689 0086 01D1     		bne	.L487
+ 1690 0088 9368     		ldr	r3, [r2, #8]
+ 1691 008a F7E7     		b	.L499
+ 1692              	.L487:
+ 1693 008c D2F8F430 		ldr	r3, [r2, #244]
+ 1694 0090 C3F30323 		ubfx	r3, r3, #8, #4
+ 1695 0094 D6E7     		b	.L488
+ 1696              	.L478:
+ 1697 0096 FFF7FEFF 		bl	LL_RCC_HSI48_IsReady
+ 1698 009a 0128     		cmp	r0, #1
+ 1699 009c BED1     		bne	.L483
+ 1700 009e 0348     		ldr	r0, .L500+8
+ 1701 00a0 BDE7     		b	.L475
+ 1702              	.L501:
+ 1703 00a2 00BF     		.align	2
+ 1704              	.L500:
+ 1705 00a4 000C0246 		.word	1174539264
+ 1706 00a8 00000000 		.word	MSIRangeTable
+ARM GAS  /tmp/ccOB813v.s 			page 30
+
+
+ 1707 00ac 006CDC02 		.word	48000000
+ 1709              		.section	.text.LL_RCC_GetSDMMCKernelClockFreq,"ax",%progbits
+ 1710              		.align	1
+ 1711              		.global	LL_RCC_GetSDMMCKernelClockFreq
+ 1712              		.syntax unified
+ 1713              		.thumb
+ 1714              		.thumb_func
+ 1715              		.fpu fpv4-sp-d16
+ 1717              	LL_RCC_GetSDMMCKernelClockFreq:
+ 1718              		@ args = 0, pretend = 0, frame = 0
+ 1719              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1720 0000 08B5     		push	{r3, lr}
+ 1721 0002 0E4B     		ldr	r3, .L511
+ 1722 0004 D3F8E430 		ldr	r3, [r3, #228]
+ 1723 0008 1840     		ands	r0, r0, r3
+ 1724 000a 04D0     		beq	.L503
+ 1725 000c B0F5804F 		cmp	r0, #16384
+ 1726 0010 07D0     		beq	.L504
+ 1727              	.L502:
+ 1728 0012 0020     		movs	r0, #0
+ 1729 0014 08BD     		pop	{r3, pc}
+ 1730              	.L503:
+ 1731 0016 4FF04060 		mov	r0, #201326592
+ 1732 001a BDE80840 		pop	{r3, lr}
+ 1733 001e FFF7FEBF 		b	LL_RCC_GetSDMMCClockFreq
+ 1734              	.L504:
+ 1735 0022 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 1736 0026 0128     		cmp	r0, #1
+ 1737 0028 F3D1     		bne	.L502
+ 1738 002a FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_SAI
+ 1739 002e 0028     		cmp	r0, #0
+ 1740 0030 EFD0     		beq	.L502
+ 1741 0032 BDE80840 		pop	{r3, lr}
+ 1742 0036 FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_SAI
+ 1743              	.L512:
+ 1744 003a 00BF     		.align	2
+ 1745              	.L511:
+ 1746 003c 000C0246 		.word	1174539264
+ 1748              		.section	.text.LL_RCC_GetRNGClockFreq,"ax",%progbits
+ 1749              		.align	1
+ 1750              		.global	LL_RCC_GetRNGClockFreq
+ 1751              		.syntax unified
+ 1752              		.thumb
+ 1753              		.thumb_func
+ 1754              		.fpu fpv4-sp-d16
+ 1756              	LL_RCC_GetRNGClockFreq:
+ 1757              		@ args = 0, pretend = 0, frame = 0
+ 1758              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1759 0000 08B5     		push	{r3, lr}
+ 1760 0002 0F4B     		ldr	r3, .L521
+ 1761 0004 D3F8E430 		ldr	r3, [r3, #228]
+ 1762 0008 1840     		ands	r0, r0, r3
+ 1763 000a B0F5805F 		cmp	r0, #4096
+ 1764 000e 11D0     		beq	.L514
+ 1765 0010 B0F5005F 		cmp	r0, #8192
+ 1766 0014 02D0     		beq	.L515
+ 1767 0016 38B1     		cbz	r0, .L516
+ARM GAS  /tmp/ccOB813v.s 			page 31
+
+
+ 1768              	.L518:
+ 1769 0018 0020     		movs	r0, #0
+ 1770              	.L513:
+ 1771 001a 08BD     		pop	{r3, pc}
+ 1772              	.L515:
+ 1773 001c FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 1774 0020 0128     		cmp	r0, #1
+ 1775 0022 F9D1     		bne	.L518
+ 1776 0024 0748     		ldr	r0, .L521+4
+ 1777 0026 F8E7     		b	.L513
+ 1778              	.L516:
+ 1779 0028 FFF7FEFF 		bl	LL_RCC_HSI48_IsReady
+ 1780 002c 0128     		cmp	r0, #1
+ 1781 002e F3D1     		bne	.L518
+ 1782 0030 0548     		ldr	r0, .L521+8
+ 1783 0032 F2E7     		b	.L513
+ 1784              	.L514:
+ 1785 0034 FFF7FEFF 		bl	LL_RCC_HSI48_IsReady
+ 1786 0038 0128     		cmp	r0, #1
+ 1787 003a EDD1     		bne	.L518
+ 1788 003c 0348     		ldr	r0, .L521+12
+ 1789 003e ECE7     		b	.L513
+ 1790              	.L522:
+ 1791              		.align	2
+ 1792              	.L521:
+ 1793 0040 000C0246 		.word	1174539264
+ 1794 0044 0024F400 		.word	16000000
+ 1795 0048 006CDC02 		.word	48000000
+ 1796 004c 00366E01 		.word	24000000
+ 1798              		.section	.text.LL_RCC_GetUSBClockFreq,"ax",%progbits
+ 1799              		.align	1
+ 1800              		.global	LL_RCC_GetUSBClockFreq
+ 1801              		.syntax unified
+ 1802              		.thumb
+ 1803              		.thumb_func
+ 1804              		.fpu fpv4-sp-d16
+ 1806              	LL_RCC_GetUSBClockFreq:
+ 1807              		@ args = 0, pretend = 0, frame = 0
+ 1808              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1809 0000 284A     		ldr	r2, .L548
+ 1810 0002 08B5     		push	{r3, lr}
+ 1811 0004 D2F8E030 		ldr	r3, [r2, #224]
+ 1812 0008 1840     		ands	r0, r0, r3
+ 1813 000a B0F1006F 		cmp	r0, #134217728
+ 1814 000e 27D0     		beq	.L524
+ 1815 0010 06D8     		bhi	.L525
+ 1816 0012 0028     		cmp	r0, #0
+ 1817 0014 3FD0     		beq	.L526
+ 1818 0016 B0F1806F 		cmp	r0, #67108864
+ 1819 001a 16D0     		beq	.L527
+ 1820              	.L531:
+ 1821 001c 0020     		movs	r0, #0
+ 1822              	.L523:
+ 1823 001e 08BD     		pop	{r3, pc}
+ 1824              	.L525:
+ 1825 0020 B0F1406F 		cmp	r0, #201326592
+ 1826 0024 FAD1     		bne	.L531
+ARM GAS  /tmp/ccOB813v.s 			page 32
+
+
+ 1827 0026 1368     		ldr	r3, [r2]
+ 1828 0028 9B06     		lsls	r3, r3, #26
+ 1829 002a F7D5     		bpl	.L531
+ 1830 002c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1831 0030 0128     		cmp	r0, #1
+ 1832 0032 1D49     		ldr	r1, .L548+4
+ 1833 0034 24D1     		bne	.L532
+ 1834 0036 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1835 003a 0128     		cmp	r0, #1
+ 1836 003c 1CD1     		bne	.L533
+ 1837 003e 9368     		ldr	r3, [r2, #8]
+ 1838 0040 C3F30363 		ubfx	r3, r3, #24, #4
+ 1839              	.L536:
+ 1840 0044 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 1841 0048 E9E7     		b	.L523
+ 1842              	.L527:
+ 1843 004a FFF7FEFF 		bl	LL_RCC_PLL2_IsReady
+ 1844 004e 0128     		cmp	r0, #1
+ 1845 0050 E4D1     		bne	.L531
+ 1846 0052 D36A     		ldr	r3, [r2, #44]
+ 1847 0054 9A03     		lsls	r2, r3, #14
+ 1848 0056 E1D5     		bpl	.L531
+ 1849 0058 BDE80840 		pop	{r3, lr}
+ 1850 005c FFF7FEBF 		b	RCC_PLL2_GetFreqDomain_48M
+ 1851              	.L524:
+ 1852 0060 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 1853 0064 0128     		cmp	r0, #1
+ 1854 0066 D9D1     		bne	.L531
+ 1855 0068 FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_48M
+ 1856 006c 0028     		cmp	r0, #0
+ 1857 006e D5D0     		beq	.L531
+ 1858 0070 BDE80840 		pop	{r3, lr}
+ 1859 0074 FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_48M
+ 1860              	.L533:
+ 1861 0078 D2F8F430 		ldr	r3, [r2, #244]
+ 1862              	.L547:
+ 1863 007c 0023     		movs	r3, #0
+ 1864 007e E1E7     		b	.L536
+ 1865              	.L532:
+ 1866 0080 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1867 0084 0128     		cmp	r0, #1
+ 1868 0086 01D1     		bne	.L535
+ 1869 0088 9368     		ldr	r3, [r2, #8]
+ 1870 008a F7E7     		b	.L547
+ 1871              	.L535:
+ 1872 008c D2F8F430 		ldr	r3, [r2, #244]
+ 1873 0090 C3F30323 		ubfx	r3, r3, #8, #4
+ 1874 0094 D6E7     		b	.L536
+ 1875              	.L526:
+ 1876 0096 FFF7FEFF 		bl	LL_RCC_HSI48_IsReady
+ 1877 009a 0128     		cmp	r0, #1
+ 1878 009c BED1     		bne	.L531
+ 1879 009e 0348     		ldr	r0, .L548+8
+ 1880 00a0 BDE7     		b	.L523
+ 1881              	.L549:
+ 1882 00a2 00BF     		.align	2
+ 1883              	.L548:
+ARM GAS  /tmp/ccOB813v.s 			page 33
+
+
+ 1884 00a4 000C0246 		.word	1174539264
+ 1885 00a8 00000000 		.word	MSIRangeTable
+ 1886 00ac 006CDC02 		.word	48000000
+ 1888              		.section	.text.LL_RCC_GetADCDACClockFreq,"ax",%progbits
+ 1889              		.align	1
+ 1890              		.global	LL_RCC_GetADCDACClockFreq
+ 1891              		.syntax unified
+ 1892              		.thumb
+ 1893              		.thumb_func
+ 1894              		.fpu fpv4-sp-d16
+ 1896              	LL_RCC_GetADCDACClockFreq:
+ 1897              		@ args = 0, pretend = 0, frame = 0
+ 1898              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1899 0000 294A     		ldr	r2, .L581
+ 1900 0002 08B5     		push	{r3, lr}
+ 1901 0004 D2F8E830 		ldr	r3, [r2, #232]
+ 1902 0008 1840     		ands	r0, r0, r3
+ 1903 000a B0F5405F 		cmp	r0, #12288
+ 1904 000e 36D0     		beq	.L551
+ 1905 0010 08D8     		bhi	.L552
+ 1906 0012 B0F5805F 		cmp	r0, #4096
+ 1907 0016 1DD0     		beq	.L553
+ 1908 0018 B0F5005F 		cmp	r0, #8192
+ 1909 001c 1ED0     		beq	.L554
+ 1910 001e C8B1     		cbz	r0, .L553
+ 1911              	.L559:
+ 1912 0020 0020     		movs	r0, #0
+ 1913              	.L550:
+ 1914 0022 08BD     		pop	{r3, pc}
+ 1915              	.L552:
+ 1916 0024 B0F5804F 		cmp	r0, #16384
+ 1917 0028 23D0     		beq	.L556
+ 1918 002a B0F5A04F 		cmp	r0, #20480
+ 1919 002e F7D1     		bne	.L559
+ 1920 0030 1368     		ldr	r3, [r2]
+ 1921 0032 9B06     		lsls	r3, r3, #26
+ 1922 0034 F4D5     		bpl	.L559
+ 1923 0036 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1924 003a 0128     		cmp	r0, #1
+ 1925 003c 1B49     		ldr	r1, .L581+4
+ 1926 003e 27D1     		bne	.L560
+ 1927 0040 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1928 0044 0128     		cmp	r0, #1
+ 1929 0046 1FD1     		bne	.L561
+ 1930 0048 9368     		ldr	r3, [r2, #8]
+ 1931 004a C3F30363 		ubfx	r3, r3, #24, #4
+ 1932              	.L564:
+ 1933 004e 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 1934 0052 E6E7     		b	.L550
+ 1935              	.L553:
+ 1936 0054 BDE80840 		pop	{r3, lr}
+ 1937 0058 FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 1938              	.L554:
+ 1939 005c FFF7FEFF 		bl	LL_RCC_PLL2_IsReady
+ 1940 0060 0128     		cmp	r0, #1
+ 1941 0062 DDD1     		bne	.L559
+ 1942 0064 D36A     		ldr	r3, [r2, #44]
+ARM GAS  /tmp/ccOB813v.s 			page 34
+
+
+ 1943 0066 5903     		lsls	r1, r3, #13
+ 1944 0068 DAD5     		bpl	.L559
+ 1945 006a BDE80840 		pop	{r3, lr}
+ 1946 006e FFF7FEBF 		b	RCC_PLL2_GetFreqDomain_ADC
+ 1947              	.L556:
+ 1948 0072 FFF7FEFF 		bl	LL_RCC_HSI_IsReady
+ 1949 0076 0128     		cmp	r0, #1
+ 1950 0078 D2D1     		bne	.L559
+ 1951 007a 0D48     		ldr	r0, .L581+8
+ 1952 007c D1E7     		b	.L550
+ 1953              	.L551:
+ 1954 007e 1368     		ldr	r3, [r2]
+ 1955 0080 9A03     		lsls	r2, r3, #14
+ 1956 0082 CDD5     		bpl	.L559
+ 1957 0084 0B48     		ldr	r0, .L581+12
+ 1958 0086 CCE7     		b	.L550
+ 1959              	.L561:
+ 1960 0088 D2F8F430 		ldr	r3, [r2, #244]
+ 1961              	.L580:
+ 1962 008c 0023     		movs	r3, #0
+ 1963 008e DEE7     		b	.L564
+ 1964              	.L560:
+ 1965 0090 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 1966 0094 0128     		cmp	r0, #1
+ 1967 0096 01D1     		bne	.L563
+ 1968 0098 9368     		ldr	r3, [r2, #8]
+ 1969 009a F7E7     		b	.L580
+ 1970              	.L563:
+ 1971 009c D2F8F430 		ldr	r3, [r2, #244]
+ 1972 00a0 C3F30323 		ubfx	r3, r3, #8, #4
+ 1973 00a4 D3E7     		b	.L564
+ 1974              	.L582:
+ 1975 00a6 00BF     		.align	2
+ 1976              	.L581:
+ 1977 00a8 000C0246 		.word	1174539264
+ 1978 00ac 00000000 		.word	MSIRangeTable
+ 1979 00b0 0024F400 		.word	16000000
+ 1980 00b4 00127A00 		.word	8000000
+ 1982              		.section	.text.LL_RCC_GetADF1ClockFreq,"ax",%progbits
+ 1983              		.align	1
+ 1984              		.global	LL_RCC_GetADF1ClockFreq
+ 1985              		.syntax unified
+ 1986              		.thumb
+ 1987              		.thumb_func
+ 1988              		.fpu fpv4-sp-d16
+ 1990              	LL_RCC_GetADF1ClockFreq:
+ 1991              		@ args = 0, pretend = 0, frame = 0
+ 1992              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1993 0000 274A     		ldr	r2, .L609
+ 1994 0002 08B5     		push	{r3, lr}
+ 1995 0004 D2F8E830 		ldr	r3, [r2, #232]
+ 1996 0008 1840     		ands	r0, r0, r3
+ 1997 000a B0F5003F 		cmp	r0, #131072
+ 1998 000e 2BD0     		beq	.L584
+ 1999 0010 05D8     		bhi	.L585
+ 2000 0012 C8B1     		cbz	r0, .L586
+ 2001 0014 B0F5803F 		cmp	r0, #65536
+ARM GAS  /tmp/ccOB813v.s 			page 35
+
+
+ 2002 0018 1AD0     		beq	.L587
+ 2003              	.L591:
+ 2004 001a 0020     		movs	r0, #0
+ 2005              	.L583:
+ 2006 001c 08BD     		pop	{r3, pc}
+ 2007              	.L585:
+ 2008 001e B0F5403F 		cmp	r0, #196608
+ 2009 0022 3AD0     		beq	.L597
+ 2010 0024 B0F5802F 		cmp	r0, #262144
+ 2011 0028 F7D1     		bne	.L591
+ 2012 002a FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2013 002e 0128     		cmp	r0, #1
+ 2014 0030 1C49     		ldr	r1, .L609+4
+ 2015 0032 27D1     		bne	.L592
+ 2016 0034 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2017 0038 0128     		cmp	r0, #1
+ 2018 003a 1FD1     		bne	.L593
+ 2019 003c 9368     		ldr	r3, [r2, #8]
+ 2020 003e C3F30363 		ubfx	r3, r3, #24, #4
+ 2021              	.L596:
+ 2022 0042 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 2023 0046 E9E7     		b	.L583
+ 2024              	.L586:
+ 2025 0048 BDE80840 		pop	{r3, lr}
+ 2026 004c FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 2027              	.L587:
+ 2028 0050 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 2029 0054 0028     		cmp	r0, #0
+ 2030 0056 E0D0     		beq	.L591
+ 2031 0058 FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_SAI
+ 2032 005c 0028     		cmp	r0, #0
+ 2033 005e DCD0     		beq	.L591
+ 2034 0060 BDE80840 		pop	{r3, lr}
+ 2035 0064 FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_SAI
+ 2036              	.L584:
+ 2037 0068 1368     		ldr	r3, [r2]
+ 2038 006a 9900     		lsls	r1, r3, #2
+ 2039 006c D5D5     		bpl	.L591
+ 2040 006e 136B     		ldr	r3, [r2, #48]
+ 2041 0070 9B03     		lsls	r3, r3, #14
+ 2042 0072 D2D5     		bpl	.L591
+ 2043 0074 BDE80840 		pop	{r3, lr}
+ 2044 0078 FFF7FEBF 		b	RCC_PLL3_GetFreqDomain_48M
+ 2045              	.L593:
+ 2046 007c D2F8F430 		ldr	r3, [r2, #244]
+ 2047              	.L608:
+ 2048 0080 0023     		movs	r3, #0
+ 2049 0082 DEE7     		b	.L596
+ 2050              	.L592:
+ 2051 0084 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2052 0088 0128     		cmp	r0, #1
+ 2053 008a 01D1     		bne	.L595
+ 2054 008c 9368     		ldr	r3, [r2, #8]
+ 2055 008e F7E7     		b	.L608
+ 2056              	.L595:
+ 2057 0090 D2F8F430 		ldr	r3, [r2, #244]
+ 2058 0094 C3F30323 		ubfx	r3, r3, #8, #4
+ARM GAS  /tmp/ccOB813v.s 			page 36
+
+
+ 2059 0098 D3E7     		b	.L596
+ 2060              	.L597:
+ 2061 009a 4BF68030 		movw	r0, #48000
+ 2062 009e BDE7     		b	.L583
+ 2063              	.L610:
+ 2064              		.align	2
+ 2065              	.L609:
+ 2066 00a0 000C0246 		.word	1174539264
+ 2067 00a4 00000000 		.word	MSIRangeTable
+ 2069              		.section	.text.LL_RCC_GetMDF1ClockFreq,"ax",%progbits
+ 2070              		.align	1
+ 2071              		.global	LL_RCC_GetMDF1ClockFreq
+ 2072              		.syntax unified
+ 2073              		.thumb
+ 2074              		.thumb_func
+ 2075              		.fpu fpv4-sp-d16
+ 2077              	LL_RCC_GetMDF1ClockFreq:
+ 2078              		@ args = 0, pretend = 0, frame = 0
+ 2079              		@ frame_needed = 0, uses_anonymous_args = 0
+ 2080 0000 08B5     		push	{r3, lr}
+ 2081 0002 244B     		ldr	r3, .L637
+ 2082 0004 D3F8E420 		ldr	r2, [r3, #228]
+ 2083 0008 1040     		ands	r0, r0, r2
+ 2084 000a 0428     		cmp	r0, #4
+ 2085 000c 0ED8     		bhi	.L626
+ 2086 000e DFE800F0 		tbb	[pc, r0]
+ 2087              	.L614:
+ 2088 0012 06       		.byte	(.L618-.L614)/2
+ 2089 0013 0A       		.byte	(.L617-.L614)/2
+ 2090 0014 17       		.byte	(.L616-.L614)/2
+ 2091 0015 03       		.byte	(.L615-.L614)/2
+ 2092 0016 21       		.byte	(.L613-.L614)/2
+ 2093 0017 00       		.p2align 1
+ 2094              	.L615:
+ 2095 0018 4BF68030 		movw	r0, #48000
+ 2096              	.L611:
+ 2097 001c 08BD     		pop	{r3, pc}
+ 2098              	.L618:
+ 2099 001e BDE80840 		pop	{r3, lr}
+ 2100 0022 FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 2101              	.L617:
+ 2102 0026 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 2103 002a 08B9     		cbnz	r0, .L619
+ 2104              	.L626:
+ 2105 002c 0020     		movs	r0, #0
+ 2106 002e F5E7     		b	.L611
+ 2107              	.L619:
+ 2108 0030 FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_SAI
+ 2109 0034 0028     		cmp	r0, #0
+ 2110 0036 F9D0     		beq	.L626
+ 2111 0038 BDE80840 		pop	{r3, lr}
+ 2112 003c FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_SAI
+ 2113              	.L616:
+ 2114 0040 1A68     		ldr	r2, [r3]
+ 2115 0042 9200     		lsls	r2, r2, #2
+ 2116 0044 F2D5     		bpl	.L626
+ 2117 0046 1B6B     		ldr	r3, [r3, #48]
+ARM GAS  /tmp/ccOB813v.s 			page 37
+
+
+ 2118 0048 9B03     		lsls	r3, r3, #14
+ 2119 004a EFD5     		bpl	.L626
+ 2120 004c BDE80840 		pop	{r3, lr}
+ 2121 0050 FFF7FEBF 		b	RCC_PLL3_GetFreqDomain_48M
+ 2122              	.L613:
+ 2123 0054 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2124 0058 0128     		cmp	r0, #1
+ 2125 005a 0E4A     		ldr	r2, .L637
+ 2126 005c 0E49     		ldr	r1, .L637+4
+ 2127 005e 0DD1     		bne	.L621
+ 2128 0060 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2129 0064 0128     		cmp	r0, #1
+ 2130 0066 05D1     		bne	.L622
+ 2131 0068 9368     		ldr	r3, [r2, #8]
+ 2132 006a C3F30363 		ubfx	r3, r3, #24, #4
+ 2133              	.L625:
+ 2134 006e 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 2135 0072 D3E7     		b	.L611
+ 2136              	.L622:
+ 2137 0074 D2F8F430 		ldr	r3, [r2, #244]
+ 2138              	.L636:
+ 2139 0078 0023     		movs	r3, #0
+ 2140 007a F8E7     		b	.L625
+ 2141              	.L621:
+ 2142 007c FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2143 0080 0128     		cmp	r0, #1
+ 2144 0082 01D1     		bne	.L624
+ 2145 0084 9368     		ldr	r3, [r2, #8]
+ 2146 0086 F7E7     		b	.L636
+ 2147              	.L624:
+ 2148 0088 D2F8F430 		ldr	r3, [r2, #244]
+ 2149 008c C3F30323 		ubfx	r3, r3, #8, #4
+ 2150 0090 EDE7     		b	.L625
+ 2151              	.L638:
+ 2152 0092 00BF     		.align	2
+ 2153              	.L637:
+ 2154 0094 000C0246 		.word	1174539264
+ 2155 0098 00000000 		.word	MSIRangeTable
+ 2157              		.section	.text.LL_RCC_GetDAC1ClockFreq,"ax",%progbits
+ 2158              		.align	1
+ 2159              		.global	LL_RCC_GetDAC1ClockFreq
+ 2160              		.syntax unified
+ 2161              		.thumb
+ 2162              		.thumb_func
+ 2163              		.fpu fpv4-sp-d16
+ 2165              	LL_RCC_GetDAC1ClockFreq:
+ 2166              		@ args = 0, pretend = 0, frame = 0
+ 2167              		@ frame_needed = 0, uses_anonymous_args = 0
+ 2168              		@ link register save eliminated.
+ 2169 0000 074B     		ldr	r3, .L643
+ 2170 0002 D3F8E830 		ldr	r3, [r3, #232]
+ 2171 0006 1840     		ands	r0, r0, r3
+ 2172 0008 06D0     		beq	.L641
+ 2173 000a B0F5004F 		cmp	r0, #32768
+ 2174 000e 14BF     		ite	ne
+ 2175 0010 0020     		movne	r0, #0
+ 2176 0012 4FF4FA40 		moveq	r0, #32000
+ARM GAS  /tmp/ccOB813v.s 			page 38
+
+
+ 2177 0016 7047     		bx	lr
+ 2178              	.L641:
+ 2179 0018 4FF40040 		mov	r0, #32768
+ 2180 001c 7047     		bx	lr
+ 2181              	.L644:
+ 2182 001e 00BF     		.align	2
+ 2183              	.L643:
+ 2184 0020 000C0246 		.word	1174539264
+ 2186              		.section	.text.LL_RCC_GetOCTOSPIClockFreq,"ax",%progbits
+ 2187              		.align	1
+ 2188              		.global	LL_RCC_GetOCTOSPIClockFreq
+ 2189              		.syntax unified
+ 2190              		.thumb
+ 2191              		.thumb_func
+ 2192              		.fpu fpv4-sp-d16
+ 2194              	LL_RCC_GetOCTOSPIClockFreq:
+ 2195              		@ args = 0, pretend = 0, frame = 0
+ 2196              		@ frame_needed = 0, uses_anonymous_args = 0
+ 2197 0000 264A     		ldr	r2, .L666
+ 2198 0002 08B5     		push	{r3, lr}
+ 2199 0004 D2F8E430 		ldr	r3, [r2, #228]
+ 2200 0008 1840     		ands	r0, r0, r3
+ 2201 000a B0F5001F 		cmp	r0, #2097152
+ 2202 000e 39D0     		beq	.L646
+ 2203 0010 05D8     		bhi	.L647
+ 2204 0012 90B1     		cbz	r0, .L648
+ 2205 0014 B0F5801F 		cmp	r0, #1048576
+ 2206 0018 13D0     		beq	.L649
+ 2207              	.L658:
+ 2208 001a 0020     		movs	r0, #0
+ 2209              	.L645:
+ 2210 001c 08BD     		pop	{r3, pc}
+ 2211              	.L647:
+ 2212 001e B0F5401F 		cmp	r0, #3145728
+ 2213 0022 FAD1     		bne	.L658
+ 2214 0024 FFF7FEFF 		bl	LL_RCC_PLL2_IsReady
+ 2215 0028 0128     		cmp	r0, #1
+ 2216 002a F6D1     		bne	.L658
+ 2217 002c D36A     		ldr	r3, [r2, #44]
+ 2218 002e 9B03     		lsls	r3, r3, #14
+ 2219 0030 F3D5     		bpl	.L658
+ 2220 0032 BDE80840 		pop	{r3, lr}
+ 2221 0036 FFF7FEBF 		b	RCC_PLL2_GetFreqDomain_48M
+ 2222              	.L648:
+ 2223 003a BDE80840 		pop	{r3, lr}
+ 2224 003e FFF7FEBF 		b	RCC_GetSystemClockFreq
+ 2225              	.L649:
+ 2226 0042 1368     		ldr	r3, [r2]
+ 2227 0044 9906     		lsls	r1, r3, #26
+ 2228 0046 E8D5     		bpl	.L658
+ 2229 0048 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2230 004c 0128     		cmp	r0, #1
+ 2231 004e 1449     		ldr	r1, .L666+4
+ 2232 0050 0DD1     		bne	.L653
+ 2233 0052 FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2234 0056 0128     		cmp	r0, #1
+ 2235 0058 05D1     		bne	.L654
+ARM GAS  /tmp/ccOB813v.s 			page 39
+
+
+ 2236 005a 9368     		ldr	r3, [r2, #8]
+ 2237 005c C3F30363 		ubfx	r3, r3, #24, #4
+ 2238              	.L657:
+ 2239 0060 51F82300 		ldr	r0, [r1, r3, lsl #2]
+ 2240 0064 DAE7     		b	.L645
+ 2241              	.L654:
+ 2242 0066 D2F8F430 		ldr	r3, [r2, #244]
+ 2243              	.L665:
+ 2244 006a 0023     		movs	r3, #0
+ 2245 006c F8E7     		b	.L657
+ 2246              	.L653:
+ 2247 006e FFF7FEFF 		bl	LL_RCC_MSI_IsEnabledRangeSelect
+ 2248 0072 0128     		cmp	r0, #1
+ 2249 0074 01D1     		bne	.L656
+ 2250 0076 9368     		ldr	r3, [r2, #8]
+ 2251 0078 F7E7     		b	.L665
+ 2252              	.L656:
+ 2253 007a D2F8F430 		ldr	r3, [r2, #244]
+ 2254 007e C3F30323 		ubfx	r3, r3, #8, #4
+ 2255 0082 EDE7     		b	.L657
+ 2256              	.L646:
+ 2257 0084 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 2258 0088 0128     		cmp	r0, #1
+ 2259 008a C6D1     		bne	.L658
+ 2260 008c FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_48M
+ 2261 0090 0028     		cmp	r0, #0
+ 2262 0092 C2D0     		beq	.L658
+ 2263 0094 BDE80840 		pop	{r3, lr}
+ 2264 0098 FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_48M
+ 2265              	.L667:
+ 2266              		.align	2
+ 2267              	.L666:
+ 2268 009c 000C0246 		.word	1174539264
+ 2269 00a0 00000000 		.word	MSIRangeTable
+ 2271              		.section	.text.LL_RCC_GetFDCANClockFreq,"ax",%progbits
+ 2272              		.align	1
+ 2273              		.global	LL_RCC_GetFDCANClockFreq
+ 2274              		.syntax unified
+ 2275              		.thumb
+ 2276              		.thumb_func
+ 2277              		.fpu fpv4-sp-d16
+ 2279              	LL_RCC_GetFDCANClockFreq:
+ 2280              		@ args = 0, pretend = 0, frame = 0
+ 2281              		@ frame_needed = 0, uses_anonymous_args = 0
+ 2282 0000 144A     		ldr	r2, .L681
+ 2283 0002 08B5     		push	{r3, lr}
+ 2284 0004 D2F8E030 		ldr	r3, [r2, #224]
+ 2285 0008 1840     		ands	r0, r0, r3
+ 2286 000a B0F1807F 		cmp	r0, #16777216
+ 2287 000e 08D0     		beq	.L669
+ 2288 0010 B0F1007F 		cmp	r0, #33554432
+ 2289 0014 11D0     		beq	.L670
+ 2290 0016 10B9     		cbnz	r0, .L673
+ 2291 0018 1368     		ldr	r3, [r2]
+ 2292 001a 9A03     		lsls	r2, r3, #14
+ 2293 001c 18D4     		bmi	.L674
+ 2294              	.L673:
+ARM GAS  /tmp/ccOB813v.s 			page 40
+
+
+ 2295 001e 0020     		movs	r0, #0
+ 2296              	.L668:
+ 2297 0020 08BD     		pop	{r3, pc}
+ 2298              	.L669:
+ 2299 0022 FFF7FEFF 		bl	LL_RCC_PLL1_IsReady
+ 2300 0026 0128     		cmp	r0, #1
+ 2301 0028 F9D1     		bne	.L673
+ 2302 002a FFF7FEFF 		bl	LL_RCC_PLL1_IsEnabledDomain_48M
+ 2303 002e 0028     		cmp	r0, #0
+ 2304 0030 F5D0     		beq	.L673
+ 2305 0032 BDE80840 		pop	{r3, lr}
+ 2306 0036 FFF7FEBF 		b	RCC_PLL1_GetFreqDomain_48M
+ 2307              	.L670:
+ 2308 003a FFF7FEFF 		bl	LL_RCC_PLL2_IsReady
+ 2309 003e 0128     		cmp	r0, #1
+ 2310 0040 EDD1     		bne	.L673
+ 2311 0042 D36A     		ldr	r3, [r2, #44]
+ 2312 0044 DB03     		lsls	r3, r3, #15
+ 2313 0046 EAD5     		bpl	.L673
+ 2314 0048 BDE80840 		pop	{r3, lr}
+ 2315 004c FFF7FEBF 		b	RCC_PLL2_GetFreqDomain_SAI
+ 2316              	.L674:
+ 2317 0050 0148     		ldr	r0, .L681+4
+ 2318 0052 E5E7     		b	.L668
+ 2319              	.L682:
+ 2320              		.align	2
+ 2321              	.L681:
+ 2322 0054 000C0246 		.word	1174539264
+ 2323 0058 00127A00 		.word	8000000
+ 2325              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccOB813v.s 			page 41
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32u5xx_ll_rcc.c
+     /tmp/ccOB813v.s:16     .text.LL_RCC_HSI_IsReady:0000000000000000 $t
+     /tmp/ccOB813v.s:24     .text.LL_RCC_HSI_IsReady:0000000000000000 LL_RCC_HSI_IsReady
+     /tmp/ccOB813v.s:35     .text.LL_RCC_HSI_IsReady:000000000000000c $d
+     /tmp/ccOB813v.s:38     .text.LL_RCC_HSI48_IsReady:0000000000000000 $t
+     /tmp/ccOB813v.s:44     .text.LL_RCC_HSI48_IsReady:0000000000000000 LL_RCC_HSI48_IsReady
+     /tmp/ccOB813v.s:55     .text.LL_RCC_HSI48_IsReady:000000000000000c $d
+     /tmp/ccOB813v.s:58     .text.LL_RCC_LSE_IsReady:0000000000000000 $t
+     /tmp/ccOB813v.s:64     .text.LL_RCC_LSE_IsReady:0000000000000000 LL_RCC_LSE_IsReady
+     /tmp/ccOB813v.s:75     .text.LL_RCC_LSE_IsReady:000000000000000c $d
+     /tmp/ccOB813v.s:78     .text.LL_RCC_MSI_IsEnabledRangeSelect:0000000000000000 $t
+     /tmp/ccOB813v.s:84     .text.LL_RCC_MSI_IsEnabledRangeSelect:0000000000000000 LL_RCC_MSI_IsEnabledRangeSelect
+     /tmp/ccOB813v.s:95     .text.LL_RCC_MSI_IsEnabledRangeSelect:000000000000000c $d
+     /tmp/ccOB813v.s:98     .text.LL_RCC_PLL1_IsReady:0000000000000000 $t
+     /tmp/ccOB813v.s:104    .text.LL_RCC_PLL1_IsReady:0000000000000000 LL_RCC_PLL1_IsReady
+     /tmp/ccOB813v.s:115    .text.LL_RCC_PLL1_IsReady:000000000000000c $d
+     /tmp/ccOB813v.s:118    .text.LL_RCC_PLL1_IsEnabledDomain_SAI:0000000000000000 $t
+     /tmp/ccOB813v.s:124    .text.LL_RCC_PLL1_IsEnabledDomain_SAI:0000000000000000 LL_RCC_PLL1_IsEnabledDomain_SAI
+     /tmp/ccOB813v.s:135    .text.LL_RCC_PLL1_IsEnabledDomain_SAI:000000000000000c $d
+     /tmp/ccOB813v.s:138    .text.LL_RCC_PLL1_IsEnabledDomain_48M:0000000000000000 $t
+     /tmp/ccOB813v.s:144    .text.LL_RCC_PLL1_IsEnabledDomain_48M:0000000000000000 LL_RCC_PLL1_IsEnabledDomain_48M
+     /tmp/ccOB813v.s:155    .text.LL_RCC_PLL1_IsEnabledDomain_48M:000000000000000c $d
+     /tmp/ccOB813v.s:158    .text.LL_RCC_PLL2_IsReady:0000000000000000 $t
+     /tmp/ccOB813v.s:164    .text.LL_RCC_PLL2_IsReady:0000000000000000 LL_RCC_PLL2_IsReady
+     /tmp/ccOB813v.s:175    .text.LL_RCC_PLL2_IsReady:000000000000000c $d
+     /tmp/ccOB813v.s:178    .text.RCC_GetHCLKClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:184    .text.RCC_GetHCLKClockFreq:0000000000000000 RCC_GetHCLKClockFreq
+     /tmp/ccOB813v.s:198    .text.RCC_GetHCLKClockFreq:0000000000000010 $d
+     /tmp/ccOB813v.s:202    .text.RCC_GetPCLK1ClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:208    .text.RCC_GetPCLK1ClockFreq:0000000000000000 RCC_GetPCLK1ClockFreq
+     /tmp/ccOB813v.s:222    .text.RCC_GetPCLK1ClockFreq:0000000000000010 $d
+     /tmp/ccOB813v.s:226    .text.RCC_GetPCLK3ClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:232    .text.RCC_GetPCLK3ClockFreq:0000000000000000 RCC_GetPCLK3ClockFreq
+     /tmp/ccOB813v.s:246    .text.RCC_GetPCLK3ClockFreq:0000000000000010 $d
+     /tmp/ccOB813v.s:250    .text.RCC_GetSystemClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:256    .text.RCC_GetSystemClockFreq:0000000000000000 RCC_GetSystemClockFreq
+     /tmp/ccOB813v.s:386    .text.RCC_GetSystemClockFreq:0000000000000108 $d
+     /tmp/ccOB813v.s:392    .text.RCC_PLL2_GetFreqDomain_SAI:0000000000000000 $t
+     /tmp/ccOB813v.s:398    .text.RCC_PLL2_GetFreqDomain_SAI:0000000000000000 RCC_PLL2_GetFreqDomain_SAI
+     /tmp/ccOB813v.s:466    .text.RCC_PLL2_GetFreqDomain_SAI:0000000000000084 $d
+     /tmp/ccOB813v.s:472    .text.RCC_PLL3_GetFreqDomain_48M:0000000000000000 $t
+     /tmp/ccOB813v.s:478    .text.RCC_PLL3_GetFreqDomain_48M:0000000000000000 RCC_PLL3_GetFreqDomain_48M
+     /tmp/ccOB813v.s:538    .text.RCC_PLL3_GetFreqDomain_48M:0000000000000078 $d
+     /tmp/ccOB813v.s:544    .text.RCC_PLL2_GetFreqDomain_48M:0000000000000000 $t
+     /tmp/ccOB813v.s:550    .text.RCC_PLL2_GetFreqDomain_48M:0000000000000000 RCC_PLL2_GetFreqDomain_48M
+     /tmp/ccOB813v.s:610    .text.RCC_PLL2_GetFreqDomain_48M:0000000000000078 $d
+     /tmp/ccOB813v.s:550    .text.RCC_PLL2_GetFreqDomain_48M:0000000000000000 RCC_PLL2_GetFreqDomain_ADC
+     /tmp/ccOB813v.s:617    .text.RCC_PLL1_GetFreqDomain_48M:0000000000000000 $t
+     /tmp/ccOB813v.s:623    .text.RCC_PLL1_GetFreqDomain_48M:0000000000000000 RCC_PLL1_GetFreqDomain_48M
+     /tmp/ccOB813v.s:683    .text.RCC_PLL1_GetFreqDomain_48M:0000000000000078 $d
+     /tmp/ccOB813v.s:689    .text.RCC_PLL1_GetFreqDomain_SAI:0000000000000000 $t
+     /tmp/ccOB813v.s:695    .text.RCC_PLL1_GetFreqDomain_SAI:0000000000000000 RCC_PLL1_GetFreqDomain_SAI
+     /tmp/ccOB813v.s:763    .text.RCC_PLL1_GetFreqDomain_SAI:0000000000000084 $d
+     /tmp/ccOB813v.s:769    .text.LL_RCC_DeInit:0000000000000000 $t
+     /tmp/ccOB813v.s:776    .text.LL_RCC_DeInit:0000000000000000 LL_RCC_DeInit
+     /tmp/ccOB813v.s:829    .text.LL_RCC_DeInit:0000000000000070 $d
+ARM GAS  /tmp/ccOB813v.s 			page 42
+
+
+     /tmp/ccOB813v.s:834    .text.LL_RCC_GetSystemClocksFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:841    .text.LL_RCC_GetSystemClocksFreq:0000000000000000 LL_RCC_GetSystemClocksFreq
+     /tmp/ccOB813v.s:866    .text.LL_RCC_GetSystemClocksFreq:0000000000000034 $d
+     /tmp/ccOB813v.s:870    .text.LL_RCC_GetUSARTClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:877    .text.LL_RCC_GetUSARTClockFreq:0000000000000000 LL_RCC_GetUSARTClockFreq
+     /tmp/ccOB813v.s:945    .text.LL_RCC_GetUSARTClockFreq:0000000000000090 $d
+     /tmp/ccOB813v.s:953    .text.LL_RCC_GetUARTClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:960    .text.LL_RCC_GetUARTClockFreq:0000000000000000 LL_RCC_GetUARTClockFreq
+     /tmp/ccOB813v.s:1028   .text.LL_RCC_GetUARTClockFreq:0000000000000094 $d
+     /tmp/ccOB813v.s:1034   .text.LL_RCC_GetSPIClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1041   .text.LL_RCC_GetSPIClockFreq:0000000000000000 LL_RCC_GetSPIClockFreq
+     /tmp/ccOB813v.s:1157   .text.LL_RCC_GetSPIClockFreq:0000000000000100 $d
+     /tmp/ccOB813v.s:1170   .text.LL_RCC_GetI2CClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1177   .text.LL_RCC_GetI2CClockFreq:0000000000000000 LL_RCC_GetI2CClockFreq
+     /tmp/ccOB813v.s:1289   .text.LL_RCC_GetI2CClockFreq:00000000000000f4 $d
+     /tmp/ccOB813v.s:1303   .text.LL_RCC_GetLPUARTClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1310   .text.LL_RCC_GetLPUARTClockFreq:0000000000000000 LL_RCC_GetLPUARTClockFreq
+     /tmp/ccOB813v.s:1321   .text.LL_RCC_GetLPUARTClockFreq:0000000000000012 $d
+     /tmp/ccOB813v.s:1325   .text.LL_RCC_GetLPUARTClockFreq:0000000000000016 $t
+     /tmp/ccOB813v.s:1354   .text.LL_RCC_GetLPUARTClockFreq:000000000000004c $d
+     /tmp/ccOB813v.s:1358   .text.LL_RCC_GetLPTIMClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1365   .text.LL_RCC_GetLPTIMClockFreq:0000000000000000 LL_RCC_GetLPTIMClockFreq
+     /tmp/ccOB813v.s:1477   .text.LL_RCC_GetLPTIMClockFreq:00000000000000f4 $d
+     /tmp/ccOB813v.s:1489   .text.LL_RCC_GetSAIClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1496   .text.LL_RCC_GetSAIClockFreq:0000000000000000 LL_RCC_GetSAIClockFreq
+     /tmp/ccOB813v.s:1612   .text.LL_RCC_GetSAIClockFreq:00000000000000f4 $d
+     /tmp/ccOB813v.s:1620   .text.LL_RCC_GetSDMMCClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1627   .text.LL_RCC_GetSDMMCClockFreq:0000000000000000 LL_RCC_GetSDMMCClockFreq
+     /tmp/ccOB813v.s:1705   .text.LL_RCC_GetSDMMCClockFreq:00000000000000a4 $d
+     /tmp/ccOB813v.s:1710   .text.LL_RCC_GetSDMMCKernelClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1717   .text.LL_RCC_GetSDMMCKernelClockFreq:0000000000000000 LL_RCC_GetSDMMCKernelClockFreq
+     /tmp/ccOB813v.s:1746   .text.LL_RCC_GetSDMMCKernelClockFreq:000000000000003c $d
+     /tmp/ccOB813v.s:1749   .text.LL_RCC_GetRNGClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1756   .text.LL_RCC_GetRNGClockFreq:0000000000000000 LL_RCC_GetRNGClockFreq
+     /tmp/ccOB813v.s:1793   .text.LL_RCC_GetRNGClockFreq:0000000000000040 $d
+     /tmp/ccOB813v.s:1799   .text.LL_RCC_GetUSBClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1806   .text.LL_RCC_GetUSBClockFreq:0000000000000000 LL_RCC_GetUSBClockFreq
+     /tmp/ccOB813v.s:1884   .text.LL_RCC_GetUSBClockFreq:00000000000000a4 $d
+     /tmp/ccOB813v.s:1889   .text.LL_RCC_GetADCDACClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1896   .text.LL_RCC_GetADCDACClockFreq:0000000000000000 LL_RCC_GetADCDACClockFreq
+     /tmp/ccOB813v.s:1977   .text.LL_RCC_GetADCDACClockFreq:00000000000000a8 $d
+     /tmp/ccOB813v.s:1983   .text.LL_RCC_GetADF1ClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:1990   .text.LL_RCC_GetADF1ClockFreq:0000000000000000 LL_RCC_GetADF1ClockFreq
+     /tmp/ccOB813v.s:2066   .text.LL_RCC_GetADF1ClockFreq:00000000000000a0 $d
+     /tmp/ccOB813v.s:2070   .text.LL_RCC_GetMDF1ClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:2077   .text.LL_RCC_GetMDF1ClockFreq:0000000000000000 LL_RCC_GetMDF1ClockFreq
+     /tmp/ccOB813v.s:2088   .text.LL_RCC_GetMDF1ClockFreq:0000000000000012 $d
+     /tmp/ccOB813v.s:2154   .text.LL_RCC_GetMDF1ClockFreq:0000000000000094 $d
+     /tmp/ccOB813v.s:2158   .text.LL_RCC_GetDAC1ClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:2165   .text.LL_RCC_GetDAC1ClockFreq:0000000000000000 LL_RCC_GetDAC1ClockFreq
+     /tmp/ccOB813v.s:2184   .text.LL_RCC_GetDAC1ClockFreq:0000000000000020 $d
+     /tmp/ccOB813v.s:2187   .text.LL_RCC_GetOCTOSPIClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:2194   .text.LL_RCC_GetOCTOSPIClockFreq:0000000000000000 LL_RCC_GetOCTOSPIClockFreq
+     /tmp/ccOB813v.s:2268   .text.LL_RCC_GetOCTOSPIClockFreq:000000000000009c $d
+     /tmp/ccOB813v.s:2272   .text.LL_RCC_GetFDCANClockFreq:0000000000000000 $t
+     /tmp/ccOB813v.s:2279   .text.LL_RCC_GetFDCANClockFreq:0000000000000000 LL_RCC_GetFDCANClockFreq
+     /tmp/ccOB813v.s:2322   .text.LL_RCC_GetFDCANClockFreq:0000000000000054 $d
+ARM GAS  /tmp/ccOB813v.s 			page 43
+
+
+     /tmp/ccOB813v.s:2093   .text.LL_RCC_GetMDF1ClockFreq:0000000000000017 $d
+     /tmp/ccOB813v.s:2093   .text.LL_RCC_GetMDF1ClockFreq:0000000000000018 $t
+
+UNDEFINED SYMBOLS
+AHBPrescTable
+APBPrescTable
+MSIRangeTable
