@@ -15,7 +15,7 @@
 #define IWDG_KEY_WRITE_ACCESS_ENABLE    0x00005555U  // IWDG KR Write Access Enable
 #define IWDG_KEY_WRITE_ACCESS_DISABLE   0x00000000U  // IWDG KR Write Access Disable
 
-#define WD_TIMEOUT		300 // [8ms] LSI
+#define WD_TIMEOUT		2500 // [8ms] LSI = 20 seconds
 
 static bool _wd_clr_enable = true;
 

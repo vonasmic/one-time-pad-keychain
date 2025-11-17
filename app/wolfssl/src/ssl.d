@@ -40,6 +40,9 @@ build/../wolfssl/src/ssl.o: ../wolfssl/src/ssl.c \
  ../wolfssl/wolfssl/wolfcrypt/visibility.h \
  ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h \
  stm32u5xx_hal_conf.h ../wolfssl/wolfssl/wolfcrypt/wc_port.h \
+ ../sdk/drv_u5/time.h ../hw/hardware.h ../sdk/stm32/platform_setup.h \
+ ../sdk/common/type.h ../sdk/common/util.h ../sdk/common/common.h os.h \
+ ../sdk/hal/os_minimal.h ../hw/pcb_ts1302.h \
  ../wolfssl/wolfssl/wolfcrypt/oid_sum.h \
  ../wolfssl/wolfssl/wolfcrypt/memory.h \
  ../wolfssl/wolfssl/wolfcrypt/error-crypt.h \
@@ -49,24 +52,59 @@ build/../wolfssl/src/ssl.o: ../wolfssl/src/ssl.c \
  ../wolfssl/wolfssl/wolfcrypt/random.h \
  ../wolfssl/wolfssl/wolfcrypt/sha256.h \
  ../wolfssl/wolfssl/wolfcrypt/port/st/stm32.h \
- ../wolfssl/wolfssl/wolfcrypt/pkcs12.h ../wolfssl/wolfssl/callbacks.h \
- ../wolfssl/wolfssl/wolfio.h ../wolfssl/wolfssl/wolfcrypt/asn.h \
+ ../wolfssl/wolfssl/wolfcrypt/pkcs12.h ../wolfssl/wolfssl/wolfcrypt/asn.h \
  ../wolfssl/wolfssl/wolfcrypt/wolfmath.h \
  ../wolfssl/wolfssl/wolfcrypt/sp_int.h \
  ../wolfssl/wolfssl/wolfcrypt/hash.h ../wolfssl/wolfssl/wolfcrypt/sha.h \
- ../wolfssl/wolfssl/wolfcrypt/sha3.h ../wolfssl/wolfssl/wolfcrypt/md4.h \
- ../wolfssl/wolfssl/wolfcrypt/ecc.h ../wolfssl/wolfssl/wolfcrypt/aes.h \
- ../wolfssl/wolfssl/wolfcrypt/hmac.h ../wolfssl/wolfssl/wolfcrypt/kdf.h \
+ ../wolfssl/wolfssl/wolfcrypt/sha512.h \
+ ../wolfssl/wolfssl/wolfcrypt/sha3.h ../wolfssl/wolfssl/wolfcrypt/rsa.h \
+ ../wolfssl/wolfssl/wolfcrypt/ecc.h \
+ ../wolfssl/wolfssl/wolfcrypt/dilithium.h \
+ ../wolfssl/wolfssl/openssl/compat_types.h \
+ ../wolfssl/wolfssl/wolfcrypt/hmac.h ../wolfssl/wolfssl/callbacks.h \
+ ../wolfssl/wolfssl/openssl/bn.h ../wolfssl/wolfssl/openssl/hmac.h \
+ ../wolfssl/wolfssl/openssl/opensslv.h ../wolfssl/wolfssl/openssl/rsa.h \
+ ../wolfssl/wolfssl/openssl/err.h ../wolfssl/wolfssl/wolfio.h \
+ ../wolfssl/wolfssl/openssl/asn1.h ../wolfssl/wolfssl/openssl/ssl.h \
+ ../wolfssl/wolfssl/openssl/tls1.h ../wolfssl/wolfssl/openssl/evp.h \
+ ../wolfssl/wolfssl/openssl/sha.h ../wolfssl/wolfssl/openssl/sha3.h \
+ ../wolfssl/wolfssl/openssl/ripemd.h ../wolfssl/wolfssl/openssl/dsa.h \
+ ../wolfssl/wolfssl/openssl/ec.h ../wolfssl/wolfssl/openssl/dh.h \
+ ../wolfssl/wolfssl/wolfcrypt/aes.h ../wolfssl/wolfssl/wolfcrypt/des3.h \
+ ../wolfssl/wolfssl/wolfcrypt/arc4.h \
+ ../wolfssl/wolfssl/wolfcrypt/chacha20_poly1305.h \
+ ../wolfssl/wolfssl/wolfcrypt/chacha.h \
+ ../wolfssl/wolfssl/wolfcrypt/poly1305.h \
+ ../wolfssl/wolfssl/wolfcrypt/pwdbased.h \
+ ../wolfssl/wolfssl/wolfcrypt/coding.h \
+ ../wolfssl/wolfssl/openssl/objects.h \
+ ../wolfssl/wolfssl/openssl/obj_mac.h ../wolfssl/wolfssl/openssl/bio.h \
+ ../wolfssl/wolfssl/openssl/crypto.h ../wolfssl/wolfssl/openssl/conf.h \
+ ../wolfssl/wolfssl/openssl/x509.h ../wolfssl/wolfssl/openssl/ecdsa.h \
+ ../wolfssl/wolfssl/openssl/pkcs7.h ../wolfssl/wolfssl/wolfcrypt/pkcs7.h \
+ ../wolfssl/wolfssl/openssl/stack.h ../wolfssl/wolfssl/wolfcrypt/kdf.h \
  ../wolfssl/wolfssl/wolfcrypt/wc_encrypt.h \
- ../wolfssl/wolfssl/wolfcrypt/hpke.h \
- ../wolfssl/wolfssl/wolfcrypt/coding.h ../wolfssl/wolfcrypt/src/misc.c \
- ../wolfssl/wolfssl/wolfcrypt/misc.h ../wolfssl/src/ssl_misc.c \
- ../wolfssl/wolfcrypt/src/evp.c ../wolfssl/src/ssl_crypto.c \
- ../wolfssl/src/ssl_certman.c ../wolfssl/src/ssl_sess.c \
- ../wolfssl/src/ssl_bn.c ../wolfssl/src/ssl_asn1.c ../wolfssl/src/pk.c \
- ../wolfssl/src/ssl_sk.c ../wolfssl/src/ssl_load.c ../wolfssl/src/x509.c \
- ../wolfssl/src/conf.c ../wolfssl/src/x509_str.c \
- ../wolfssl/src/ssl_p7p12.c
+ ../wolfssl/wolfssl/wolfcrypt/hpke.h ../wolfssl/wolfcrypt/src/misc.c \
+ ../wolfssl/wolfssl/wolfcrypt/misc.h ../wolfssl/wolfssl/openssl/aes.h \
+ ../wolfssl/wolfssl/openssl/cmac.h ../wolfssl/wolfssl/wolfcrypt/cmac.h \
+ ../wolfssl/wolfssl/openssl/des.h ../wolfssl/wolfssl/openssl/buffer.h \
+ ../wolfssl/wolfssl/openssl/fips_rand.h ../wolfssl/wolfssl/openssl/pem.h \
+ ../wolfssl/wolfssl/openssl/ec25519.h \
+ ../wolfssl/wolfssl/openssl/ed25519.h ../wolfssl/wolfssl/openssl/ec448.h \
+ ../wolfssl/wolfssl/openssl/ed448.h ../wolfssl/wolfssl/openssl/ecdh.h \
+ ../wolfssl/wolfssl/openssl/modes.h ../wolfssl/wolfssl/openssl/rc4.h \
+ ../wolfssl/wolfssl/openssl/x509_vfy.h \
+ ../wolfssl/wolfssl/openssl/x509v3.h ../wolfssl/wolfssl/wolfcrypt/md4.h \
+ ../wolfssl/wolfssl/wolfcrypt/md5.h \
+ ../wolfssl/wolfssl/wolfcrypt/curve25519.h \
+ ../wolfssl/wolfssl/wolfcrypt/ed25519.h \
+ ../wolfssl/wolfssl/wolfcrypt/curve448.h ../wolfssl/src/ssl_misc.c \
+ ../wolfssl/wolfcrypt/src/evp.c ../wolfssl/wolfssl/openssl/kdf.h \
+ ../wolfssl/src/ssl_crypto.c ../wolfssl/src/ssl_certman.c \
+ ../wolfssl/src/ssl_sess.c ../wolfssl/src/ssl_bn.c \
+ ../wolfssl/src/ssl_asn1.c ../wolfssl/src/pk.c ../wolfssl/src/ssl_load.c \
+ ../wolfssl/src/bio.c ../wolfssl/src/x509.c ../wolfssl/src/conf.c \
+ ../wolfssl/src/x509_str.c ../wolfssl/src/ssl_p7p12.c
 ../wolfssl/wolfssl/wolfcrypt/libwolfssl_sources.h:
 ../wolfssl/wolfssl/wolfcrypt/types.h:
 ../wolfssl/wolfssl/wolfcrypt/settings.h:
@@ -111,6 +149,15 @@ stm32u5xx_hal_conf.h:
 ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h:
 stm32u5xx_hal_conf.h:
 ../wolfssl/wolfssl/wolfcrypt/wc_port.h:
+../sdk/drv_u5/time.h:
+../hw/hardware.h:
+../sdk/stm32/platform_setup.h:
+../sdk/common/type.h:
+../sdk/common/util.h:
+../sdk/common/common.h:
+os.h:
+../sdk/hal/os_minimal.h:
+../hw/pcb_ts1302.h:
 ../wolfssl/wolfssl/wolfcrypt/oid_sum.h:
 ../wolfssl/wolfssl/wolfcrypt/memory.h:
 ../wolfssl/wolfssl/wolfcrypt/error-crypt.h:
@@ -124,34 +171,90 @@ stm32u5xx_hal_conf.h:
 ../wolfssl/wolfssl/wolfcrypt/sha256.h:
 ../wolfssl/wolfssl/wolfcrypt/port/st/stm32.h:
 ../wolfssl/wolfssl/wolfcrypt/pkcs12.h:
-../wolfssl/wolfssl/callbacks.h:
-../wolfssl/wolfssl/wolfio.h:
 ../wolfssl/wolfssl/wolfcrypt/asn.h:
 ../wolfssl/wolfssl/wolfcrypt/wolfmath.h:
 ../wolfssl/wolfssl/wolfcrypt/sp_int.h:
 ../wolfssl/wolfssl/wolfcrypt/hash.h:
 ../wolfssl/wolfssl/wolfcrypt/sha.h:
+../wolfssl/wolfssl/wolfcrypt/sha512.h:
 ../wolfssl/wolfssl/wolfcrypt/sha3.h:
-../wolfssl/wolfssl/wolfcrypt/md4.h:
+../wolfssl/wolfssl/wolfcrypt/rsa.h:
 ../wolfssl/wolfssl/wolfcrypt/ecc.h:
-../wolfssl/wolfssl/wolfcrypt/aes.h:
+../wolfssl/wolfssl/wolfcrypt/dilithium.h:
+../wolfssl/wolfssl/openssl/compat_types.h:
 ../wolfssl/wolfssl/wolfcrypt/hmac.h:
+../wolfssl/wolfssl/callbacks.h:
+../wolfssl/wolfssl/openssl/bn.h:
+../wolfssl/wolfssl/openssl/hmac.h:
+../wolfssl/wolfssl/openssl/opensslv.h:
+../wolfssl/wolfssl/openssl/rsa.h:
+../wolfssl/wolfssl/openssl/err.h:
+../wolfssl/wolfssl/wolfio.h:
+../wolfssl/wolfssl/openssl/asn1.h:
+../wolfssl/wolfssl/openssl/ssl.h:
+../wolfssl/wolfssl/openssl/tls1.h:
+../wolfssl/wolfssl/openssl/evp.h:
+../wolfssl/wolfssl/openssl/sha.h:
+../wolfssl/wolfssl/openssl/sha3.h:
+../wolfssl/wolfssl/openssl/ripemd.h:
+../wolfssl/wolfssl/openssl/dsa.h:
+../wolfssl/wolfssl/openssl/ec.h:
+../wolfssl/wolfssl/openssl/dh.h:
+../wolfssl/wolfssl/wolfcrypt/aes.h:
+../wolfssl/wolfssl/wolfcrypt/des3.h:
+../wolfssl/wolfssl/wolfcrypt/arc4.h:
+../wolfssl/wolfssl/wolfcrypt/chacha20_poly1305.h:
+../wolfssl/wolfssl/wolfcrypt/chacha.h:
+../wolfssl/wolfssl/wolfcrypt/poly1305.h:
+../wolfssl/wolfssl/wolfcrypt/pwdbased.h:
+../wolfssl/wolfssl/wolfcrypt/coding.h:
+../wolfssl/wolfssl/openssl/objects.h:
+../wolfssl/wolfssl/openssl/obj_mac.h:
+../wolfssl/wolfssl/openssl/bio.h:
+../wolfssl/wolfssl/openssl/crypto.h:
+../wolfssl/wolfssl/openssl/conf.h:
+../wolfssl/wolfssl/openssl/x509.h:
+../wolfssl/wolfssl/openssl/ecdsa.h:
+../wolfssl/wolfssl/openssl/pkcs7.h:
+../wolfssl/wolfssl/wolfcrypt/pkcs7.h:
+../wolfssl/wolfssl/openssl/stack.h:
 ../wolfssl/wolfssl/wolfcrypt/kdf.h:
 ../wolfssl/wolfssl/wolfcrypt/wc_encrypt.h:
 ../wolfssl/wolfssl/wolfcrypt/hpke.h:
-../wolfssl/wolfssl/wolfcrypt/coding.h:
 ../wolfssl/wolfcrypt/src/misc.c:
 ../wolfssl/wolfssl/wolfcrypt/misc.h:
+../wolfssl/wolfssl/openssl/aes.h:
+../wolfssl/wolfssl/openssl/cmac.h:
+../wolfssl/wolfssl/wolfcrypt/cmac.h:
+../wolfssl/wolfssl/openssl/des.h:
+../wolfssl/wolfssl/openssl/buffer.h:
+../wolfssl/wolfssl/openssl/fips_rand.h:
+../wolfssl/wolfssl/openssl/pem.h:
+../wolfssl/wolfssl/openssl/ec25519.h:
+../wolfssl/wolfssl/openssl/ed25519.h:
+../wolfssl/wolfssl/openssl/ec448.h:
+../wolfssl/wolfssl/openssl/ed448.h:
+../wolfssl/wolfssl/openssl/ecdh.h:
+../wolfssl/wolfssl/openssl/modes.h:
+../wolfssl/wolfssl/openssl/rc4.h:
+../wolfssl/wolfssl/openssl/x509_vfy.h:
+../wolfssl/wolfssl/openssl/x509v3.h:
+../wolfssl/wolfssl/wolfcrypt/md4.h:
+../wolfssl/wolfssl/wolfcrypt/md5.h:
+../wolfssl/wolfssl/wolfcrypt/curve25519.h:
+../wolfssl/wolfssl/wolfcrypt/ed25519.h:
+../wolfssl/wolfssl/wolfcrypt/curve448.h:
 ../wolfssl/src/ssl_misc.c:
 ../wolfssl/wolfcrypt/src/evp.c:
+../wolfssl/wolfssl/openssl/kdf.h:
 ../wolfssl/src/ssl_crypto.c:
 ../wolfssl/src/ssl_certman.c:
 ../wolfssl/src/ssl_sess.c:
 ../wolfssl/src/ssl_bn.c:
 ../wolfssl/src/ssl_asn1.c:
 ../wolfssl/src/pk.c:
-../wolfssl/src/ssl_sk.c:
 ../wolfssl/src/ssl_load.c:
+../wolfssl/src/bio.c:
 ../wolfssl/src/x509.c:
 ../wolfssl/src/conf.c:
 ../wolfssl/src/x509_str.c:

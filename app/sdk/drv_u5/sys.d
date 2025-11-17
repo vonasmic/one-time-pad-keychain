@@ -16,7 +16,36 @@ build/../sdk/drv_u5/sys.o: ../sdk/drv_u5/sys.c ../sdk/drv_u5/sys.h \
  ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_system.h \
  ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_cortex.h \
  ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_utils.h \
- ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_pwr.h
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_pwr.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h \
+ stm32u5xx_hal_conf.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rcc.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_def.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rcc_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_gpio.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_gpio_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_icache.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_dma.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_dma_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_cortex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_cryp.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_flash.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_flash_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_hash.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_hash_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rng.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rng_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_spi.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_spi_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_uart.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_uart_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_usb.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd_ex.h \
+ ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_exti.h
 ../sdk/drv_u5/sys.h:
 ../sdk/common/common.h:
 ../sdk/stm32/platform_setup.h:
@@ -44,3 +73,32 @@ os.h:
 ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_cortex.h:
 ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_utils.h:
 ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_pwr.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h:
+stm32u5xx_hal_conf.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rcc.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_def.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rcc_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_gpio.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_gpio_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_icache.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_dma.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_dma_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_cortex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_cryp.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_flash.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_flash_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_hash.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_hash_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rng.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rng_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_spi.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_spi_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_uart.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_uart_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_usb.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd_ex.h:
+../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_exti.h:

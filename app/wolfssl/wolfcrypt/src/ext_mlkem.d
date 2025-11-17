@@ -41,6 +41,9 @@ build/../wolfssl/wolfcrypt/src/ext_mlkem.o: \
  ../wolfssl/wolfssl/wolfcrypt/visibility.h \
  ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h \
  stm32u5xx_hal_conf.h ../wolfssl/wolfssl/wolfcrypt/wc_port.h \
+ ../sdk/drv_u5/time.h ../hw/hardware.h ../sdk/stm32/platform_setup.h \
+ ../sdk/common/type.h ../sdk/common/util.h ../sdk/common/common.h os.h \
+ ../sdk/hal/os_minimal.h ../hw/pcb_ts1302.h \
  ../wolfssl/wolfssl/wolfcrypt/oid_sum.h \
  ../wolfssl/wolfssl/wolfcrypt/memory.h \
  ../wolfssl/wolfssl/wolfcrypt/error-crypt.h \
@@ -89,6 +92,15 @@ stm32u5xx_hal_conf.h:
 ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h:
 stm32u5xx_hal_conf.h:
 ../wolfssl/wolfssl/wolfcrypt/wc_port.h:
+../sdk/drv_u5/time.h:
+../hw/hardware.h:
+../sdk/stm32/platform_setup.h:
+../sdk/common/type.h:
+../sdk/common/util.h:
+../sdk/common/common.h:
+os.h:
+../sdk/hal/os_minimal.h:
+../hw/pcb_ts1302.h:
 ../wolfssl/wolfssl/wolfcrypt/oid_sum.h:
 ../wolfssl/wolfssl/wolfcrypt/memory.h:
 ../wolfssl/wolfssl/wolfcrypt/error-crypt.h:

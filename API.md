@@ -47,6 +47,8 @@ Beside just transferring data between host and TROPIC01, this usb device also ha
 * `RESET` : Instant reset
 * `SN`: Request product serial number, same as `iSerial` identification on USB.
 * `VER` : Request version information
+* `TLS` : Perform TLS 1.3 handshake over USB (ML-KEM-768) using embedded certificates.
+* `TLSDUAL` : Test the dual-algorithm client certificate/key bundle from `client_certs.h`.
 
 Execution of any command is finished with message "OK" or "`ERROR: <reason>`".
 

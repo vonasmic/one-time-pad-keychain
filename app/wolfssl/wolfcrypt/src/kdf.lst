@@ -1,4 +1,4 @@
-ARM GAS  /tmp/cckMzTS1.s 			page 1
+ARM GAS  /tmp/ccxqGDEE.s 			page 1
 
 
    1              		.cpu cortex-m33
@@ -14,579 +14,2182 @@ ARM GAS  /tmp/cckMzTS1.s 			page 1
   11              		.eabi_attribute 34, 1
   12              		.eabi_attribute 18, 4
   13              		.file	"kdf.c"
-  14              		.text
-  15              		.section	.text.ForceZero,"ax",%progbits
-  16              		.align	1
-  17              		.arch armv8-m.main
-  18              		.arch_extension dsp
-  19              		.syntax unified
-  20              		.thumb
-  21              		.thumb_func
-  22              		.fpu fpv4-sp-d16
-  24              	ForceZero:
-  25              		@ args = 0, pretend = 0, frame = 8
-  26              		@ frame_needed = 0, uses_anonymous_args = 0
-  27 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
-  28 0002 0346     		mov	r3, r0
-  29 0004 0C46     		mov	r4, r1
-  30 0006 BFF35B8F 		dmb	ish
-  31 000a 0022     		movs	r2, #0
-  32              	.L2:
-  33 000c 13F00301 		ands	r1, r3, #3
-  34 0010 13D1     		bne	.L4
-  35 0012 24F00305 		bic	r5, r4, #3
-  36 0016 2A46     		mov	r2, r5
-  37 0018 1846     		mov	r0, r3
-  38 001a 0191     		str	r1, [sp, #4]
-  39 001c FFF7FEFF 		bl	memset
-  40 0020 6FF00302 		mvn	r2, #3
-  41 0024 A608     		lsrs	r6, r4, #2
-  42 0026 02FB0642 		mla	r2, r2, r6, r4
-  43 002a 0199     		ldr	r1, [sp, #4]
-  44 002c 2844     		add	r0, r0, r5
-  45 002e FFF7FEFF 		bl	memset
-  46 0032 BFF35B8F 		dmb	ish
-  47              	.L1:
-  48 0036 02B0     		add	sp, sp, #8
-  49              		@ sp needed
-  50 0038 70BD     		pop	{r4, r5, r6, pc}
-  51              	.L4:
-  52 003a 002C     		cmp	r4, #0
-  53 003c FBD0     		beq	.L1
-  54 003e 03F8012B 		strb	r2, [r3], #1
-  55 0042 013C     		subs	r4, r4, #1
-  56 0044 E2E7     		b	.L2
-  58              		.section	.text.wc_PRF,"ax",%progbits
-  59              		.align	1
-ARM GAS  /tmp/cckMzTS1.s 			page 2
+  14              		.section	.gnu.lto_.profile.b74f0b3081fa1763,"e",%progbits
+  15 0000 789C6362 		.ascii	"x\234cb\000\001\000\000\022\000\003"
+  15      00010000 
+  15      120003
+  16              		.text
+  17              		.section	.gnu.lto_.icf.b74f0b3081fa1763,"e",%progbits
+  18 0000 789C5360 		.ascii	"x\234S`@\000V\206\226\027\373\367\3603\276\270\377\177"
+  18      40005686 
+  18      9617FBF7 
+  18      F033BEB8 
+  18      FF7F
+  19 0012 2123D3F9 		.ascii	"!#\323\3719]\277x\230_\275\373\265\234\223\345\355\202"
+  19      395DBF78 
+  19      985FBDFB 
+  19      B59C93E5 
+  19      ED82
+  20 0024 C3BBB919 		.ascii	"\303\273\271\031\000\013\315\020!"
+  20      000BCD10 
+  20      21
+  21              		.text
+  22              		.section	.gnu.lto_.ipa_sra.b74f0b3081fa1763,"e",%progbits
+  23 0000 789C7590 		.ascii	"x\234u\220\013\022\2030\010D\331$\376\361\316\326:\216"
+  23      0B128330 
+  23      0844D924 
+  23      FEF1CED6 
+  23      3A8E
+  24 0012 C7E9110B 		.ascii	"\307\351\021\013\201\304\326Zg\026B\204\007\344\005"
+  24      81C4D65A 
+  24      67164284 
+  24      07E405
+  25 0021 AA5F43A1 		.ascii	"\252_C\241\034\201\236\022uY\022\271?\023\345.\366\020"
+  25      1C819E12 
+  25      755912B9 
+  25      3F13E52E 
+  25      F610
+  26 0033 8F471223 		.ascii	"\217G\022#ux\352A\265\250iER\022b\276\257\330\320\336"
+  26      7578EA41 
+  26      B5A86945 
+  26      521262BE 
+  26      AFD8D0DE 
+  27 0047 60E1B885 		.ascii	"`\341\270\205\225\307\205\307\316k\316\372\020\347:"
+  27      95C785C7 
+  27      CE6BCEFA 
+  27      10E73A
+ARM GAS  /tmp/ccxqGDEE.s 			page 2
 
 
-  60              		.global	wc_PRF
-  61              		.syntax unified
-  62              		.thumb
-  63              		.thumb_func
-  64              		.fpu fpv4-sp-d16
-  66              	wc_PRF:
-  67              		@ args = 20, pretend = 0, frame = 16
-  68              		@ frame_needed = 0, uses_anonymous_args = 0
-  69 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
-  70 0004 85B0     		sub	sp, sp, #20
-  71 0006 9146     		mov	r9, r2
-  72 0008 109A     		ldr	r2, [sp, #64]
-  73 000a 0090     		str	r0, [sp]
-  74 000c 022A     		cmp	r2, #2
-  75 000e 1FD0     		beq	.L22
-  76 0010 042A     		cmp	r2, #4
-  77 0012 40F0A880 		bne	.L23
-  78 0016 2027     		movs	r7, #32
-  79 0018 4FF0060A 		mov	r10, #6
-  80              	.L10:
-  81 001c B1FBF7F8 		udiv	r8, r1, r7
-  82 0020 07FB181B 		mls	fp, r7, r8, r1
-  83 0024 BBF1000F 		cmp	fp, #0
-  84 0028 16D0     		beq	.L12
-  85 002a 08F10108 		add	r8, r8, #1
-  86              	.L13:
-  87 002e 2020     		movs	r0, #32
-  88 0030 0193     		str	r3, [sp, #4]
-  89 0032 FFF7FEFF 		bl	wolfSSL_Malloc
-  90 0036 0646     		mov	r6, r0
-  91 0038 4FF44070 		mov	r0, #768
-  92 003c FFF7FEFF 		bl	wolfSSL_Malloc
-  93 0040 0546     		mov	r5, r0
-  94 0042 76B1     		cbz	r6, .L14
-  95 0044 019B     		ldr	r3, [sp, #4]
-  96 0046 88B9     		cbnz	r0, .L15
-  97 0048 3046     		mov	r0, r6
-  98              	.L31:
-  99 004a FFF7FEFF 		bl	wolfSSL_Free
- 100 004e 0AE0     		b	.L25
- 101              	.L22:
- 102 0050 1427     		movs	r7, #20
- 103 0052 4FF0040A 		mov	r10, #4
- 104 0056 E1E7     		b	.L10
- 105              	.L12:
- 106 0058 8F42     		cmp	r7, r1
- 107 005a E8D9     		bls	.L13
- 108 005c 6FF0AC04 		mvn	r4, #172
- 109 0060 7DE0     		b	.L9
- 110              	.L14:
- 111 0062 0028     		cmp	r0, #0
- 112 0064 F1D1     		bne	.L31
- 113              	.L25:
- 114 0066 6FF07C04 		mvn	r4, #124
- 115 006a 78E0     		b	.L9
- 116              	.L15:
- 117 006c DDE91112 		ldrd	r1, r2, [sp, #68]
-ARM GAS  /tmp/cckMzTS1.s 			page 3
+  28 0056 CA75B4AB 		.ascii	"\312u\264\2537\256\215\012k\236\355\240\302(vUz\364"
+  28      37AE8D0A 
+  28      6B9EEDA0 
+  28      C2287655 
+  28      7AF4
+  29 0068 DCA14C2E 		.ascii	"\334\241L.\271\230D\254\355\362\257\3037\260\\\354\337"
+  29      B99844AC 
+  29      EDF2AFC3 
+  29      37B05CEC 
+  29      DF
+  30 0079 E1564228 		.ascii	"\341VB(\203\322\364\263\335?\257\210\331\266\326\246"
+  30      83D2F4B3 
+  30      DD3FAF88 
+  30      D9B6D6A6 
+  31 0089 2B1B131B 		.ascii	"+\033\023\033\333\326\330\331^\021\007\373\204\343\307"
+  31      DBD6D8D9 
+  31      5E1107FB 
+  31      84E3C7
+  32 0098 5BD01BDD 		.ascii	"[\320\033\335Y\013\346"
+  32      590BE6
+  33              		.text
+  34              		.section	.gnu.lto_.inline.b74f0b3081fa1763,"e",%progbits
+  35 0000 789C7551 		.ascii	"x\234uQ=K\003A\024\234\375\270\334&\271\304C-\264\313"
+  35      3D4B0341 
+  35      149CFDB8 
+  35      DC26B9C4 
+  35      432DB4CB 
+  36 0014 1F11F20B 		.ascii	"\037\021\362\013\3567Dc0vZ\331I\002\246\260;m\254\002"
+  36      EE374463 
+  36      30765AD9 
+  36      4902A6B0 
+  36      3B6DAC02 
+  37 0028 7E04041B 		.ascii	"~\004\004\033\261P!\245\205`!h\221\312&b\247\225Xi\345"
+  37      B15021A5 
+  37      85602168 
+  37      91CA2662 
+  37      A7955869 
+  38 003d 6CEE6ECF 		.ascii	"l\356n\317(\276\203\3357\357v\347\315\233\335\222p\341"
+  38      28BE83DD 
+  38      37EF76E7 
+  38      CD9BDD92 
+  38      70E1
+  39 004f 01A63F7C 		.ascii	"\001\246?||\223m\301\030([\223%V\236d\033(t\030rUBB"
+  39      7C936DC1 
+  39      18285B93 
+  39      25569E64 
+  39      1B287418 
+  40 0067 03028BEF 		.ascii	"\003\002\213\357'\317\367rMx\336\306@\211}\305E\024"
+  40      27CFF772 
+  40      4D78DEC6 
+  40      40897DC5 
+  40      4514
+  41 0079 4892231F 		.ascii	"H\222#\037\320D\260\210\027\370\217\244v\327)9y\272"
+  41      D044B088 
+  41      17F88FA4 
+  41      76D72939 
+  41      79BA
+ARM GAS  /tmp/ccxqGDEE.s 			page 3
 
 
- 118 0070 0193     		str	r3, [sp, #4]
- 119 0072 FFF7FEFF 		bl	wc_HmacInit
- 120 0076 019B     		ldr	r3, [sp, #4]
- 121 0078 0446     		mov	r4, r0
- 122 007a 0028     		cmp	r0, #0
- 123 007c 60D1     		bne	.L16
- 124 007e 4A46     		mov	r2, r9
- 125 0080 5146     		mov	r1, r10
- 126 0082 2846     		mov	r0, r5
- 127 0084 FFF7FEFF 		bl	wc_HmacSetKey
- 128 0088 0446     		mov	r4, r0
- 129 008a 0028     		cmp	r0, #0
- 130 008c 55D1     		bne	.L17
- 131 008e DDE90E12 		ldrd	r1, r2, [sp, #56]
- 132 0092 2846     		mov	r0, r5
- 133 0094 FFF7FEFF 		bl	wc_HmacUpdate
- 134 0098 0446     		mov	r4, r0
- 135 009a 0028     		cmp	r0, #0
- 136 009c 4DD1     		bne	.L17
- 137 009e 3146     		mov	r1, r6
- 138 00a0 2846     		mov	r0, r5
- 139 00a2 FFF7FEFF 		bl	wc_HmacFinal
- 140 00a6 0446     		mov	r4, r0
- 141 00a8 0028     		cmp	r0, #0
- 142 00aa 46D1     		bne	.L17
- 143 00ac 8146     		mov	r9, r0
- 144 00ae 8246     		mov	r10, r0
- 145 00b0 08F1FF33 		add	r3, r8, #-1
- 146 00b4 0193     		str	r3, [sp, #4]
- 147              	.L21:
- 148 00b6 3A46     		mov	r2, r7
- 149 00b8 3146     		mov	r1, r6
- 150 00ba 2846     		mov	r0, r5
- 151 00bc FFF7FEFF 		bl	wc_HmacUpdate
- 152 00c0 0446     		mov	r4, r0
- 153 00c2 0028     		cmp	r0, #0
- 154 00c4 39D1     		bne	.L17
- 155 00c6 DDE90E12 		ldrd	r1, r2, [sp, #56]
- 156 00ca 2846     		mov	r0, r5
- 157 00cc FFF7FEFF 		bl	wc_HmacUpdate
- 158 00d0 0446     		mov	r4, r0
- 159 00d2 90BB     		cbnz	r0, .L17
- 160 00d4 019B     		ldr	r3, [sp, #4]
- 161 00d6 5345     		cmp	r3, r10
- 162 00d8 02D1     		bne	.L18
- 163 00da BBF1000F 		cmp	fp, #0
- 164 00de 14D1     		bne	.L19
- 165              	.L18:
- 166 00e0 009B     		ldr	r3, [sp]
- 167 00e2 2846     		mov	r0, r5
- 168 00e4 03EB0901 		add	r1, r3, r9
- 169 00e8 FFF7FEFF 		bl	wc_HmacFinal
- 170 00ec 58B9     		cbnz	r0, .L29
- 171 00ee 3A46     		mov	r2, r7
- 172 00f0 3146     		mov	r1, r6
- 173 00f2 2846     		mov	r0, r5
- 174 00f4 B944     		add	r9, r9, r7
-ARM GAS  /tmp/cckMzTS1.s 			page 4
+  42 008b 24DD26F9 		.ascii	"$\335&\371\216#\017\222>\250A_\214\316F\262\031\240"
+  42      8E230F92 
+  42      3EA8415F 
+  42      8CCE46B2 
+  42      19A0
+  43 009d 1EF07069 		.ascii	"\036\360pi\016\010`\342h\372\323\025 \014\240\342\010"
+  43      0E0860E2 
+  43      68FAD315 
+  43      200CA0E2 
+  43      08
+  44 00ae 712451E1 		.ascii	"q$Q\341\345\007\252\"\221\343\316\205',\323$\200\302"
+  44      E507AA22 
+  44      91E3CE85 
+  44      272CD324 
+  44      80C2
+  45 00c0 D2EEF0EB 		.ascii	"\322\356\360\353U\256\013\337\333\264R\257(\322wY\321"
+  45      55AE0BDF 
+  45      DBB452AF 
+  45      28D27759 
+  45      D1
+  46 00d1 655EAADB 		.ascii	"e^\252\333O\367b\272gfU\253\327\275\376\245j\261g\327"
+  46      4FF762BA 
+  46      676655AB 
+  46      D7BDFEA5 
+  46      6AB167D7 
+  47 00e5 F52CECBD 		.ascii	"\365,\354\275\334|r\236\006\314DH\013c\252;\272\355"
+  47      DC7C729E 
+  47      06CC4448 
+  47      0B63AA3B 
+  47      BAED
+  48 00f7 7DA81574 		.ascii	"}\250\025th\346$mr^yzp~'\2275}qi\215\35089P\317\252"
+  48      68E6246D 
+  48      725E797A 
+  48      707E2797 
+  48      357D7169 
+  49 0112 06264F1B 		.ascii	"\006&O\033\306\035\350\210\254\034\"\314\323\261\010"
+  49      C61DE888 
+  49      AC1C22CC 
+  49      D3B108
+  50 0121 ED4396AD 		.ascii	"\355C\226\255\3208R\326Ki\007/\317\333\021~\373\231"
+  50      D03852D6 
+  50      4B69072F 
+  50      CFDB117E 
+  50      FB99
+  51 0133 3A6A0DCD 		.ascii	":j\015\315\200\371\011t\006&D$\324\230\345X\207\352"
+  51      80F90974 
+  51      06264424 
+  51      D498E558 
+  51      87EA
+  52 0145 7FCF6716 		.ascii	"\177\317g\026\270T\3766J\334\3077\177\002\231:"
+  52      B854FE36 
+  52      4ADCC737 
+  52      7F02993A 
+  53              		.text
+  54              		.section	.gnu.lto_.jmpfuncs.b74f0b3081fa1763,"e",%progbits
+  55 0000 789C9D53 		.ascii	"x\234\235SAN\3040\014\3648nwaA\2138\356\2113\007\264"
+  55      414EC430 
+ARM GAS  /tmp/ccxqGDEE.s 			page 4
 
 
- 175 00f6 FFF7FEFF 		bl	wc_HmacUpdate
- 176 00fa 20B9     		cbnz	r0, .L29
- 177 00fc 3146     		mov	r1, r6
- 178 00fe 2846     		mov	r0, r5
- 179 0100 FFF7FEFF 		bl	wc_HmacFinal
- 180 0104 A8B1     		cbz	r0, .L20
- 181              	.L29:
- 182 0106 0446     		mov	r4, r0
- 183 0108 17E0     		b	.L17
- 184              	.L19:
- 185 010a 3146     		mov	r1, r6
- 186 010c 2846     		mov	r0, r5
- 187 010e FFF7FEFF 		bl	wc_HmacFinal
- 188 0112 0028     		cmp	r0, #0
- 189 0114 F7D1     		bne	.L29
- 190 0116 0394     		str	r4, [sp, #12]
- 191 0118 039A     		ldr	r2, [sp, #12]
- 192 011a 039B     		ldr	r3, [sp, #12]
- 193 011c 2BEA0202 		bic	r2, fp, r2
- 194 0120 03F02003 		and	r3, r3, #32
- 195 0124 1A43     		orrs	r2, r2, r3
- 196 0126 009B     		ldr	r3, [sp]
- 197 0128 3146     		mov	r1, r6
- 198 012a 03EB0900 		add	r0, r3, r9
- 199 012e FFF7FEFF 		bl	memcpy
- 200              	.L20:
- 201 0132 0AF1010A 		add	r10, r10, #1
- 202 0136 C245     		cmp	r10, r8
- 203 0138 BDD3     		bcc	.L21
- 204              	.L17:
- 205 013a 2846     		mov	r0, r5
- 206 013c FFF7FEFF 		bl	wc_HmacFree
- 207              	.L16:
- 208 0140 2021     		movs	r1, #32
- 209 0142 3046     		mov	r0, r6
- 210 0144 FFF7FEFF 		bl	ForceZero
- 211 0148 4FF44071 		mov	r1, #768
- 212 014c 2846     		mov	r0, r5
- 213 014e FFF7FEFF 		bl	ForceZero
- 214 0152 3046     		mov	r0, r6
- 215 0154 FFF7FEFF 		bl	wolfSSL_Free
- 216 0158 2846     		mov	r0, r5
- 217 015a FFF7FEFF 		bl	wolfSSL_Free
- 218              	.L9:
- 219 015e 2046     		mov	r0, r4
- 220 0160 05B0     		add	sp, sp, #20
- 221              		@ sp needed
- 222 0162 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
- 223              	.L23:
- 224 0166 6FF0E704 		mvn	r4, #231
- 225 016a F8E7     		b	.L9
- 227              		.section	.text.wc_PRF_TLSv1,"ax",%progbits
- 228              		.align	1
- 229              		.global	wc_PRF_TLSv1
- 230              		.syntax unified
- 231              		.thumb
- 232              		.thumb_func
-ARM GAS  /tmp/cckMzTS1.s 			page 5
+  55      0CF4386E 
+  55      7761418B 
+  55      38EE8933 
+  56 0016 3FE067E9 		.ascii	"?\340g\351\037xC\337\000\034\371\302\376\206[q\233R"
+  56      1F7843DF 
+  56      001CF9C2 
+  56      FE865B71 
+  56      9B52
+  57 0028 D24C4411 		.ascii	"\322LD\021\221\254$\223\251\353\3118\027\223e4\242@"
+  57      91AC2493 
+  57      A9EBC938 
+  57      17936534 
+  57      A240
+  58 003a E8FAA01E 		.ascii	"\350\372\240\036\202=\3461\000}\010\036\346!\352\353"
+  58      823DE631 
+  58      007D081E 
+  58      E621EAEB 
+  59 004a F1DC63C4 		.ascii	"\361\334c\304\325\003w\026\033\021|\030\304\243\023"
+  59      D5037716 
+  59      1B117C18 
+  59      C4A313
+  60 0059 8BF8D90E 		.ascii	"\213\370\331\016>\216\016)C\241\204\230R\201Z\206v\371"
+  60      3E8E0E29 
+  60      43A18498 
+  60      52815A86 
+  60      76F9
+  61 006b DF5B4F8C 		.ascii	"\337[O\214\202\242x\\\020\311r\236\241/\241\017\015"
+  61      82A2785C 
+  61      10C9729E 
+  61      A12FA10F 
+  61      0D
+  62 007c 1ED274D6 		.ascii	"\036\322t\3266\211~\3165\317k\231\265J\231\335\3652"
+  62      36897ECE 
+  62      35CF6B99 
+  62      B54A99DD 
+  62      F532
+  63 008e 54D3CB2C 		.ascii	"T\323\313,c\326\352*\025O\313\3563I\031+\005\342\004"
+  63      63D6EA2A 
+  63      154FCBEE 
+  63      3349192B 
+  63      05E204
+  64 00a1 C7494FB8 		.ascii	"\307IO\270E>\206\251\370.\025\374-\300\272\372\274\230"
+  64      453E86A9 
+  64      F82E15FC 
+  64      2DC0BAFA 
+  64      BC98
+  65 00b3 C8F56EB9 		.ascii	"\310\365n\271so\361zm\373\177<\376\223\347\225~:0t\263"
+  65      736FF17A 
+  65      6DFB7F3C 
+  65      FE93E795 
+  65      7E3A3074 
+  66 00c8 6A83E23C 		.ascii	"j\203\342<9\355z\3234a\026\367\234\345\252\2048\023"
+  66      39ED7AD3 
+  66      346116F7 
+  66      9CE5AA84 
+  66      3813
+  67 00da DE80776C 		.ascii	"\336\200wl\265\342\326\327\277{?7.q\016\271\323\307"
+ARM GAS  /tmp/ccxqGDEE.s 			page 5
 
 
- 233              		.fpu fpv4-sp-d16
- 235              	wc_PRF_TLSv1:
- 236              		@ args = 24, pretend = 0, frame = 0
- 237              		@ frame_needed = 0, uses_anonymous_args = 0
- 238 0000 40F20922 		movw	r2, #521
- 239 0004 F8B5     		push	{r3, r4, r5, r6, r7, lr}
- 240 0006 0133     		adds	r3, r3, #1
- 241 0008 9342     		cmp	r3, r2
- 242 000a 079E     		ldr	r6, [sp, #28]
- 243 000c 099F     		ldr	r7, [sp, #36]
- 244 000e 29D8     		bhi	.L38
- 245 0010 F319     		adds	r3, r6, r7
- 246 0012 802B     		cmp	r3, #128
- 247 0014 26D8     		bhi	.L38
- 248 0016 E029     		cmp	r1, #224
- 249 0018 24D8     		bhi	.L38
- 250 001a E020     		movs	r0, #224
- 251 001c FFF7FEFF 		bl	wolfSSL_Malloc
- 252 0020 0546     		mov	r5, r0
- 253 0022 8020     		movs	r0, #128
- 254 0024 FFF7FEFF 		bl	wolfSSL_Malloc
- 255 0028 0446     		mov	r4, r0
- 256 002a 25B1     		cbz	r5, .L34
- 257 002c 40B9     		cbnz	r0, .L35
- 258 002e 2846     		mov	r0, r5
- 259              	.L40:
- 260 0030 FFF7FEFF 		bl	wolfSSL_Free
- 261 0034 01E0     		b	.L39
- 262              	.L34:
- 263 0036 0028     		cmp	r0, #0
- 264 0038 FAD1     		bne	.L40
- 265              	.L39:
- 266 003a 6FF07C00 		mvn	r0, #124
- 267 003e 10E0     		b	.L32
- 268              	.L35:
- 269 0040 3246     		mov	r2, r6
- 270 0042 0699     		ldr	r1, [sp, #24]
- 271 0044 FFF7FEFF 		bl	memcpy
- 272 0048 3A46     		mov	r2, r7
- 273 004a 0899     		ldr	r1, [sp, #32]
- 274 004c A019     		adds	r0, r4, r6
- 275 004e FFF7FEFF 		bl	memcpy
- 276 0052 2846     		mov	r0, r5
- 277 0054 FFF7FEFF 		bl	wolfSSL_Free
- 278 0058 2046     		mov	r0, r4
- 279 005a FFF7FEFF 		bl	wolfSSL_Free
- 280 005e 6FF0E700 		mvn	r0, #231
- 281              	.L32:
- 282 0062 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
- 283              	.L38:
- 284 0064 6FF08300 		mvn	r0, #131
- 285 0068 FBE7     		b	.L32
- 287              		.section	.text.wc_PRF_TLS,"ax",%progbits
- 288              		.align	1
- 289              		.global	wc_PRF_TLS
- 290              		.syntax unified
- 291              		.thumb
-ARM GAS  /tmp/cckMzTS1.s 			page 6
+  67      B5E2D6D7 
+  67      BF7B3F37 
+  67      2E710EB9 
+  67      D3C7
+  68 00ec AC356D63 		.ascii	"\2545mc\306\251\336\272\225\247\312,\262\321\313g\026"
+  68      C6A9DEBA 
+  68      95A7CA2C 
+  68      B2D1CB67 
+  68      16
+  69 00fd 95EF57C4 		.ascii	"\225\357W\304,\272\"\267\201YdC\321m\225\227\201Wd\257"
+  69      2CBA22B7 
+  69      81596443 
+  69      D16D9597 
+  69      815764AF 
+  70 0111 42BE0063 		.ascii	"B\276\000c\311P`"
+  70      C95060
+  71              		.text
+  72              		.section	.gnu.lto_.pureconst.b74f0b3081fa1763,"e",%progbits
+  73 0000 789C1360 		.ascii	"x\234\023````e\230\305\3028\203\205i\006\013\363,\026"
+  73      60606065 
+  73      98C5C238 
+  73      83856906 
+  73      0BF32C16 
+  74 0014 96192C00 		.ascii	"\226\031,\000\032R\0030"
+  74      1A520330 
+  75              		.text
+  76              		.section	.gnu.lto_.lto.b74f0b3081fa1763,"e",%progbits
+  77 0000 09000400 		.ascii	"\011\000\004\000\001\000\000\000"
+  77      01000000 
+  78              		.text
+  79              		.section	.gnu.lto_ForceZero.192.b74f0b3081fa1763,"e",%progbits
+  80 0000 789C5551 		.ascii	"x\234UQ\317k\023Q\020~\337\233\267M\374\201\236,\036"
+  80      CF6B1351 
+  80      107EDF9B 
+  80      B74DFC81 
+  80      9E2C1E
+  81 0013 3C148A88 		.ascii	"<\024\212\210\207d\253\"\366\340\301\223\377\204\007"
+  81      8764AB22 
+  81      F6E0C193 
+  81      FF8407
+  82 0022 A99B1442 		.ascii	"\251\233\024B\263I\310n-z\351kcr\210B\272\261'\211\021"
+  82      B349C86E 
+  82      2D7AE96B 
+  82      63728842 
+  82      BAB12789 
+  83 0037 63907A51 		.ascii	"c\220zQk\251\266\376\"(\232\253\364\240G\025\017\332"
+  83      6BA9B6FE 
+  83      22289AAB 
+  83      F4A04715 
+  83      0FDA
+  84 0049 4B093D88 		.ascii	"K\011=\210\304\037qv\263\015:\260o\277\371\346\233y"
+  84      C41F7176 
+  84      B30D3AB0 
+  84      6FBFF9E6 
+  84      9B79
+  85 005b 33F3DE43 		.ascii	"3\363\336C\210\204\020\302\345\017C\002U\257,\205\326"
+  85      888410C2 
+ARM GAS  /tmp/ccxqGDEE.s 			page 6
 
 
- 292              		.thumb_func
- 293              		.fpu fpv4-sp-d16
- 295              	wc_PRF_TLS:
- 296              		@ args = 32, pretend = 0, frame = 8
- 297              		@ frame_needed = 0, uses_anonymous_args = 0
- 298 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
- 299 0004 89B0     		sub	sp, sp, #36
- 300 0006 9046     		mov	r8, r2
- 301 0008 DDE915B2 		ldrd	fp, r2, [sp, #84]
- 302 000c 0646     		mov	r6, r0
- 303 000e 0F46     		mov	r7, r1
- 304 0010 DDF84C90 		ldr	r9, [sp, #76]
- 305 0014 179C     		ldr	r4, [sp, #92]
- 306 0016 0793     		str	r3, [sp, #28]
- 307 0018 7AB3     		cbz	r2, .L44
- 308 001a 09EB0B0A 		add	r10, r9, fp
- 309 001e BAF1800F 		cmp	r10, #128
- 310 0022 2DD8     		bhi	.L45
- 311 0024 8020     		movs	r0, #128
- 312 0026 FFF7FEFF 		bl	wolfSSL_Malloc
- 313 002a 0546     		mov	r5, r0
- 314 002c 58B3     		cbz	r0, .L46
- 315 002e 4A46     		mov	r2, r9
- 316 0030 1299     		ldr	r1, [sp, #72]
- 317 0032 FFF7FEFF 		bl	memcpy
- 318 0036 5A46     		mov	r2, fp
- 319 0038 1499     		ldr	r1, [sp, #80]
- 320 003a 05EB0900 		add	r0, r5, r9
- 321 003e FFF7FEFF 		bl	memcpy
- 322 0042 032C     		cmp	r4, #3
- 323 0044 079B     		ldr	r3, [sp, #28]
- 324 0046 16DD     		ble	.L47
- 325 0048 082C     		cmp	r4, #8
- 326 004a 08BF     		it	eq
- 327 004c 0424     		moveq	r4, #4
- 328              	.L43:
- 329 004e 199A     		ldr	r2, [sp, #100]
- 330 0050 3946     		mov	r1, r7
- 331 0052 0492     		str	r2, [sp, #16]
- 332 0054 189A     		ldr	r2, [sp, #96]
- 333 0056 3046     		mov	r0, r6
- 334 0058 CDE90242 		strd	r4, r2, [sp, #8]
- 335 005c CDE9005A 		strd	r5, r10, [sp]
- 336 0060 4246     		mov	r2, r8
- 337 0062 FFF7FEFF 		bl	wc_PRF
- 338 0066 0446     		mov	r4, r0
- 339 0068 2846     		mov	r0, r5
- 340 006a FFF7FEFF 		bl	wolfSSL_Free
- 341              	.L41:
- 342 006e 2046     		mov	r0, r4
- 343 0070 09B0     		add	sp, sp, #36
- 344              		@ sp needed
- 345 0072 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
- 346              	.L47:
- 347 0076 0424     		movs	r4, #4
- 348 0078 E9E7     		b	.L43
- 349              	.L44:
-ARM GAS  /tmp/cckMzTS1.s 			page 7
+  85      E50F4302 
+  85      55AF2C85 
+  85      D6
+  86 006c FA4C4462 		.ascii	"\372LDb\321+\367j_\316\342\005\002\202\260\270\274\023"
+  86      D12BF76A 
+  86      5FCEE205 
+  86      0282B0B8 
+  86      BC13
+  87 007e 54B2E05D 		.ascii	"T\262\340]\225\034\331\350t\307U\321\333w\277R\214("
+  87      951CD9E8 
+  87      74C755D1 
+  87      DB77BF52 
+  87      8C28
+  88 0090 03735EB9 		.ascii	"\003s^\271}s4\220@\314JbjV*\201\226B\217m\377\000\210"
+  88      7D733490 
+  88      40CC4A62 
+  88      6A562A81 
+  88      96428F6D 
+  89 00a7 D0AED351 		.ascii	"\320\256\323QV\377xS\277\265r\272\240\213\007\233$D"
+  89      56FF7853 
+  89      BFB572BA 
+  89      A08B079B 
+  89      2444
+  90 00b9 9DC2608D 		.ascii	"\235\302`\215P\245&\001*D\022#\214\350\2348\322\322"
+  90      50A52601 
+  90      2A441223 
+  90      8CE89C38 
+  90      D2D2
+  91 00cb FADDC735 		.ascii	"\372\335\3075\255w\211&\021\236\200s\360\030X\345q\230"
+  91      AD778926 
+  91      119E8073 
+  91      F01858E5 
+  91      7198
+  92 00dd F033E97C 		.ascii	"\3603\351|_\3653T)\254\377\257R\375\033\310\362\317"
+  92      5FF53354 
+  92      29ACFFAF 
+  92      52FD1BC8 
+  92      F2CF
+  93 00ef C32CEDDC 		.ascii	"\303,\355\334[y\370\031\272\252\321$\003\317\376U\263"
+  93      5B79F819 
+  93      BAAAD124 
+  93      03CFFE55 
+  93      B3
+  94 0100 F1729E23 		.ascii	"\361r\236#\354\215\031\260\367`\303h\351_\275\212\326"
+  94      EC8D19B0 
+  94      F760C368 
+  94      E95FBD8A 
+  94      D6
+  95 0111 ED1BF0AE 		.ascii	"\355\033\360\256}\337\273\033\002O!}\245\002\326`\200"
+  95      7DDFBB1B 
+  95      024F217D 
+  95      A502D660 
+  95      80
+  96 0122 DD88CF45 		.ascii	"\335\210\317E\203lQ!\321\351.\215C\267|,\003<\307x\201"
+  96      836C5121 
+  96      D1E92E8D 
+  96      43B77C2C 
+ARM GAS  /tmp/ccxqGDEE.s 			page 7
 
 
- 350 007a 6FF0AC04 		mvn	r4, #172
- 351 007e F6E7     		b	.L41
- 352              	.L45:
- 353 0080 6FF08304 		mvn	r4, #131
- 354 0084 F3E7     		b	.L41
- 355              	.L46:
- 356 0086 6FF07C04 		mvn	r4, #124
- 357 008a F0E7     		b	.L41
- 359              		.section	.text.wc_Tls13_HKDF_Extract_ex,"ax",%progbits
- 360              		.align	1
- 361              		.global	wc_Tls13_HKDF_Extract_ex
- 362              		.syntax unified
- 363              		.thumb
- 364              		.thumb_func
- 365              		.fpu fpv4-sp-d16
- 367              	wc_Tls13_HKDF_Extract_ex:
- 368              		@ args = 16, pretend = 0, frame = 0
- 369              		@ frame_needed = 0, uses_anonymous_args = 0
- 370 0000 2DE9F042 		push	{r4, r5, r6, r7, r9, lr}
- 371 0004 0D46     		mov	r5, r1
- 372 0006 06A9     		add	r1, sp, #24
- 373 0008 1646     		mov	r6, r2
- 374 000a 91E81602 		ldm	r1, {r1, r2, r4, r9}
- 375 000e 062A     		cmp	r2, #6
- 376 0010 0746     		mov	r7, r0
- 377 0012 11D1     		bne	.L49
- 378 0014 29B9     		cbnz	r1, .L50
- 379 0016 1846     		mov	r0, r3
- 380 0018 2022     		movs	r2, #32
- 381 001a FFF7FEFF 		bl	memset
- 382 001e 2021     		movs	r1, #32
- 383 0020 0346     		mov	r3, r0
- 384              	.L50:
- 385 0022 CDE90617 		strd	r1, r7, [sp, #24]
- 386 0026 3246     		mov	r2, r6
- 387 0028 2946     		mov	r1, r5
- 388 002a CDE90849 		strd	r4, r9, [sp, #32]
- 389 002e BDE8F042 		pop	{r4, r5, r6, r7, r9, lr}
- 390 0032 0620     		movs	r0, #6
- 391 0034 FFF7FEBF 		b	wc_HKDF_Extract_ex
- 392              	.L49:
- 393 0038 6FF0AC00 		mvn	r0, #172
- 394 003c BDE8F082 		pop	{r4, r5, r6, r7, r9, pc}
- 396              		.section	.text.wc_Tls13_HKDF_Extract,"ax",%progbits
- 397              		.align	1
- 398              		.global	wc_Tls13_HKDF_Extract
- 399              		.syntax unified
- 400              		.thumb
- 401              		.thumb_func
- 402              		.fpu fpv4-sp-d16
- 404              	wc_Tls13_HKDF_Extract:
- 405              		@ args = 8, pretend = 0, frame = 0
- 406              		@ frame_needed = 0, uses_anonymous_args = 0
- 407 0000 1FB5     		push	{r0, r1, r2, r3, r4, lr}
- 408 0002 6FF0010C 		mvn	ip, #1
- 409 0006 0024     		movs	r4, #0
- 410 0008 CDE9024C 		strd	r4, ip, [sp, #8]
-ARM GAS  /tmp/cckMzTS1.s 			page 8
+  96      033CC778 
+  97 0137 C82B7E68 		.ascii	"\310+~h\223\357\310-\024\036\225z\265;{\032\024m\360"
+  97      93EFC82D 
+  97      141E957A 
+  97      B53B7B1A 
+  97      146DF0
+  98 014a CC63620B 		.ascii	"\314cb\013\257\266\227\016\205K0 \356\342\266\326\337"
+  98      AFB6970E 
+  98      854B3020 
+  98      EEE2B6D6 
+  98      DF
+  99 015b 0E3469C8 		.ascii	"\0164i\310\217\277\204\360\371\241\240\317\005R\274"
+  99      8FBF84F0 
+  99      F9A1A0CF 
+  99      0552BC
+ 100 016a 50ADFC4A 		.ascii	"P\255\374J\340J\265\322o4(\322\350\347\356l\177\023"
+ 100      E04AB5D2 
+ 100      6F3428D2 
+ 100      E8E7EE6C 
+ 100      7F13
+ 101 017c 57365F67 		.ascii	"W6_g\006d0`\027,4\370\265XN\335Q~\334.d\203\224\254"
+ 101      06643060 
+ 101      172C34F8 
+ 101      B5584EDD 
+ 101      517EDC2E 
+ 102 0194 AF9686B9 		.ascii	"\257\226\206\271\025\372\263\376v\230\353\033\203\256"
+ 102      15FAB3FE 
+ 102      7698EB1B 
+ 102      83AE
+ 103 01a2 B731FF69 		.ascii	"\2671\377i\371k4\310\256\020\006\223\011q\312\2643\256"
+ 103      F96B34C8 
+ 103      AE100693 
+ 103      0971CAB4 
+ 103      33AE
+ 104 01b4 6999AE9D 		.ascii	"i\231\256\2353\023\251\\:kOM\230n>\233KYc\307b\216k"
+ 104      3313A95C 
+ 104      3A6B4F4D 
+ 104      986E3E9B 
+ 104      4B5963C7 
+ 105 01cb 9F383E7D 		.ascii	"\2378>}26\355\\\210%\222\027\247Rnlr\306\234\310\345"
+ 105      3236ED5C 
+ 105      88259217 
+ 105      A7526E6C 
+ 105      72C69CC8 
+ 106 01e0 C4483C6E 		.ascii	"\304H<n\316d\323\223\216\223\016\376V\376R\3165\235"
+ 106      CE64D393 
+ 106      8E930EFE 
+ 106      56FE52CE 
+ 106      359D
+ 107 01f2 BC65DA29 		.ascii	"\274e\332)\307\212[\202\354\244M\351d\006\227\377\002"
+ 107      C78A5B82 
+ 107      ECA44DE9 
+ 107      640697FF 
+ 107      02
+ 108 0203 5F4CD4ED 		.ascii	"_L\324\355"
+ 109              		.text
+ 110              		.section	.gnu.lto_wc_Tls13_HKDF_Extract_ex.250.b74f0b3081fa1763,"e",%progbits
+ARM GAS  /tmp/ccxqGDEE.s 			page 8
 
 
- 411 000c 079C     		ldr	r4, [sp, #28]
- 412 000e 0194     		str	r4, [sp, #4]
- 413 0010 069C     		ldr	r4, [sp, #24]
- 414 0012 0094     		str	r4, [sp]
- 415 0014 FFF7FEFF 		bl	wc_Tls13_HKDF_Extract_ex
- 416 0018 04B0     		add	sp, sp, #16
- 417              		@ sp needed
- 418 001a 10BD     		pop	{r4, pc}
- 420              		.section	.text.wc_Tls13_HKDF_Expand_Label_ex,"ax",%progbits
- 421              		.align	1
- 422              		.global	wc_Tls13_HKDF_Expand_Label_ex
- 423              		.syntax unified
- 424              		.thumb
- 425              		.thumb_func
- 426              		.fpu fpv4-sp-d16
- 428              	wc_Tls13_HKDF_Expand_Label_ex:
- 429              		@ args = 36, pretend = 0, frame = 0
- 430              		@ frame_needed = 0, uses_anonymous_args = 0
- 431 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
- 432 0004 87B0     		sub	sp, sp, #28
- 433 0006 159F     		ldr	r7, [sp, #84]
- 434 0008 DDF84C80 		ldr	r8, [sp, #76]
- 435 000c 8346     		mov	fp, r0
- 436 000e 119D     		ldr	r5, [sp, #68]
- 437 0010 381D     		adds	r0, r7, #4
- 438 0012 4044     		add	r0, r0, r8
- 439 0014 2844     		add	r0, r0, r5
- 440 0016 6F28     		cmp	r0, #111
- 441 0018 0E46     		mov	r6, r1
- 442 001a 9146     		mov	r9, r2
- 443 001c 9A46     		mov	r10, r3
- 444 001e 40D8     		bhi	.L57
- 445 0020 FFF7FEFF 		bl	wolfSSL_Malloc
- 446 0024 0446     		mov	r4, r0
- 447 0026 0028     		cmp	r0, #0
- 448 0028 3ED0     		beq	.L58
- 449 002a 330A     		lsrs	r3, r6, #8
- 450 002c 0370     		strb	r3, [r0]
- 451 002e 05EB0803 		add	r3, r5, r8
- 452 0032 4670     		strb	r6, [r0, #1]
- 453 0034 8370     		strb	r3, [r0, #2]
- 454 0036 95B3     		cbz	r5, .L59
- 455 0038 2A46     		mov	r2, r5
- 456 003a 1099     		ldr	r1, [sp, #64]
- 457 003c 0330     		adds	r0, r0, #3
- 458 003e FFF7FEFF 		bl	memcpy
- 459 0042 0335     		adds	r5, r5, #3
- 460              	.L54:
- 461 0044 B8F1000F 		cmp	r8, #0
- 462 0048 05D0     		beq	.L55
- 463 004a 6019     		adds	r0, r4, r5
- 464 004c 4246     		mov	r2, r8
- 465 004e 1299     		ldr	r1, [sp, #72]
- 466 0050 FFF7FEFF 		bl	memcpy
- 467 0054 4544     		add	r5, r5, r8
- 468              	.L55:
- 469 0056 05F10108 		add	r8, r5, #1
-ARM GAS  /tmp/cckMzTS1.s 			page 9
+ 111 0000 789C6D92 		.ascii	"x\234m\222\335oTE\030\306\347\231\367|t),\226\310\225"
+ 111      DD6F5445 
+ 111      18C6E799 
+ 111      F77C7429 
+ 111      2C96C895 
+ 112 0014 17363186 		.ascii	"\02761\206H\322\036\324\030o\2715\361/\340\202\244\356"
+ 112      48D21ED4 
+ 112      186FB935 
+ 112      F12FE082 
+ 112      A4EE
+ 113 0026 6E75B3BB 		.ascii	"nu\263\273t\263{\200x\241\314J\245f!t\027\214\232\330"
+ 113      74B37B80 
+ 113      78A1CC4A 
+ 113      A5662174 
+ 113      178C9AD8 
+ 114 003a 34F1642F 		.ascii	"4\361d/LkD\215\215U\220\256\"~a\350\007Y$\366\202z\241"
+ 114      4C6B448D 
+ 114      8D5590AE 
+ 114      227E61E8 
+ 114      075924F6 
+ 115 0051 41B16663 		.ascii	"A\261fc\"\237\352\372\316\314\241\260\244'9g\316\314"
+ 115      229FEAFA 
+ 115      CECCA1B0 
+ 115      A4273967 
+ 115      CECC
+ 116 0063 FC9EE7FD 		.ascii	"\374\236\347\375\230y\320\021b\\\010\241\370E\217\300"
+ 116      9879D011 
+ 116      625C08A1 
+ 116      F8458FC0 
+ 117 0073 B17A550A 		.ascii	"\261zU\012\245\324N_\322X}\303tkj\2537\032\217\007\343"
+ 117      A5D44E5F 
+ 117      D2587DC3 
+ 117      746B6AAB 
+ 117      371A8F07 
+ 118 0088 91F07ABD 		.ascii	"\221\360z\275\332\271\274\344\340\034\014\352\310W\353"
+ 118      DAB9BCE4 
+ 118      E01C0CEA 
+ 118      C857EB
+ 119 0097 BDD5F7C7 		.ascii	"\275\325\367\307\267:\207\352\311k\213\355\355\216\213"
+ 119      B73A87EA 
+ 119      C96B8BED 
+ 119      ED8E8B
+ 120 00a6 37D68C3C 		.ascii	"7\326\214<\274Y\257^_]X\303}T\3266!\016Hr\\\317\307"
+ 120      BC59AF5E 
+ 120      5F5D58C3 
+ 120      7D54D636 
+ 120      210E4872 
+ 121 00bd 011CA709 		.ascii	"\001\034\247\011\3021j\220\200\023\377\001\375\2171"
+ 121      C2316A90 
+ 121      8013FF01 
+ 121      FD8F31
+ 122 00cc 77E3ECE4 		.ascii	"w\343\354\344\345io\342\335\246\323 )&\031\230\001>"
+ 122      E5696FE2 
+ 122      DDA6D320 
+ 122      29261998 
+ 122      013E
+ 123 00de 06E72C18 		.ascii	"\006\347,\030\244]b[S\251\205K\263J%D\203\010\237\340"
+ARM GAS  /tmp/ccxqGDEE.s 			page 9
 
 
- 470 005a 6755     		strb	r7, [r4, r5]
- 471 005c 37B1     		cbz	r7, .L56
- 472 005e 04EB0800 		add	r0, r4, r8
- 473 0062 3A46     		mov	r2, r7
- 474 0064 1499     		ldr	r1, [sp, #80]
- 475 0066 FFF7FEFF 		bl	memcpy
- 476 006a B844     		add	r8, r8, r7
- 477              	.L56:
- 478 006c 189B     		ldr	r3, [sp, #96]
- 479 006e 5246     		mov	r2, r10
- 480 0070 0493     		str	r3, [sp, #16]
- 481 0072 179B     		ldr	r3, [sp, #92]
- 482 0074 4946     		mov	r1, r9
- 483 0076 CDE90263 		strd	r6, r3, [sp, #8]
- 484 007a CDE9008B 		strd	r8, fp, [sp]
- 485 007e 2346     		mov	r3, r4
- 486 0080 1698     		ldr	r0, [sp, #88]
- 487 0082 FFF7FEFF 		bl	wc_HKDF_Expand_ex
- 488 0086 4146     		mov	r1, r8
- 489 0088 0546     		mov	r5, r0
- 490 008a 2046     		mov	r0, r4
- 491 008c FFF7FEFF 		bl	ForceZero
- 492 0090 2046     		mov	r0, r4
- 493 0092 FFF7FEFF 		bl	wolfSSL_Free
- 494              	.L52:
- 495 0096 2846     		mov	r0, r5
- 496 0098 07B0     		add	sp, sp, #28
- 497              		@ sp needed
- 498 009a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
- 499              	.L59:
- 500 009e 0325     		movs	r5, #3
- 501 00a0 D0E7     		b	.L54
- 502              	.L57:
- 503 00a2 6FF08305 		mvn	r5, #131
- 504 00a6 F6E7     		b	.L52
- 505              	.L58:
- 506 00a8 6FF07C05 		mvn	r5, #124
- 507 00ac F3E7     		b	.L52
- 509              		.section	.text.wc_Tls13_HKDF_Expand_Label,"ax",%progbits
- 510              		.align	1
- 511              		.global	wc_Tls13_HKDF_Expand_Label
- 512              		.syntax unified
- 513              		.thumb
- 514              		.thumb_func
- 515              		.fpu fpv4-sp-d16
- 517              	wc_Tls13_HKDF_Expand_Label:
- 518              		@ args = 28, pretend = 0, frame = 0
- 519              		@ frame_needed = 0, uses_anonymous_args = 0
- 520 0000 10B5     		push	{r4, lr}
- 521 0002 6FF0010C 		mvn	ip, #1
- 522 0006 0024     		movs	r4, #0
- 523 0008 8AB0     		sub	sp, sp, #40
- 524 000a CDE9074C 		strd	r4, ip, [sp, #28]
- 525 000e 129C     		ldr	r4, [sp, #72]
- 526 0010 0694     		str	r4, [sp, #24]
- 527 0012 119C     		ldr	r4, [sp, #68]
- 528 0014 0594     		str	r4, [sp, #20]
-ARM GAS  /tmp/cckMzTS1.s 			page 10
+ 123      A45D625B 
+ 123      53A9854B 
+ 123      B34A2544 
+ 123      83089FE0 
+ 124 00f2 1E86170C 		.ascii	"\036\206\027\014\265\333R7c\312\301\247\335\224c\250"
+ 124      B5DB5237 
+ 124      63CAC1A7 
+ 124      DD9463A8 
+ 125 0102 94A58E1E 		.ascii	"\224\245\216\036\034S\017p4\027'\273)\327P9C\265\257"
+ 125      1C530F70 
+ 125      341727BB 
+ 125      29D75039 
+ 125      43B5AF
+ 126 0115 5C1D4BD6 		.ascii	"\\\035K\326\240#~\276^\304\021\353u2\216\350bn=\257"
+ 126      A0237EBE 
+ 126      5EC411EB 
+ 126      75328EE8 
+ 126      626E3DAF 
+ 127 0129 7D621B97 		.ascii	"}b\033\227\2700\037S\022_tS\322P/Y\257\325\230\362p"
+ 127      B8301F53 
+ 127      125F7453 
+ 127      D2502F59 
+ 127      AFD598F2 
+ 128 013e A69BF20C 		.ascii	"\246\233\362\014\365\012\254Yg\315\354\354\375f\266"
+ 128      F50AAC59 
+ 128      67CDECEC 
+ 128      FD66B6
+ 129 014d 65AF410F 		.ascii	"e\257A\017\217\352\"\256\036\256&k\225\036\235\3377"
+ 129      8FEA22AE 
+ 129      1EAE266B 
+ 129      951E9DDF 
+ 129      37
+ 130 015e E8EAAD21 		.ascii	"\350\352\255!\217X\222]\333\277O\217YR\342\273\373H"
+ 130      8F58925D 
+ 130      DBBF4F8F 
+ 130      5952E2BB 
+ 130      FB48
+ 131 0170 4FE07BE0 		.ascii	"O\340{\340[\350\303\321WI\010i\027N,\271M\365Og\\\251"
+ 131      5BE8C3D1 
+ 131      57490869 
+ 131      174E2CB9 
+ 131      4DF54F67 
+ 132 0186 F9DDBF9C 		.ascii	"\371\335\277\234~h\013\004\232\220\202wH\247\343\001"
+ 132      7E680B04 
+ 132      9A908277 
+ 132      48A7E301 
+ 133 0196 5FC207AF 		.ascii	"_\302\007\257%\200\323\350\005>\303F\340\0246\001\263"
+ 133      2580D3E8 
+ 133      053EC346 
+ 133      E0143601 
+ 133      B3
+ 134 01a7 48025F61 		.ascii	"H\002_a3\3605\372\264?_U\0227;\235\016A5\205\250\221"
+ 134      33F035FA 
+ 134      B43F5F55 
+ 134      12373B9D 
+ 134      0E413585 
+ 135 01bd B4930A4F 		.ascii	"\264\223\012OV1\272\262\374\343\021\360%\213\310\343"
+ARM GAS  /tmp/ccxqGDEE.s 			page 10
 
 
- 529 0016 109C     		ldr	r4, [sp, #64]
- 530 0018 0494     		str	r4, [sp, #16]
- 531 001a 0F9C     		ldr	r4, [sp, #60]
- 532 001c 0394     		str	r4, [sp, #12]
- 533 001e 0E9C     		ldr	r4, [sp, #56]
- 534 0020 0294     		str	r4, [sp, #8]
- 535 0022 0D9C     		ldr	r4, [sp, #52]
- 536 0024 0194     		str	r4, [sp, #4]
- 537 0026 0C9C     		ldr	r4, [sp, #48]
- 538 0028 0094     		str	r4, [sp]
- 539 002a FFF7FEFF 		bl	wc_Tls13_HKDF_Expand_Label_ex
- 540 002e 0AB0     		add	sp, sp, #40
- 541              		@ sp needed
- 542 0030 10BD     		pop	{r4, pc}
- 544              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
-ARM GAS  /tmp/cckMzTS1.s 			page 11
+ 135      5631BAB2 
+ 135      FCE311F0 
+ 135      258BC8E3 
+ 136 01cd 8C1F51FA 		.ascii	"\214\037Q\372\251\312\006\371qR\374\274\205\212R\263"
+ 136      A9CA06F9 
+ 136      7152FCBC 
+ 136      858A52B3 
+ 137 01dd F31749AF 		.ascii	"\363\027I\257\012\374\000S\343\272h|\003%<#\272t\335"
+ 137      0AFC0053 
+ 137      E3BA687C 
+ 137      03253C23 
+ 137      BA74DD
+ 138 01f0 E56DCC73 		.ascii	"\345m\314s\376\347\357\252>\370\3670\353\304\372B\337"
+ 138      FEE7EFAA 
+ 138      3EF8F730 
+ 138      EBC4FA42 
+ 138      DF
+ 139 0201 087BB46C 		.ascii	"\010{\264l\211e\213\266S5\242\213S\255)\230\254\377"
+ 139      89658BB6 
+ 139      5335A28B 
+ 139      53AD2998 
+ 139      ACFF
+ 140 0213 40A5DF6E 		.ascii	"@\245\337n\324\310y\2575\325\222w\226w\2328\277a\364"
+ 140      D4C879AF 
+ 140      35D59277 
+ 140      96779A38 
+ 140      BF61F4
+ 141 0226 CA991333 		.ascii	"\312\231\0233\023\322\224\345k_\327\332\334\202\264"
+ 141      13D294E5 
+ 141      6B5FD7DA 
+ 141      DC82B4
+ 142 0235 B37E7974 		.ascii	"\263~ytn\006\366\177\007\375:\007\266rW\376^l\013c\325"
+ 142      6E06F67F 
+ 142      07FD3A07 
+ 142      B67257FE 
+ 142      5E6C0B63 
+ 143 024a C6A195E5 		.ascii	"\306\241\225\345\237\222b\024\\^\317$\261:\242\004\266"
+ 143      9F926214 
+ 143      5C5ECF24 
+ 143      B13AA204 
+ 143      B6
+ 144 025b 47C4F384 		.ascii	"G\304\363\204\011\354\335\015\334\306\333\352\324G\267"
+ 144      09ECDD0D 
+ 144      DCC6DBEA 
+ 144      D447B7
+ 145 026a 39569F11 		.ascii	"9V\237\021l\230\3247\206\033\032QoD\033Y\031\021on\212"
+ 145      6C98D437 
+ 145      861B1A51 
+ 145      6F441B59 
+ 145      19116F6E 
+ 146 027f 2819D1E6 		.ascii	"(\031\321\346\006\365\352Dtf\216\303\224t\317\267>L"
+ 146      06F5EA44 
+ 146      74668EC3 
+ 146      9474CFB7 
+ 146      3E4C
+ 147 0291 70AA6CEA 		.ascii	"p\252l\352\353\226:\367T\303\275\376\0132\"2\311\223"
+ 147      EB963AF7 
+ARM GAS  /tmp/ccxqGDEE.s 			page 11
+
+
+ 147      54C3BDFE 
+ 147      0B322232 
+ 147      C993
+ 148 02a3 6DD18597 		.ascii	"m\321\205\227\345\177\027~N\230\352\372\274?\227\337"
+ 148      E57F177E 
+ 148      4E98EAFA 
+ 148      BC3F97DF 
+ 149 02b3 011F31AC 		.ascii	"\001\0371\254T\037\261\020O\007\205=a\220\012\302B1"
+ 149      541FB110 
+ 149      4F07853D 
+ 149      61900AC2 
+ 149      4231
+ 150 02c5 48678BF9 		.ascii	"Hg\213\371\221Bn(\010K#\305lj\307\343\003\345\260\360"
+ 150      91426E28 
+ 150      084B23C5 
+ 150      6C6AC7E3 
+ 150      03E5B0F0 
+ 151 02d9 E4137B9F 		.ascii	"\344\023{\237\032\330[~n \235\331\227\313\206\003\303"
+ 151      1AD85B7E 
+ 151      6E209DD9 
+ 151      97CB8603 
+ 151      C3
+ 152 02ea FB83A162 		.ascii	"\373\203\241bQ<<8\030\354\037\311\017\227\313y3\246"
+ 152      513C3C38 
+ 152      18EC1FC9 
+ 152      0F97CB79 
+ 152      33A6
+ 153 02fc 4A2F16C3 		.ascii	"J/\026\303\240\\J\005\271\364\360`JP\261\224s\312C\371"
+ 153      A05C4A05 
+ 153      B9F4F060 
+ 153      4A50B194 
+ 153      73CA43F9 
+ 154 0310 D0D79F67 		.ascii	"\320\327\237g3{(\233+x\374\362\257\227\316>\237)\207"
+ 154      337B289B 
+ 154      2B78FCF2 
+ 154      AF97CE3E 
+ 154      9F2987
+ 155 0323 CE0B99A1 		.ascii	"\316\013\231\241\242\313\266\317\244)\317@)\023\376"
+ 155      A2CBB6CF 
+ 155      A429CF40 
+ 155      2913FE
+ 156 0332 0F15487D 		.ascii	"\017\025H}!"
+ 156      21
+ 157              		.text
+ 158              		.section	.gnu.lto_wc_Tls13_HKDF_Extract.251.b74f0b3081fa1763,"e",%progbits
+ 159 0000 789C6D91 		.ascii	"x\234m\221\277k\024A\024\307\337w\336\354.g!\366\026"
+ 159      BF6B1441 
+ 159      14C7DF77 
+ 159      DEEC2E67 
+ 159      21F616
+ 160 0013 A632A4B8 		.ascii	"\2462\244\270[\177 \266\376\001\376\005\026\302\271"
+ 160      5B7F20B6 
+ 160      FE01FE05 
+ 160      16C2B9
+ 161 0022 7727CBDE 		.ascii	"w'\313\336\336-\267\233\004A\314D\005%\"\227D\260I\270"
+ 161      DE2DB79B 
+ 161      0441CC44 
+ARM GAS  /tmp/ccxqGDEE.s 			page 12
+
+
+ 161      05252297 
+ 161      44B049B8 
+ 162 0036 62D9C246 		.ascii	"b\331\302Fl\024cb\342\032\261\024\016k\301JD\221\020"
+ 162      6C146362 
+ 162      E21AB114 
+ 162      0E6BC14A 
+ 162      449110
+ 163 0049 AC2C047D 		.ascii	"\254,\004}\273{\240\007)\336\314\233\307g\276\337yo"
+ 163      BB7BA007 
+ 163      29DECC9B 
+ 163      C767BEDF 
+ 163      796F
+ 164 005b F6417493 		.ascii	"\366At\223\210NK\200\011\353k+\212\2141\227\034\205"
+ 164      884E4B80 
+ 164      09EB6B2B 
+ 164      8A8C3197 
+ 164      1C85
+ 165 006d E5B595AF 		.ascii	"\345\265\225\257\007c\215w(\013\240%\205%<\342M\306"
+ 165      07638D77 
+ 165      280BA025 
+ 165      85253CE2 
+ 165      4DC6
+ 166 007f 3A6702EB 		.ascii	":g\002\353I\006\314\314\011\362\353\375\350\333S{\363"
+ 166      4906CCCC 
+ 166      09F2EBFD 
+ 166      E8DB537B 
+ 166      F3
+ 167 0090 49AE3356 		.ascii	"I\2563V4\022\340\005\360\\\014\210\004\344+4\233\033"
+ 167      3412E005 
+ 167      F05C0C88 
+ 167      04E42B34 
+ 167      9B1B
+ 168 00a2 33FEB065 		.ascii	"3\376\260eL\2152f\274\304\177\214\024J\352jE\035L(\215"
+ 168      4C8D3266 
+ 168      BCC47F8C 
+ 168      144AEA6A 
+ 168      451D4C28 
+ 169 00b7 57D3942E 		.ascii	"W\323\224.)\257\242\036\334\271gN\210\233\205\235i\312"
+ 169      29AFA21E 
+ 169      DCB9674E 
+ 169      889B859D 
+ 169      69CA
+ 170 00c9 2AA9A0A4 		.ascii	"*\251\240\244\016\277?|||\025\205\343\356Q\216\375J"
+ 170      0EBF3F7C 
+ 170      7C7C1585 
+ 170      E3EE518E 
+ 170      FD4A
+ 171 00db EBC7C4D1 		.ascii	"\353\307\304\321\302\233\243\264\026hVZ\034\337\237"
+ 171      C29BA3B4 
+ 171      1668565A 
+ 171      1CDF9F
+ 172 00ea 382ABC9D 		.ascii	"8*\274\235\246\224tiS\321u1I\211g\037\255\334\374\376"
+ 172      A6947469 
+ 172      53D17531 
+ 172      4989671F 
+ 172      ADDCFCFE 
+ 173 00fe 3334E673 		.ascii	"34\346s\357\313\247\223\307\024\260\005\031\32564\360"
+ARM GAS  /tmp/ccxqGDEE.s 			page 13
+
+
+ 173      EFCBA793 
+ 173      C714B005 
+ 173      19D53634 
+ 173      F0
+ 174 010f 1A16B007 		.ascii	"\032\026\260\007\033\310\341\000\373\250U\022C.\206"
+ 174      1BC8E100 
+ 174      FBA85512 
+ 174      432E86
+ 175 011e 6F344C4E 		.ascii	"o4LN\264\312\252:,\313\341\020\033F\247\\\273\013\225"
+ 175      B4CAAA3A 
+ 175      2CCBE110 
+ 175      1B46A75C 
+ 175      BB0B95
+ 176 0131 B13D62B1 		.ascii	"\261=b\261HY\245\314)K\331J\331N\331A\243\370\016\205"
+ 176      4859A5CC 
+ 176      294BD94A 
+ 176      D94ED941 
+ 176      A3F80E85 
+ 177 0145 5B193BF4 		.ascii	"[\031;\364\023\267g\344B\361\236!\343\237,\321E7\354"
+ 177      13B767E4 
+ 177      42F19E21 
+ 177      E39F2CD1 
+ 177      4537EC
+ 178 0158 25AEE726 		.ascii	"%\256\347&a\344\266\374\250\333\017\203\246\233\014"
+ 178      61E4B6FC 
+ 178      A8DB0F83 
+ 178      A69B0C
+ 179 0167 FA91EF9D 		.ascii	"\372\221\357\2359[\217\223\360\374\271\371\013\365\371"
+ 179      395B8F93 
+ 179      F0FCB9F9 
+ 179      0BF5F9
+ 180 0176 F85ABDD5 		.ascii	"\370Z\275\325^\010\374\244\336Yt\233QD\247\032\015w"
+ 180      5E08FCA4 
+ 180      DE59749B 
+ 180      5144A71A 
+ 180      0D77
+ 181 0188 B1DFEDC4 		.ascii	"\261\337\355\304q\267\334\275\301\215(q\343\201\347"
+ 181      71B7DCBD 
+ 181      C18D2871 
+ 181      E381E7
+ 182 0197 06AD4EC3 		.ascii	"\006\255N\303#\216\006\201\216\233\335\304)\226\313"
+ 182      238E0681 
+ 182      8E9BDDC4 
+ 182      2996CB
+ 183 01a6 ED1EFB41 		.ascii	"\355\036\373AhKHj\267\374\353\3558\371\013\332\\\254"
+ 183      684B486A 
+ 183      B7FCEBED 
+ 183      38F90BDA 
+ 183      5CAC
+ 184 01b8 F4       		.ascii	"\364"
+ 185              		.text
+ 186              		.section	.gnu.lto_wc_Tls13_HKDF_Expand_Label_ex.252.b74f0b3081fa1763,"e",%progbits
+ 187 0000 789C6D55 		.ascii	"x\234mUklTE\024\236\357\316\335\273w\273e\333\372\240"
+ 187      6B6C5445 
+ 187      149EEFCE 
+ 187      DDBB77BB 
+ 187      65DBFAA0 
+ARM GAS  /tmp/ccxqGDEE.s 			page 14
+
+
+ 188 0014 90944853 		.ascii	"\220\224HSl\203\320.H\324\304\037\312_\023\177\371\323"
+ 188      6C83D02E 
+ 188      48D4C41F 
+ 188      CA5F137F 
+ 188      F9D3
+ 189 0026 1F24A5BB 		.ascii	"\037$\245\273\325M\037\273i\027\201\037\312\005\332"
+ 189      D54D1FBB 
+ 189      6917811F 
+ 189      CA05DA
+ 190 0035 6D2CC676 		.ascii	"m,\306v\213\017\036\315\0127\013!\022\020\020\024\265"
+ 190      8B0F1ECD 
+ 190      0A370B21 
+ 190      12101014 
+ 190      B5
+ 191 0046 40A5F250 		.ascii	"@\245\362P^\345Y\023\345)\246\220\010\254\022\304\262"
+ 191      5EE55913 
+ 191      E529A690 
+ 191      08AC12C4 
+ 191      B2
+ 192 0057 5BEA9999 		.ascii	"[\352\231\231\335\013-\273\331{v\346\3147\3379\337\231"
+ 192      DD0B2DBB 
+ 192      D97B76E6 
+ 192      CC37DF39 
+ 192      DF99
+ 193 0069 33770FBA 		.ascii	"3w\017\272\031;\300\030;J\017\012\031z\342\235\032\263"
+ 193      193BC018 
+ 193      3B4A0F0A 
+ 193      197AE29D 
+ 193      1AB3
+ 194 007b 2C6BBE5B 		.ascii	",k\276[\323\326w\357*\307\020\276X\277\025\372\312\270"
+ 194      D3D677EF 
+ 194      2AC710BE 
+ 194      58BF15FA 
+ 194      CAB8
+ 195 008d EFEAF573 		.ascii	"\357\352\365s\257\351\\xq\374\366\014\275-\356\333\035"
+ 195      AFE95C78 
+ 195      71FCF60C 
+ 195      BD2DEEDB 
+ 195      1D
+ 196 009e FFED755D 		.ascii	"\377\355u]\327\332\343\336\316\355]\317\352\261\270"
+ 196      D7DAE3DE 
+ 196      CEED5DCF 
+ 196      EAB1B8
+ 197 00ad EFDFD3A9 		.ascii	"\357\337\323\251\027t\027>sX\014\255#\276J#\026\211"
+ 197      1774173E 
+ 197      73580CAD 
+ 197      23BE4A23 
+ 197      1689
+ 198 00bf 58D37D0D 		.ascii	"X\323}\015\022\342\306\232\036\273\\ALm\255\012$!\353"
+ 198      12E2C69A 
+ 198      1EBB5C41 
+ 198      4C6DAD0A 
+ 198      2421EB
+ 199 00d2 72100FD6 		.ascii	"r\020\017\3269\220\002\254\357\261\377\376r\347\006"
+ 199      399002AC 
+ 199      EFB1FFFE 
+ 199      72E706
+ARM GAS  /tmp/ccxqGDEE.s 			page 15
+
+
+ 200 00e1 0FC1A4C7 		.ascii	"\017\301\244\307\213\345N\014\260e\032\327]\206\333"
+ 200      8BE54E0C 
+ 200      B0651AD7 
+ 200      5D86DB
+ 201 00f0 F41478B1 		.ascii	"\364\024x\261\014\253y/G\017Or\006=;\002\246\317$\354"
+ 201      0CAB792F 
+ 201      470F4F72 
+ 201      063D3B02 
+ 201      A6CF24EC 
+ 202 0104 7F87120F 		.ascii	"\177\207\022\017\266\031\275[\372\365$\327X\202\000"
+ 202      B619BD5B 
+ 202      FAF524D7 
+ 202      588200
+ 203 0113 7B80DD20 		.ascii	"{\200\335 \355\214\200\374mV\325oY\203\027\367Z\226"
+ 203      ED8C80FC 
+ 203      6D56D56F 
+ 203      598317F7 
+ 203      5A96
+ 204 0125 872539C7 		.ascii	"\207%9\307\267x\014C\016\211Z\240P#Y\224\216\357\306"
+ 204      B7780C43 
+ 204      0E895AA0 
+ 204      50235994 
+ 204      8EEFC6
+ 205 0138 A374890A 		.ascii	"\243t\211\012JT*}\342s_7\222\334\205\037\306\243\\\022"
+ 205      4A542A7D 
+ 205      E2735F37 
+ 205      92DC851F 
+ 205      C6A35C12 
+ 206 014c 15525C0F 		.ascii	"\025R\\\017\034\256}\371\270\"\212+\343p\035\310\307"
+ 206      1CAE7DF9 
+ 206      B8228A2B 
+ 206      E3701DC8 
+ 206      C7
+ 207 015d B554718D 		.ascii	"\265Tq\2159\\?\346\343j\207\"\033u\310\006\362\221\255"
+ 207      395C3FE6 
+ 207      E36A8722 
+ 207      1B75C806 
+ 207      F291AD
+ 208 0170 52B0C18C 		.ascii	"R\260\301\214\303v(\037\333'Y\266\207\016\333\221|l"
+ 208      C376281F 
+ 208      DB2759B6 
+ 208      870EDB91 
+ 208      7C6C
+ 209 0182 6BB36C69 		.ascii	"k\263li\207\355\347|l\033\011F\247\224\032;\261Z\262"
+ 209      87EDE77C 
+ 209      6C1B0946 
+ 209      A7941A3B 
+ 209      B15AB2
+ 210 0195 6938361E 		.ascii	"i86\036\246I\330\226,\333_Y6\003'\306\303\014\011\333"
+ 210      A649D896 
+ 210      2CDB5F59 
+ 210      360327C6 
+ 210      C30C09DB 
+ 211 01a9 A6D8061F 		.ascii	"\246\330\006\037fa\032NMdS\307\3765\304\317\363B\307"
+ 211      66611A4E 
+ 211      4D6453C7 
+ 211      FE35C4CF 
+ARM GAS  /tmp/ccxqGDEE.s 			page 16
+
+
+ 211      F342C7
+ 212 01bc 475D9DBE 		.ascii	"G]\235\276\356\345\2468\373\323\030\327\037\022\271"
+ 212      EEE5A638 
+ 212      FBD318D7 
+ 212      1F12B9
+ 213 01cb D741EEE8 		.ascii	"\327A\356\350\354\352\260\212\333\246\013-g\363 \373"
+ 213      ECEAB08A 
+ 213      DBA60B2D 
+ 213      67F320FB 
+ 214 01db 1492E2EF 		.ascii	"\024\222\342\357\3700\207\324p~\002\322`\270\000\234"
+ 214      F83087D4 
+ 214      707E02D2 
+ 214      60B8009C 
+ 215 01eb 03CE4074 		.ascii	"\003\316@t#]A\203\236!Z\244/w\326\276:\343\352\2672"
+ 215      235D4183 
+ 215      9E215AA4 
+ 215      2F77D6BE 
+ 215      3AE3EAB7 
+ 216 0200 635D9675 		.ascii	"c]\226ud\311\237\027\026\276\014J\336\255\011\303\205"
+ 216      64C99F17 
+ 216      16BE0C4A 
+ 216      DEAD09C3 
+ 216      85
+ 217 0211 D1C9982E 		.ascii	"\321\311\230.a\014a\334\302\230\302\310&.\020\306+L"
+ 217      610C61DC 
+ 217      C298C2C8 
+ 217      262E10C6 
+ 217      2B4C
+ 218 0223 A1F04D12 		.ascii	"\241\360M\022#\037#\342\"a\212\205)\021\305\230\014"
+ 218      231F23E2 
+ 218      22618A85 
+ 218      2911C598 
+ 218      0C
+ 219 0234 1C442970 		.ascii	"\034D)p\030S\200_0U,\2241\212>\015\370\036\345@?*\204"
+ 219      1853805F 
+ 219      30552C94 
+ 219      318A3E0D 
+ 219      F81EE540 
+ 220 024b 6F06F013 		.ascii	"o\006\360\023*\305\250J\230\231\300Q\314\022\243\331"
+ 220      2AC5A84A 
+ 220      9899C051 
+ 220      CC12A3D9 
+ 221 025b C0715403 		.ascii	"\300qT\003}\250\001\366\303\017\354\305\034\340$\346"
+ 221      7DA801F6 
+ 221      C30FECC5 
+ 221      1CE024E6 
+ 222 026b 02839827 		.ascii	"\002\203\230'\2442\326\305\331\030}8\254~\306\272\271"
+ 222      A432D6C5 
+ 222      D9187D38 
+ 222      AC7EC6BA 
+ 222      B9
+ 223 027c A626CB69 		.ascii	"\246&\313ir\033+{c\227G\036\352\244\337\346\364\235"
+ 223      721B2B7B 
+ 223      6397471E 
+ 223      EAA4DFE6 
+ 223      F49D
+ 224 028e 6CF352E5 		.ascii	"l\363R\345=\357\262\271&}S\224\343\026\015\247\222O"
+ARM GAS  /tmp/ccxqGDEE.s 			page 17
+
+
+ 224      3DEFB2B9 
+ 224      267D5394 
+ 224      E3160DA7 
+ 224      924F
+ 225 02a0 5C6D1D3A 		.ascii	"\\m\035:\273\211\266\213\003w\373\312\310\253\\wdy)"
+ 225      BB89B68B 
+ 225      0377FBCA 
+ 225      C8AB5C77 
+ 225      647929
+ 226 02b3 00EFD8BC 		.ascii	"\000\357\330\274\371\236\012\220B\333\225\263\227Jm"
+ 226      F99E0A90 
+ 226      42DB95B3 
+ 226      974A6D
+ 227 02c2 5ED6062D 		.ascii	"^\326\006-\311=\011N\371\320\216$\225\210\010n\014l"
+ 227      C93D094E 
+ 227      F9D08E24 
+ 227      9588086E 
+ 227      0C6C
+ 228 02d4 DD470465 		.ascii	"\335G\004e\202\200#\267_\337p\270\375\256\223`&v*\275"
+ 228      828023B7 
+ 228      5FDF70B8 
+ 228      FDAE9360 
+ 228      26762ABD 
+ 229 02e8 8E62739B 		.ascii	"\216bs\233O\0238\015&\271Wd:F)=\235\374b\226\352\274"
+ 229      4F13380D 
+ 229      26B95764 
+ 229      3A46293D 
+ 229      9DFC6296 
+ 230 02fe A56D166F 		.ascii	"\245m\026o\251\033\276$\367\022#~\007\305\321\025r("
+ 230      A91BBE24 
+ 230      F712237E 
+ 230      07C5D115 
+ 230      7228
+ 231 0310 BDC0E6A4 		.ascii	"\275\300\346\244gZ\016\232}C\321+j\374\246\313b\223"
+ 231      675A0E9A 
+ 231      7D43D12B 
+ 231      6AFCA6CB 
+ 231      6293
+ 232 0322 4B6D1A16 		.ascii	"Km\032\026\233\014*\211\232R\006n\247841\345\242\373"
+ 232      9B0C2A89 
+ 232      9A52066E 
+ 232      A7383431 
+ 232      E5A2FB
+ 233 0335 09C60969 		.ascii	"\011\306\011i\\\025\214\246\320zs\340\276\320:Y\025"
+ 233      5C158CA6 
+ 233      D07A73E0 
+ 233      BED03A59 
+ 233      15
+ 234 0346 2BA7D575 		.ascii	"+\247\325u\366\330P\0229\255\273bc\351Wm\356\311\226"
+ 234      F6D85012 
+ 234      39ADBB62 
+ 234      63E9576D 
+ 234      EEC996
+ 235 0359 4407A70A 		.ascii	"D\007\247\012\306\2463Y\274\302\204\270=r\265\234x\222"
+ 235      C6A63359 
+ 235      BCC284B8 
+ 235      3D72B59C 
+ARM GAS  /tmp/ccxqGDEE.s 			page 18
+
+
+ 235      7892
+ 236 036b 7C924AE6 		.ascii	"|\222J\346H\346-\233W\220\007\327!9\215\215N\375d\334"
+ 236      48E62D9B 
+ 236      579007D7 
+ 236      21398D8D 
+ 236      4EFD64DC 
+ 237 037f ADFB296E 		.ascii	"\255\373)n)\376\220A\037\300G8\375\344\375M$\242\302"
+ 237      29FE9041 
+ 237      1FC04738 
+ 237      FDE4FD4D 
+ 237      24A2C2
+ 238 0392 151B01ED 		.ascii	"\025\033\001\355pO\310b8CY\024P\0266\265\355\223\031"
+ 238      704FC862 
+ 238      38435914 
+ 238      501636B5 
+ 238      ED9319
+ 239 03a5 D0CA0C62 		.ascii	"\320\312\014bt2\270#2\250$\254(\220\310\300\334\370"
+ 239      7432B823 
+ 239      32A824AC 
+ 239      2890C8C0 
+ 239      DCF8
+ 240 03b7 F809F6C6 		.ascii	"\370\011\366\306\006\336\267y\225\315\213\224(\250 "
+ 240      06DEB779 
+ 240      95CD8B94 
+ 240      28A820
+ 241 03c6 A2A1BC32 		.ascii	"\242\241\2742F\321\243\003-T\375\366\304\201z\325\201"
+ 241      46D1A303 
+ 241      2D54FDF6 
+ 241      C4817AD5 
+ 241      81
+ 242 03d7 162A45C3 		.ascii	"\026*E\303B\321\024GQ\021\2056tZ\256t_\032\331$\376"
+ 242      42D11447 
+ 242      51118536 
+ 242      745AAE74 
+ 242      5F1AD924 
+ 243 03ec AF2807CF 		.ascii	"\257(\007\317\004M\227GI\323$\031\257*\217&Z\231I\234"
+ 243      044D9747 
+ 243      49D32419 
+ 243      AF2A8F26 
+ 243      5A99499C 
+ 244 0400 8EA6E151 		.ascii	"\216\246\341Q\3224\213<\002.4\025<\322\224B\257\325"
+ 244      D2348B3C 
+ 244      022E3415 
+ 244      3CD29442 
+ 244      AFD5
+ 245 0412 3796A6FC 		.ascii	"7\226\246\374\347I\016_\202\272\2208f\333\274\332\346"
+ 245      E7490E5F 
+ 245      82BA9038 
+ 245      66DBBCDA 
+ 245      E6
+ 246 0423 353246B1 		.ascii	"52F\261\315\375\324q6\237c\363\271I\222\230B\373\225"
+ 246      CDFDD471 
+ 246      369F63F3 
+ 246      B9499298 
+ 246      42FB95
+ 247 0436 3DD78E42 		.ascii	"=\327\216B\205-NPs2\205L\362\022yQ\006\257\231\3705"
+ 247      852D4E50 
+ARM GAS  /tmp/ccxqGDEE.s 			page 19
+
+
+ 247      7332854C 
+ 247      F2127951 
+ 247      06AF99F8 
+ 248 044b BBFE5482 		.ascii	"\273\376T\202\372P\254'\371\323B\"\321U\231\037\247"
+ 248      FA50AC27 
+ 248      F9D34222 
+ 248      D155991F 
+ 248      A7
+ 249 045c A538CACB 		.ascii	"\2458\312\313s8-4z\251@\226.s\372\007+\346\023\276D"
+ 249      73382D34 
+ 249      7AA94096 
+ 249      2E73FA07 
+ 249      2BE613BE 
+ 250 0471 16A4445D 		.ascii	"\026\244D]\224\314\007\332\245\273;\305\0265_\271\214"
+ 250      94CC07DA 
+ 250      A5BB3BC5 
+ 250      16355FB9 
+ 250      8C
+ 251 0482 7F734F64 		.ascii	"\177sOd]\260\375\323\3303\364^\200\332/\336\013\214"
+ 251      5DB0FDD3 
+ 251      D833F45E 
+ 251      80DA2FDE 
+ 251      0B8C
+ 252 0494 BDE26F6A 		.ascii	"\275\342oj\216\372\353\374\321\246\210?\020\2124\206"
+ 252      8EFAEBFC 
+ 252      D1A6883F 
+ 252      108A3486 
+ 253 04a4 9B1A6AFD 		.ascii	"\233\032j\375\321\226p$T7gnuk\264i\336\213\213^\252"
+ 253      D1967024 
+ 253      5437676E 
+ 253      756BB469 
+ 253      DE8B8B5E 
+ 254 04b9 5ED4BAB0 		.ascii	"^\324\272\260:\020|\257!\024\255\256_\354\257\215D\330"
+ 254      3A107CAF 
+ 254      2114ADAE 
+ 254      5FECAF8D 
+ 254      44D8
+ 255 04cb 733535FE 		.ascii	"s55\376\305\341\306\372\326\326F\371[\327\2624\022\365"
+ 255      C5E1C6FA 
+ 255      D6D646F9 
+ 255      5BD7B234 
+ 255      12F5
+ 256 04dd B7B6D4F9 		.ascii	"\267\266\324\371\033\002\3655u\214\207\033\232\014z"
+ 256      1B02F535 
+ 256      758C871B 
+ 256      9A0C7A
+ 257 04ec DE0C36F3 		.ascii	"\336\0146\363HK\203A\017\015\315HK8\032\256\0137zs\003"
+ 257      484B8341 
+ 257      0F0DCD48 
+ 257      4B381AAE 
+ 257      0B377A73 
+ 258 0501 72BA1A6B 		.ascii	"r\272\032k\027\006\033Mii\252\207\232\353\303nahb\004"
+ 258      17061B4D 
+ 258      6969AA87 
+ 258      9AEBC36E 
+ 258      61686204 
+ 259 0515 42EF045B 		.ascii	"B\357\004[\243\372\273\301\332\210\2132x#\240\007j\243"
+ARM GAS  /tmp/ccxqGDEE.s 			page 20
+
+
+ 259      A3FABBC1 
+ 259      DA888B32 
+ 259      7823A007 
+ 259      6AA3
+ 260 0527 B53C1458 		.ascii	"\265<\024X\302[\202\321\377\001lZ\321\302"
+ 260      C25B82D1 
+ 260      FF016C5A 
+ 260      D1C2
+ 261              		.text
+ 262              		.section	.gnu.lto_wc_Tls13_HKDF_Expand_Label.253.b74f0b3081fa1763,"e",%progbits
+ 263 0000 789C6D92 		.ascii	"x\234m\222Mk\023Q\024\206\357;gf\2224\241\202\177\300"
+ 263      4D6B1351 
+ 263      1486EF3B 
+ 263      67669234 
+ 263      A1827FC0 
+ 264 0014 2E447191 		.ascii	".Dq\221\214\037\210[\227\"\376\002\027B:Id\310Lf\310"
+ 264      8C1F885B 
+ 264      9722FE02 
+ 264      17423A49 
+ 264      64C84C66 
+ 265 0029 4C2DDDD8 		.ascii	"L-\335\330[k7\315\"\266\272\021$\3400\240\033\015\201"
+ 265      5B6B37CD 
+ 265      22B6BA11 
+ 265      24E030A0 
+ 265      1B0D81
+ 266 003c 8A69FD4A 		.ascii	"\212i\375J\325\372-T\227n\0047nD\202\253\242\205zg&"
+ 266      D5FA2D54 
+ 266      976E0437 
+ 266      6E4482AB 
+ 266      A2857A67 
+ 267 0051 26066671 		.ascii	"&\006fq\356\234sx\356s\007\316Y\223\030\273\303\030"
+ 267      EE9C7378 
+ 267      EE7307CE 
+ 267      599318BB 
+ 267      C318
+ 268 0063 3B2402C4 		.ascii	";$\002\304\260\272\262,1\316\371\351\224\204\205\225"
+ 268      B0BAB22C 
+ 268      31CEF9E9 
+ 268      94848595 
+ 269 0073 E5EF8DC5 		.ascii	"\345\357\215\305\263\370\210\250\0016/a\036\327\351"
+ 269      B3F888A8 
+ 269      01362F61 
+ 269      1ED7E9
+ 270 0082 16619502 		.ascii	"\026a\225\002\001\313\203\014\230:\"\220\235\255\326"
+ 270      01CB830C 
+ 270      983A2290 
+ 270      9DADD6
+ 271 0091 BDCEC1CD 		.ascii	"\275\316\301\315\305\2453\001I\254%\200\007\300\032"
+ 271      C5A53301 
+ 271      49AC2580 
+ 271      07C01A
+ 272 00a0 84990990 		.ascii	"\204\231\011\220\316\263\303=\316\267\277t9\317\260"
+ 272      CEB3C33D 
+ 272      CEB7BF74 
+ 272      39CFB0
+ 273 00af 80080FF1 		.ascii	"\200\010\017\361\037#\032\021u!\246~\016(\031\353\343"
+ 273      1F231A11 
+ARM GAS  /tmp/ccxqGDEE.s 			page 21
+
+
+ 273      7521A67E 
+ 273      0E2819EB 
+ 273      E3
+ 274 00c0 941C51E5 		.ascii	"\224\034Q\345\210\352\337\357\354|\003\337\037\220\202"
+ 274      88EADFEF 
+ 274      EC7C03DF 
+ 274      1F9082
+ 275 00cf 47E39812 		.ascii	"G\343\230\022aF,\373=\224=I\2229\261\254=\222=K\222"
+ 275      61462CFB 
+ 275      3D943D49 
+ 275      9239B1AC 
+ 275      3D923D4B 
+ 276 00e4 CDC5B2BD 		.ascii	"\315\305\262\275\241l3I\266\204\330\326\035\331^$\331"
+ 276      A16C3349 
+ 276      B684D8D6 
+ 276      1DD95E24 
+ 276      D9
+ 277 00f5 1A31B7BD 		.ascii	"\0321\267\275;\324m%\351n\014t\353#\335\353$\335\315"
+ 277      3BD46D25 
+ 277      E96E0C74 
+ 277      EB23DDEB 
+ 277      24DDCD
+ 278 0108 81EECF50 		.ascii	"\201\356\317P\3676Iw[`bR\375\215N7\326Ix?\316\211}`"
+ 278      F7364977 
+ 278      5B606252 
+ 278      FD8D4E37 
+ 278      D649783F 
+ 279 0120 2A0BA717 		.ascii	"*\013\247\027n\204\210\366g\245\307w\367\232\234\177"
+ 279      6E8488F6 
+ 279      67A5C777 
+ 279      F79A9C7F 
+ 280 0130 6DE0D38F 		.ascii	"m\340\323\217vn\237\004t!\206\276\001\031x\014\005x"
+ 280      766E9F04 
+ 280      742186BE 
+ 280      0119780C 
+ 280      0578
+ 281 0142 0A15E821 		.ascii	"\012\025\350!\005<G\032x\211\014\360\012\023\300\033"
+ 281      053C471A 
+ 281      78890CF0 
+ 281      0A13C01B 
+ 282 0152 648177C8 		.ascii	"d\201w\310\001\0370\031\333\233\024\356\027\227\301"
+ 282      011F3019 
+ 282      DB9B14EE 
+ 282      1797C1
+ 283 0161 7B8C5D23 		.ascii	"{\214]#).\026D\321\307].\3734y\025R@j\213\304\353>I"
+ 283      292E1644 
+ 283      D1C75D2E 
+ 283      FB347915 
+ 283      52406A8B 
+ 284 0179 3E914FA2 		.ascii	">\221O\242\255\370\244\372\224\362)\355S\306\247\011"
+ 284      ADF8A4FA 
+ 284      94F229ED 
+ 284      53C6A709 
+ 285 0189 9FB23EE5 		.ascii	"\237\262>\345P\010\027P\302\345\200R\354\027\256L\211"
+ 285      50081750 
+ 285      C2E58052 
+ 285      EC17AE4C 
+ARM GAS  /tmp/ccxqGDEE.s 			page 22
+
+
+ 285      89
+ 286 019a FBE19F37 		.ascii	"\373\341\2377\011\243W\030;\245Y5O\3235\317r\264\222"
+ 286      09A35718 
+ 286      3BA55935 
+ 286      4FD335CF 
+ 286      72B492
+ 287 01ad E198B655 		.ascii	"\341\230\266U-j^\335v\014\375\350\261\274\353Y'\216"
+ 287      2D6A5EDD 
+ 287      760CFDE8 
+ 287      B1BCEB59 
+ 287      278E
+ 288 01bf CF9CCCCF 		.ascii	"\317\234\314\317\270\323\371R\371R\325\360\362\225Y"
+ 288      B8D3F952 
+ 288      F952D5F0 
+ 288      F29559
+ 289 01ce ADE838EC 		.ascii	"\255\3508\354@\241\240\315\332f\305u\315\350\253\327"
+ 289      40A1A0CD 
+ 289      DA66C575 
+ 289      CDE8ABD7 
+ 290 01de E71C4F73 		.ascii	"\347\034Os\353\272V-U\012:#\273j\251\"\316\225k\344"
+ 290      EBBA562D 
+ 290      550A3A23 
+ 290      BB6AA922 
+ 290      CE956BE4 
+ 291 01f2 D4ABAA08 		.ascii	"\324\253\252\010\221\246\235\272\355\331\272mf\377%"
+ 291      91A69DBA 
+ 291      EDD9BA6D 
+ 291      66FF25
+ 292 0201 A2A998C5 		.ascii	"\242\251\230\305\351\262\231\216NQ\312F\255b\247\302"
+ 292      E9B2998E 
+ 292      4E51CA46 
+ 292      AD62A7C2 
+ 293 0211 43146AC9 		.ascii	"C\024j\311\270Xv\275\277\376\374\002\026"
+ 293      B85876BD 
+ 293      BFFEFC02 
+ 293      16
+ 294              		.text
+ 295              		.section	.gnu.lto_.symbol_nodes.b74f0b3081fa1763,"e",%progbits
+ 296 0000 789C75CF 		.ascii	"x\234u\317=\016\001Q\024\206\341\363\335o\014F\307\002"
+ 296      3D0E0151 
+ 296      1486E1F3 
+ 296      DD6F0C46 
+ 296      C702
+ 297 0012 2456A0B4 		.ascii	"$V\240\264\2733\343'Z[\220LDD\245\243R\210F\"\021\021"
+ 297      BB33E327 
+ 297      5A5B904C 
+ 297      4444A5A3 
+ 297      52884622 
+ 298 0028 ADC20224 		.ascii	"\255\302\002$\242\360{\015\203\312=\325\233<\347\334"
+ 298      A2F07B0D 
+ 298      83CA3DD5 
+ 298      9B3CE7DC 
+ 299 0038 E48E2022 		.ascii	"\344\216 \"f\012\225\303\245_Cg)\242\"\3430\212\252"
+ 299      660A95C3 
+ 299      A55F4367 
+ 299      29A222E3 
+ 299      308AAA
+ARM GAS  /tmp/ccxqGDEE.s 			page 23
+
+
+ 300 004b F2A2042F 		.ascii	"\362\242\004/P\234\255\265\374\352$\214\360\305+\324"
+ 300      509CADB5 
+ 300      FCEA248C 
+ 300      F0C52BD4 
+ 301 005b 84C978FF 		.ascii	"\204\311x\377\360\006\245u]\336\241\236\353\022\026"
+ 301      F006A575 
+ 301      5DDEA19E 
+ 301      EB1216
+ 302 006a 9AB19F29 		.ascii	"\232\261\237)\277\027D\222\335\227\342\001\365]\326"
+ 302      BF174492 
+ 302      DD97E201 
+ 302      F55DD6
+ 303 0079 309A7559 		.ascii	"0\232uY\335h\316e\221\321\274\313B\243\201\303\010\177"
+ 303      DD68CE65 
+ 303      91D1BCCB 
+ 303      42A381C3 
+ 303      087F
+ 304 008b 775A1D04 		.ascii	"wZ\035\0043\020\231\341f\2601h\3724H?V!\203v\257w\""
+ 304      331099E1 
+ 304      66B03168 
+ 304      FA34483F 
+ 304      56218376 
+ 305 00a2 6290F9F5 		.ascii	"b\220\371\365b\033\003\263\340\227\373\302/\233E2\327"
+ 305      621B03B3 
+ 305      E097FBC2 
+ 305      2F9B4532 
+ 305      D7
+ 306 00b3 9DB78EC4 		.ascii	"\235\267\216\304>II\263^\"\263i\306%z\374<+O|\262\231"
+ 306      3E4949B3 
+ 306      5E22B369 
+ 306      C6257AFC 
+ 306      3C2B4F7C 
+ 307 00c9 32       		.ascii	"2"
+ 308              		.text
+ 309              		.section	.gnu.lto_.refs.b74f0b3081fa1763,"e",%progbits
+ 310 0000 789C6364 		.ascii	"x\234cd\000\002\000\000\012\000\002"
+ 310      00020000 
+ 310      0A0002
+ 311              		.text
+ 312              		.section	.gnu.lto_.decls.b74f0b3081fa1763,"e",%progbits
+ 313 0000 789C8556 		.ascii	"x\234\205ViPT\331\025\276\347\275\266\273y \030\013"
+ 313      695054D9 
+ 313      15BEE7BD 
+ 313      B6BB7920 
+ 313      180B
+ 314 0012 6B124B09 		.ascii	"k\022K\011\261R\0312S\320\003$\243\331\251J\006g\312"
+ 314      B1521932 
+ 314      53D00324 
+ 314      A3D9A94A 
+ 314      0667CA
+ 315 0025 C964AA26 		.ascii	"\311d\252&\3711\374\030\012\273\033!6tWw;h*?\236l\342"
+ 315      F931FC18 
+ 315      0ABB1B21 
+ 315      36745777 
+ 315      3B682A3F 
+ 316 003c 3A888382 		.ascii	":\210\203\202\240 .\240(\001\0217P6Q\026q\337EDPhDG"
+ 316      A0202EA0 
+ARM GAS  /tmp/ccxqGDEE.s 			page 24
+
+
+ 316      28011137 
+ 316      50365116 
+ 316      71DF4544 
+ 317 0054 54444485 		.ascii	"TDD\205\234\373\326\036h\365\025\347\275\346\273\337"
+ 317      9CFBD61E 
+ 317      68F515E7 
+ 317      BDE6BBDF 
+ 318 0064 39E73BE7 		.ascii	"9\347;\347\236\267\314\367%$\220!d\026\3328\036ZB\310"
+ 318      9EB7CCF7 
+ 318      25249021 
+ 318      6416DA38 
+ 318      1E5A42C8 
+ 319 0078 79347AAD 		.ascii	"y4z\255F\213B[\204V\207\326\200v\202\210\2077Z;\332"
+ 319      468B425B 
+ 319      845687D6 
+ 319      80768288 
+ 319      87375A3B 
+ 320 008d 35B43B68 		.ascii	"5\264;h\217\321\306\3218 d&Z\000\332\007h\277A\233\007"
+ 320      8FD1C6D1 
+ 320      38206426 
+ 320      5A00DA07 
+ 320      68BF419B 
+ 321 00a2 64D29187 		.ascii	"d\322\221\207\230\016\257qh\323\321\374\245<4\347\357"
+ 321      980EAF71 
+ 321      68D3D1FC 
+ 321      A53C34E7 
+ 321      EF
+ 322 00b3 71ED7792 		.ascii	"q\355w\222\017Hy&\036\025\270\340\343\346\033\345\246"
+ 322      0F487926 
+ 322      1E15B8E0 
+ 322      E3E61BE5 
+ 322      A6
+ 323 00c4 B15A8A45 		.ascii	"\261Z\212Ec\377\001y?C\373#\232\227\024\223\225tS\235"
+ 323      63FF0179 
+ 323      3F43FB23 
+ 323      9A971493 
+ 323      9574539D 
+ 324 00d8 9C076D8D 		.ascii	"\234\007m\215\210\351\337\022\373O\270~U\3422R\375\327"
+ 324      88E9DF12 
+ 324      FB4FB87E 
+ 324      55E23252 
+ 324      FDD7
+ 325 00ea 3C68EC01 		.ascii	"<h\354\001\321\177b\234j)\026\325\3705\332,\264?#w."
+ 325      D17F629C 
+ 325      6A2916D5 
+ 325      F835DA2C 
+ 325      B43F2377 
+ 326 00ff 5A2DFEFE 		.ascii	"Z-\376\376\013^?A\213D\3735\332|\264\323\210\177\212"
+ 326      0B5E3F41 
+ 326      8B44FB35 
+ 326      DA7CB4D3 
+ 326      887F8A
+ 327 0112 D7D9925E 		.ascii	"\327\331\222^\255\324\363yR\217i\257i\237\002<\3243"
+ 327      ADD4F379 
+ 327      528F69AF 
+ 327      699F023C 
+ 327      D433
+ARM GAS  /tmp/ccxqGDEE.s 			page 25
+
+
+ 328 0124 FE867A64 		.ascii	"\376\206zd\035\237\341\372\240[=\343R\354\211G\026\013"
+ 328      1D9FE1FA 
+ 328      A05B3DE3 
+ 328      52EC8947 
+ 328      160B
+ 329 0136 5F031D12 		.ascii	"_\003\035\022?\341\027a\031b\340\205\243h:\201\203r"
+ 329      3FE11761 
+ 329      1962E085 
+ 329      A3683A81 
+ 329      8372
+ 330 0148 773FA0C4 		.ascii	"w?\240\304\351\240\301\263?\004\346\261\314\263\236"
+ 330      E9A0C1B3 
+ 330      3F04E6B1 
+ 330      CCB39E
+ 331 0157 E7DB755C 		.ascii	"\347\333u\\\035\317\017\362u\251^\004\216\002\034\001"
+ 331      1DCF0FF2 
+ 331      75A95E04 
+ 331      8E021C01 
+ 332 0167 02870183 		.ascii	"\002\207\001\203\034\002\250\0028\000H\236\005\343\342"
+ 332      1C02A802 
+ 332      3800489E 
+ 332      05E3E2
+ 333 0176 85B0A104 		.ascii	"\205\260\241\004\335\326\337\316[\351M\335\\|\303r\226"
+ 333      DDD6DFCE 
+ 333      5BE94DDD 
+ 333      5C7CC372 
+ 333      96
+ 334 0187 40387C44 		.ascii	"@8|D\3408 \001\235\216\001\324\000\222R\3627^\366\361"
+ 334      E0382001 
+ 334      9D8E01D4 
+ 334      009252F2 
+ 334      375EF6F1 
+ 335 019b 11621736 		.ascii	"\021b\0276h\240\026\244\350\004\352\360\204\204\322"
+ 335      68A016A4 
+ 335      E804EAF0 
+ 335      8484D2
+ 336 01aa B1FBAB84 		.ascii	"\261\373\253\204\344\256\2727G9\274\332U\341\247F\251"
+ 336      E4AEBA37 
+ 336      4739BCDA 
+ 336      55E1A746 
+ 336      A9
+ 337 01bb 57A334E0 		.ascii	"W\2434\340\211\375\230\006\312z\372\274Y;\271\212F\367"
+ 337      89FD9806 
+ 337      CA7AFABC 
+ 337      593BB98A 
+ 337      46F7
+ 338 01cd 2A9096BA 		.ascii	"*\220\226\272\255\373\204\346\036\020\006\0355&\000"
+ 338      ADFB84E6 
+ 338      1E10061D 
+ 338      352600
+ 339 01dc B8F6319E 		.ascii	"\270\3661\2368\022\305\022\177\236\341\031\255\211e"
+ 339      3812C512 
+ 339      7F9EE119 
+ 339      AD8965
+ 340 01eb 3896634D 		.ascii	"8\226cM\\3\004\004\015\261\021z&\310\217\323\2274\302"
+ 340      5C330404 
+ 340      0DB1117A 
+ARM GAS  /tmp/ccxqGDEE.s 			page 26
+
+
+ 340      26C88FD3 
+ 340      9734C2
+ 341 01fe 346E8A9E 		.ascii	"4n\212\236a\\:\023\0274\012{\231Bm`\004\2571\255\231"
+ 341      615C3A13 
+ 341      17340A7B 
+ 341      99426D60 
+ 341      04AF31AD 
+ 342 0213 E1D2F14C 		.ascii	"\341\322\361L\346\027\376\341\021xv\351\232\301\204"
+ 342      E617FEE1 
+ 342      117876E9 
+ 342      9AC184
+ 343 0222 5E5F6AF4 		.ascii	"^_j\364\323\360\227K\307\015\261\205k\265\246v&\343"
+ 343      D3F0974B 
+ 343      C70DB185 
+ 343      6BB5A676 
+ 343      26E3
+ 344 0234 7D6806CE 		.ascii	"}h\006\316\024\346\217\333\021\241\327\007\3705\260"
+ 344      14E68FDB 
+ 344      11A1D707 
+ 344      F835B0
+ 345 0243 0D6C246E 		.ascii	"\015l$n\274\276\274l\006\347\322\371a\210 S\3404S\240"
+ 345      BCBEBC6C 
+ 345      06E7D2F9 
+ 345      61882053 
+ 345      E03453A0 
+ 346 0257 5F334C31 		.ascii	"_3L1\2318\377 \202\"Laa\021\014\207\2215\372f\010c\301"
+ 346      9938FF20 
+ 346      82224C61 
+ 346      61110C87 
+ 346      9135FA66 
+ 347 026e 278CBF33 		.ascii	"'\214\2773\360\036\007\234W@`\020!&\022\311`\\v\\>@"
+ 347      F01E079C 
+ 347      57406010 
+ 347      212612C9 
+ 347      605C765C 
+ 348 0284 87394DEA 		.ascii	"\2079M\352\277\000A\034\023\306\260\013\\x73L !\274"
+ 348      BF00411C 
+ 348      13C6B00B 
+ 348      5C783733 
+ 348      4C2021BC 
+ 349 0298 46EFE303 		.ascii	"F\357\343\003<^\274\242\027\230\276\014\343\210K\307"
+ 349      3C5EBCA2 
+ 349      1798BE0C 
+ 349      E3884BC7 
+ 350 02a8 E092BF06 		.ascii	"\340\222\277\006x\006TONK\224Y\245\235&@\377\304\023"
+ 350      7806544F 
+ 350      4E4B9459 
+ 350      A59D2640 
+ 350      FFC413
+ 351 02bb A1FF10F7 		.ascii	"\241\377\020\367,\002N\231\330W\020\037\0132\252\\\244"
+ 351      2C024E99 
+ 351      D857101F 
+ 351      0B32AA5C 
+ 351      A4
+ 352 02cc DF22418C 		.ascii	"\337\"A\214\303\310\011@NB\244U\267\340\252\006I\207"
+ 352      C3C80940 
+ 352      4E42A455 
+ARM GAS  /tmp/ccxqGDEE.s 			page 27
+
+
+ 352      B7E0AA06 
+ 352      4987
+ 353 02de 1C47CEE3 		.ascii	"\034G\316\343\246Q\325\212;,&a\334}\004\277\037\011"
+ 353      A651D58A 
+ 353      3B2C2661 
+ 353      DC7D04BF 
+ 353      1F09
+ 354 02f0 57431225 		.ascii	"WC\022%,q+\234\010cz\340\331\361*\237^l\033?tq&\370"
+ 354      2C712B9C 
+ 354      08637AE0 
+ 354      D9F12A9F 
+ 354      5E6C1B3F 
+ 355 0308 66461060 		.ascii	"fF\020`\277\241\013\337\015]\\\341\243\241\324j\000"
+ 355      BFA10BDF 
+ 355      0D5D5CE1 
+ 355      A3A1D46A 
+ 355      00
+ 356 0319 2B025BFB 		.ascii	"+\002[\373\016\217\373\012\300\"\334\031\341Vc\204["
+ 356      0E8FFB0A 
+ 356      C022DC19 
+ 356      E1566384 
+ 356      5B
+ 357 032a 6D1A2E66 		.ascii	"m\032.f\357\\\265\337\353=\214\362\200\347\375!\016"
+ 357      EF5CB5DF 
+ 357      EB3D8CF2 
+ 357      80E7FD21 
+ 357      0E
+ 358 033b DA005AA9 		.ascii	"\332\000Z\251\202\323\230\274\005\177\314\311\314\341"
+ 358      82D398BC 
+ 358      057FCCC9 
+ 358      CCE1
+ 359 0349 472A56DC 		.ascii	"G*V\334\355~?wl\220\3479/\\\201S\200\003,\2509\205\264"
+ 359      ED7E3F77 
+ 359      6C90E739 
+ 359      2F5C8153 
+ 359      80032CA8 
+ 360 0360 93004D78 		.ascii	"\223\000Mx\013\326\003\315\356\332\260{\324KH\026%$"
+ 360      0BD603CD 
+ 360      EEDAB07B 
+ 360      D44B4816 
+ 360      2524
+ 361 0372 5FBEA7DB 		.ascii	"_\276\247\333*\345>K\247\375|k\345\026\220\326\317Q"
+ 361      2AE53E4B 
+ 361      A7FD7C6B 
+ 361      E51690D6 
+ 361      CF51
+ 362 0384 60FD99F4 		.ascii	"`\375\231\364Q\235,\367<E\212\016t\374W\000\352\000"
+ 362      519D2CF7 
+ 362      3C458A0E 
+ 362      74FC5700 
+ 362      EA00
+ 363 0396 2E50A0B2 		.ascii	".P\240\262\346U\031'S.R\244\347aj\237\2104\000\\\242"
+ 363      E6551927 
+ 363      532E52A4 
+ 363      E7616A9F 
+ 363      8834005C 
+ 364 03ab C885F525 		.ascii	"\310\205\365%G\030\331\3532E\3222FJ\275\225\312\242"
+ARM GAS  /tmp/ccxqGDEE.s 			page 28
+
+
+ 364      4718D9EB 
+ 364      3245D232 
+ 364      464ABD95 
+ 364      CAA2
+ 365 03bd 94CAAEA2 		.ascii	"\224\312\256\242\344+\342\255\236\366\262\274\236\233"
+ 365      E42BE2AD 
+ 365      9EF6B2BC 
+ 365      9E9B
+ 366 03cb 9383150E 		.ascii	"\223\203\025\016\255\273]\252\315\347\353\222\221\257"
+ 366      ADBB5DAA 
+ 366      CDE7EB92 
+ 366      91AF
+ 367 03d9 410A9C51 		.ascii	"A\012\234QJ<\243\2268\352\261\304\327\337g\206\312\352"
+ 367      4A3CA396 
+ 367      38EAB1C4 
+ 367      D7DF6786 
+ 367      CAEA
+ 368 03eb 6ED0CC37 		.ascii	"n\320\3147Vv\234R\264\334\244H\325\301\273\203J\005"
+ 368      56769C52 
+ 368      B4DCA448 
+ 368      D5C1BB83 
+ 368      4A05
+ 369 03fd 1D14D939 		.ascii	"\035\024\3319\334r\303O\256\340\026EVu\265/\367\221"
+ 369      DC72C34F 
+ 369      AEE01645 
+ 369      5675B52F 
+ 369      F791
+ 370 040f BD3A2972 		.ascii	"\275:)r\244=%y\252\207\012\272P\321m\261\202\252\347"
+ 370      A43D2579 
+ 370      AA870ABA 
+ 370      50D16DB1 
+ 370      82AAE7
+ 371 0422 D97D402B 		.ascii	"\331}@+(\357_\273\202\237&\312\357\002\270\256\310\277"
+ 371      28EF5FBB 
+ 371      829F26CA 
+ 371      EF02B8AE 
+ 371      C8BF
+ 372 0434 AECACF64 		.ascii	"\256\312\317d\336\261C=\023w\350\356\244\035\272G\221"
+ 372      DEB1433D 
+ 372      1377E8EE 
+ 372      A41DBA47 
+ 372      91
+ 373 0445 A6EDBDAB 		.ascii	"\246\355\275\253}d\361\275\024\251\255\035<\303\310"
+ 373      7D64F1BD 
+ 373      14A9AD1D 
+ 373      3CC3C8
+ 374 0454 9C3E618B 		.ascii	"\234>a\213\366]9\253\2279.\212\024\266o\350\233*s\372"
+ 374      F65D39AB 
+ 374      97392E8A 
+ 374      14B66FE8 
+ 374      9B2A73FA 
+ 375 0468 2992BD3F 		.ascii	")\222\275?\177\377T\231s\237\"\257\232\326\363\312\360"
+ 375      7FFF5499 
+ 375      739F22AF 
+ 375      9AD6F3CA 
+ 375      F0
+ 376 0479 0E5064E5 		.ascii	"\016Pd\345\326\276q\205\363\200\"\375U'ojd\316C\212"
+ARM GAS  /tmp/ccxqGDEE.s 			page 29
+
+
+ 376      D6BE7185 
+ 376      F38022FD 
+ 376      55276F6A 
+ 376      64CE438A 
+ 377 048d 940FA7DE 		.ascii	"\224\017\247\336RZ\367\003E\356=~z\211\361\320\272A"
+ 377      525AF703 
+ 377      45EE3D7E 
+ 377      7A89F1D0 
+ 377      BA41
+ 378 049f ECC623B1 		.ascii	"\354\306#\261u\035\203\311=z\241u\243j\353\006\001\272"
+ 378      751D83C9 
+ 378      3D7AA175 
+ 378      A36AEB06 
+ 378      01BA
+ 379 04b1 95D675AB 		.ascii	"\225\326u\253\255+\363\330:\367\235\177J\323\326\334"
+ 379      AD2BF3D8 
+ 379      3AF79D7F 
+ 379      4AD3D6DC 
+ 380 04c1 D9764B27 		.ascii	"\331vK'\213\035\022\2069\267m\330O\346<\243\310\336"
+ 380      8B1D1286 
+ 380      39B76DD8 
+ 380      4FE63CA3 
+ 380      C8DE
+ 381 04d3 FED6FC29 		.ascii	"\376\326\374)2g\230\"\343\255\303\327@\346<\247\310"
+ 381      32679822 
+ 381      E3ADC3D7 
+ 381      40E63CA7 
+ 381      C8
+ 382 04e4 5041E3F7 		.ascii	"PA\343\367\032\2313B\221\007\313\037]U6\341\005E\232"
+ 382      1A993342 
+ 382      9107CB1F 
+ 382      5D5536E1 
+ 382      05459A
+ 383 04f7 D34A5A15 		.ascii	"\323JZ\025\316(E\\\267nt\350e\316K\212\214vgn`\345\306"
+ 383      CE28455C 
+ 383      B76E74E8 
+ 383      65CE4B8A 
+ 383      8C76676E 
+ 384 050e BC12362A 		.ascii	"\274\0226*\257\355\032xh\314\030\326\372Zl\314\320\332"
+ 384      AFED1A78 
+ 384      68CC18D6 
+ 384      FA5A6CCC 
+ 384      D0DA
+ 385 0520 AC555AA1 		.ascii	"\254UZ\2411\373*l%\364\355\200\253\360Di\313\023\265"
+ 385      31FB2A6C 
+ 385      25F4ED80 
+ 385      ABF04469 
+ 385      CB13B5
+ 386 0533 2D2DEF9A 		.ascii	"--\357\232\250\345\014\376?V\235^\253\221U$S\344\\V"
+ 386      A8E50CFE 
+ 386      3F569D5E 
+ 386      AB915524 
+ 386      53E45C56 
+ 387 0547 63FA1459 		.ascii	"c\372\024Yi\012E\256\367g\377C.&\225\0029\275\305\003"
+ 387      690A45AE 
+ 387      F767FF43 
+ 387      2E269502 
+ARM GAS  /tmp/ccxqGDEE.s 			page 30
+
+
+ 387      39BDC503 
+ 388 055b BE32258D 		.ascii	"\2762%\215\"O\262\037<\001\231\223N\221\207\227\370"
+ 388      224FB21F 
+ 388      3C019993 
+ 388      4E918797 
+ 388      F8
+ 389 056c 4753A5C4 		.ascii	"GS\245\304+(p!=\245\224\363P\335J|\344f0Bu\033\266\337"
+ 389      2B287021 
+ 389      3DA594F3 
+ 389      50DD4A7C 
+ 389      E4663042 
+ 390 0584 78E63D27 		.ascii	"x\346='\207\347GF6\346\026s\371|\003\203\313\364M#\225"
+ 390      87E74746 
+ 390      36E61673 
+ 390      F97C0383 
+ 390      CBF44D23 
+ 391 0599 C70BAF00 		.ascii	"\307\013\257\000\026_\375l\006K=\312\363z[i\353a\015"
+ 391      165FFD6C 
+ 391      064B3DCA 
+ 391      F37A5B69 
+ 391      EB610D
+ 392 05ac AEB06B05 		.ascii	"\256\260k\005\254h\347\326\013\264dX\207\221\327\322"
+ 392      AC68E7D6 
+ 392      0BB46458 
+ 392      8791D7D2 
+ 393 05bc D479B547 		.ascii	"\324y\265G\212\305\"O\210\217\335K7\333\316j$q\231\224"
+ 393      8AC5224F 
+ 393      888FDD4B 
+ 393      37DBCE6A 
+ 393      24719994 
+ 394 05d0 F1CAB5B1 		.ascii	"\361\312\265\261h\212\324\227\365\024\270\222\262f\330"
+ 394      688AD497 
+ 394      F514B892 
+ 394      B266D8
+ 395 05df F717D9AC 		.ascii	"\367\027\331\254\320\304c\271\375\225\"}\003C\330MB"
+ 395      D0C463B9 
+ 395      FD95227D 
+ 395      0343D84D 
+ 395      42
+ 396 05f0 96C7054F 		.ascii	"\226\307\005Owii\226l\006\276G\264@@K7\3558'\350\331"
+ 396      77696996 
+ 396      6C06BE47 
+ 396      B440404B 
+ 396      37ED3827 
+ 397 0606 84B937D2 		.ascii	"\204\2717\322@\351\233\256$\253e/\022\313\206\034\\"
+ 397      40E99BAE 
+ 397      24AB652F 
+ 397      12CB861C 
+ 397      5C
+ 398 0617 CE45CB12 		.ascii	"\316E\313\022\013\277\3371\336\212\217\212\014~d\353"
+ 398      0BBFDF31 
+ 398      DE8A8F8A 
+ 398      0C7E64EB 
+ 399 0627 CD9630AC 		.ascii	"\315\2260\254;\231\367\351a\221\001\253\305\332\341"
+ 399      3B99F7E9 
+ 399      619101AB 
+ 399      C5DAE1
+ARM GAS  /tmp/ccxqGDEE.s 			page 31
+
+
+ 400 0636 3B24AF16 		.ascii	";$\257\026\253o\0222\365\217\244\016\370I\212iI/\357"
+ 400      AB6F1232 
+ 400      F58FA40E 
+ 400      F8498A69 
+ 400      492FEF
+ 401 0649 1E48613C 		.ascii	"\036Ha<\274,\266\240c\276\324\336\226C\247X\241\275"
+ 401      BC2CB6A0 
+ 401      63BED4DE 
+ 401      9643A758 
+ 401      A1BD
+ 402 065b 97B696F5 		.ascii	"\227\266\226\365\370\012\355\335\302@\236\322\336<1"
+ 402      F80AEDDD 
+ 402      C2409ED2 
+ 402      DE3C31
+ 403 066a C10BF61D 		.ascii	"\301\013\366\035\223SH\013k\276S\221\354-\017\3016\212"
+ 403      9353480B 
+ 403      6BBE5391 
+ 403      EC2D0FC1 
+ 403      368A
+ 404 067c 6C3E9AD6 		.ascii	"l>\232\326\251\334\352E\024\251\252\331\234\243\314"
+ 404      A9DCEA45 
+ 404      14A9AAD9 
+ 404      9CA3CC
+ 405 068b D2768173 		.ascii	"\322v\201s=\3456#\017\312\016\212l\314\255\271\252<"
+ 405      3DE53623 
+ 405      0FCA0E8A 
+ 405      6CCCADB9 
+ 405      AA3C
+ 406 069d 7F7752E4 		.ascii	"\177wR\344|\323@\203V\346\354\242H\307\346\373\235\336"
+ 406      7CD34083 
+ 406      56E6ECA2 
+ 406      48C7E6FB 
+ 406      9DDE
+ 407 06af 92966281 		.ascii	"\222\226b\201r\264p\267\326\3030\355\306jK\304j\233"
+ 407      72B470B7 
+ 407      D6C330ED 
+ 407      C66A4BC4 
+ 407      6A9B
+ 408 06c1 2BCE7532 		.ascii	"+\316u2\3220\225H\303\264\233\201\002\245\332\002\261"
+ 408      D2309548 
+ 408      C3B49B81 
+ 408      02A5DA02 
+ 408      B1
+ 409 06d2 DAD59A49 		.ascii	"\332\325\232I\2034q\210\366z\034\242\323\275E\003\242"
+ 409      83347188 
+ 409      F67A1CA2 
+ 409      D3BD4503 
+ 409      A2
+ 410 06e3 A87828A3 		.ascii	"\250x(\243\214\342\341\324\016/\251E\377c&\317\310\304"
+ 410      8CE2E1D4 
+ 410      0E2FA945 
+ 410      FF6326CF 
+ 410      C8C4
+ 411 06f5 F9A8A09C 		.ascii	"\371\250\240\234\241[\257\317\301\244\371\330\217\313"
+ 411      A15BAFCF 
+ 411      C1A4F9D8 
+ 411      8FCB
+ARM GAS  /tmp/ccxqGDEE.s 			page 32
+
+
+ 412 0703 9568E5A2 		.ascii	"\225h\345\242\232\213U?(\363Q+\315G\027\213\014(\225"
+ 412      9A8B553F 
+ 412      28F3512B 
+ 412      CD47178B 
+ 412      0C2895
+ 413 0716 E6631F92 		.ascii	"\346c\037\222K\305\202\262\204\202&\311}\274\243\244"
+ 413      4BC582B2 
+ 413      848226C9 
+ 413      7DBCA3A4 
+ 414 0726 9E9D9808 		.ascii	"\236\235\230\010\227\017\241\347A1\315\365\313/vyI\003"
+ 414      970FA1E7 
+ 414      4131CDF5 
+ 414      CB2F7679 
+ 414      4903
+ 415 0738 B24F1A90 		.ascii	"\262O\032\220C\014T)-\253b\244/\234U\373\362S4\\\327"
+ 415      430C5429 
+ 415      2DAB62A4 
+ 415      2F9C55FB 
+ 415      F253345C 
+ 416 074d DB3FE737 		.ascii	"\333?\3477\037\275X\357\253~\210\037a\224\017\361\243"
+ 416      1FBD58EF 
+ 416      AB7E881F 
+ 416      61940FF1 
+ 416      A3
+ 417 075e 62BECAB1 		.ascii	"b\276\312\261=\017\334\276\324sUB\265H\350\315?\270"
+ 417      3D0FDCBE 
+ 417      D4735542 
+ 417      B548E8CD 
+ 417      3FB8
+ 418 0770 D72DC24A 		.ascii	"\327-\302J\225P#\022\366\0264\264\351U\302U\365[\377"
+ 418      95502312 
+ 418      F61634B4 
+ 418      E955C255 
+ 418      F55BFF
+ 419 0783 984828DB 		.ascii	"\230H(\333S\270\305\215pH\215p\\\250\212~\344o\032l"
+ 419      53B8C58D 
+ 419      70488D70 
+ 419      5CA88A7E 
+ 419      E46F1A6C 
+ 420 0797 735351A9 		.ascii	"sSQ\251Rj\305\030\223Z\371\2644oL+xdR\217\177+\016\361"
+ 420      526AC518 
+ 420      935AF9B4 
+ 420      346F4C2B 
+ 420      7864528F 
+ 421 07af 02BFF344 		.ascii	"\002\277\363D\361\005q\242\353\031\250\243\233| ?\265"
+ 421      F10571A2 
+ 421      EB19A8A3 
+ 421      9B7C203F 
+ 421      B5
+ 422 07c0 CBCD214E 		.ascii	"\313\315!NqX$i\030\031\334\376Ltid"
+ 422      71582469 
+ 422      1819DCFE 
+ 422      4C746964 
+ 423 07d0 A04118B7 		.ascii	"\240A\030\267\276\374Z/\217s\321\204vBT\366\234O\333"
+ 423      BEFC5A2F 
+ 423      8F73D184 
+ 423      764254F6 
+ARM GAS  /tmp/ccxqGDEE.s 			page 33
+
+
+ 423      9C4FDB
+ 424 07e3 AF53A5EF 		.ascii	"\257S\245\357V\245\237\024\011\031\365\355\337\250\353"
+ 424      56A59F14 
+ 424      0919F5ED 
+ 424      DFA8EB
+ 425 07f2 A7D5F69C 		.ascii	"\247\325\366\234\022\327S\327\245ujU\302\0265@\263\334"
+ 425      12D753D7 
+ 425      A5756A55 
+ 425      C2163540 
+ 425      B3DC
+ 426 0804 9ED785DD 		.ascii	"\236\327\205\335\007\031\2252\250\306h\241\323\020\020"
+ 426      07199532 
+ 426      A8C668A1 
+ 426      D31010
+ 427 0813 126248B2 		.ascii	"\022bH\262Zb\035\016\213p5\332\227\331\234\006\207\335"
+ 427      5A621D0E 
+ 427      8B7035DA 
+ 427      97D99C06 
+ 427      87DD
+ 428 0825 68586C8A 		.ascii	"hXl\212\0151\352\347\177\361\257\300\277\206\316%\332"
+ 428      0D31EAE7 
+ 428      7FF1AFC0 
+ 428      BF86CE25 
+ 428      DA
+ 429 0836 24ABDD14 		.ascii	"$\253\335\024\036\246Y\270\314i\326:\342\377c\216v\372"
+ 429      1EA659B8 
+ 429      CC69D63A 
+ 429      E2FF638E 
+ 429      76FA
+ 430 0848 C7D813BE 		.ascii	"\307\330\023\276\235\027\234\020\222\020\023\237\370"
+ 430      9D179C10 
+ 430      9210139F 
+ 430      F8
+ 431 0855 A1C961FB 		.ascii	"\241\311a\3730\326F\274\215V\273\323\27448!<\234xEZ"
+ 431      30D646BC 
+ 431      8D56BBD3 
+ 431      BC343821 
+ 431      3C9C7845 
+ 432 086a ED467394 		.ascii	"\355Fs\224\331n\235kHHt\032\214\006g\202\315`\212\267"
+ 432      D96E9D6B 
+ 432      4848741A 
+ 432      8C066782 
+ 432      CD608AB7 
+ 433 087e 59AC098B 		.ascii	"Y\254\011\213c\014N\273\325\026o\374(4\330\341L\010"
+ 433      630C4EBB 
+ 433      D5166FFC 
+ 433      2834D8E1 
+ 433      4C08
+ 434 0890 0F5BF2DB 		.ascii	"\017[\362\333\340%\216\205\301&\363\267\213\343\235"
+ 434      E0258E85 
+ 434      C126F3B7 
+ 434      8BE39D
+ 435 089f C1B14986 		.ascii	"\301\261I\206\030\233\215\004\276Q]B\274\303\030b$?"
+ 435      189B8D04 
+ 435      BE515D42 
+ 435      BCC31862 
+ 435      243F
+ARM GAS  /tmp/ccxqGDEE.s 			page 34
+
+
+ 436 08b1 4D3246FF 		.ascii	"M2F\377\323\342\010\015\217\376t\301\337\"\243?Y\352"
+ 436      D3E2080D 
+ 436      8FFE74C1 
+ 436      DF22A33F 
+ 436      59EA
+ 437 08c3 B4C7189D 		.ascii	"\264\307\030\235\321\346\245?\177{]d\206G\307\331\023"
+ 437      D1E6A53F 
+ 437      7F7B5D64 
+ 437      8647C7D9 
+ 437      13
+ 438 08d4 515B4CA2 		.ascii	"Q[L\242)\372\363\230\205f\013\306\234\371\346\325\351"
+ 438      29FAF398 
+ 438      85660BC6 
+ 438      9CF9E6D5 
+ 438      E9
+ 439 08e5 B83441C1 		.ascii	"\2704A\301/'(\370\261\222\270\204\030cH\034\321&\230"
+ 439      2F2728F8 
+ 439      B192B884 
+ 439      1863481C 
+ 439      D12698
+ 440 08f8 131C66A7 		.ascii	"\023\034f\247\306b\216\211\325%Z\235qvk\022\204\352"
+ 440      C6628E89 
+ 440      D5255A9D 
+ 440      71766B12 
+ 440      84EA
+ 441 090a 6213031D 		.ascii	"b\023\003\0356\263\021\221\304\304%\026\313l\303\022"
+ 441      36B31191 
+ 441      C4C42516 
+ 441      CB6CC312 
+ 442 091a 87DD109F 		.ascii	"\207\335\020\237h\264,1\231\015\211\346$K\374B\203\303"
+ 442      68B42C31 
+ 442      990D89E6 
+ 442      244BFC42 
+ 442      83C3
+ 443 092c 698F4F5C 		.ascii	"i\217O\\\2041|h\324\257\276\372<:\322n6\377\352\255"
+ 443      84317C68 
+ 443      D4AFBEFA 
+ 443      3C3AD26E 
+ 443      36FFEAAD 
+ 444 0940 59319BD5 		.ascii	"Y1\233\325\276\014}~\242\352\025\2120/\245J\214\266"
+ 444      BE0C7D7E 
+ 444      A2EA158A 
+ 444      302FA54A 
+ 444      8CB6
+ 445 0952 65BE72B0 		.ascii	"e\276r\260\277\307X,V\343\377\001]I\007a"
+ 445      BFC7582C 
+ 445      56E3FF01 
+ 445      5D490761 
+ 446              		.text
+ 447              		.section	.gnu.lto_.symtab.b74f0b3081fa1763,"e",%progbits
+ 448 0000 77635F54 		.ascii	"wc_Tls13_HKDF_Extract_ex\000"
+ 448      6C733133 
+ 448      5F484B44 
+ 448      465F4578 
+ 448      74726163 
+ 449 0019 00       		.ascii	"\000"
+ 450 001a 00       		.ascii	"\000"
+ARM GAS  /tmp/ccxqGDEE.s 			page 35
+
+
+ 451 001b 00       		.ascii	"\000"
+ 452 001c 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 452      00000000 
+ 453 0024 D8000000 		.ascii	"\330\000\000\000"
+ 454 0028 77635F54 		.ascii	"wc_Tls13_HKDF_Extract\000"
+ 454      6C733133 
+ 454      5F484B44 
+ 454      465F4578 
+ 454      74726163 
+ 455 003e 00       		.ascii	"\000"
+ 456 003f 00       		.ascii	"\000"
+ 457 0040 00       		.ascii	"\000"
+ 458 0041 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 458      00000000 
+ 459 0049 E1000000 		.ascii	"\341\000\000\000"
+ 460 004d 77635F54 		.ascii	"wc_Tls13_HKDF_Expand_Label_ex\000"
+ 460      6C733133 
+ 460      5F484B44 
+ 460      465F4578 
+ 460      70616E64 
+ 461 006b 00       		.ascii	"\000"
+ 462 006c 00       		.ascii	"\000"
+ 463 006d 00       		.ascii	"\000"
+ 464 006e 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 464      00000000 
+ 465 0076 F1000000 		.ascii	"\361\000\000\000"
+ 466 007a 77635F54 		.ascii	"wc_Tls13_HKDF_Expand_Label\000"
+ 466      6C733133 
+ 466      5F484B44 
+ 466      465F4578 
+ 466      70616E64 
+ 467 0095 00       		.ascii	"\000"
+ 468 0096 00       		.ascii	"\000"
+ 469 0097 00       		.ascii	"\000"
+ 470 0098 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 470      00000000 
+ 471 00a0 FF000000 		.ascii	"\377\000\000\000"
+ 472 00a4 77635F48 		.ascii	"wc_HKDF_Extract_ex\000"
+ 472      4B44465F 
+ 472      45787472 
+ 472      6163745F 
+ 472      657800
+ 473 00b7 00       		.ascii	"\000"
+ 474 00b8 02       		.ascii	"\002"
+ 475 00b9 00       		.ascii	"\000"
+ 476 00ba 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 476      00000000 
+ 477 00c2 0A010000 		.ascii	"\012\001\000\000"
+ 478 00c6 776F6C66 		.ascii	"wolfSSL_Free\000"
+ 478      53534C5F 
+ 478      46726565 
+ 478      00
+ 479 00d3 00       		.ascii	"\000"
+ 480 00d4 02       		.ascii	"\002"
+ 481 00d5 00       		.ascii	"\000"
+ 482 00d6 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 482      00000000 
+ARM GAS  /tmp/ccxqGDEE.s 			page 36
+
+
+ 483 00de 1E010000 		.ascii	"\036\001\000\000"
+ 484 00e2 77635F48 		.ascii	"wc_HKDF_Expand_ex\000"
+ 484      4B44465F 
+ 484      45787061 
+ 484      6E645F65 
+ 484      7800
+ 485 00f4 00       		.ascii	"\000"
+ 486 00f5 02       		.ascii	"\002"
+ 487 00f6 00       		.ascii	"\000"
+ 488 00f7 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 488      00000000 
+ 489 00ff 2A010000 		.ascii	"*\001\000\000"
+ 490 0103 776F6C66 		.ascii	"wolfSSL_Malloc\000"
+ 490      53534C5F 
+ 490      4D616C6C 
+ 490      6F6300
+ 491 0112 00       		.ascii	"\000"
+ 492 0113 02       		.ascii	"\002"
+ 493 0114 00       		.ascii	"\000"
+ 494 0115 00000000 		.ascii	"\000\000\000\000\000\000\000\000"
+ 494      00000000 
+ 495 011d 38010000 		.ascii	"8\001\000\000"
+ 496              		.text
+ 497              		.section	.gnu.lto_.ext_symtab.b74f0b3081fa1763,"e",%progbits
+ 498 0000 01       		.ascii	"\001"
+ 499 0001 01       		.ascii	"\001"
+ 500 0002 00       		.ascii	"\000"
+ 501 0003 01       		.ascii	"\001"
+ 502 0004 00       		.ascii	"\000"
+ 503 0005 01       		.ascii	"\001"
+ 504 0006 00       		.ascii	"\000"
+ 505 0007 01       		.ascii	"\001"
+ 506 0008 00       		.ascii	"\000"
+ 507 0009 01       		.ascii	"\001"
+ 508 000a 00       		.ascii	"\000"
+ 509 000b 01       		.ascii	"\001"
+ 510 000c 00       		.ascii	"\000"
+ 511 000d 01       		.ascii	"\001"
+ 512 000e 00       		.ascii	"\000"
+ 513 000f 01       		.ascii	"\001"
+ 514 0010 00       		.ascii	"\000"
+ 515              		.text
+ 516              		.section	.gnu.lto_.opts,"e",%progbits
+ 517 0000 272D666E 		.ascii	"'-fno-openmp' '-fno-openacc' '-fno-pie' '-fcf-prote"
+ 517      6F2D6F70 
+ 517      656E6D70 
+ 517      2720272D 
+ 517      666E6F2D 
+ 518 0033 6374696F 		.ascii	"ction=none' '-mcpu=cortex-m33' '-mthumb' '-mfpu=fpv"
+ 518      6E3D6E6F 
+ 518      6E652720 
+ 518      272D6D63 
+ 518      70753D63 
+ 519 0066 342D7370 		.ascii	"4-sp-d16' '-mfloat-abi=hard' '-mlibarch=armv8-m.mai"
+ 519      2D643136 
+ 519      2720272D 
+ 519      6D666C6F 
+ARM GAS  /tmp/ccxqGDEE.s 			page 37
+
+
+ 519      61742D61 
+ 520 0099 6E2B6473 		.ascii	"n+dsp+fp' '-march=armv8-m.main+dsp+fp' '-Os' '-flto"
+ 520      702B6670 
+ 520      2720272D 
+ 520      6D617263 
+ 520      683D6172 
+ 521 00cc 2720272D 		.ascii	"' '-fdata-sections' '-ffunction-sections' '-Xassemb"
+ 521      66646174 
+ 521      612D7365 
+ 521      6374696F 
+ 521      6E732720 
+ 522 00ff 6C657227 		.ascii	"ler' '-a' '-Xassembler' '-ad' '-Xassembler' '-alms="
+ 522      20272D61 
+ 522      2720272D 
+ 522      58617373 
+ 522      656D626C 
+ 523 0132 6275696C 		.ascii	"build/../wolfssl/wolfcrypt/src/kdf.lst'\000"
+ 523      642F2E2E 
+ 523      2F776F6C 
+ 523      6673736C 
+ 523      2F776F6C 
+ 524              		.text
+ 525              		.comm	__gnu_lto_slim,1,1
+ 526              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccxqGDEE.s 			page 38
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 kdf.c
-     /tmp/cckMzTS1.s:16     .text.ForceZero:0000000000000000 $t
-     /tmp/cckMzTS1.s:24     .text.ForceZero:0000000000000000 ForceZero
-     /tmp/cckMzTS1.s:59     .text.wc_PRF:0000000000000000 $t
-     /tmp/cckMzTS1.s:66     .text.wc_PRF:0000000000000000 wc_PRF
-     /tmp/cckMzTS1.s:228    .text.wc_PRF_TLSv1:0000000000000000 $t
-     /tmp/cckMzTS1.s:235    .text.wc_PRF_TLSv1:0000000000000000 wc_PRF_TLSv1
-     /tmp/cckMzTS1.s:288    .text.wc_PRF_TLS:0000000000000000 $t
-     /tmp/cckMzTS1.s:295    .text.wc_PRF_TLS:0000000000000000 wc_PRF_TLS
-     /tmp/cckMzTS1.s:360    .text.wc_Tls13_HKDF_Extract_ex:0000000000000000 $t
-     /tmp/cckMzTS1.s:367    .text.wc_Tls13_HKDF_Extract_ex:0000000000000000 wc_Tls13_HKDF_Extract_ex
-     /tmp/cckMzTS1.s:397    .text.wc_Tls13_HKDF_Extract:0000000000000000 $t
-     /tmp/cckMzTS1.s:404    .text.wc_Tls13_HKDF_Extract:0000000000000000 wc_Tls13_HKDF_Extract
-     /tmp/cckMzTS1.s:421    .text.wc_Tls13_HKDF_Expand_Label_ex:0000000000000000 $t
-     /tmp/cckMzTS1.s:428    .text.wc_Tls13_HKDF_Expand_Label_ex:0000000000000000 wc_Tls13_HKDF_Expand_Label_ex
-     /tmp/cckMzTS1.s:510    .text.wc_Tls13_HKDF_Expand_Label:0000000000000000 $t
-     /tmp/cckMzTS1.s:517    .text.wc_Tls13_HKDF_Expand_Label:0000000000000000 wc_Tls13_HKDF_Expand_Label
+                            *COM*:0000000000000001 __gnu_lto_slim
 
-UNDEFINED SYMBOLS
-memset
-wolfSSL_Malloc
-wolfSSL_Free
-wc_HmacInit
-wc_HmacSetKey
-wc_HmacUpdate
-wc_HmacFinal
-memcpy
-wc_HmacFree
-wc_HKDF_Extract_ex
-wc_HKDF_Expand_ex
+NO UNDEFINED SYMBOLS

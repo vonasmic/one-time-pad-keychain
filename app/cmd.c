@@ -7,9 +7,6 @@
 #include "main.h"
 #include "spi.h"
 #include "time.h"
-#include "sphincs.h"
-#include "dilithium.h"
-#include "kyber.h"
 #include "tls_pqc.h"
 #include "usb_device.h"
 
@@ -163,186 +160,6 @@ static bool _cmd_help(const cmd_t *cmd)
     }
     return (true);
 }
-static bool _cmd_sphincs(const cmd_t *cmd)
-{
-    OS_PRINTF("%s: use SPHINCS <text> to sign\n", cmd->text);
-    return (true);
-}
-
-static bool _cmd_dilithium(const cmd_t *cmd)
-{
-	OS_PRINTF("%s: use DILITHIUM <text> to sign\n", cmd->text);
-	return (true);
-}
-
-static bool _cmd_verify(const cmd_t *cmd)
-{
-    OS_PRINTF("%s: use VERIFY <text> to sign and verify, timing both\n", cmd->text);
-    return (true);
-}
-
-static bool _cmd_verify_set(const struct _cmd_t *cmd, const char **pptext)
-{
-    const char *text = *pptext;
-    u32 text_len;
-
-    while (*text == ' ') text++;
-    text_len = (u32)strlen(text);
-    if (text_len == 0)
-    {
-        _cmd_error(ERR_MISSING_PARAMETER);
-        return (false);
-    }
-
-    if (! sphincs_init())
-    {
-        _cmd_error("SPHINCS not available");
-        return (false);
-    }
-
-    u32 sig_max = sphincs_signature_max_len();
-    if (sig_max == 0)
-    {
-        _cmd_error("SPHINCS init failed");
-        return (false);
-    }
-
-    #define SPHINCS_MAX_SIG_LEN 17088
-    static u8 sig_buffer[SPHINCS_MAX_SIG_LEN];
-    if (sig_max > SPHINCS_MAX_SIG_LEN)
-    {
-        _cmd_error("signature too large for buffer");
-        return (false);
-    }
-
-    u32 sig_len = 0;
-    u32 sign_us = 0;
-    if (! sphincs_sign((const u8 *)text, text_len, sig_buffer, &sig_len, &sign_us))
-    {
-        _cmd_error("sign failed");
-        return (false);
-    }
-
-    u32 verify_us = 0;
-    bool ok = sphincs_verify((const u8 *)text, text_len, sig_buffer, sig_len, &verify_us);
-    OS_PRINTF("VERIFY: %s, sign_us=%lu, verify_us=%lu" NL, ok ? "OK" : "FAIL",
-              (unsigned long)sign_us, (unsigned long)verify_us);
-    return ok;
-}
-
-static bool _cmd_dilithium_set(const struct _cmd_t *cmd, const char **pptext)
-{
-	const char *text = *pptext;
-	u32 text_len;
-
-	while (*text == ' ') text++;
-	text_len = (u32)strlen(text);
-	if (text_len == 0)
-	{
-		_cmd_error(ERR_MISSING_PARAMETER);
-		return (false);
-	}
-
-	if (! dilithium_init())
-	{
-		_cmd_error("DILITHIUM not available");
-		return (false);
-	}
-
-	u32 sig_max = dilithium_signature_max_len();
-	if (sig_max == 0)
-	{
-		_cmd_error("DILITHIUM init failed");
-		return (false);
-	}
-
-	#define DILITHIUM_MAX_SIG_LEN 5000
-	static u8 sig_buffer[DILITHIUM_MAX_SIG_LEN];
-	if (sig_max > DILITHIUM_MAX_SIG_LEN)
-	{
-		_cmd_error("signature too large for buffer");
-		return (false);
-	}
-
-	u32 sig_len = 0;
-	u32 time_us = 0;
-	bool ok = dilithium_sign((const u8 *)text, text_len, sig_buffer, &sig_len, &time_us);
-	if (! ok)
-	{
-		_cmd_error("sign failed");
-		return (false);
-	}
-
-	OS_PRINTF("%s: ", cmd->text);
-	for (u32 i = 0; i < sig_len; i++)
-	{
-		OS_PRINTF("%02X", sig_buffer[i]);
-	}
-	OS_PRINTF(NL);
-	OS_PRINTF("TIME_US: %lu" NL, (unsigned long)time_us);
-	return (true);
-}
-static bool _cmd_shard(const cmd_t *cmd)
-{
-    OS_PRINTF("%s: use SHARD <text> to run 100 signs and time it\n", cmd->text);
-    return (true);
-}
-
-static bool _cmd_kyber(const cmd_t *cmd)
-{
-	OS_PRINTF("%s: use KYBER <text> to encapsulate/decapsulate and print times\n", cmd->text);
-	return (true);
-}
-
-static bool _cmd_kyber_set(const struct _cmd_t *cmd, const char **pptext)
-{
-	const char *text = *pptext;
-	// Parameter accepted but not used; mirrors SPHINCS free-form style
-	(void)text;
-
-	if (! kyber_init())
-	{
-		_cmd_error("KYBER not available");
-		return (false);
-	}
-
-	const u32 ct_len = kyber_ciphertext_len();
-	const u32 ss_len = kyber_sharedsecret_len();
-	static u8 ct_buffer[1536];
-	static u8 ss1[64];
-	static u8 ss2[64];
-	if (ct_len > sizeof(ct_buffer) || ss_len > sizeof(ss1))
-	{
-		_cmd_error("buffer too small");
-		return (false);
-	}
-
-	u32 enc_us = 0;
-	if (! kyber_encapsulate(ct_buffer, ss1, &enc_us))
-	{
-		_cmd_error("encapsulate failed");
-		return (false);
-	}
-
-	u32 dec_us = 0;
-	if (! kyber_decapsulate(ct_buffer, ss2, &dec_us))
-	{
-		_cmd_error("decapsulate failed");
-		return (false);
-	}
-
-	bool ok = (memcmp(ss1, ss2, ss_len) == 0);
-
-	OS_PRINTF("KYBER: ");
-	for (u32 i = 0; i < ct_len; i++)
-	{
-		OS_PRINTF("%02X", ct_buffer[i]);
-	}
-	OS_PRINTF(NL);
-	OS_PRINTF("VERIFY: %s, enc_us=%lu, dec_us=%lu" NL, ok ? "OK" : "FAIL",
-		(unsigned long)enc_us, (unsigned long)dec_us);
-	return ok;
-}
 
 static bool _cmd_tls(const cmd_t *cmd)
 {
@@ -355,145 +172,25 @@ static bool _cmd_tls(const cmd_t *cmd)
 static bool _cmd_tls_set(const struct _cmd_t *cmd, const char **pptext)
 {
 	(void)cmd;
-	(void)pptext;
-	/* tls_pqc_handshake() will print the status message itself */
+	const char* data_to_send = NULL;
+	
+	/* If there's text after "TLS", use it as application data to send */
+	if (pptext != NULL && *pptext != NULL && **pptext != '\0') {
+		/* Skip leading spaces */
+		while (**pptext == ' ') {
+			(*pptext)++;
+		}
+		/* If there's still text, use it as data to send */
+		if (**pptext != '\0') {
+			data_to_send = *pptext;
+		}
+	}
+	
+	/* tls_pqc_handshake_with_data() will print the status message itself */
 	/* Don't print here to avoid interfering with TLS data stream */
-	return tls_pqc_handshake();
+	return tls_pqc_handshake_with_data(data_to_send);
 }
 
-static bool _cmd_shard_set(const struct _cmd_t *cmd, const char **pptext)
-{
-    const char *text = *pptext;
-    u32 text_len;
-
-    while (*text == ' ') text++;
-    text_len = (u32)strlen(text);
-    if (text_len == 0)
-    {
-        _cmd_error(ERR_MISSING_PARAMETER);
-        return (false);
-    }
-
-    if (! sphincs_init())
-    {
-        _cmd_error("SPHINCS not available");
-        return (false);
-    }
-
-    u32 sig_max = sphincs_signature_max_len();
-    if (sig_max == 0)
-    {
-        _cmd_error("SPHINCS init failed");
-        return (false);
-    }
-
-    #define SPHINCS_MAX_SIG_LEN 17088
-    static u8 sig_buffer[SPHINCS_MAX_SIG_LEN];
-    if (sig_max > SPHINCS_MAX_SIG_LEN)
-    {
-        _cmd_error("signature too large for buffer");
-        return (false);
-    }
-
-    const u32 runs = 100;
-    u32 sig_len = 0;
-    os_timer_t t0 = timer_get_time();
-    for (u32 i = 0; i < runs; i++)
-    {
-        u32 iter_us = 0;
-        if (! sphincs_sign((const u8 *)text, text_len, sig_buffer, &sig_len, &iter_us))
-        {
-            _cmd_error("sign failed");
-            return (false);
-        }
-        OS_PRINTF("SHARD: %lu/%lu, us=%lu" NL, (unsigned long)(i+1), (unsigned long)runs, (unsigned long)iter_us);
-        wd_feed();
-        usb_device_task();
-    }
-    os_timer_t t1 = timer_get_time();
-    u32 elapsed_us = (u32)(t1 - t0);
-    u32 seconds = elapsed_us / (1000 * TIMER_MS);
-
-    OS_PRINTF("%s: runs=%lu, seconds=%lu" NL, cmd->text, (unsigned long)runs, (unsigned long)seconds);
-    return (true);
-}
-
-static bool _cmd_sphincs_set(const struct _cmd_t *cmd, const char **pptext)
-{
-    const char *text = *pptext;
-    u32 text_len;
-
-    OS_PRINTF("DBG: SPHINCS command start" NL);
-
-    // Trim leading spaces (already skipped by dispatcher in most cases)
-    while (*text == ' ') text++;
-    text_len = (u32)strlen(text);
-    OS_PRINTF("DBG: text_len=%lu" NL, (unsigned long)text_len);
-    if (text_len == 0)
-    {
-        _cmd_error(ERR_MISSING_PARAMETER);
-        return (false);
-    }
-
-    OS_PRINTF("DBG: calling sphincs_init()" NL);
-    if (! sphincs_init())
-    {
-        _cmd_error("SPHINCS not available");
-        return (false);
-    }
-    OS_PRINTF("DBG: sphincs_init() OK" NL);
-
-    OS_PRINTF("DBG: getting signature max len" NL);
-    u32 sig_max = sphincs_signature_max_len();
-    OS_PRINTF("DBG: sig_max=%lu" NL, (unsigned long)sig_max);
-    if (sig_max == 0)
-    {
-        _cmd_error("SPHINCS init failed");
-        return (false);
-    }
-
-    // Use static buffer instead of malloc to avoid heap exhaustion
-    // SPHINCS+-SHA2-128f-simple signature is 17088 bytes max
-    #define SPHINCS_MAX_SIG_LEN 17088
-    static u8 sig_buffer[SPHINCS_MAX_SIG_LEN];
-    
-    if (sig_max > SPHINCS_MAX_SIG_LEN)
-    {
-        _cmd_error("signature too large for buffer");
-        return (false);
-    }
-
-    OS_PRINTF("DBG: calling sphincs_sign()" NL);
-    u32 sig_len = 0;
-    u32 time_us = 0;
-    bool ok = sphincs_sign((const u8 *)text, text_len, sig_buffer, &sig_len, &time_us);
-    OS_PRINTF("DBG: sphincs_sign() returned, ok=%d" NL, ok ? 1 : 0);
-    if (! ok)
-    {
-        _cmd_error("sign failed");
-        return (false);
-    }
-
-    OS_PRINTF("DBG: sign OK, sig_len=%lu, time_us=%lu" NL, (unsigned long)sig_len, (unsigned long)time_us);
-
-    // Print hex signature
-    OS_PRINTF("%s: ", cmd->text);
-    OS_PRINTF("DBG: printing signature hex..." NL);
-    for (u32 i = 0; i < sig_len; i++)
-    {
-        OS_PRINTF("%02X", sig_buffer[i]);
-        // Progress indicator every 1KB
-        if ((i > 0) && ((i % 1024) == 0))
-        {
-            OS_PRINTF("\nDBG: progress %lu/%lu" NL, (unsigned long)i, (unsigned long)sig_len);
-        }
-    }
-    OS_PRINTF(NL);
-    OS_PRINTF("TIME_US: %lu" NL, (unsigned long)time_us);
-    OS_PRINTF("DBG: SPHINCS command complete" NL);
-
-    return (true);
-}
 
 static void _cmd_basic_reply(const cmd_t *cmd)
 {
@@ -751,7 +448,9 @@ void cmd_parse(const char *ptext)
     {
         return;
     }
-    OS_PRINTF("OK" NL);
+    if (strnicmp(cmd->text, "TLS", 3) != 0) {
+        OS_PRINTF("OK" NL);
+    }
 }
 
 static const cmd_t _CMD_TABLE[] = {
@@ -766,12 +465,7 @@ static const cmd_t _CMD_TABLE[] = {
     {"ID",        _cmd_id,      NULL,           "Request product id"},
     {"PWR",       _cmd_pwr,     _cmd_pwr_set,   "Get/set target power"},
     {"RESET",     _cmd_reset,   NULL,           "Instant reset"},
-    {"SPHINCS",   _cmd_sphincs, _cmd_sphincs_set, "Sign text with SPHINCS+ and report time"},
-    {"DILITHIUM", _cmd_dilithium, _cmd_dilithium_set, "Sign text with Dilithium and report time"},
-    {"KYBER",     _cmd_kyber,   _cmd_kyber_set,  "Kyber768 KEM encap/decap and print times"},
 	{"TLS",       _cmd_tls,     _cmd_tls_set,    "TLS 1.3 handshake over USB (ML-KEM-768)"},
-    {"VERIFY",    _cmd_verify,  _cmd_verify_set, "Sign then verify; print times"},
-    {"SHARD",      _cmd_shard,  _cmd_shard_set,  "Run 100 SPHINCS+ signs and print total seconds"},
     {"SN",        _cmd_sn,      NULL,           "Request product serial number"},
     {"VER",       _cmd_ver,     NULL,           "Request version information"},
 

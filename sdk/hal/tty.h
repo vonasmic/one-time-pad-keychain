@@ -29,6 +29,7 @@ bool tty_init(tty_parse_callback_t callback);
 void tty_put_binary(u8 *data, size_t len);
 void tty_put_text(char *text);
 void tty_rx_task(void);
+void tty_flush_usb_rx(void);  /* Clear USB command stream buffer */
 
 #endif // ! TTY_H
 

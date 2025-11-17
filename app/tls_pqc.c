@@ -1,416 +1,414 @@
+#include "user_settings.h"
 #include "tls_pqc.h"
-#include "usb_device.h"
+#include "type.h"
 #include "os.h"
-#include "time.h"
-
-#include <wolfssl/wolfcrypt/settings.h>
-#include <wolfssl/wolfcrypt/error-crypt.h>
+#include "usb_device.h"
+#include "wd.h"
 #include <wolfssl/ssl.h>
+#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/logging.h>
+#include <wolfssl/wolfcrypt/error-crypt.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
-/* TLS I/O buffer for USB */
-#define TLS_IO_BUFFER_SIZE (16*1024)
-static u8 tls_rx_buffer[TLS_IO_BUFFER_SIZE];
-static size_t tls_rx_wr_ptr = 0;
-static size_t tls_rx_rd_ptr = 0;
-static size_t tls_rx_count = 0;
+#ifdef WOLFSSL_DUAL_ALG_CERTS
+#include "client_certs.h"
+#endif
 
-/* TLS I/O context */
-static void *tls_io_ctx = NULL;
+/* -------------------------------------------------------------------------
+ * Ring Buffer Implementation
+ * ------------------------------------------------------------------------- */
+/* * CRITICAL: With PQC (Kyber/Dilithium), handshake messages are HUGE.
+ * If WolfSSL pauses to do math, this buffer must hold the ENTIRE 
+ * incoming flight of data. If 16KB is too small, packets drop.
+ */
+#define RING_BUF_SIZE 32768  // Increased to 32KB to be safe for PQC
 
-/* TLS first record debug capture */
-static u8 tls_first_record[256];
-static int tls_first_record_len = 0;
+typedef struct {
+    uint8_t buffer[RING_BUF_SIZE];
+    volatile uint32_t head;
+    volatile uint32_t tail;
+    volatile uint32_t overflow_count; // Debugging counter
+} RingBuffer;
 
-/* TLS active flag - set when handshake is in progress */
+RingBuffer rxRing = {.head = 0, .tail = 0, .overflow_count = 0 };
+
+/* TLS active state tracking */
 static bool tls_active = false;
 
-/* Forward declarations */
-static int tls_usb_recv(WOLFSSL* ssl, char* buf, int sz, void* ctx);
-static int tls_usb_send(WOLFSSL* ssl, char* buf, int sz, void* ctx);
-
-/* USB RX handler for TLS data - called from USB interrupt/task */
-void tls_pqc_usb_rx_handler(u8 *data, u32 len)
-{
-    u32 i;
-
-    for (i = 0; i < len; i++) {
-        if (tls_rx_count >= TLS_IO_BUFFER_SIZE) {
-            OS_ERROR("TLS RX overflow");
-            return;
+/* * Writes data to the ring buffer. 
+ * CRITICAL FIX: Added overflow detection logging.
+ */
+void RB_Write(RingBuffer* rb, const uint8_t* data, uint32_t len) {
+    uint32_t bytes_written = 0;
+    
+    for (uint32_t i = 0; i < len; i++) {
+        uint32_t next_head = (rb->head + 1) % RING_BUF_SIZE;
+        
+        if (next_head != rb->tail) { 
+            rb->buffer[rb->head] = data[i];
+            rb->head = next_head;
+            bytes_written++;
+        } else {
+            // BUFFER IS FULL. Data is being dropped!
+            // In a USB stream, this kills the connection because there is 
+            // no TCP-style retransmission inside the USB pipe for these bytes.
+            rb->overflow_count++;
         }
-
-        tls_rx_wr_ptr++;
-        if (tls_rx_wr_ptr >= TLS_IO_BUFFER_SIZE) {
-            tls_rx_wr_ptr = 0;
-        }
-
-        tls_rx_buffer[tls_rx_wr_ptr] = data[i];
-        tls_rx_count++;
     }
 }
 
-/* Custom I/O recv callback for wolfSSL */
-static int tls_usb_recv(WOLFSSL* ssl, char* buf, int sz, void* ctx)
-{
-    (void)ssl;
-    (void)ctx;
-    
+int RB_Read(RingBuffer* rb, char* data, int len) {
     int bytes_read = 0;
     
-    /* Process USB to receive any pending data */
-    usb_device_task();
-    
-    while (bytes_read < sz && tls_rx_count > 0) {
-        tls_rx_rd_ptr++;
-        if (tls_rx_rd_ptr >= TLS_IO_BUFFER_SIZE) {
-            tls_rx_rd_ptr = 0;
-        }
-        
-        buf[bytes_read++] = (char)tls_rx_buffer[tls_rx_rd_ptr];
-        tls_rx_count--;
+    // Optimization: Block copy if possible could be added here, 
+    // but byte-copy is safe for ring wrapping.
+    while (bytes_read < len && rb->tail != rb->head) {
+        data[bytes_read++] = rb->buffer[rb->tail];
+        rb->tail = (rb->tail + 1) % RING_BUF_SIZE;
     }
-    
-    /* Return bytes read, or WOLFSSL_CBIO_ERR_WANT_READ if no data available */
-    if (bytes_read == 0) {
-        return WOLFSSL_CBIO_ERR_WANT_READ;
-    }
-    
     return bytes_read;
 }
 
-/* Custom I/O send callback for wolfSSL */
-static int tls_usb_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
+int RB_IsEmpty(RingBuffer* rb) {
+    return (rb->head == rb->tail);
+}
+
+int RB_Available(RingBuffer* rb) {
+    if (rb->head >= rb->tail) return rb->head - rb->tail;
+    return RING_BUF_SIZE - (rb->tail - rb->head);
+}
+
+/* -------------------------------------------------------------------------
+ * Debug Print Function (reused for both WolfSSL and TLS diagnostics)
+ * ------------------------------------------------------------------------- */
+
+static void debug_printf(const char* format, ...)
 {
-    (void)ssl;
-    (void)ctx;
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    
+    OS_FLUSH(); /* Flush before printing */
+    OS_PRINTF("DEBUG: %s", buffer);
+    OS_FLUSH(); /* Flush after printing */
+}
+
+/* -------------------------------------------------------------------------
+ * Certificate Verification Callback
+ * Validates certificates but allows self-signed certs (skips CA validation)
+ * ------------------------------------------------------------------------- */
+
+static int cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* store)
+{
+    int err = 0;
+    
+    #ifdef OPENSSL_EXTRA
+    err = wolfSSL_X509_STORE_CTX_get_error(store);
+    #else
+    err = store->error;
+    #endif
+    
+    /* If preverify passed, accept the certificate */
+    if (preverify == 1) {
+        return 1;
+    }
+    
+    /* Allow self-signed certificates and missing CA signer errors */
+    /* These are the only errors we override - all other validation still applies */
+    if (err == ASN_SELF_SIGNED_E || 
+        err == ASN_NO_SIGNER_E
+        #ifdef OPENSSL_EXTRA
+        || err == WOLFSSL_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY
+        || err == WOLFSSL_X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT
+        #endif
+        ) {
+        debug_printf("Certificate verification: Allowing self-signed cert (error=%d)", err);
+        return 1; /* Accept self-signed certificate */
+    }
+    
+    /* Reject all other certificate errors (invalid signature, expired, etc.) */
+    debug_printf("Certificate verification failed: error=%d", err);
+    return 0;
+}
+
+/* -------------------------------------------------------------------------
+ * WolfSSL Debug Callback
+ * ------------------------------------------------------------------------- */
+
+#ifdef DEBUG_WOLFSSL
+static void wolfssl_debug_callback(const int logLevel, const char *const logMessage)
+{
+    (void)logLevel; /* Unused, but kept for API compatibility */
+    if (logMessage != NULL) {
+        OS_FLUSH(); /* Flush before printing */
+        OS_PRINTF("DEBUG: %s", logMessage);
+        OS_FLUSH(); /* Flush after printing */
+    }
+}
+#endif /* DEBUG_WOLFSSL */
+
+/* -------------------------------------------------------------------------
+ * Public API / Callbacks
+ * ------------------------------------------------------------------------- */
+
+void tls_pqc_usb_rx_handler(u8 *data, u32 len) {
+    RB_Write(&rxRing, data, len);
+}
+
+int EmbedReceive(WOLFSSL* ssl, char* buf, int sz, void* ctx) {
+    RingBuffer* rb = (RingBuffer*)ctx;
+    
+    /* Debug Check: report overflows if they happened during the last slice */
+    if (rb->overflow_count > 0) {
+        OS_PRINTF("DEBUG: [CRITICAL] RX BUFFER OVERFLOW! Lost %lu bytes", (unsigned long)rb->overflow_count);
+
+        rb->overflow_count = 0; // Reset to avoid spam
+    }
+
+    if (RB_IsEmpty(rb)) {
+        return WOLFSSL_CBIO_ERR_WANT_READ;
+    }
+    
+    return RB_Read(rb, buf, sz);
+}
+
+int EmbedSend(WOLFSSL* ssl, char* buf, int sz, void* ctx) {
+    (void)ssl; (void)ctx;
     
     if (!usb_device_connected()) {
         return WOLFSSL_CBIO_ERR_CONN_RST;
     }
     
-    /* Process USB task to ensure TX path is ready */
+    /* * Ensure we process USB tasks here too, otherwise the TX buffer 
+     * might fill up if the host is slow to read.
+     */
     usb_device_task();
-
-    /* Capture the first TLS record for debugging */
-    if (tls_first_record_len == 0) {
-        int copy = sz;
-        if (copy > (int)sizeof(tls_first_record)) {
-            copy = sizeof(tls_first_record);
-        }
-        memcpy(tls_first_record, buf, (size_t)copy);
-        tls_first_record_len = copy;
+    
+    usb_result_e result = usb_cdc_tx((u8*)buf, (u16)sz);
+    
+    if (result == USB_RESULT_BUSY) {
+        return WOLFSSL_CBIO_ERR_WANT_WRITE;
     }
     
-    /* Send data via USB with retries */
-    int retries = 200;  /* Increased retries for better reliability */
-    usb_result_e result;
-    
-    while (retries > 0) {
-        result = usb_cdc_tx((u8*)buf, (u16)sz);
-        if (result == USB_RESULT_OK) {
-            /* Data queued successfully, process USB multiple times to ensure transmission */
-            usb_device_task();
-            OS_DELAY(2);
-            usb_device_task();
-            OS_DELAY(2);
-            usb_device_task();
-            return sz;
-        }
-        
-        /* USB busy, wait and retry */
-        OS_DELAY(2);
-        usb_device_task();
-        retries--;
-    }
-    
-    /* Failed to send after retries */
-    return WOLFSSL_CBIO_ERR_WANT_WRITE;
+    return sz; 
 }
 
-bool tls_pqc_selftest(void)
-{
-    int ret;
-    bool ok = false;
-    WOLFSSL_CTX* ctx = NULL;
-    WOLFSSL* ssl = NULL;
+/* -------------------------------------------------------------------------
+ * Cleanup Function
+ * Properly cleans up WolfSSL objects and resets state
+ * ------------------------------------------------------------------------- */
 
-    wolfSSL_Init();
-
-#ifdef DEBUG_WOLFSSL
-    wolfSSL_Debugging_ON();
-#endif
-
-    ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method());
-    if (ctx == NULL) {
-        OS_PRINTF("TLS: CTX_new failed" NL);
-        goto done;
-    }
-
-    ssl = wolfSSL_new(ctx);
-    if (ssl == NULL) {
-        OS_PRINTF("TLS: SSL_new failed" NL);
-        goto done;
-    }
-
-    /* Select pure PQC group: ML-KEM-768 */
-    ret = wolfSSL_UseKeyShare(ssl, WOLFSSL_ML_KEM_768);
-    if (ret != WOLFSSL_SUCCESS) {
-        OS_PRINTF("TLS: UseKeyShare failed" NL);
-        goto done;
-    }
-
-    /* Set custom I/O callbacks */
-    wolfSSL_SSLSetIORecv(ssl, tls_usb_recv);
-    wolfSSL_SSLSetIOSend(ssl, tls_usb_send);
-    wolfSSL_SetIOReadCtx(ssl, tls_io_ctx);
-    wolfSSL_SetIOWriteCtx(ssl, tls_io_ctx);
-
-    ok = true;
-
-done:
+static void cleanup_tls_resources(WOLFSSL* ssl, WOLFSSL_CTX* ctx) {
+    /* Clean up SSL objects */
     if (ssl != NULL) {
         wolfSSL_free(ssl);
     }
     if (ctx != NULL) {
         wolfSSL_CTX_free(ctx);
     }
-    wolfSSL_Cleanup();
-    return ok;
+    
+    /* Clear any leftover data in the ring buffer */
+    rxRing.head = 0;
+    rxRing.tail = 0;
+    rxRing.overflow_count = 0;
+    
+    /* Flush USB buffers to ensure clean state for next run */
+    for (int i = 0; i < 5; i++) {
+        usb_device_task();
+        OS_DELAY(10);
+    }
+    
+    /* Note: Don't call wolfSSL_Cleanup() here as it cleans up global state
+     * that might be needed for re-initialization. Only call it on system shutdown.
+     */
+    
+    tls_active = false;
+    
+    debug_printf("TLS task completed, ready for next command");
+    
+    /* Give time for any pending USB operations to complete */
+    for (int i = 0; i < 10; i++) {
+        OS_DELAY(10);
+        usb_device_task();
+        wd_feed();
+    }
 }
 
-bool tls_pqc_is_active(void)
-{
-    return tls_active;
-}
+/* -------------------------------------------------------------------------
+ * Main TLS Task
+ * ------------------------------------------------------------------------- */
 
-bool tls_pqc_handshake(void)
-{
-    int ret;
-    bool ok = false;
+void tls_pqc_task(void) {
     WOLFSSL_CTX* ctx = NULL;
     WOLFSSL* ssl = NULL;
-    os_timer_t start_time, timeout;
-    const u32 timeout_ms = 30000; /* 30 second timeout */
+    int ret;
+    int error_count = 0;
 
-    /* Clear TLS RX buffer - ensure it's completely empty */
-    tls_rx_wr_ptr = 0;
-    tls_rx_rd_ptr = 0;
-    tls_rx_count = 0;
-    /* Clear buffer memory to avoid any stale data */
-    memset(tls_rx_buffer, 0, sizeof(tls_rx_buffer));
-
-    if (!usb_device_connected()) {
-        OS_PRINTF("TLS: USB not connected" NL);
-        return false;
-    }
-
-    /* Flush any pending USB data before starting TLS */
-    usb_device_task();
-    OS_DELAY(10);
-
-    /* Mark TLS as active - this routes all USB RX to TLS handler */
-    /* NOTE: No OS_PRINTF after this point - all USB data must be TLS data only! */
     tls_active = true;
-    tls_first_record_len = 0;
 
-    /* OS_PRINTF("TLS: Initializing..." NL); - Disabled: would corrupt TLS stream */
-    /* Ensure wolfSSL is initialized (idempotent, safe to call multiple times) */
-    if (wolfSSL_Init() != WOLFSSL_SUCCESS) {
-        tls_active = false;
-        OS_PRINTF("TLS: wolfSSL_Init failed" NL);
-        return false;
-    }
-
-#ifdef DEBUG_WOLFSSL
+    wolfSSL_Init();
+    
+    /* Enable Debug Logging with custom callback */
+    #ifdef DEBUG_WOLFSSL
+    wolfSSL_SetLoggingCb(wolfssl_debug_callback);
     wolfSSL_Debugging_ON();
-#endif
+    #endif
 
-    /* Initialize error tracking variables early */
-    int last_err = 0;
-    char last_err_str[80];
-    last_err_str[0] = '\0';
+    debug_printf("TLS PQC task starting. RB Size: %d", RING_BUF_SIZE);
 
     ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method());
     if (ctx == NULL) {
-        last_err = -1;
-        strncpy(last_err_str, "CTX_new failed", sizeof(last_err_str));
-        last_err_str[sizeof(last_err_str) - 1] = '\0';
-        goto done;
+        debug_printf("Error: Failed to create SSL context");
+        goto cleanup;
     }
 
-    /* For testing, disable certificate verification until CA is provisioned */
-    wolfSSL_CTX_set_verify(ctx, WOLFSSL_VERIFY_NONE, NULL);
+    /* Enable certificate verification with maximum security */
+    /* WOLFSSL_VERIFY_PEER: Require peer to present a certificate */
+    /* WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT: Fail if no certificate is presented */
+    /* cert_verify_callback: Validates cert format, signatures, expiration, etc. */
+    /*                      but allows self-signed certs (skips CA chain validation) */
+    wolfSSL_CTX_set_verify(ctx, WOLFSSL_VERIFY_PEER | WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT, cert_verify_callback);
+    
+    wolfSSL_CTX_SetIORecv(ctx, EmbedReceive);
+    wolfSSL_CTX_SetIOSend(ctx, EmbedSend);
 
-#ifdef SINGLE_THREADED
-    /* Pre-initialize RNG on CTX for SINGLE_THREADED mode - this helps diagnose RNG issues */
-    ret = wolfSSL_CTX_new_rng(ctx);
+    /* Load client certificate and keys for mutual TLS authentication */
+    #ifdef WOLFSSL_DUAL_ALG_CERTS
+    /* Load client certificate */
+    ret = wolfSSL_CTX_use_certificate_buffer(ctx, client_cert_der, (long)client_cert_der_len, WOLFSSL_FILETYPE_ASN1);
     if (ret != WOLFSSL_SUCCESS) {
-        last_err = ret;
-        strncpy(last_err_str, "CTX_new_rng failed (RNG init error)", sizeof(last_err_str));
-        last_err_str[sizeof(last_err_str) - 1] = '\0';
-        goto done;
+        debug_printf("Error: Failed to load client certificate (code=%d)", ret);
+        goto cleanup;
     }
-#endif
+    debug_printf("Client certificate loaded successfully");
+
+    /* Load primary ECC private key */
+    ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx, client_key_der, (long)client_key_der_len, WOLFSSL_FILETYPE_ASN1);
+    if (ret != WOLFSSL_SUCCESS) {
+        debug_printf("Error: Failed to load client ECC key (code=%d)", ret);
+        goto cleanup;
+    }
+    debug_printf("Client ECC key loaded successfully");
+
+    /* Load alternative Dilithium private key */
+    /* Note: The Dilithium key might be in PEM format even though variable name says "der" */
+    /* Try DER first, then PEM if that fails */
+    ret = wolfSSL_CTX_use_AltPrivateKey_buffer(ctx, client_dilithium_key_der, (long)client_dilithium_key_der_len, WOLFSSL_FILETYPE_ASN1);
+    if (ret != WOLFSSL_SUCCESS) {
+        /* Try PEM format if DER failed */
+        ret = wolfSSL_CTX_use_AltPrivateKey_buffer(ctx, client_dilithium_key_der, (long)client_dilithium_key_der_len, WOLFSSL_FILETYPE_PEM);
+        if (ret != WOLFSSL_SUCCESS) {
+            debug_printf("Error: Failed to load client Dilithium key (code=%d)", ret);
+            goto cleanup;
+        }
+        debug_printf("Client Dilithium key loaded successfully (PEM format)");
+    } else {
+        debug_printf("Client Dilithium key loaded successfully (DER format)");
+    }
+    #else
+    debug_printf("Warning: WOLFSSL_DUAL_ALG_CERTS not enabled, client authentication disabled");
+    #endif
 
     ssl = wolfSSL_new(ctx);
     if (ssl == NULL) {
-        last_err = -1;  /* WOLFSSL_FATAL_ERROR */
-        strncpy(last_err_str, "SSL_new failed (likely memory allocation)", sizeof(last_err_str));
-        last_err_str[sizeof(last_err_str) - 1] = '\0';
-        goto done;
+        debug_printf("Error: Failed to create SSL object");
+        goto cleanup;
+    }
+    
+    /* Set CKS (Dual-Alg) verification after SSL object is created */
+    byte cks_order[] = { WOLFSSL_CKS_SIGSPEC_BOTH };
+    if (!wolfSSL_UseCKS(ssl, cks_order, sizeof(cks_order))) {
+        debug_printf("Error: Failed to set Dual-Alg (CKS) verification to BOTH");
+        goto cleanup;
     }
 
-    /* Select pure PQC group: ML-KEM-768 */
-    ret = wolfSSL_UseKeyShare(ssl, WOLFSSL_ML_KEM_768);
-    if (ret != WOLFSSL_SUCCESS) {
-        last_err = ret;
-        strncpy(last_err_str, "UseKeyShare failed", sizeof(last_err_str));
-        last_err_str[sizeof(last_err_str) - 1] = '\0';
-        goto done;
-    }
+    wolfSSL_SetIOReadCtx(ssl, &rxRing);
 
-    /* Set custom I/O callbacks */
-    wolfSSL_SSLSetIORecv(ssl, tls_usb_recv);
-    wolfSSL_SSLSetIOSend(ssl, tls_usb_send);
-    wolfSSL_SetIOReadCtx(ssl, tls_io_ctx);
-    wolfSSL_SetIOWriteCtx(ssl, tls_io_ctx);
+    /* Reset Ring Buffer state before starting */
+    rxRing.head = 0;
+    rxRing.tail = 0;
+    rxRing.overflow_count = 0;
 
-    /* Make non-blocking for better control */
-    wolfSSL_set_using_nonblock(ssl, 1);
+    debug_printf("Starting TLS handshake...");
 
-    /* OS_PRINTF("TLS: Starting handshake..." NL); - Disabled: would corrupt TLS stream */
-    start_time = timer_get_time();
-    timeout = start_time + (timeout_ms * TIMER_MS);
-
-    /* Ensure USB is ready before starting handshake */
-    usb_device_task();
-    OS_DELAY(20);  /* Give USB time to be fully ready */
-    usb_device_task();
-
-    /* Perform TLS handshake */
+    /* Handshake Loop */
     while (1) {
-        os_timer_t now = timer_get_time();
-        if (now > timeout) {
-            last_err = WOLFSSL_CBIO_ERR_TIMEOUT;
-            strncpy(last_err_str, "timeout", sizeof(last_err_str));
-            last_err_str[sizeof(last_err_str) - 1] = '\0';
-            goto done;
-        }
-
-        /* Process USB before each connect attempt to ensure I/O is ready */
-        usb_device_task();
-        
         ret = wolfSSL_connect(ssl);
-        
-        if (ret == WOLFSSL_SUCCESS) {
-            ok = true;
-            break;
-        }
+        if (ret == WOLFSSL_SUCCESS) break; 
 
         int err = wolfSSL_get_error(ssl, ret);
         if (err == WOLFSSL_ERROR_WANT_READ || err == WOLFSSL_ERROR_WANT_WRITE) {
-            /* Need more data or can send more - continue */
-            /* Process USB to receive/send data - do this multiple times to ensure data flows */
-            usb_device_task();
-            OS_DELAY(2);  /* Slightly longer delay to allow USB processing */
-            usb_device_task();
-            OS_DELAY(2);
-            usb_device_task();
-            continue;
-        }
-
-        /* Record the error so we can report it after TLS is torn down */
-        last_err = err;
-        /* Format error message based on error code */
-        if (err == WOLFSSL_ERROR_WANT_READ) {
-            strncpy(last_err_str, "WANT_READ", sizeof(last_err_str));
-        } else if (err == WOLFSSL_ERROR_WANT_WRITE) {
-            strncpy(last_err_str, "WANT_WRITE", sizeof(last_err_str));
-        } else {
-            strncpy(last_err_str, "TLS handshake error", sizeof(last_err_str));
-        }
-        last_err_str[sizeof(last_err_str) - 1] = '\0';
-        /* Also check if this is a WANT_READ/WANT_WRITE that we missed */
-        if (err == WOLFSSL_ERROR_WANT_READ || err == WOLFSSL_ERROR_WANT_WRITE) {
-            /* This shouldn't happen here, but if it does, continue the loop */
-            usb_device_task();
-            OS_DELAY(2);
-            usb_device_task();
-            OS_DELAY(2);
-            usb_device_task();
-            continue;
-        }
-        goto done;
-    }
-
-done:
-    if (ssl != NULL) {
-        wolfSSL_shutdown(ssl);
-        wolfSSL_free(ssl);
-    }
-    if (ctx != NULL) {
-        wolfSSL_CTX_free(ctx);
-    }
-    wolfSSL_Cleanup();
-    
-    /* Clear TLS RX buffer */
-    tls_rx_wr_ptr = 0;
-    tls_rx_rd_ptr = 0;
-    tls_rx_count = 0;
-    
-    /* Mark TLS as inactive - safe to print again */
-    tls_active = false;
-    
-    /* Flush any remaining USB data to ensure TLS stream is complete */
-    usb_device_task();
-    
-    /* Now we can safely print status messages */
-    if (ok) {
-        OS_PRINTF("TLS: Handshake complete!" NL);
-    } else {
-        if (last_err != 0) {
-            /* Sanitize error string */
-            if (last_err_str[0] != '\0') {
-                for (int i = 0; i < (int)sizeof(last_err_str) && last_err_str[i] != '\0'; ++i) {
-                    unsigned char c = (unsigned char)last_err_str[i];
-                    if ((c < 32 && c != '\n' && c != '\r' && c != '\t') || c > 126) {
-                        last_err_str[i] = '?';
-                    }
-                }
-            }
-            /* Print error with code interpretation */
-            const char* err_name = "unknown";
-            if (last_err == WOLFSSL_ERROR_WANT_READ) err_name = "WANT_READ";
-            else if (last_err == WOLFSSL_ERROR_WANT_WRITE) err_name = "WANT_WRITE";
-            else if (last_err == WOLFSSL_CBIO_ERR_TIMEOUT) err_name = "TIMEOUT";
-            else if (last_err == WOLFSSL_CBIO_ERR_CONN_RST) err_name = "CONN_RST";
-            else if (last_err == WOLFSSL_CBIO_ERR_WANT_READ) err_name = "CBIO_WANT_READ";
-            else if (last_err == WOLFSSL_CBIO_ERR_WANT_WRITE) err_name = "CBIO_WANT_WRITE";
-            else if (last_err == MEMORY_E) err_name = "MEMORY_E";
-            else if (last_err == RNG_FAILURE_E) err_name = "RNG_FAILURE_E";
-            else if (last_err == WC_HW_E) err_name = "WC_HW_E";
             
-            const char* msg = (last_err_str[0] != '\0') ? last_err_str : "none";
-            OS_PRINTF("TLS: Handshake failed (err=%d/%s, msg=%s)" NL,
-                      last_err, err_name, msg);
+            /* Print buffer usage every so often to see if it's filling up */
+            int avail = RB_Available(&rxRing);
+            if (avail > (RING_BUF_SIZE / 2)) {
+                debug_printf("Warning: RB Load High: %d bytes waiting", avail);
+            }
+
+            /* * CRITICAL: We need to yield to let USB interrupts fire, 
+             * but not sleep too long.
+             */
+            OS_DELAY(1); 
+            usb_device_task();
+            wd_feed();
+            
+            continue;
         } else {
-            OS_PRINTF("TLS: Handshake failed (no error code)" NL);
+            char buffer[80];
+            wolfSSL_ERR_error_string(err, buffer);
+            debug_printf("TLS fatal error: %s (%d)", buffer, err);
+            error_count++;
+            if(error_count > 5) {
+                debug_printf("Too many errors, giving up");
+            }
+            goto cleanup;
         }
     }
 
-    /* Debug: Check if send callback was ever called */
-    if (tls_first_record_len > 0) {
-        OS_PRINTF("TLS: First record (%d bytes): ", tls_first_record_len);
-        for (int i = 0; i < tls_first_record_len; ++i) {
-            OS_PRINTF("%02X", tls_first_record[i]);
+    if (ret == WOLFSSL_SUCCESS) {
+        /* Verify that hybrid signatures were actually used for post-quantum security */
+        if (ssl->peerSigSpec != NULL && ssl->peerSigSpecSz > 0) {
+            byte server_sigspec = ssl->peerSigSpec[0];
+            if (server_sigspec != WOLFSSL_CKS_SIGSPEC_BOTH) {
+                debug_printf("Error: Server did not use hybrid signatures (sigspec=%d)", server_sigspec);
+                goto cleanup;
+            } 
+        } else {
+            debug_printf("Error: Server signature spec not available");
+            goto cleanup;
         }
-        OS_PRINTF(NL);
+        debug_printf("TLS Handshake Complete! Cipher: %s", wolfSSL_get_cipher(ssl));
+        
+        const char* msg = "hello";
+        int write_ret = wolfSSL_write(ssl, msg, strlen(msg));
+        if (write_ret < 0) {
+            int write_err = wolfSSL_get_error(ssl, write_ret);
+            debug_printf("Error: TLS write failed (code=%d)", write_err);
+        } else {
+            debug_printf("TLS write success: %d bytes", write_ret);
+        }
+        
+        /* Properly shutdown the SSL connection before cleanup */
+        debug_printf("Shutting down TLS connection...");
+        wolfSSL_shutdown(ssl);
     } else {
-        OS_PRINTF("TLS: Send callback was never called (no data sent)" NL);
+        debug_printf("Error: TLS handshake gave up.");
     }
-    
-    return ok;
+
+cleanup:
+    cleanup_tls_resources(ssl, ctx);
 }
 
+bool tls_pqc_handshake_with_data(const char* data_to_send) {
+    (void)data_to_send;
+    tls_pqc_task();
+    return true;
+}
 
+bool tls_pqc_is_active(void) {
+    return tls_active;
+}

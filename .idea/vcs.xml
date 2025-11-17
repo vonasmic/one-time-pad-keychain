@@ -2,7 +2,11 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/PQClean" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/liboqs" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/sdk/stm32/STM32U5xx_HAL_Driver" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/wolfCLU" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/wolfssl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/wolfssl-examples" vcs="Git" />
   </component>
 </project>

@@ -1,6 +1,7 @@
 #include "common.h"
 #include "tty.h"
 #include "usb_device.h"
+#include "tls_pqc.h"
 
 #ifndef TTY_ON_UART
     #warning "No TTY uart defined"
@@ -8,7 +9,6 @@
 
 /* Forward declaration for TLS RX handler */
 extern void tls_pqc_usb_rx_handler(u8 *data, u32 len);
-extern bool tls_pqc_is_active(void);
 
 tty_parse_callback_t _rx_callback = NULL;
 
@@ -176,12 +176,18 @@ void tty_put_binary(u8 *data, size_t len)
 void tty_put_text(char *text)
 {
     _usb_send_data((u8 *)text, strlen(text));
-
     while (*text != '\0')
     {
         TTY_UART_PUTCHAR(*text);
         text++;
     }
+}
+
+void tty_flush_usb_rx(void)
+{
+    /* Clear USB command stream buffer to prevent contamination */
+    _usb_stream_wr_ptr = 0;
+    _usb_stream_rd_ptr = 0;
 }
 
 bool tty_init(tty_parse_callback_t callback)

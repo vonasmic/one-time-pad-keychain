@@ -8,6 +8,7 @@
 #include "stm32u5xx_ll_cortex.h"
 #include "stm32u5xx_ll_utils.h"
 #include "stm32u5xx_ll_pwr.h"
+#include "stm32u5xx_hal.h"
 
 
 #ifndef NVIC_PRIORITYGROUP_0
@@ -101,6 +102,9 @@ void sys_clock_config(void)
 
     LL_ICACHE_SetMode(LL_ICACHE_1WAY);
     LL_ICACHE_Enable();
+    
+    /* Configure RNG clock source to HSI48 (same as USB) */
+    LL_RCC_SetRNGClockSource(LL_RCC_RNG_CLKSOURCE_HSI48);
 }
 
 void sys_usb_clock_config(void)
@@ -127,4 +131,19 @@ void HAL_Delay(uint32_t delay)
 u32 HAL_GetTick(void)
 {
 	return (os_timer_get_time());
+}
+
+/* HAL RNG MSP Init - required for hardware RNG to work */
+void HAL_RNG_MspInit(RNG_HandleTypeDef *hrng)
+{
+    (void)hrng;  /* unused parameter */
+    /* Enable RNG clock */
+    __HAL_RCC_RNG_CLK_ENABLE();
+}
+
+void HAL_RNG_MspDeInit(RNG_HandleTypeDef *hrng)
+{
+    (void)hrng;  /* unused parameter */
+    /* Disable RNG clock */
+    __HAL_RCC_RNG_CLK_DISABLE();
 }

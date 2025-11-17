@@ -40,6 +40,9 @@ build/../wolfssl/wolfcrypt/src/hash.o: ../wolfssl/wolfcrypt/src/hash.c \
  ../wolfssl/wolfssl/wolfcrypt/visibility.h \
  ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h \
  stm32u5xx_hal_conf.h ../wolfssl/wolfssl/wolfcrypt/wc_port.h \
+ ../sdk/drv_u5/time.h ../hw/hardware.h ../sdk/stm32/platform_setup.h \
+ ../sdk/common/type.h ../sdk/common/util.h ../sdk/common/common.h os.h \
+ ../sdk/hal/os_minimal.h ../hw/pcb_ts1302.h \
  ../wolfssl/wolfssl/wolfcrypt/oid_sum.h \
  ../wolfssl/wolfssl/wolfcrypt/memory.h \
  ../wolfssl/wolfssl/wolfcrypt/error-crypt.h \
@@ -50,8 +53,11 @@ build/../wolfssl/wolfcrypt/src/hash.o: ../wolfssl/wolfcrypt/src/hash.c \
  ../wolfssl/wolfssl/wolfcrypt/hash.h ../wolfssl/wolfssl/wolfcrypt/sha.h \
  ../wolfssl/wolfssl/wolfcrypt/port/st/stm32.h \
  ../wolfssl/wolfssl/wolfcrypt/sha256.h \
- ../wolfssl/wolfssl/wolfcrypt/sha3.h ../wolfssl/wolfssl/wolfcrypt/md4.h \
- ../wolfssl/wolfssl/wolfcrypt/random.h ../wolfssl/wolfssl/wolfcrypt/ecc.h \
+ ../wolfssl/wolfssl/wolfcrypt/sha512.h \
+ ../wolfssl/wolfssl/wolfcrypt/sha3.h \
+ ../wolfssl/wolfssl/wolfcrypt/random.h ../wolfssl/wolfssl/wolfcrypt/rsa.h \
+ ../wolfssl/wolfssl/wolfcrypt/ecc.h \
+ ../wolfssl/wolfssl/wolfcrypt/dilithium.h \
  ../wolfssl/wolfssl/wolfcrypt/asn_public.h \
  ../wolfssl/wolfssl/wolfcrypt/hmac.h \
  ../wolfssl/wolfssl/wolfcrypt/cryptocb.h ../wolfssl/wolfcrypt/src/misc.c \
@@ -100,6 +106,15 @@ stm32u5xx_hal_conf.h:
 ../sdk/stm32/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h:
 stm32u5xx_hal_conf.h:
 ../wolfssl/wolfssl/wolfcrypt/wc_port.h:
+../sdk/drv_u5/time.h:
+../hw/hardware.h:
+../sdk/stm32/platform_setup.h:
+../sdk/common/type.h:
+../sdk/common/util.h:
+../sdk/common/common.h:
+os.h:
+../sdk/hal/os_minimal.h:
+../hw/pcb_ts1302.h:
 ../wolfssl/wolfssl/wolfcrypt/oid_sum.h:
 ../wolfssl/wolfssl/wolfcrypt/memory.h:
 ../wolfssl/wolfssl/wolfcrypt/error-crypt.h:
@@ -111,10 +126,12 @@ stm32u5xx_hal_conf.h:
 ../wolfssl/wolfssl/wolfcrypt/sha.h:
 ../wolfssl/wolfssl/wolfcrypt/port/st/stm32.h:
 ../wolfssl/wolfssl/wolfcrypt/sha256.h:
+../wolfssl/wolfssl/wolfcrypt/sha512.h:
 ../wolfssl/wolfssl/wolfcrypt/sha3.h:
-../wolfssl/wolfssl/wolfcrypt/md4.h:
 ../wolfssl/wolfssl/wolfcrypt/random.h:
+../wolfssl/wolfssl/wolfcrypt/rsa.h:
 ../wolfssl/wolfssl/wolfcrypt/ecc.h:
+../wolfssl/wolfssl/wolfcrypt/dilithium.h:
 ../wolfssl/wolfssl/wolfcrypt/asn_public.h:
 ../wolfssl/wolfssl/wolfcrypt/hmac.h:
 ../wolfssl/wolfssl/wolfcrypt/cryptocb.h:

@@ -1,4 +1,4 @@
-ARM GAS  /tmp/cc6F41EU.s 			page 1
+ARM GAS  /tmp/ccVv2YyZ.s 			page 1
 
 
    1              		.cpu cortex-m33
@@ -14,12 +14,118 @@ ARM GAS  /tmp/cc6F41EU.s 			page 1
   11              		.eabi_attribute 34, 1
   12              		.eabi_attribute 18, 4
   13              		.file	"ux_utility_debug_callback_register.c"
-  14              		.text
-  15              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
-ARM GAS  /tmp/cc6F41EU.s 			page 2
+  14              		.section	.gnu.lto_.profile.7fddfcf6aaaf66ee,"e",%progbits
+  15 0000 789C6362 		.ascii	"x\234cb\000\001\000\000\022\000\003"
+  15      00010000 
+  15      120003
+  16              		.text
+  17              		.section	.gnu.lto_.icf.7fddfcf6aaaf66ee,"e",%progbits
+  18 0000 789C6362 		.ascii	"x\234cb@\006\000\000*\000\003"
+  18      40060000 
+  18      2A0003
+  19              		.text
+  20              		.section	.gnu.lto_.ipa_sra.7fddfcf6aaaf66ee,"e",%progbits
+  21 0000 789C6362 		.ascii	"x\234cb@\006\000\000*\000\003"
+  21      40060000 
+  21      2A0003
+  22              		.text
+  23              		.section	.gnu.lto_.inline.7fddfcf6aaaf66ee,"e",%progbits
+  24 0000 789C6362 		.ascii	"x\234cb@\006\000\000*\000\003"
+  24      40060000 
+  24      2A0003
+  25              		.text
+  26              		.section	.gnu.lto_.jmpfuncs.7fddfcf6aaaf66ee,"e",%progbits
+  27 0000 789C6362 		.ascii	"x\234cb@\006\000\000*\000\003"
+  27      40060000 
+  27      2A0003
+  28              		.text
+  29              		.section	.gnu.lto_.pureconst.7fddfcf6aaaf66ee,"e",%progbits
+  30 0000 789C6364 		.ascii	"x\234cd\000\002\000\000\012\000\002"
+  30      00020000 
+  30      0A0002
+  31              		.text
+  32              		.section	.gnu.lto_.lto.7fddfcf6aaaf66ee,"e",%progbits
+  33 0000 09000400 		.ascii	"\011\000\004\000\001\000\000\000"
+  33      01000000 
+  34              		.text
+  35              		.section	.gnu.lto_.symbol_nodes.7fddfcf6aaaf66ee,"e",%progbits
+  36 0000 789C6362 		.ascii	"x\234cb\000\001\000\000\022\000\003"
+  36      00010000 
+  36      120003
+  37              		.text
+  38              		.section	.gnu.lto_.refs.7fddfcf6aaaf66ee,"e",%progbits
+  39 0000 789C6364 		.ascii	"x\234cd\000\002\000\000\012\000\002"
+  39      00020000 
+  39      0A0002
+  40              		.text
+ARM GAS  /tmp/ccVv2YyZ.s 			page 2
+
+
+  41              		.section	.gnu.lto_.decls.7fddfcf6aaaf66ee,"e",%progbits
+  42 0000 789C6360 		.ascii	"x\234c````\004b\025 \376\017\004 \366E\006\002\000\000"
+  42      60606004 
+  42      621520FE 
+  42      0F0420F6 
+  42      45060200 
+  43 0015 BF3204F4 		.ascii	"\2772\004\364"
+  44              		.text
+  45              		.section	.gnu.lto_.symtab.7fddfcf6aaaf66ee,"e",%progbits
+  46              		.text
+  47              		.section	.gnu.lto_.ext_symtab.7fddfcf6aaaf66ee,"e",%progbits
+  48 0000 01       		.ascii	"\001"
+  49              		.text
+  50              		.section	.gnu.lto_.opts,"e",%progbits
+  51 0000 272D666E 		.ascii	"'-fno-openmp' '-fno-openacc' '-fno-pie' '-fcf-prote"
+  51      6F2D6F70 
+  51      656E6D70 
+  51      2720272D 
+  51      666E6F2D 
+  52 0033 6374696F 		.ascii	"ction=none' '-mcpu=cortex-m33' '-mthumb' '-mfpu=fpv"
+  52      6E3D6E6F 
+  52      6E652720 
+  52      272D6D63 
+  52      70753D63 
+  53 0066 342D7370 		.ascii	"4-sp-d16' '-mfloat-abi=hard' '-mlibarch=armv8-m.mai"
+  53      2D643136 
+  53      2720272D 
+  53      6D666C6F 
+  53      61742D61 
+  54 0099 6E2B6473 		.ascii	"n+dsp+fp' '-march=armv8-m.main+dsp+fp' '-Os' '-flto"
+  54      702B6670 
+  54      2720272D 
+  54      6D617263 
+  54      683D6172 
+  55 00cc 2720272D 		.ascii	"' '-fdata-sections' '-ffunction-sections' '-Xassemb"
+  55      66646174 
+  55      612D7365 
+  55      6374696F 
+  55      6E732720 
+  56 00ff 6C657227 		.ascii	"ler' '-a' '-Xassembler' '-ad' '-Xassembler' '-alms="
+  56      20272D61 
+  56      2720272D 
+  56      58617373 
+  56      656D626C 
+  57 0132 6275696C 		.ascii	"build/../sdk/stm32/STM32_USBX_Library/common/core/s"
+  57      642F2E2E 
+  57      2F73646B 
+  57      2F73746D 
+  57      33322F53 
+  58 0165 72632F75 		.ascii	"rc/ux_utility_debug_callback_register.lst'\000"
+  58      785F7574 
+  58      696C6974 
+  58      795F6465 
+  58      6275675F 
+  59              		.text
+  60              		.comm	__gnu_lto_slim,1,1
+  61              		.ident	"GCC: (15:10.3-2021.07-4) 10.3.1 20210621 (release)"
+ARM GAS  /tmp/ccVv2YyZ.s 			page 3
+
+
+ARM GAS  /tmp/ccVv2YyZ.s 			page 4
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 ux_utility_debug_callback_register.c
+                            *COM*:0000000000000001 __gnu_lto_slim
 
 NO UNDEFINED SYMBOLS

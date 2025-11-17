@@ -12,8 +12,13 @@
 #include "spi.h"
 #include "cmd.h"
 #include "log.h"
-#include "sphincs.h"
 #include "stm32u5xx_hal.h"
+#include "stm32u5xx_hal_rng.h"
+#include "stm32u5xx_ll_rcc.h"
+/* Include wolfssl/options.h FIRST before any other wolfSSL headers */
+#include <wolfssl/options.h>
+#include <wolfssl/wolfcrypt/types.h>
+#include <wolfssl/wolfcrypt/random.h>
 
 LOG_DEF("main");
 
@@ -72,44 +77,84 @@ void Error_Handler(void)
     }
 }
 
-/* HAL RNG MSP Init - required for hardware RNG to work */
-void HAL_RNG_MspInit(RNG_HandleTypeDef *hrng)
-{
-    (void)hrng;  /* unused parameter */
-    /* Enable RNG clock */
-    __HAL_RCC_RNG_CLK_ENABLE();
-}
-
-void HAL_RNG_MspDeInit(RNG_HandleTypeDef *hrng)
-{
-    (void)hrng;  /* unused parameter */
-    /* Disable RNG clock */
-    __HAL_RCC_RNG_CLK_DISABLE();
-}
-
 /**
   * @brief RNG Initialization Function
   * @param None
   * @retval None
+  * @note RNG clock source is configured in sys_clock_config()
   */
 static void MX_RNG_Init(void)
 {
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-    
-    /* Configure RNG clock source to HSI48 */
-    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RNG;
-    PeriphClkInit.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-    {
-        Error_Handler();
-    }
-    
     /* Initialize RNG peripheral */
+    /* Note: Clock source is already set to HSI48 in sys_clock_config() */
     hrng.Instance = RNG;
     if (HAL_RNG_Init(&hrng) != HAL_OK)
     {
         Error_Handler();
     }
+}
+
+/* Warm up hardware RNG to clear any initial conditioning errors */
+static void MX_RNG_WarmUp(void)
+{
+	uint32_t tmp;
+	int success_count = 0;
+	
+	/* Try a few reads to ensure RNG is working - don't block on failures */
+	/* Note: OS_DELAY may not work before timer_init(), so we just try reads */
+	for (int i = 0; i < 4; ++i) {
+		if (HAL_RNG_GenerateRandomNumber(&hrng, &tmp) == HAL_OK) {
+			success_count++;
+		}
+		/* Don't re-init on failure - just continue, RNG will be retried later if needed */
+	}
+	
+	/* If all reads failed, try one re-init */
+	if (success_count == 0) {
+		(void)HAL_RNG_DeInit(&hrng);
+		(void)HAL_RNG_Init(&hrng);
+		/* Try one more read */
+		(void)HAL_RNG_GenerateRandomNumber(&hrng, &tmp);
+	}
+}
+
+/* Custom wc_GenerateSeed implementation that uses the global RNG handle
+ * This avoids conflicts from wolfSSL trying to init its own RNG handle
+ */
+int custom_wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
+{
+	word32 i = 0;
+	HAL_StatusTypeDef hal_ret;
+	(void)os; /* unused parameter */
+	
+	if (output == NULL || sz == 0) {
+		return -1; /* BAD_FUNC_ARG equivalent */
+	}
+	
+	/* Use the global RNG handle that's already initialized */
+	while (i < sz) {
+		/* If not aligned or there is odd/remainder */
+		if ((i + sizeof(word32)) > sz ||
+		    ((uintptr_t)&output[i] % sizeof(word32)) != 0) {
+			/* Single byte at a time */
+			uint32_t tmpRng = 0;
+			hal_ret = HAL_RNG_GenerateRandomNumber(&hrng, &tmpRng);
+			if (hal_ret != HAL_OK) {
+				return -105; /* RAN_BLOCK_E */
+			}
+			output[i++] = (byte)tmpRng;
+		}
+		else {
+			/* Use native 32-bit instruction */
+			hal_ret = HAL_RNG_GenerateRandomNumber(&hrng, (uint32_t*)&output[i]);
+			if (hal_ret != HAL_OK) {
+				return -105; /* RAN_BLOCK_E */
+			}
+			i += sizeof(word32);
+		}
+	}
+	
+	return 0; /* Success */
 }
 
 
@@ -254,6 +299,7 @@ int main(void)
     
     /* Initialize hardware RNG - must be done early for wolfSSL */
     MX_RNG_Init();
+	MX_RNG_WarmUp();
     
     main_gpio_init();
 
@@ -271,10 +317,6 @@ int main(void)
     OS_PUTTEXT(NL);
     OS_PUTTEXT("APP START" NL);
     MAIN_LED_OFF;
-    
-    // Initialize SPHINCS randombytes early
-    extern void sphincs_init_early(void);
-    sphincs_init_early();
     
     OS_PUTTEXT("# BUILD DATE: " __DATE__ NL);
 
