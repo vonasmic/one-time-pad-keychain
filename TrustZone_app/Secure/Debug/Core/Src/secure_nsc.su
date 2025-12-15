@@ -1,0 +1,2 @@
+../Core/Src/secure_nsc.c:50:20:SECURE_LED_Blink	16	static,ignoring_inline_asm
+../Core/Src/secure_nsc.c:75:24:SECURE_RegisterCallback	16	static

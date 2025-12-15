@@ -1,3 +1,13 @@
 [submodule "sdk/stm32/STM32U5xx_HAL_Driver"]
 	path = sdk/stm32/STM32U5xx_HAL_Driver
 	url = https://github.com/STMicroelectronics/stm32u5xx_hal_driver.git
+[submodule "wolfssl"]
+	path = wolfssl
+	url = https://github.com/wolfSSL/wolfssl.git
+	branch = v5.8.2-stable
+[submodule "wolfCLU"]
+	path = wolfCLU
+	url = https://github.com/wolfSSL/wolfCLU.git
+[submodule "PQClean"]
+	path = PQClean
+	url = https://github.com/PQClean/PQClean.git
