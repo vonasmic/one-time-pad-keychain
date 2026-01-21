@@ -183,7 +183,7 @@ static int cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* store)
      }
  
      /* 5. Set Hybrid Verification*/
-     byte cks_order[] = { WOLFSSL_CKS_SIGSPEC_ALTERNATIVE};
+     byte cks_order[] = { WOLFSSL_CKS_SIGSPEC_BOTH};
      byte client_cks_request = cks_order[0]; /* Store original request for validation */
      
      if (!wolfSSL_UseCKS(ssl, cks_order, sizeof(cks_order))) {

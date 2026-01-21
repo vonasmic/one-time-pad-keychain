@@ -38,7 +38,7 @@ $(TARGET): tls_server.c
 		echo "Warning: wolfSSL library not found in expected location."; \
 		echo "Attempting to build with system-installed wolfSSL..."; \
 	fi
-	$(CC) $(CFLAGS) -DWOLFSSL_DUAL_ALG_CERTS -o $(TARGET) tls_server.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(TARGET) tls_server.c $(LDFLAGS)
 	@echo "Build complete: $(TARGET)"
 
 $(CLIENT_TARGET): tls_client.c
