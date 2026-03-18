@@ -5,22 +5,22 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_cortex.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma_ex.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_exti.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash_ex.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gpio.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c_ex.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_icache.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c \
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c 
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_cortex.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma_ex.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_exti.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash_ex.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gpio.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c_ex.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_icache.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c \
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c 
 
 OBJS += \
 ./Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal.o \
@@ -60,37 +60,37 @@ C_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_cortex.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_cortex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_cortex.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_cortex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_dma.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_dma.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_dma_ex.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_dma_ex.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_dma_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_exti.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_exti.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_exti.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_exti.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_flash.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_flash.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_flash_ex.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_flash_ex.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_flash_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_gpio.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gpio.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_gpio.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gpio.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_gtzc.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_gtzc.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_i2c.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_i2c.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_i2c_ex.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_i2c_ex.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_i2c_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_icache.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_icache.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_icache.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_icache.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_pwr.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_pwr.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_pwr_ex.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_pwr_ex.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_rcc.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_rcc.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_rcc_ex.o: C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
+Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_rcc_ex.o: C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c Drivers/STM32U5xx_HAL_Driver/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m33 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32U535xx -c -I../Core/Inc -I../../Secure_nsclib -I../../Drivers/STM32U5xx_HAL_Driver/Inc -I../../Drivers/CMSIS/Device/ST/STM32U5xx/Include -I../../Drivers/STM32U5xx_HAL_Driver/Inc/Legacy -I../../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
 
 clean: clean-Drivers-2f-STM32U5xx_HAL_Driver

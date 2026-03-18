@@ -10,9 +10,10 @@ Python bridge and TLS server for testing TLS communication with the STM32U5 devi
 ### Build wolfSSL and wolfCLU
 
 ```bash
-cd ../wolfssl
-make clean
+cd "$(git root)/wolfssl"
+
 ./autogen.sh
+
 ./configure \
   --enable-harden \
   --enable-wolfclu \
@@ -30,13 +31,14 @@ make clean
   --enable-certreq \
   --enable-pwdbased \
   --enable-experimental
-make -j$(nproc)
+
+make -j"$(nproc)"
 sudo make install
 sudo ldconfig
 ```
 
 ```bash
-cd ../wolfCLU
+cd "$(git root)/wolfCLU"
 make clean
 ./autogen.sh
 ./configure --with-wolfssl=/usr/local \
@@ -49,7 +51,7 @@ sudo make install
 ### Build Test Server
 
 ```bash
-cd tls_usb_test
+cd "$(git root)/tls_usb_test"
 make clean
 make
 ```
@@ -118,14 +120,14 @@ wolfssl ca -altextend \
   certs/client-cert.pem \
   certs/client-key.pem \
   certs/client-dilithium.priv \
-  ../app/client_certs.h
+  "$(git root)/app/client_certs.h"
 ```
 
 For DER format keys, specify the level explicitly:
 ```bash
 CLIENT_DILITHIUM_LEVEL=5 ./embed_client_certs.sh \
   certs/client-cert.pem certs/client-key.pem certs/client-dilithium.der \
-  ../app/client_certs.h
+  "$(git root)/app/client_certs.h"
 ```
 
 ## Running Tests

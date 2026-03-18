@@ -33,15 +33,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_macro  0002a663  00000000  00000000  0000bd04  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_line   00007be0  00000000  00000000  00036367  2**0
+ 15 .debug_line   00007b8f  00000000  00000000  00036367  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_str    0010c715  00000000  00000000  0003df47  2**0
+ 16 .debug_str    0010c6e8  00000000  00000000  0003def6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .comment      00000043  00000000  00000000  0014a65c  2**0
+ 17 .comment      00000043  00000000  00000000  0014a5de  2**0
                   CONTENTS, READONLY
- 18 .debug_frame  00001470  00000000  00000000  0014a6a0  2**2
+ 18 .debug_frame  00001470  00000000  00000000  0014a624  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_line_str 00000072  00000000  00000000  0014bb10  2**0
+ 19 .debug_line_str 00000069  00000000  00000000  0014ba94  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -215,8 +215,8 @@ __STATIC_FORCEINLINE void __TZ_set_MSP_NS(uint32_t topOfMainStack)
  c000360:	46bd      	mov	sp, r7
  c000362:	bd90      	pop	{r4, r7, pc}
  c000364:	e002ed00 	.word	0xe002ed00
- c000368:	08020000 	.word	0x08020000
- c00036c:	08020004 	.word	0x08020004
+ c000368:	08010000 	.word	0x08010000
+ c00036c:	08010004 	.word	0x08010004
 
 0c000370 <MX_GTZC_S_Init>:
   * @brief GTZC_S Initialization Function

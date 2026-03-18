@@ -60,11 +60,11 @@ all: main-build
 main-build: NonSecure.elf secondary-outputs
 
 dependents:
-	-cd C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Secure/Debug && $(MAKE) all
+	-cd C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Secure/Debug && $(MAKE) clean all
 
 # Tool invocations
-NonSecure.elf NonSecure.map: $(OBJS) $(USER_OBJS) C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Secure/Debug/Secure.elf C:\tmp\diplomka\tropic01-stm32u5-usb-devkit-fw\TrustZone_app\NonSecure\STM32U535CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "NonSecure.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\tmp\diplomka\tropic01-stm32u5-usb-devkit-fw\TrustZone_app\NonSecure\STM32U535CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="NonSecure.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+NonSecure.elf NonSecure.map: $(OBJS) $(USER_OBJS) C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Secure/Debug/Secure.elf C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\NonSecure\STM32U535CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "NonSecure.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\NonSecure\STM32U535CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="NonSecure.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -93,6 +93,6 @@ warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
 .PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
-C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Secure/Debug/Secure.elf:
+C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Secure/Debug/Secure.elf:
 
 -include ../makefile.targets

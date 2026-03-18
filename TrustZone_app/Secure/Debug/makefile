@@ -60,8 +60,8 @@ all: main-build
 main-build: Secure.elf secondary-outputs
 
 # Tool invocations
-Secure.elf Secure.map: $(OBJS) $(USER_OBJS) C:\tmp\diplomka\tropic01-stm32u5-usb-devkit-fw\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Secure.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\tmp\diplomka\tropic01-stm32u5-usb-devkit-fw\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Secure.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Secure.elf Secure.map: $(OBJS) $(USER_OBJS) C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Secure.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Secure.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -32,10 +32,10 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-/* Non-secure Vector table to jump to (internal Flash Bank2 here)             */
+/* Non-secure Vector table to jump to (internal flash NS region)              */
 /* Caution: address must correspond to non-secure internal Flash where is     */
 /*          mapped in the non-secure vector table                             */
-#define VTOR_TABLE_NS_START_ADDR  0x08020000UL
+#define VTOR_TABLE_NS_START_ADDR  0x08010000UL
 
 /* USER CODE END PD */
 

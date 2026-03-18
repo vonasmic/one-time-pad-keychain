@@ -46,7 +46,7 @@ MEMORY
 {
   RAM	(xrw)	: ORIGIN = 0x20030000,	LENGTH = 64K     /* Memory is divided. Actual start is 0x20000000 and actual length is 256K */
   SRAM4	(xrw)	: ORIGIN = 0x28000000,	LENGTH = 16K
-  FLASH	(rx)	: ORIGIN = 0x08020000,	LENGTH = 128K    /* Bank 2: Non-secure flash starting at 0x08020000 */
+  FLASH	(rx)	: ORIGIN = 0x08010000,	LENGTH = 64K     /* Non-secure flash region per TrustZone memory map */
 }
 
 /* Sections */

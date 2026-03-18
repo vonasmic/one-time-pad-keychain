@@ -1,5 +1,5 @@
 Drivers/STM32U5xx_HAL_Driver/stm32u5xx_hal_gtzc.o: \
- C:/tmp/diplomka/tropic01-stm32u5-usb-devkit-fw/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c \
+ C:/tmp/diplomka/one-time-pad-keychain/TrustZone_app/Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_gtzc.c \
  ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h \
  ../Core/Inc/stm32u5xx_hal_conf.h \
  ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_rcc.h \
