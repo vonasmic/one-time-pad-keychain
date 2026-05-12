@@ -1,0 +1,35 @@
+package fel.cvut;
+
+import fel.cvut.TLS.TLSServerSocket;
+import fel.cvut.TLS.TLSSocket;
+
+import java.nio.charset.StandardCharsets;
+
+public class PQCHybridServer {
+
+    public static void main(String[] args) {
+
+        TLSServerSocket server = new TLSServerSocket(11111);
+
+        System.out.println("TLS Server started on port 11111");
+
+        while (true) {
+
+            TLSSocket client = server.accept();
+
+            System.out.println("Client connected (TLS established)");
+
+            byte[] msg = client.read();
+
+            if (msg != null) {
+                String text = new String(msg, StandardCharsets.UTF_8);
+                System.out.println("Client says: " + text);
+            }
+
+            String reply = "Hello from JNI TLS server";
+            client.write(reply.getBytes(StandardCharsets.UTF_8));
+
+            client.close();
+        }
+    }
+}
