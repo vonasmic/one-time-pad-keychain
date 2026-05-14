@@ -20,15 +20,12 @@
             <artifactId>wolfssljni</artifactId>
             <version>1.0.0-PQC</version>
         </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.jgroups/jgroups-raft -->
         <dependency>
-            <artifactId>ratis-server</artifactId>
-            <groupId>org.apache.ratis</groupId>
-            <version>3.2.2</version>
-        </dependency>
-        <dependency>
-            <artifactId>ratis-grpc</artifactId>
-            <groupId>org.apache.ratis</groupId>
-            <version>3.2.2</version>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups-raft</artifactId>
+            <version>1.1.4.Final</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -46,6 +43,12 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>fel.cvut.PQCHybridServer</mainClass>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>java.library.path</key>
+                            <value>${project.basedir}/src/main/native_tls:${project.basedir}/../wolfssljni/lib</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
             </plugin>
 

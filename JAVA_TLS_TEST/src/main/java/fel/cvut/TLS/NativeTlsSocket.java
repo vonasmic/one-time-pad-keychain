@@ -1,11 +1,11 @@
 package fel.cvut.TLS;
 
-public class TLSSocket {
+public class NativeTlsSocket {
 
     private long serverHandle;
     private long connId;
 
-    TLSSocket(long serverHandle, long connId) {
+    NativeTlsSocket(long serverHandle, long connId) {
         this.serverHandle = serverHandle;
         this.connId = connId;
     }

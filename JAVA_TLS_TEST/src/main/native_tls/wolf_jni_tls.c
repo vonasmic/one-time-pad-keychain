@@ -20,6 +20,10 @@
 #define KEY_FILE     "../tls_usb_test/certs/ecc-server-key.pem"
 #define ALT_KEY_FILE "../tls_usb_test/certs/dilithium-server.priv"
 
+static const byte server_cks_order[] = {
+    WOLFSSL_CKS_SIGSPEC_BOTH,
+};
+
 /* ===================== STRUCTS ===================== */
 
 typedef struct {
@@ -152,6 +156,14 @@ static void* accept_loop(void* arg) {
             continue;
         }
 
+        if (wolfSSL_UseCKS(ssl, (byte*)server_cks_order,
+                sizeof(server_cks_order)) != WOLFSSL_SUCCESS) {
+            fprintf(stderr, "Error setting per-connection CKS to BOTH.\n");
+            wolfSSL_free(ssl);
+            close(fd);
+            continue;
+        }
+
         wolfSSL_set_fd(ssl, fd);
 
         if (wolfSSL_accept(ssl) != WOLFSSL_SUCCESS) {
@@ -203,11 +215,10 @@ static void* accept_loop(void* arg) {
 extern "C" {
 #endif
 
-JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeInit
+JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_NativeTlsServer_nativeInit
   (JNIEnv* env, jobject obj, jint port)
 {
     wolfSSL_Init();
-    wolfSSL_Debugging_ON();
     #if !defined(HAVE_PQC)
         fprintf(stderr, "Error: wolfSSL was not compiled with PQC support.\n");
         exit(EXIT_FAILURE);
@@ -219,7 +230,7 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeInit
     pthread_mutex_init(&s->lock, NULL);
 
     /* TLS context */
-    s->ctx = wolfSSL_CTX_new(wolfSSLv23_server_method());
+    s->ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method());
     if (s->ctx == NULL) {
         fprintf(stderr, "wolfSSL_CTX_new failed\n");
         exit(EXIT_FAILURE);
@@ -230,22 +241,24 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeInit
         exit(EXIT_FAILURE);
     }
 
-    /* 3. ENFORCE PURE ML-KEM GROUPS (Key Exchange) */
-    int candidates[] = { 
-        WOLFSSL_ML_KEM_768 
+    int candidates[] = {
+        WOLFSSL_SECP256R1MLKEM768,
+        WOLFSSL_X25519MLKEM768
     };
-    int valid_groups[1];
+    int valid_groups[sizeof(candidates) / sizeof(candidates[0])];
     int valid_count = 0;
-    int num_candidates = sizeof(candidates)/sizeof(candidates[0]);
-    
-    for(int i = 0; i < num_candidates; i++) {
+    int num_candidates = sizeof(candidates) / sizeof(candidates[0]);
+    int i;
+
+    for (i = 0; i < num_candidates; i++) {
         if (wolfSSL_CTX_set_groups(s->ctx, &candidates[i], 1) == WOLFSSL_SUCCESS) {
             valid_groups[valid_count++] = candidates[i];
         }
     }
 
     if (valid_count == 0) {
-        fprintf(stderr, "Error: No PQC groups supported.\n");
+        fprintf(stderr,
+            "Error: No supported ML-KEM groups. Use hybrid groups instead.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -253,7 +266,7 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeInit
         fprintf(stderr, "set groups failed\n");
         exit(EXIT_FAILURE);
     }
-    printf("Conf: %d Pure PQC Group(s) enabled (ML-KEM).\n", valid_count);
+    printf("Conf: %d hybrid ML-KEM group(s) enabled.\n", valid_count);
 
     /* 4. LOAD HYBRID CREDENTIALS */
     if (wolfSSL_CTX_use_certificate_file(s->ctx, CERT_FILE, WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
@@ -272,14 +285,6 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeInit
             exit(EXIT_FAILURE);
         }
         printf("Conf: Dual-Algorithm Credentials loaded.\n");
-
-        /* --- ENFORCE DOUBLE SIGNING --- */
-        /* NOTE: If your client doesn't support this, handshake will fail! */
-        /*unsigned char cks_sigspec = WOLFSSL_CKS_SIGSPEC_BOTH;
-        if (wolfSSL_CTX_UseCKS(s->ctx, &cks_sigspec, 1) != WOLFSSL_SUCCESS) {
-             fprintf(stderr, "Error setting CKS config to BOTH.\n");
-             exit(EXIT_FAILURE);
-        }*/
         printf("Conf: Enforcing Dual-Sign (WOLFSSL_CKS_SIGSPEC_BOTH).\n");
     #else
         fprintf(stderr, "Error: WOLFSSL_DUAL_ALG_CERTS not enabled. Cannot run hybrid mode.\n");
@@ -317,7 +322,7 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeInit
     return (jlong)s;
 }
 
-JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeAccept
+JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_NativeTlsServer_nativeAccept
   (JNIEnv* env, jobject obj, jlong handle)
 {
     (void)handle;
@@ -370,7 +375,7 @@ JNIEXPORT void JNICALL Java_fel_cvut_TLS_TLSSocket_nativeConnClose
     }
 }
 
-JNIEXPORT void JNICALL Java_fel_cvut_TLS_TLSServerSocket_nativeClose
+JNIEXPORT void JNICALL Java_fel_cvut_TLS_NativeTlsServer_nativeClose
   (JNIEnv* env, jobject obj, jlong handle)
 {
     server_t* s = (server_t*)handle;

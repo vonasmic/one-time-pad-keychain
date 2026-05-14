@@ -1,7 +1,7 @@
 package fel.cvut;
 
-import fel.cvut.TLS.TLSServerSocket;
-import fel.cvut.TLS.TLSSocket;
+import fel.cvut.TLS.NativeTlsServer;
+import fel.cvut.TLS.NativeTlsSocket;
 
 import java.nio.charset.StandardCharsets;
 
@@ -9,13 +9,13 @@ public class PQCHybridServer {
 
     public static void main(String[] args) {
 
-        TLSServerSocket server = new TLSServerSocket(11111);
+        NativeTlsServer server = new NativeTlsServer(11111);
 
         System.out.println("TLS Server started on port 11111");
 
         while (true) {
 
-            TLSSocket client = server.accept();
+            NativeTlsSocket client = server.accept();
 
             System.out.println("Client connected (TLS established)");
 
@@ -26,7 +26,7 @@ public class PQCHybridServer {
                 System.out.println("Client says: " + text);
             }
 
-            String reply = "Hello from JNI TLS server";
+            String reply = "Hello from Hybrid Auth Server!\n";
             client.write(reply.getBytes(StandardCharsets.UTF_8));
 
             client.close();

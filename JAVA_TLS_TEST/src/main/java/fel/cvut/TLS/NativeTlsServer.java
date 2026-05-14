@@ -1,20 +1,20 @@
 package fel.cvut.TLS;
 
-public class TLSServerSocket {
+public class NativeTlsServer {
 
     static {
-        System.loadLibrary("wolf_jni_tls");
+        NativeTlsLibrary.ensureLoaded();
     }
 
     private long nativeHandle;
 
-    public TLSServerSocket(int port) {
+    public NativeTlsServer(int port) {
         this.nativeHandle = nativeInit(port);
     }
 
-    public TLSSocket accept() {
+    public NativeTlsSocket accept() {
         long connId = nativeAccept(nativeHandle);
-        return new TLSSocket(nativeHandle, connId);
+        return new NativeTlsSocket(nativeHandle, connId);
     }
 
     public void close() {

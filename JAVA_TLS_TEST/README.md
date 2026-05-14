@@ -23,11 +23,7 @@ cd "$(git root)/wolfssl"
   --enable-experimental \
   --enable-jni \
   --disable-oldtls \
-  --enable-dtls \
-  --enable-dtls13 \
-  --enable-dtls-frag-ch \
-  --enable-debug \
-  --prefix=/opt/wolfssl-jni
+  --enable-debug
 make -j"$(nproc)"
 sudo make install
 sudo ldconfig
@@ -44,3 +40,5 @@ mvn install:install-file \
 -DartifactId=wolfssljni \
 -Dversion=1.0.0-PQC \
 -Dpackaging=jar
+
+gcc -fPIC   -I/usr/local/include   -I/usr/local/include/wolfssl   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -shared -o libwolf_jni_tls.so   wolf_jni_tls.c   -L/usr/local/lib -lwolfssl
