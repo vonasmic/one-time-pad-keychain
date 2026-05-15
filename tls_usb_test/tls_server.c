@@ -3,9 +3,10 @@
  * and Hybrid Authentication (ECC + Dilithium Dual-Cert) with DOUBLE SIGNING.
  */
 
- #include <wolfssl/options.h>
- #include <wolfssl/wolfcrypt/settings.h>
- #include <wolfssl/ssl.h>
+#include <wolfssl/options.h>
+#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/ssl.h>
+#include "tls_hybrid_verify.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
@@ -22,9 +23,16 @@
   * 2. KEY_FILE:      The Primary ECC P-384 Private Key.
   * 3. ALT_KEY_FILE:  The Alternative Dilithium 3 Private Key.
   */
- #define CERT_FILE     "certs/server-cert-hybrid.pem"
- #define KEY_FILE      "certs/ecc-server-key.pem"
- #define ALT_KEY_FILE  "certs/dilithium-server.priv"
+ #define NATIVE_SERVER_CERTS "../JAVA_TLS_TEST/certs/native/server"
+
+ #define CERT_FILE     NATIVE_SERVER_CERTS "/server-cert-hybrid.pem"
+ #define KEY_FILE      NATIVE_SERVER_CERTS "/ecc-server-key.pem"
+ #define ALT_KEY_FILE  NATIVE_SERVER_CERTS "/dilithium-server.priv"
+ #define CA_CERT_FILE  NATIVE_SERVER_CERTS "/root-ca.pem"
+
+static const byte server_cks_order[] = {
+    WOLFSSL_CKS_SIGSPEC_BOTH,
+};
  
  /* Global flag for shutdown */
  volatile int shutdown_flag = 0;
@@ -39,42 +47,6 @@ void err_sys(const char* msg) {
     exit(EXIT_FAILURE);
 }
 
-/* Certificate Verification Callback for Client Certificates
- * Validates certificates but allows self-signed certs (skips CA validation)
- */
-static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* store)
-{
-    int err = 0;
-    
-    #ifdef OPENSSL_EXTRA
-    err = wolfSSL_X509_STORE_CTX_get_error(store);
-    #else
-    err = store->error;
-    #endif
-    
-    /* If preverify passed, accept the certificate */
-    if (preverify == 1) {
-        return 1;
-    }
-    
-    /* Allow self-signed certificates and missing CA signer errors */
-    /* These are the only errors we override - all other validation still applies */
-    if (err == ASN_SELF_SIGNED_E || 
-        err == ASN_NO_SIGNER_E
-        #ifdef OPENSSL_EXTRA
-        || err == WOLFSSL_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY
-        || err == WOLFSSL_X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT
-        #endif
-        ) {
-        printf("Certificate verification: Allowing self-signed client cert (error=%d)\n", err);
-        return 1; /* Accept self-signed certificate */
-    }
-    
-    /* Reject all other certificate errors (invalid signature, expired, etc.) */
-    printf("Certificate verification failed: error=%d\n", err);
-    return 0;
-}
- 
  int main(int argc, char** argv) {
      int                 sockfd;
      int                 clientfd;
@@ -97,7 +69,7 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
  
      /* 2. Create Context */
      /* Use TLS 1.3 specifically as Hybrid Auth is a TLS 1.3 extension */
-     ctx = wolfSSL_CTX_new(wolfSSLv23_server_method());
+     ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method());
      if (ctx == NULL) err_sys("wolfSSL_CTX_new failed");
  
      ret = wolfSSL_CTX_SetMinVersion(ctx, WOLFSSL_TLSV1_3);
@@ -106,11 +78,12 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
          exit(EXIT_FAILURE);
      }
  
-     /* 3. ENFORCE PURE ML-KEM GROUPS (Key Exchange) */
-     int candidates[] = { 
-         WOLFSSL_ML_KEM_768
-     };
-     int valid_groups[1];
+    /* 3. Configure hybrid ML-KEM key exchange groups */
+    int candidates[] = {
+        WOLFSSL_SECP256R1MLKEM768,
+        WOLFSSL_X25519MLKEM768
+    };
+    int valid_groups[sizeof(candidates) / sizeof(candidates[0])];
      int valid_count = 0;
      int num_candidates = sizeof(candidates)/sizeof(candidates[0]);
      
@@ -123,13 +96,15 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
      }
  
      if (valid_count == 0) {
-         fprintf(stderr, "Error: No PQC groups supported.\n");
-         exit(EXIT_FAILURE);
-     }
- 
-     ret = wolfSSL_CTX_set_groups(ctx, valid_groups, valid_count);
-     if (ret != WOLFSSL_SUCCESS) err_sys("set groups failed");
-     printf("Conf: %d Pure PQC Group(s) enabled (ML-KEM).\n", valid_count);
+        fprintf(stderr,
+            "Error: No supported ML-KEM groups. The installed wolfSSL build "
+            "may disable standalone ML-KEM in TLS; use hybrid groups instead.\n");
+        exit(EXIT_FAILURE);
+    }
+    //wolfSSL_Debugging_ON();
+    ret = wolfSSL_CTX_set_groups(ctx, valid_groups, valid_count);
+    if (ret != WOLFSSL_SUCCESS) err_sys("set groups failed");
+    printf("Conf: %d hybrid ML-KEM group(s) enabled.\n", valid_count);
  
      /* 4. LOAD HYBRID CREDENTIALS (Authentication) */
      
@@ -137,6 +112,7 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
      ret = wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, WOLFSSL_FILETYPE_PEM);
      if (ret != WOLFSSL_SUCCESS) {
          fprintf(stderr, "Error loading Cert %s.\n", CERT_FILE);
+         fprintf(stderr, "Generate: cd tls_usb_test && ./gen_native_certs.sh\n");
          exit(EXIT_FAILURE);
      }
  
@@ -144,6 +120,7 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
      ret = wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, WOLFSSL_FILETYPE_PEM);
      if (ret != WOLFSSL_SUCCESS) {
          fprintf(stderr, "Error loading Primary Key %s.\n", KEY_FILE);
+         fprintf(stderr, "Generate: cd tls_usb_test && ./gen_native_certs.sh\n");
          exit(EXIT_FAILURE);
      }
  
@@ -152,30 +129,34 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
          ret = wolfSSL_CTX_use_AltPrivateKey_file(ctx, ALT_KEY_FILE, WOLFSSL_FILETYPE_PEM);
          if (ret != WOLFSSL_SUCCESS) {
              fprintf(stderr, "Error loading Alt Key %s.\n", ALT_KEY_FILE);
+             fprintf(stderr, "Generate: cd tls_usb_test && ./gen_native_certs.sh\n");
              exit(EXIT_FAILURE);
          }
-         printf("Conf: Dual-Algorithm Credentials loaded.\n");
- 
-        /* --- [NEW] ENFORCE DOUBLE SIGNING --- */
-        /* This forces the server to sign with BOTH keys */
-        /*byte cks_sigspec = WOLFSSL_CKS_SIGSPEC_BOTH;
-        ret = wolfSSL_CTX_UseCKS(ctx, &cks_sigspec, 1);
+        printf("Conf: Dual-Algorithm Credentials loaded.\n");
+
+        ret = wolfSSL_CTX_UseCKS(ctx, (byte*)server_cks_order,
+            sizeof(server_cks_order));
         if (ret != WOLFSSL_SUCCESS) {
-             fprintf(stderr, "Error setting CKS config to BOTH.\n");
-             exit(EXIT_FAILURE);
+            fprintf(stderr, "Error setting CKS config to BOTH.\n");
+            exit(EXIT_FAILURE);
         }
-        printf("Conf: Enforcing Dual-Sign (WOLFSSL_CKS_SIGSPEC_BOTH).\n");*/
-        
+        printf("Conf: Enforcing Dual-Sign (WOLFSSL_CKS_SIGSPEC_BOTH).\n");
 
      #else
          fprintf(stderr, "Error: WOLFSSL_DUAL_ALG_CERTS not enabled. Cannot run hybrid mode.\n");
          exit(EXIT_FAILURE);
      #endif
 
-     /* 5. REQUEST AND VERIFY CLIENT CERTIFICATES (Mutual TLS) */
-     /* Request client certificate during handshake */
-     //wolfSSL_CTX_set_verify(ctx, WOLFSSL_VERIFY_PEER | WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT, client_cert_verify_callback);
-     printf("Conf: Client certificate authentication enabled (allowing self-signed).\n");
+    if (wolfSSL_CTX_load_verify_locations(ctx, CA_CERT_FILE, NULL) != WOLFSSL_SUCCESS) {
+        fprintf(stderr, "Error loading CA Cert %s.\n", CA_CERT_FILE);
+        fprintf(stderr, "Generate native certs: cd tls_usb_test && ./gen_native_certs.sh\n");
+        fprintf(stderr, "  (or: make certs-native). Run from JAVA_TLS_TEST for JNI paths.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    wolfSSL_CTX_set_verify(ctx, WOLFSSL_VERIFY_PEER |
+        WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+    printf("Conf: Client certificate authentication enabled (strict CA verification).\n");
 
      /* 6. Socket Setup (Standard) */
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -213,35 +194,65 @@ static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* st
  
          printf("Connection accepted.\n");
  
-         ssl = wolfSSL_new(ctx);
-         if (ssl == NULL) {
-             fprintf(stderr, "wolfSSL_new failed\n");
-             close(clientfd);
-             continue;
-         }
- 
-         wolfSSL_set_fd(ssl, clientfd);
+        ssl = wolfSSL_new(ctx);
+        if (ssl == NULL) {
+            fprintf(stderr, "wolfSSL_new failed\n");
+            close(clientfd);
+            continue;
+        }
+
+        if (wolfSSL_UseCKS(ssl, (byte*)server_cks_order,
+                sizeof(server_cks_order)) != WOLFSSL_SUCCESS) {
+            fprintf(stderr, "Error setting per-connection CKS to BOTH.\n");
+            wolfSSL_free(ssl);
+            close(clientfd);
+            continue;
+        }
+
+        wolfSSL_set_fd(ssl, clientfd);
 
          if (wolfSSL_accept(ssl) != WOLFSSL_SUCCESS) {
-             int err = wolfSSL_get_error(ssl, 0);
+             int ssl_err = wolfSSL_get_error(ssl, 0);
              char buffer[80];
-             fprintf(stderr, "TLS Handshake error: %s\n", wolfSSL_ERR_error_string(err, buffer));
+             unsigned long lib_err = wolfSSL_ERR_get_error();
+             if (lib_err != 0) {
+                 fprintf(stderr, "TLS Handshake error: %s (ssl_err=%d)\n",
+                     wolfSSL_ERR_error_string(lib_err, buffer), ssl_err);
+             } else {
+                 fprintf(stderr, "TLS Handshake error: %s (ssl_err=%d)\n",
+                     wolfSSL_ERR_error_string(ssl_err, buffer), ssl_err);
+             }
+             fprintf(stderr,
+                 "  Regenerate certs: ./gen_native_certs.sh (P-384+Dilithium-3, not P-256+Dilithium-3).\n");
          } else {
              const char* msg = "Hello from Hybrid Auth Server!\n";
              char reply[1024];
              int readSz;
  
-             printf("TLS 1.3 Handshake Complete!\n");
-             printf("Cipher: %s\n", wolfSSL_get_cipher_name(ssl));
-             
-             /* Verify client certificate was presented */
-             WOLFSSL_X509* client_cert = wolfSSL_get_peer_certificate(ssl);
-             if (client_cert != NULL) {
-                 printf("Client certificate received and verified.\n");
-                 wolfSSL_X509_free(client_cert);
-             } else {
-                 printf("Warning: No client certificate received.\n");
-             }
+            printf("TLS 1.3 Handshake Complete!\n");
+            printf("Cipher: %s\n", wolfSSL_get_cipher_name(ssl));
+
+            if (!tls_verify_peer_cert(ssl)) {
+                wolfSSL_shutdown(ssl);
+                wolfSSL_free(ssl);
+                close(clientfd);
+                continue;
+            }
+            printf("Client certificate verified against %s.\n", CA_CERT_FILE);
+
+            if (!tls_require_local_dual_alt_sig(ssl)) {
+                wolfSSL_shutdown(ssl);
+                wolfSSL_free(ssl);
+                close(clientfd);
+                continue;
+            }
+            if (!tls_require_peer_dual_alt_sig(ssl)) {
+                wolfSSL_shutdown(ssl);
+                wolfSSL_free(ssl);
+                close(clientfd);
+                continue;
+            }
+            printf("Dual alt signature (CKS BOTH) confirmed.\n");
 
              readSz = wolfSSL_read(ssl, reply, sizeof(reply)-1);
              if (readSz > 0) {

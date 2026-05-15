@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "gtzc_s.h"
+#include "icache.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -32,10 +35,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-/* Non-secure Vector table to jump to (internal flash NS region)              */
-/* Caution: address must correspond to non-secure internal Flash where is     */
-/*          mapped in the non-secure vector table                             */
-#define VTOR_TABLE_NS_START_ADDR  0x08010000UL
+/* Non-secure vector table = start of NS image (must match NS linker FLASH ORIGIN
+ * and NSBOOTADD0 when using default NS boot address). */
+#define VTOR_TABLE_NS_START_ADDR  0x08020000UL
 
 /* USER CODE END PD */
 
@@ -52,7 +54,6 @@
 
 /* Private function prototypes -----------------------------------------------*/
 static void NonSecure_Init(void);
-static void MX_GTZC_S_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -92,6 +93,8 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -133,44 +136,6 @@ static void NonSecure_Init(void)
 
   /* Start non-secure state software application */
   NonSecure_ResetHandler();
-}
-
-/**
-  * @brief GTZC_S Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GTZC_S_Init(void)
-{
-
-  /* USER CODE BEGIN GTZC_S_Init 0 */
-
-  /* USER CODE END GTZC_S_Init 0 */
-
-  MPCBB_ConfigTypeDef MPCBB_Area_Desc = {0};
-
-  /* USER CODE BEGIN GTZC_S_Init 1 */
-
-  /* USER CODE END GTZC_S_Init 1 */
-  MPCBB_Area_Desc.SecureRWIllegalMode = GTZC_MPCBB_SRWILADIS_ENABLE;
-  MPCBB_Area_Desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[0] =   0x00000000;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[1] =   0x00000000;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0x00000000;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[3] =   0x00000000;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0xFFFFFFFF;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[1] =   0xFFFFFFFF;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[2] =   0xFFFFFFFF;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[3] =   0xFFFFFFFF;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_LockConfig_array[0] =   0x00000000;
-  if (HAL_GTZC_MPCBB_ConfigMem(SRAM2_BASE, &MPCBB_Area_Desc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN GTZC_S_Init 2 */
-
-  /* USER CODE END GTZC_S_Init 2 */
-
 }
 
 /* USER CODE BEGIN 4 */

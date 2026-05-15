@@ -22,8 +22,19 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_flash_ex.h \
  ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr.h \
  ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr_ex.h \
+ ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd.h \
+ ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_usb.h \
+ ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd_ex.h \
  ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_exti.h \
- ../../Secure_nsclib/secure_nsc.h
+ ../../Secure_nsclib/secure_nsc.h ../USBX/App/app_usbx_device.h \
+ ../../Middlewares/ST/usbx/common/core/inc/ux_api.h \
+ ../../Middlewares/ST/usbx/ports/generic/inc/ux_port.h \
+ ../USBX/App/ux_user.h \
+ ../../Middlewares/ST/usbx/common/core/inc/ux_utility.h \
+ ../../Middlewares/ST/usbx/common/core/inc/ux_system.h \
+ ../../Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h \
+ ../USBX/Target/ux_stm32_config.h ../Core/Inc/usb_drd_fs.h \
+ ../Core/Inc/main.h
 ../Core/Inc/main.h:
 ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h:
 ../Core/Inc/stm32u5xx_hal_conf.h:
@@ -48,5 +59,18 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_flash_ex.h:
 ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr.h:
 ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pwr_ex.h:
+../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd.h:
+../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_ll_usb.h:
+../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_pcd_ex.h:
 ../../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_exti.h:
 ../../Secure_nsclib/secure_nsc.h:
+../USBX/App/app_usbx_device.h:
+../../Middlewares/ST/usbx/common/core/inc/ux_api.h:
+../../Middlewares/ST/usbx/ports/generic/inc/ux_port.h:
+../USBX/App/ux_user.h:
+../../Middlewares/ST/usbx/common/core/inc/ux_utility.h:
+../../Middlewares/ST/usbx/common/core/inc/ux_system.h:
+../../Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h:
+../USBX/Target/ux_stm32_config.h:
+../Core/Inc/usb_drd_fs.h:
+../Core/Inc/main.h:

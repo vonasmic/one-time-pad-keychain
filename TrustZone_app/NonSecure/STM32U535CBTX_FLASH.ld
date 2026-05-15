@@ -22,7 +22,7 @@
 *****************************************************************************
 ** @attention
 **
-** Copyright (c) 2025 STMicroelectronics.
+** Copyright (c) 2026 STMicroelectronics.
 ** All rights reserved.
 **
 ** This software is licensed under terms that can be found in the LICENSE file
@@ -37,6 +37,7 @@ ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);	/* end of "RAM" Ram type memory */
+_sstack = _estack - _Min_Stack_Size;
 
 _Min_Heap_Size = 0x200;	/* required amount of heap  */
 _Min_Stack_Size = 0x400;	/* required amount of stack */
@@ -46,7 +47,7 @@ MEMORY
 {
   RAM	(xrw)	: ORIGIN = 0x20030000,	LENGTH = 64K     /* Memory is divided. Actual start is 0x20000000 and actual length is 256K */
   SRAM4	(xrw)	: ORIGIN = 0x28000000,	LENGTH = 16K
-  FLASH	(rx)	: ORIGIN = 0x08010000,	LENGTH = 64K     /* Non-secure flash region per TrustZone memory map */
+  FLASH	(rx)	: ORIGIN = 0x08020000,	LENGTH = 128K    /* Non-secure image base; must match NSBOOTADD0/VTOR_TABLE_NS_START_ADDR */
 }
 
 /* Sections */
@@ -69,7 +70,7 @@ SECTIONS
 
     KEEP (*(.init))
     KEEP (*(.fini))
-	. = ALIGN(16);
+
     _etext = .;        /* define a global symbols at end of code */
   } >FLASH
 
@@ -78,7 +79,6 @@ SECTIONS
   {
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    . = ALIGN(16);
   } >FLASH
 
   .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
@@ -126,7 +126,7 @@ SECTIONS
     *(.data*)          /* .data* sections */
     *(.RamFunc)        /* .RamFunc sections */
     *(.RamFunc*)       /* .RamFunc* sections */
-	. = ALIGN(16);
+
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 

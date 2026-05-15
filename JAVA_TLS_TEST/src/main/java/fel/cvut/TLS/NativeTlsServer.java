@@ -1,29 +1,30 @@
 package fel.cvut.TLS;
 
-public class NativeTlsServer {
+public final class NativeTlsServer implements AutoCloseable {
 
     static {
         NativeTlsLibrary.ensureLoaded();
     }
 
-    private long nativeHandle;
+    private final long handle;
 
     public NativeTlsServer(int port) {
-        this.nativeHandle = nativeInit(port);
+        handle = nativeInit(port);
     }
 
-    public NativeTlsSocket accept() {
-        long connId = nativeAccept(nativeHandle);
-        return new NativeTlsSocket(nativeHandle, connId);
+    public TLSSocket accept() {
+        long connId = nativeAccept(handle);
+        return new TLSSocket(handle, connId);
     }
 
+    @Override
     public void close() {
-        nativeClose(nativeHandle);
-        nativeHandle = 0;
+        nativeClose(handle);
     }
 
-    /* ===== JNI ===== */
-    private native long nativeInit(int port);
-    private native long nativeAccept(long handle);
-    private native void nativeClose(long handle);
+    private static native long nativeInit(int port);
+
+    private static native long nativeAccept(long handle);
+
+    private static native void nativeClose(long handle);
 }

@@ -7,7 +7,7 @@
   ******************************************************************************
     * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -41,30 +41,6 @@ void *pSecureErrorCallback = NULL;   /* Pointer to secure error callback in Non-
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Simple LED blink implemented in Secure world.
-  *         Uses PA9 as in the minimal test app, toggling with a delay.
-  *         Callable from Non-secure via secure veneer.
-  */
-CMSE_NS_ENTRY void SECURE_LED_Blink(void)
-{
-  /* Enable GPIOA clock */
-  RCC->AHB2ENR1 |= RCC_AHB2ENR1_GPIOAEN;
-  (void)RCC->AHB2ENR1; /* Ensure clock is taken into account */
-
-  /* Configure PA9 as output, push-pull, no pull */
-  GPIOA->MODER &= ~(3U << (9U * 2U));
-  GPIOA->MODER |=  (1U << (9U * 2U));
-  GPIOA->OTYPER &= ~(1U << 9U);
-  GPIOA->PUPDR  &= ~(3U << (9U * 2U));
-
-  /* One visible on/off toggle */
-  GPIOA->BSRR = (1U << 9);          /* Set PA9 */
-  for (volatile uint32_t d = 0; d < 400000; d++) { __NOP(); }
-  GPIOA->BSRR = (1U << (9 + 16));   /* Reset PA9 */
-  for (volatile uint32_t d = 0; d < 400000; d++) { __NOP(); }
-}
 
 /**
   * @brief  Secure registration of non-secure callback.

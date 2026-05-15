@@ -9,7 +9,7 @@ INTERNAL_CFLAGS = $(CFLAGS) -I$(WOLFSSL_SRC)
 LDFLAGS = -shared $(shell $(WOLFSSL_CONFIG) --libs) -lm
 
 TARGET = libwolf_jni_tls.so
-SOURCES = wolf_jni_tls.c wolf_ssl_dual_sign.c
+SOURCES = wolf_jni_tls.c
 
 all: $(TARGET)
 

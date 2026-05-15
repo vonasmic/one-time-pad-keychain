@@ -1,0 +1,681 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jgroups</groupId>
+    <artifactId>jgroups-raft</artifactId>
+    <packaging>jar</packaging>
+    <name>jgroups-raft</name>
+    <version>1.1.4.Final</version>
+    <url>https://github.com/jgroups-extras/jgroups-raft</url>
+    <description>JGroups RAFT implementation</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+
+        <!-- nexus-staging-maven-plugin -->
+        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        <nexus.server.id>jboss-releases-repository</nexus.server.id>
+        <nexus.server.url>https://repository.jboss.org/nexus/repository/releases/</nexus.server.url>
+        <nexus.snapshot.server.id>jboss-snapshots-repository</nexus.snapshot.server.id>
+        <nexus.snapshot.server.url>https://repository.jboss.org/nexus/repository/snapshots/</nexus.snapshot.server.url>
+
+        <!-- Dependencies versions -->
+        <testng.version>7.11.0</testng.version>
+        <assertj.version>3.27.6</assertj.version>
+        <jgroups.version>5.4.11.Final</jgroups.version>
+        <log4j.version>2.25.2</log4j.version>
+        <jmh.version>1.37</jmh.version>
+        <mashona.version>1.1.0</mashona.version>
+
+        <conf.dir>${project.basedir}/conf</conf.dir>
+        <tmp.dir>${project.basedir}/tmp</tmp.dir>
+
+        <!-- test properties -->
+        <ansi.strip />
+        <jgroups.tests.parallel.threads>2</jgroups.tests.parallel.threads>
+        <defaultTestNGGroups>functional</defaultTestNGGroups>
+        <defaultExcludedTestNGGroups>broken</defaultExcludedTestNGGroups>
+        <testNGListeners>org.jgroups.raft.util.JUnitXMLReporter</testNGListeners>
+
+        <jgroups.bind_addr>localhost</jgroups.bind_addr>
+        <jgroups.tcpping.initial_hosts>localhost[7800],localhost[7801]</jgroups.tcpping.initial_hosts>
+        <jgroups.tunnel.gossip_router_hosts>localhost[12001]</jgroups.tunnel.gossip_router_hosts>
+        <jgroups.udp.mcast_addr>225.5.5.5</jgroups.udp.mcast_addr>
+        <jgroups.udp.mcast_port>45588</jgroups.udp.mcast_port>
+        <jgroups.udp.ip_ttl>5</jgroups.udp.ip_ttl>
+        <jgroups.useIPv4>true</jgroups.useIPv4>
+        <jgroups.useIPv6>false</jgroups.useIPv6>
+        <trace>false</trace>
+
+        <jgroups.tests.jvmargs>
+            -Djgroups.udp.ip_ttl=0
+            -Djgroups.tcpping.initial_hosts=${jgroups.tcpping.initial_hosts}
+            -Djgroups.tunnel.gossip_router_hosts=${jgroups.tunnel.gossip_router_hosts}
+            -Dtests.tmp.dir=${tmp.dir}
+            -Dlog4j.configuration=file:${conf.dir}/log4j.properties
+            -Dlog4j.configurationFile=${conf.dir}/log4j2-test.xml
+            -Djava.net.preferIPv4Stack=${jgroups.useIPv4}
+            -Djava.net.preferIPv6Addresses=${jgroups.useIPv6}
+            -Dorg.jgrops.test.trace=${trace}
+            -Xms400M
+            -Xmx800M
+        </jgroups.tests.jvmargs>
+
+        <!-- Utilized by Asciidoctor to set the generation date. -->
+        <asciidoctorj.diagram.version>3.1.0</asciidoctorj.diagram.version>
+        <asciidoctorj.diita.version>1.0.3</asciidoctorj.diita.version>
+        <maven.build.timestamp.format>yyyy-MM-dd HH</maven.build.timestamp.format>
+
+        <!-- Plugins -->
+        <version.nexus3.plugin>1.0.13</version.nexus3.plugin>
+        <version.clean.plugin>3.5.0</version.clean.plugin>
+        <version.compiler.plugin>3.14.1</version.compiler.plugin>
+        <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
+        <version.install.plugin>3.1.4</version.install.plugin>
+        <version.jar.plugin>3.5.0</version.jar.plugin>
+        <version.resources.plugin>3.4.0</version.resources.plugin>
+        <version.source.plugin>3.4.0</version.source.plugin>
+        <version.surefire.plugin>3.5.4</version.surefire.plugin>
+        <version.surefire-report.plugin>3.5.4</version.surefire-report.plugin>
+        <version.dependency.plugin>3.9.0</version.dependency.plugin>
+        <version.build-helper.plugin>3.6.1</version.build-helper.plugin>
+        <version.exec.plugin>3.6.2</version.exec.plugin>
+        <version.asciidoctor.plugin>3.2.0</version.asciidoctor.plugin>
+        <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
+        <version.gpg.plugin>3.2.8</version.gpg.plugin>
+    </properties>
+
+    <organization>
+        <name>JBoss, IBM</name>
+        <url>http://www.jboss.org</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>José Bolina</name>
+            <email>jbolina@redhat.com</email>
+            <organization>IBM</organization>
+            <organizationUrl>https://www.ibm.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Bela Ban</name>
+            <email>bban@redhat.com</email>
+        </developer>
+        <developer>
+            <name>Pedro Ruivo</name>
+            <email>pruivo@redhat.com</email>
+        </developer>
+        <developer>
+            <name>Francesco Nigro</name>
+            <email>fnigro@redhat.com</email>
+        </developer>
+        <developer>
+            <name>Ugo Landini</name>
+            <email>ugo.landini@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Fabio Marinelli</name>
+            <email>f.marinelli@gmail.com</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/jgroups-extras/jgroups-raft.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jgroups-extras/jgroups-raft.git</developerConnection>
+        <url>https://github.com/jgroups-extras/jgroups-raft</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/jgroups-extras/jgroups-raft/issues</url>
+    </issueManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>${nexus.server.id}</id>
+            <name>JBoss Releases Repository</name>
+            <url>${nexus.server.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${nexus.snapshot.server.id}</id>
+            <url>${nexus.snapshot.server.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+            <version>${jgroups.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+            <version>1.0</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.mashona</groupId>
+            <artifactId>mashona-logwriting</artifactId>
+            <version>${mashona.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hdrhistogram</groupId>
+            <artifactId>HdrHistogram</artifactId>
+            <version>2.2.2</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>conf</directory>
+                <includes>
+                    <include>*.xml</include>
+                    <include>jg-messages*.properties</include>
+                </includes>
+                <excludes>
+                    <exclude>*-service.xml</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/schema</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>INSTALL.html</include>
+                    <include>LICENSE</include>
+                    <include>README</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/lib</directory>
+                <includes>
+                    <include>licenses/thirdparty*</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nxrm3-maven-plugin</artifactId>
+                <version>${version.nexus3.plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <nexusUrl>https://repository.jboss.org/nexus</nexusUrl>
+
+                    <!-- The server "id" element from settings to use authentication from settings.xml-->
+                    <serverId>jboss-releases-repository</serverId>
+
+                    <!-- Change to repository you will be deploying to -->
+                    <repository>releases</repository>
+
+                    <!-- Skip the staging deploy mojo -->
+                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+                </configuration>
+
+                <!-- replacing the standard Maven Deployment Plugin -->
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <rules>
+                        <requireJavaVersion>
+                            <!-- require JDK 11 to run the build -->
+                            <version>[11,)</version>
+                        </requireJavaVersion>
+                        <requireMavenVersion>
+                            <version>3.0.4</version>
+                        </requireMavenVersion>
+                    </rules>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-test-source</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>tests/junit-functional</source>
+                                <source>tests/benchmark</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>add-test-configurations</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>tests/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>schema-generator</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>${project.build.directory}/schema</workingDirectory>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>org.jgroups.util.XMLSchemaGenerator</argument>
+                                <argument>-o</argument>
+                                <argument>${project.build.directory}/schema</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Make sure we generate src jars too -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Disable default tests: they won't run since they are lacking configuration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <reportsDirectory>${tmp.dir}/test-results/xml</reportsDirectory>
+                    <parallel>classes</parallel>
+                    <threadCount>${jgroups.tests.parallel.threads}</threadCount>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <groups>${defaultTestNGGroups}</groups>
+                    <excludedGroups>${defaultExcludedTestNGGroups}</excludedGroups>
+                    <useFile>false</useFile>
+                    <systemPropertyVariables>
+                        <INITIAL_MCAST_ADDR>${jgroups.udp.mcast_addr}</INITIAL_MCAST_ADDR>
+                        <INITIAL_MCAST_PORT>23000</INITIAL_MCAST_PORT>
+                        <INITIAL_TCP_PORT>23000</INITIAL_TCP_PORT>
+                        <tcp.recv_buf_size>200000</tcp.recv_buf_size>
+                        <tcp.send_buf_size>64000</tcp.send_buf_size>
+                        <ansi.strip>${ansi.strip}</ansi.strip>
+                    </systemPropertyVariables>
+                    <trimStackTrace>false</trimStackTrace>
+                    <properties>
+                        <usedefaultlisteners>false</usedefaultlisteners>
+                        <listener>${testNGListeners}</listener>
+                    </properties>
+                    <argLine>${jgroups.tests.jvmargs} -Djdk.attach.allowAttachSelf=true</argLine>
+                    <!-- Use TCP for plugin <-> fork JVM communication -->
+                    <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
+                    <!-- Disable modular classpath -->
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <configuration>
+                    <linkXRef>true</linkXRef>
+                    <outputDirectory>${tmp.dir}/html</outputDirectory>
+                    <reportsDirectories>${tmp.dir}/test-results/xml/functional</reportsDirectories>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <includeScope>test</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${version.clean.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${version.compiler.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${version.enforcer.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${version.install.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${version.jar.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${version.resources.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${version.source.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.surefire.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-report-plugin</artifactId>
+                    <version>${version.surefire-report.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${version.dependency.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${version.build-helper.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${version.exec.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.asciidoctor</groupId>
+                    <artifactId>asciidoctor-maven-plugin</artifactId>
+                    <version>${version.asciidoctor.plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <!-- Profile to generate the manual. -->
+            <id>manual</id>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Generate the tables with the protocol properties. -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-protocol-properties</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>org.jgroups.raft.util.PropsToAsciidoc</argument>
+                                <argument>${basedir}/doc/manual/protocols-template.adoc</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Generates the manual files. -->
+                    <!-- The generated output is in target/doc/manual/manual.html -->
+                    <plugin>
+                        <groupId>org.asciidoctor</groupId>
+                        <artifactId>asciidoctor-maven-plugin</artifactId>
+
+                        <configuration>
+                            <sourceDirectory>${basedir}/doc/manual</sourceDirectory>
+                            <requires>
+                                <require>asciidoctor-diagram</require>
+                            </requires>
+                        </configuration>
+
+                        <executions>
+                            <execution>
+                                <id>generate-manual</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+
+                                <configuration>
+                                    <sourceDocumentName>manual.adoc</sourceDocumentName>
+
+                                    <outputDirectory>${project.build.directory}/doc/manual</outputDirectory>
+                                    <attributes>
+                                        <revdate>${maven.build.timestamp}</revdate>
+                                        <organization>${project.organization.name}</organization>
+                                        <source-highlighter>rouge</source-highlighter>
+                                        <rouge-style>github</rouge-style>
+                                        <icons>font</icons>
+                                        <toclevels>3</toclevels>
+                                        <sectnums>true</sectnums>
+                                        <sectnumlevels>3</sectnumlevels>
+                                        <sectanchors>true</sectanchors>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                        </executions>
+
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.asciidoctor</groupId>
+                                <artifactId>asciidoctorj-diagram</artifactId>
+                                <version>${asciidoctorj.diagram.version}</version>
+                            </dependency>
+
+                            <dependency>
+                                <groupId>org.asciidoctor</groupId>
+                                <artifactId>asciidoctorj-diagram-ditaamini</artifactId>
+                                <version>${asciidoctorj.diita.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${version.javadoc.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>javadoc</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <source>${maven.compiler.target}</source>
+                            <doclint>none</doclint>
+                            <detectLinks>false</detectLinks>
+                            <detectOfflineLinks>false</detectOfflineLinks>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${version.gpg.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifact</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <passphraseServerId>gpg.passphrase</passphraseServerId>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

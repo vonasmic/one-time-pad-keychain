@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (13.3.rel1)
+# Toolchain: GNU Tools for STM32 (14.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -9,6 +9,8 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Middlewares/wolfSSL/wolfSSL/wolfSSL/Core/subdir.mk
+-include Middlewares/wolfSSL/wolfSSL/wolfCrypt/Core/subdir.mk
 -include Drivers/STM32U5xx_HAL_Driver/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
@@ -34,34 +36,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := Secure
+BUILD_ARTIFACT_NAME := TrustZone_app_Secure
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-Secure.elf \
+TrustZone_app_Secure.elf \
 
 MAP_FILES += \
-Secure.map \
+TrustZone_app_Secure.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-Secure.list \
+TrustZone_app_Secure.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: Secure.elf secondary-outputs
+main-build: TrustZone_app_Secure.elf secondary-outputs
 
 # Tool invocations
-Secure.elf Secure.map: $(OBJS) $(USER_OBJS) C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Secure.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Secure.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+TrustZone_app_Secure.elf TrustZone_app_Secure.map: $(OBJS) $(USER_OBJS) C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "TrustZone_app_Secure.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m33 -T"C:\tmp\diplomka\one-time-pad-keychain\TrustZone_app\Secure\STM32U535CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="TrustZone_app_Secure.map" -Wl,--gc-sections -static -Wl,--cmse-implib -Wl,--out-implib=./secure_nsclib.o --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +72,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-Secure.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "Secure.list"
+TrustZone_app_Secure.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "TrustZone_app_Secure.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) Secure.elf Secure.list Secure.map default.size.stdout
+	-$(RM) TrustZone_app_Secure.elf TrustZone_app_Secure.list TrustZone_app_Secure.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

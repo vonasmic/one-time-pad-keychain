@@ -12,14 +12,11 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <!-- Match infinispan-core 16.2.x (see infinispan-bom version.protostream) -->
+        <version.protostream>6.0.7</version.protostream>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.wolfssl</groupId>
-            <artifactId>wolfssljni</artifactId>
-            <version>1.0.0-PQC</version>
-        </dependency>
         <!-- Source: https://mvnrepository.com/artifact/org.jgroups/jgroups-raft -->
         <dependency>
             <groupId>org.jgroups</groupId>
@@ -37,7 +34,14 @@
         <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>
-            <version>6.0.7</version>
+            <version>${version.protostream}</version>
+        </dependency>
+        <!-- Generated *Impl sources reference @OriginatingClasses from the processor JAR -->
+        <dependency>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream-processor</artifactId>
+            <version>${version.protostream}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -73,7 +77,7 @@
                         <path>
                             <groupId>org.infinispan.protostream</groupId>
                             <artifactId>protostream-processor</artifactId>
-                            <version>6.0.7</version>
+                            <version>${version.protostream}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -88,7 +92,7 @@
                     <systemProperties>
                         <systemProperty>
                             <key>java.library.path</key>
-                            <value>${project.basedir}/src/main/native_tls:${project.basedir}/../wolfssljni/lib</value>
+                            <value>${project.basedir}/src/main/native_tls</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

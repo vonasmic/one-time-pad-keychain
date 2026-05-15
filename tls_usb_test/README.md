@@ -22,7 +22,7 @@ cd "$(git root)/wolfssl"
   --enable-keygen \
   --enable-tls13 \
   --enable-mlkem \
-  --enable-dilithium \
+  --enable-dilithium=yes,no-ctx \
   --enable-opensslall \
   --enable-ed25519 \
   --enable-certgen \
@@ -31,21 +31,22 @@ cd "$(git root)/wolfssl"
   --enable-certreq \
   --enable-pwdbased \
   --enable-experimental
-
 make -j"$(nproc)"
 sudo make install
 sudo ldconfig
 ```
+
+This step installs **libwolfssl** only. The `wolfssl` CLI used by `gen_native_certs.sh` comes from **wolfCLU** below.
 
 ```bash
 cd "$(git root)/wolfCLU"
 make clean
 ./autogen.sh
 ./configure --with-wolfssl=/usr/local \
-  CFLAGS="-g -O2 -Wno-error" \
   CPPFLAGS="-DOPENSSL_ALL -DHAVE_BASE16 -DWOLFSSL_CERT_GEN -DWOLFSSL_CERT_REQ -DWOLFSSL_PWDBASED"
-make -j$(nproc)
+make -j"$(nproc)"
 sudo make install
+sudo ldconfig
 ```
 
 ### Build Test Server
@@ -58,75 +59,53 @@ make
 
 ## Certificate Generation
 
-### Server Hybrid Certificate (ECC + Dilithium)
+Hybrid TLS certs (wolfCLU `wolfssl ca -altextend`) are written to:
+
+`JAVA_TLS_TEST/certs/native/server/` and `JAVA_TLS_TEST/certs/native/client/`
+
+Each folder contains:
+
+| File | Role |
+|------|------|
+| `server-cert-hybrid.pem` | Dual-algorithm identity certificate |
+| `ecc-server-key.pem` | Primary ECC private key |
+| `dilithium-server.priv` | Alternative Dilithium private key |
+| `root-ca.pem` | Trust anchor for the peer (other role’s hybrid cert) |
+
+Generate both bundles:
 
 ```bash
-mkdir -p certs
-
-# Generate ECC P-384 key
-openssl ecparam -genkey -name secp384r1 -out certs/ecc-server-key.pem
-
-# Generate Dilithium Level 3 key
-wolfssl -genkey dilithium -level 3 \
-  -out certs/dilithium-server \
-  -outform pem \
-  -output keypair
-
-# Create ECC certificate
-openssl req -new -x509 -key certs/ecc-server-key.pem \
-  -out certs/ecc-server-cert.pem \
-  -days 365 -nodes \
-  -sha384 \
-  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
-
-# Create dual-algorithm certificate
-wolfssl ca -altextend \
-  -in certs/ecc-server-cert.pem \
-  -keyfile certs/ecc-server-key.pem \
-  -altkey certs/dilithium-server.priv \
-  -altpub certs/dilithium-server.pub \
-  -out certs/server-cert-hybrid.pem
+cd tls_usb_test
+make certs-native
 ```
 
-### Client Certificates (for Mutual TLS)
+Restart the JNI/Java TLS server after regenerating certs (paths are read once in `nativeInit`).
+Rebuild the native library if you changed `wolf_jni_tls.c`:
 
 ```bash
-# Generate ECC key
-openssl ecparam -genkey -name prime256v1 -out certs/client-key.pem
+cd $(git root)/JAVA_TLS_TEST/src/main/native_tls && make clean && make
+```
 
-# Generate Dilithium key
-wolfssl -genkey dilithium -level 3 \
-  -out certs/client-dilithium \
-  -outform pem \
-  -output keypair
+(`certs-client` is an alias for the same target.)
 
-# Create ECC certificate
-openssl req -new -x509 -key certs/client-key.pem \
-  -out certs/client-cert-ecc.pem \
-  -days 365 -nodes \
-  -sha256 \
-  -subj "/C=US/ST=State/L=City/O=Organization/CN=client-device"
+### Firmware embed (optional)
 
-# Create dual-algorithm certificate
-wolfssl ca -altextend \
-  -in certs/client-cert-ecc.pem \
-  -keyfile certs/client-key.pem \
-  -altkey certs/client-dilithium.priv \
-  -altpub certs/client-dilithium.pub \
-  -out certs/client-cert.pem
+After `make certs-native`, embed the **client** bundle into the app:
 
-# Embed certificates in firmware
+```bash
 ./embed_client_certs.sh \
-  certs/client-cert.pem \
-  certs/client-key.pem \
-  certs/client-dilithium.priv \
+  ../JAVA_TLS_TEST/certs/native/client/server-cert-hybrid.pem \
+  ../JAVA_TLS_TEST/certs/native/client/ecc-server-key.pem \
+  ../JAVA_TLS_TEST/certs/native/client/dilithium-server.priv \
   "$(git root)/app/client_certs.h"
 ```
 
 For DER format keys, specify the level explicitly:
 ```bash
 CLIENT_DILITHIUM_LEVEL=5 ./embed_client_certs.sh \
-  certs/client-cert.pem certs/client-key.pem certs/client-dilithium.der \
+  ../JAVA_TLS_TEST/certs/native/client/server-cert-hybrid.pem \
+  ../JAVA_TLS_TEST/certs/native/client/ecc-server-key.pem \
+  ../JAVA_TLS_TEST/certs/native/client/dilithium-server.der \
   "$(git root)/app/client_certs.h"
 ```
 
@@ -160,7 +139,22 @@ Enable verbose TLS logging in the bridge:
 
 Type `debug off` to disable verbose logging.
 
+## Local mTLS test (`tls_client` + `tls_server`)
+
+1. `make certs-native` (from `tls_usb_test/`)
+2. Terminal A: `./tls_server`
+3. Terminal B: `./tls_client`
+
+Both programs read `../JAVA_TLS_TEST/certs/native/{server,client}/`. Run the JNI server from `JAVA_TLS_TEST/` so `certs/native/server/` resolves correctly.
+
 ## Troubleshooting
+
+**`TLS Connect error: Bad function argument`**
+
+Usually the client could not parse or verify the server’s dual-alt certificate. Common causes:
+
+- Certs were not generated with `make certs-native` (BouncyCastle or hand-made PEMs will not verify). Regenerate with wolfCLU `ca -altextend`.
+- Dilithium `.priv` was not produced by `wolfssl -genkey` (other PEM encodings may not load as alt keys).
 
 **Dual-algorithm signature issues:**
 - Ensure wolfSSL is built with `--enable-dual-alg-certs`

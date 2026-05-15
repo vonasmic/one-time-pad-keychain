@@ -474,7 +474,7 @@
 //   <o.6>  TIM16_IRQn            <0=> Secure state
 //   <o.7>  TIM17_IRQn            <0=> Secure state
 //   <o.8>  COMP_IRQn             <0=> Secure state
-//   <o.9>  USB_IRQn              <0=> Secure state
+//   <o.9>  USB_IRQn              <1=> Non-Secure state
 //   <o.10> CRS_IRQn              <0=> Secure state
 
 //   <o.12> OCTOSPI1_IRQn         <0=> Secure state
@@ -501,7 +501,7 @@
 //   <o.31> FPU_IRQn              <0=> Secure state
 */
 
-#define NVIC_INIT_ITNS2_VAL      0x00000000
+#define NVIC_INIT_ITNS2_VAL      0x00000200
 
 /*
 //   </e>

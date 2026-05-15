@@ -2,6 +2,7 @@
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>
+#include "tls_hybrid_verify.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,13 +17,34 @@
 
 #define MAX_CONN 128
 
-#define CERT_FILE    "../tls_usb_test/certs/server-cert-hybrid.pem"
-#define KEY_FILE     "../tls_usb_test/certs/ecc-server-key.pem"
-#define ALT_KEY_FILE "../tls_usb_test/certs/dilithium-server.priv"
+#define CERT_FILE    "certs/native/server/server-cert-hybrid.pem"
+#define KEY_FILE     "certs/native/server/ecc-server-key.pem"
+#define ALT_KEY_FILE "certs/native/server/dilithium-server.priv"
+#define CA_CERT_FILE "certs/native/server/root-ca.pem"
 
 static const byte server_cks_order[] = {
     WOLFSSL_CKS_SIGSPEC_BOTH,
 };
+
+static void print_native_cert_help(const char* label, const char* path)
+{
+    char cwd[512];
+
+    fprintf(stderr, "%s: %s\n", label, path);
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        fprintf(stderr, "  Current working directory: %s\n", cwd);
+    }
+    if (access(path, F_OK) != 0) {
+        fprintf(stderr, "  File does not exist (run cert generation first).\n");
+    } else {
+        fprintf(stderr, "  File is present but could not be loaded (check PEM format).\n");
+    }
+    fprintf(stderr, "  Generate native hybrid certs:\n");
+    fprintf(stderr, "    cd tls_usb_test && ./gen_native_certs.sh\n");
+    fprintf(stderr, "    # or: make certs-native\n");
+    fprintf(stderr, "  Output: JAVA_TLS_TEST/certs/native/server/ and .../client/\n");
+    fprintf(stderr, "  Start this server from JAVA_TLS_TEST/ (e.g. mvn exec:java on PQCJavaSideTls).\n");
+}
 
 /* ===================== STRUCTS ===================== */
 
@@ -106,35 +128,14 @@ static int queue_pop() {
     return id;
 }
 
-/* ===================== CALLBACKS ===================== */
-
-static int client_cert_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* store)
+static void close_failed_handshake(WOLFSSL* ssl, int fd)
 {
-    int err = 0;
-    
-    #ifdef OPENSSL_EXTRA
-    err = wolfSSL_X509_STORE_CTX_get_error(store);
-    #else
-    err = store->error;
-    #endif
-    
-    if (preverify == 1) {
-        return 1;
+    if (ssl != NULL) {
+        wolfSSL_free(ssl);
     }
-    
-    if (err == ASN_SELF_SIGNED_E || 
-        err == ASN_NO_SIGNER_E
-        #ifdef OPENSSL_EXTRA
-        || err == WOLFSSL_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY
-        || err == WOLFSSL_X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT
-        #endif
-        ) {
-        printf("Certificate verification: Allowing self-signed client cert (error=%d)\n", err);
-        return 1; 
+    if (fd >= 0) {
+        close(fd);
     }
-    
-    printf("Certificate verification failed: error=%d\n", err);
-    return 0;
 }
 
 /* ===================== ACCEPT THREAD ===================== */
@@ -167,25 +168,42 @@ static void* accept_loop(void* arg) {
         wolfSSL_set_fd(ssl, fd);
 
         if (wolfSSL_accept(ssl) != WOLFSSL_SUCCESS) {
-            int err = wolfSSL_get_error(ssl, 0);
+            int ssl_err = wolfSSL_get_error(ssl, 0);
             char buffer[80];
-            fprintf(stderr, "TLS Handshake error: %s\n", wolfSSL_ERR_error_string(err, buffer));
-            
-            wolfSSL_free(ssl);
-            close(fd);
+            unsigned long lib_err = wolfSSL_ERR_get_error();
+            if (lib_err != 0) {
+                fprintf(stderr, "TLS Handshake error: %s (ssl_err=%d)\n",
+                    wolfSSL_ERR_error_string(lib_err, buffer), ssl_err);
+            } else {
+                fprintf(stderr, "TLS Handshake error: %s (ssl_err=%d)\n",
+                    wolfSSL_ERR_error_string(ssl_err, buffer), ssl_err);
+            }
+            fprintf(stderr,
+                "  Hint: restart the JVM after ./gen_native_certs.sh (certs load once at startup).\n");
+            fprintf(stderr,
+                "  Trust anchor: %s\n", CA_CERT_FILE);
+            close_failed_handshake(ssl, fd);
             continue;
         }
 
         printf("TLS 1.3 Handshake Complete!\n");
         printf("Cipher: %s\n", wolfSSL_get_cipher_name(ssl));
 
-        WOLFSSL_X509* client_cert = wolfSSL_get_peer_certificate(ssl);
-        if (client_cert != NULL) {
-            printf("Client certificate received and verified.\n");
-            wolfSSL_X509_free(client_cert);
-        } else {
-            printf("Warning: No client certificate received.\n");
+        if (!tls_verify_peer_cert(ssl)) {
+            close_failed_handshake(ssl, fd);
+            continue;
         }
+        printf("Client certificate verified against %s.\n", CA_CERT_FILE);
+
+        if (!tls_require_local_dual_alt_sig(ssl)) {
+            close_failed_handshake(ssl, fd);
+            continue;
+        }
+        if (!tls_require_peer_dual_alt_sig(ssl)) {
+            close_failed_handshake(ssl, fd);
+            continue;
+        }
+        printf("Dual alt signature (CKS BOTH) confirmed.\n");
 
         pthread_mutex_lock(&s->lock);
 
@@ -270,18 +288,23 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_NativeTlsServer_nativeInit
 
     /* 4. LOAD HYBRID CREDENTIALS */
     if (wolfSSL_CTX_use_certificate_file(s->ctx, CERT_FILE, WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Failed to load hybrid cert: %s\n", CERT_FILE);
+        print_native_cert_help("Failed to load hybrid cert", CERT_FILE);
         exit(EXIT_FAILURE);
     }
 
     if (wolfSSL_CTX_use_PrivateKey_file(s->ctx, KEY_FILE, WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Failed to load primary key: %s\n", KEY_FILE);
+        print_native_cert_help("Failed to load primary key", KEY_FILE);
         exit(EXIT_FAILURE);
     }
 
     #ifdef WOLFSSL_DUAL_ALG_CERTS
         if (wolfSSL_CTX_use_AltPrivateKey_file(s->ctx, ALT_KEY_FILE, WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-            fprintf(stderr, "Failed to load alt key: %s\n", ALT_KEY_FILE);
+            print_native_cert_help("Failed to load alt key", ALT_KEY_FILE);
+            exit(EXIT_FAILURE);
+        }
+        if (wolfSSL_CTX_UseCKS(s->ctx, (byte*)server_cks_order,
+                sizeof(server_cks_order)) != WOLFSSL_SUCCESS) {
+            fprintf(stderr, "Error setting CKS config to BOTH.\n");
             exit(EXIT_FAILURE);
         }
         printf("Conf: Dual-Algorithm Credentials loaded.\n");
@@ -291,9 +314,14 @@ JNIEXPORT jlong JNICALL Java_fel_cvut_TLS_NativeTlsServer_nativeInit
         exit(EXIT_FAILURE);
     #endif
 
-    /* 5. VERIFY CLIENT CERTIFICATES */
-    /* Uncomment if you want to enforce client certs */
-    // wolfSSL_CTX_set_verify(s->ctx, WOLFSSL_VERIFY_PEER | WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT, client_cert_verify_callback);
+    if (wolfSSL_CTX_load_verify_locations(s->ctx, CA_CERT_FILE, NULL) != WOLFSSL_SUCCESS) {
+        print_native_cert_help("Error loading CA cert", CA_CERT_FILE);
+        exit(EXIT_FAILURE);
+    }
+
+    wolfSSL_CTX_set_verify(s->ctx,
+        WOLFSSL_VERIFY_PEER | WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+    printf("Conf: Client certificate authentication enabled (strict CA verification).\n");
 
     /* TCP socket */
     s->sockfd = socket(AF_INET, SOCK_STREAM, 0);
