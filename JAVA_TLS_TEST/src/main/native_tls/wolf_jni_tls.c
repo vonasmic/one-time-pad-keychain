@@ -40,7 +40,7 @@ static void print_native_cert_help(const char* label, const char* path)
         fprintf(stderr, "  File is present but could not be loaded (check PEM format).\n");
     }
     fprintf(stderr, "  Generate native hybrid certs:\n");
-    fprintf(stderr, "    cd tls_usb_test && ./gen_native_certs.sh\n");
+    fprintf(stderr, "    cd tls_native && ./gen_native_certs.sh\n");
     fprintf(stderr, "    # or: make certs-native\n");
     fprintf(stderr, "  Output: JAVA_TLS_TEST/certs/native/server/ and .../client/\n");
     fprintf(stderr, "  Start this server from JAVA_TLS_TEST/ (e.g. mvn exec:java on PQCJavaSideTls).\n");
@@ -178,10 +178,6 @@ static void* accept_loop(void* arg) {
                 fprintf(stderr, "TLS Handshake error: %s (ssl_err=%d)\n",
                     wolfSSL_ERR_error_string(ssl_err, buffer), ssl_err);
             }
-            fprintf(stderr,
-                "  Hint: restart the JVM after ./gen_native_certs.sh (certs load once at startup).\n");
-            fprintf(stderr,
-                "  Trust anchor: %s\n", CA_CERT_FILE);
             close_failed_handshake(ssl, fd);
             continue;
         }
@@ -363,13 +359,21 @@ JNIEXPORT jbyteArray JNICALL Java_fel_cvut_TLS_TLSSocket_nativeRead
     server_t* s = (server_t*)serverHandle;
     conn_t* c = &s->conns[connId];
 
-    char buf[4096];
+    unsigned char buf[65536];
+    int n;
 
-    int len = wolfSSL_read(c->ssl, buf, sizeof(buf));
-    if (len <= 0) return NULL;
+    if (c == NULL || !c->active || c->ssl == NULL) {
+        return NULL;
+    }
 
-    jbyteArray out = (*env)->NewByteArray(env, len);
-    (*env)->SetByteArrayRegion(env, out, 0, len, (jbyte*)buf);
+    /* One TLS application-data record per call; Java readFrom() accumulates chunks. */
+    n = wolfSSL_read(c->ssl, buf, sizeof(buf));
+    if (n <= 0) {
+        return NULL;
+    }
+
+    jbyteArray out = (*env)->NewByteArray(env, n);
+    (*env)->SetByteArrayRegion(env, out, 0, n, (jbyte*)buf);
 
     return out;
 }

@@ -7,6 +7,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
@@ -16,15 +17,20 @@ import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.X509Certificate;
-import java.security.spec.NamedParameterSpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Scanner;
 
+/**
+ * Interactive PQC PKI tool for internal node certificates (ML-DSA).
+ * Not used for QuKayDee QKD — see {@code certs/qkd/README.md}.
+ */
 public class CertGenerator {
-    private static final String ML_DSA_ALG = "ML-DSA-44";
+    private static final MLDSAParameterSpec ML_DSA_PARAM = MLDSAParameterSpec.ml_dsa_44;
     private static final String CERTS_DIR = "certs";
     private static final String CA_PEM = CERTS_DIR + "/root-ca.pem";
+    private static final String NATIVE_CLIENT_CERTS_DIR = CERTS_DIR + "/native/client";
+    private static final int EMBEDDED_CLIENT_COUNT = 3;
 
     static { Security.addProvider(new BouncyCastleProvider()); }
 
@@ -47,7 +53,7 @@ public class CertGenerator {
             caKeys = new KeyPair(caCert.getPublicKey(), caPriv);
         } else {
             System.out.println("[*] No CA found. Generating NEW Root CA (ML-DSA)...");
-            caKeys = generatePqcKeyPair(ML_DSA_ALG);
+            caKeys = generatePqcKeyPair(ML_DSA_PARAM);
             caCert = createRootCA(caKeys);
             save(CERTS_DIR + "/root-ca.p12", "ca", caKeys.getPrivate(), caCert);
             System.out.println("[+] New Root CA saved to root-ca.p12");
@@ -61,16 +67,20 @@ public class CertGenerator {
         }
 
         System.out.println("-> Generating Pure PQC node (ML-DSA)...");
-        KeyPair nodeKeys = generatePqcKeyPair(ML_DSA_ALG);
+        KeyPair nodeKeys = generatePqcKeyPair(ML_DSA_PARAM);
         X509Certificate nodeCert = issuePurePqc(caCert, caKeys, nodeKeys, name);
-        save(CERTS_DIR + "/" + name + ".p12", "node", nodeKeys.getPrivate(), nodeCert);
+        save(CERTS_DIR + "/" + name + ".p12", "node", nodeKeys.getPrivate(), nodeCert, caCert);
         System.out.println("[SUCCESS] Created " + name + ".p12 for node " + name);
     }
 
-    private static KeyPair generatePqcKeyPair(String alg) throws Exception {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(alg, "BC");
-        kpg.initialize(new NamedParameterSpec(alg), new SecureRandom());
+    private static KeyPair generatePqcKeyPair(MLDSAParameterSpec parameterSpec) throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("ML-DSA", "BC");
+        kpg.initialize(parameterSpec, new SecureRandom());
         return kpg.generateKeyPair();
+    }
+
+    private static String signerAlgorithmFor(KeyPair keys) {
+        return keys.getPrivate().getAlgorithm();
     }
 
     private static X509Certificate createRootCA(KeyPair keys) throws Exception {
@@ -79,7 +89,7 @@ public class CertGenerator {
                 name, BigInteger.ONE, new Date(), new Date(System.currentTimeMillis() + 31536000000L),
                 name, keys.getPublic());
         builder.addExtension(Extension.basicConstraints, true, (ASN1Encodable) new BasicConstraints(true));
-        ContentSigner signer = new JcaContentSignerBuilder(ML_DSA_ALG).setProvider("BC").build(keys.getPrivate());
+        ContentSigner signer = new JcaContentSignerBuilder(signerAlgorithmFor(keys)).setProvider("BC").build(keys.getPrivate());
         return new JcaX509CertificateConverter().setProvider("BC").getCertificate(builder.build(signer));
     }
 
@@ -89,7 +99,7 @@ public class CertGenerator {
                 ca, BigInteger.valueOf(System.currentTimeMillis()), new Date(),
                 new Date(System.currentTimeMillis() + 31536000000L),
                 new X500Name("CN=" + name), nodeKeys.getPublic());
-        ContentSigner signer = new JcaContentSignerBuilder(ML_DSA_ALG).setProvider("BC").build(caKeys.getPrivate());
+        ContentSigner signer = new JcaContentSignerBuilder(signerAlgorithmFor(caKeys)).setProvider("BC").build(caKeys.getPrivate());
         return new JcaX509CertificateConverter().setProvider("BC").getCertificate(builder.build(signer));
     }
 
@@ -104,11 +114,15 @@ public class CertGenerator {
         }
     }
 
-    private static void save(String file, String alias, PrivateKey pk, X509Certificate cert) throws Exception {
+    private static void save(String file, String alias, PrivateKey pk, X509Certificate cert, X509Certificate... chain)
+            throws Exception {
         new File(file).getParentFile().mkdirs();
         KeyStore ks = KeyStore.getInstance("PKCS12", "BC");
         ks.load(null, null);
-        ks.setKeyEntry(alias, pk, "password".toCharArray(), new java.security.cert.Certificate[]{cert});
+        java.security.cert.Certificate[] certificateChain = new java.security.cert.Certificate[1 + chain.length];
+        certificateChain[0] = cert;
+        System.arraycopy(chain, 0, certificateChain, 1, chain.length);
+        ks.setKeyEntry(alias, pk, "password".toCharArray(), certificateChain);
         try (FileOutputStream fos = new FileOutputStream(file)) {
             ks.store(fos, "password".toCharArray());
         }

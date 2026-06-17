@@ -106,7 +106,7 @@ under the License.
             </configuration>
             <executions>
               <execution>
-                <id>integration-test</id>
+                <id>integration-clientPublicKey</id>
                 <goals>
                   <goal>install</goal>
                   <goal>run</goal>

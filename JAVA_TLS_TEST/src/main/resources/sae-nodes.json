@@ -1,0 +1,5 @@
+[
+  { "saeId": "sae-1", "location": "Prague", "hostname": "127.0.0.1", "port": 2010 },
+  { "saeId": "sae-2", "location": "Berlin", "hostname": "127.0.0.1", "port": 2020 },
+  { "saeId": "sae-3", "location": "Paris", "hostname": "127.0.0.1", "port": 2030 }
+]

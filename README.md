@@ -18,7 +18,7 @@ The project consists of three main components:
   - Command-line interface for device control
   - TLS 1.3 client with PQC support (ML-KEM, Dilithium)
 
-- **`tls_usb_test/`** - Python bridge and TLS server for testing
+- **`tls_native/`** - Python bridge and TLS server for testing
   - USB-to-TCP bridge (`usb_tcp_bridge.py`)
   - TLS test server with hybrid certificate support
   - Certificate generation and embedding tools
@@ -48,12 +48,12 @@ See [`API.md`](./API.md) for the complete command reference.
 
 ## Testing
 
-The `tls_usb_test/` directory contains tools for testing TLS communication:
+The `tls_native/` directory contains tools for testing TLS communication:
 
-1. Build and run the TLS server (see `tls_usb_test/README.md`)
+1. Build and run the TLS server (see `tls_native/README.md`)
 2. Use the Python bridge to connect the device to the server:
    ```bash
-   python3 tls_usb_test/usb_tcp_bridge.py /dev/ttyACM0 localhost 11111
+   python3 tls_native/usb_tcp_bridge.py /dev/ttyACM0 localhost 11111
    ```
 3. Type `TLS` in the bridge to initiate the handshake
 

@@ -13,7 +13,7 @@ public class PQCJavaSideTls {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : DEFAULT_PORT;
 
         System.out.println("Starting native hybrid PQC TLS server on port " + port + ".");
-        System.out.println("Run from JAVA_TLS_TEST; certs in certs/native/server/ (make certs-native in tls_usb_test).");
+        System.out.println("Run from JAVA_TLS_CLIENTPUBLICKEY; certs in certs/native/server/ (make certs-native in tls_native).");
 
         try (NativeTlsServer server = new NativeTlsServer(port)) {
             System.out.println("Server listening on port " + port + ".");

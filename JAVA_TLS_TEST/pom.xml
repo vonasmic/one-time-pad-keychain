@@ -12,37 +12,32 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <!-- Match infinispan-core 16.2.x (see infinispan-bom version.protostream) -->
-        <version.protostream>6.0.7</version.protostream>
+        <log4j2.version>2.25.4</log4j2.version>
+        <hibernate.core.version>6.6.53.Final</hibernate.core.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Pin secure versions for commonly vulnerable transitive deps -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.core.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-        <!-- Source: https://mvnrepository.com/artifact/org.jgroups/jgroups-raft -->
-        <dependency>
-            <groupId>org.jgroups</groupId>
-            <artifactId>jgroups-raft</artifactId>
-            <version>1.1.4.Final</version>
-            <scope>compile</scope>
-        </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/org.infinispan/infinispan-core -->
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <version>16.2.0.Dev02</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan.protostream</groupId>
-            <artifactId>protostream</artifactId>
-            <version>${version.protostream}</version>
-        </dependency>
-        <!-- Generated *Impl sources reference @OriginatingClasses from the processor JAR -->
-        <dependency>
-            <groupId>org.infinispan.protostream</groupId>
-            <artifactId>protostream-processor</artifactId>
-            <version>${version.protostream}</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
@@ -62,6 +57,23 @@
             <artifactId>bcutil-jdk18on</artifactId>
             <version>1.84</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.21.3</version>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.11</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>7.0.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -69,18 +81,31 @@
 
             <!-- Compiler -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>12.8.1</version>
                 <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.infinispan.protostream</groupId>
-                            <artifactId>protostream-processor</artifactId>
-                            <version>${version.protostream}</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <url>${env.DB_URL}</url>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <user>${env.DB_USERNAME}</user>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <password>${env.DB_PASSWORD}</password>
+                    <locations>
+                        <location>filesystem:src/main/resources/db/migration</location>
+                    </locations>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-database-postgresql</artifactId>
+                        <version>12.8.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <!-- Run main class -->

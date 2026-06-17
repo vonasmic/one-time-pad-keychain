@@ -186,17 +186,17 @@ under the License.
     </dependency>
 
     <dependency>
-      <groupId>org.apache.maven.plugin-testing</groupId>
-      <artifactId>maven-plugin-testing-harness</artifactId>
+      <groupId>org.apache.maven.plugin-clientPublicKeying</groupId>
+      <artifactId>maven-plugin-clientPublicKeying-harness</artifactId>
       <version>2.0-alpha-1</version>
-      <scope>test</scope>
+      <scope>clientPublicKey</scope>
     </dependency>
 
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.1</version>
-      <scope>test</scope>
+      <scope>clientPublicKey</scope>
     </dependency>
 
   </dependencies>
@@ -263,7 +263,7 @@ under the License.
                 <settingsFile>src/it/settings.xml</settingsFile>
                 <goals>
                   <goal>clean</goal>
-                  <goal>test-compile</goal>
+                  <goal>clientPublicKey-compile</goal>
                 </goals>
               </configuration>
             </plugin>
@@ -271,7 +271,7 @@ under the License.
         </pluginManagement>
       </build>
       <!--
-      add those dependency just to have faster it test (for folks who doesn't have those locally
+      add those dependency just to have faster it clientPublicKey (for folks who doesn't have those locally
       they will be downloaded from local repo rather than central
       -->
       <dependencies>
@@ -279,19 +279,19 @@ under the License.
           <groupId>org.codehaus.groovy</groupId>
           <artifactId>groovy-eclipse-compiler</artifactId>
           <version>${groovyEclipseCompilerVersion}</version>
-          <scope>test</scope>
+          <scope>clientPublicKey</scope>
         </dependency>
         <dependency>
           <groupId>org.codehaus.groovy</groupId>
           <artifactId>groovy-eclipse-batch</artifactId>
           <version>${groovy-eclipse-batch}</version>
-          <scope>test</scope>
+          <scope>clientPublicKey</scope>
         </dependency>
         <dependency>
           <groupId>org.codehaus.groovy</groupId>
           <artifactId>groovy-all</artifactId>
           <version>${groovyVersion}</version>
-          <scope>test</scope>
+          <scope>clientPublicKey</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.openjpa</groupId>

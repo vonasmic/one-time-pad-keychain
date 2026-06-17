@@ -121,16 +121,16 @@ under the License.
       <version>3.0</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.plugin-testing</groupId>
-      <artifactId>maven-plugin-testing-harness</artifactId>
+      <groupId>org.apache.maven.plugin-clientPublicKeying</groupId>
+      <artifactId>maven-plugin-clientPublicKeying-harness</artifactId>
       <version>1.2</version>
-      <scope>test</scope>
+      <scope>clientPublicKey</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.2</version>
-      <scope>test</scope>
+      <scope>clientPublicKey</scope>
     </dependency>
   </dependencies>
 
@@ -159,7 +159,7 @@ under the License.
             </configuration>
             <executions>
               <execution>
-                <id>integration-test</id>
+                <id>integration-clientPublicKey</id>
                 <goals>
                   <goal>install</goal>
                   <goal>integration-test</goal>
