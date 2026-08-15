@@ -4,3 +4,5 @@ tags
 app/build/*
 **debug**
 **Debug**
+**vendor/**
+JAVA_TLS_TEST/vendor/**

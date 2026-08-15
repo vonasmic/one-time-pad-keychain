@@ -3,23 +3,18 @@ package fel.cvut.db;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
+/**
+ * Factory for the node PostgreSQL pool.
+ */
 public final class DB {
-    private static final HikariDataSource DATA_SOURCE = createDataSource();
 
     private DB() {}
 
-    public static Connection connect() throws SQLException {
-        return DATA_SOURCE.getConnection();
-    }
-
-    public static void close() {
-        DATA_SOURCE.close();
-    }
-
-    private static HikariDataSource createDataSource() {
+    /**
+     * Creates a HikariCP {@link HikariDataSource} from {@link DatabaseConfig} env vars.
+     * Caller owns the pool and must {@link HikariDataSource#close()} it on shutdown.
+     */
+    public static HikariDataSource createDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(DatabaseConfig.getDbUrl());
         config.setUsername(DatabaseConfig.getDbUsername());

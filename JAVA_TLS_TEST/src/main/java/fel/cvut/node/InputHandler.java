@@ -1,10 +1,11 @@
 package fel.cvut.node;
 
-import fel.cvut.TLS.TLSSocket;
 import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.ClientRecord;
 import fel.cvut.terminal.ClientSelector;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -16,9 +17,9 @@ import java.util.Objects;
  */
 public class InputHandler {
 
-    public ClientRecord handleInput(TLSSocket socket, List<RmiManager.SaeNode> saeNodes) {
-        Objects.requireNonNull(socket, "socket must not be null");
-        ServerKeyPayload payload = ServerKeyPayload.readFrom(socket);
+    public ClientRecord handleInput(InputStream in, List<RmiManager.SaeNode> saeNodes) throws IOException {
+        Objects.requireNonNull(in, "in must not be null");
+        ServerKeyPayload payload = ServerKeyPayload.readFrom(in);
 
         byte[] clientPublicKey = payload.getClientPublicKey();
         validateBytes(clientPublicKey, "clientPublicKey");

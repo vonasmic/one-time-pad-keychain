@@ -6,7 +6,6 @@
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>
-#include "tls_hybrid_verify.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
@@ -27,12 +26,7 @@
 
  #define CERT_FILE     NATIVE_SERVER_CERTS "/server-cert-hybrid.pem"
  #define KEY_FILE      NATIVE_SERVER_CERTS "/ecc-server-key.pem"
- #define ALT_KEY_FILE  NATIVE_SERVER_CERTS "/dilithium-server.priv"
  #define CA_CERT_FILE  NATIVE_SERVER_CERTS "/root-ca.pem"
-
-static const byte server_cks_order[] = {
-    WOLFSSL_CKS_SIGSPEC_BOTH,
-};
  
  /* Global flag for shutdown */
  volatile int shutdown_flag = 0;
@@ -78,8 +72,9 @@ void err_sys(const char* msg) {
          exit(EXIT_FAILURE);
      }
  
-    /* 3. Configure hybrid ML-KEM key exchange groups */
+    /* Standalone ML-KEM768 (JAVA_TLS_TEST) with hybrid fallback for native clients. */
     int candidates[] = {
+        WOLFSSL_ML_KEM_768,
         WOLFSSL_SECP256R1MLKEM768,
         WOLFSSL_X25519MLKEM768
     };
@@ -97,14 +92,15 @@ void err_sys(const char* msg) {
  
      if (valid_count == 0) {
         fprintf(stderr,
-            "Error: No supported ML-KEM groups. The installed wolfSSL build "
-            "may disable standalone ML-KEM in TLS; use hybrid groups instead.\n");
+            "Error: No supported ML-KEM groups.\n");
+        fprintf(stderr,
+            "Rebuild wolfSSL with --enable-tls-mlkem-standalone and hybrid support.\n");
         exit(EXIT_FAILURE);
     }
     //wolfSSL_Debugging_ON();
     ret = wolfSSL_CTX_set_groups(ctx, valid_groups, valid_count);
     if (ret != WOLFSSL_SUCCESS) err_sys("set groups failed");
-    printf("Conf: %d hybrid ML-KEM group(s) enabled.\n", valid_count);
+    printf("Conf: %d ML-KEM group(s) enabled.\n", valid_count);
  
      /* 4. LOAD HYBRID CREDENTIALS (Authentication) */
      
@@ -124,28 +120,7 @@ void err_sys(const char* msg) {
          exit(EXIT_FAILURE);
      }
  
-     /* C. Load the Alternative Private Key (Dilithium) */
-     #ifdef WOLFSSL_DUAL_ALG_CERTS
-         ret = wolfSSL_CTX_use_AltPrivateKey_file(ctx, ALT_KEY_FILE, WOLFSSL_FILETYPE_PEM);
-         if (ret != WOLFSSL_SUCCESS) {
-             fprintf(stderr, "Error loading Alt Key %s.\n", ALT_KEY_FILE);
-             fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
-             exit(EXIT_FAILURE);
-         }
-        printf("Conf: Dual-Algorithm Credentials loaded.\n");
-
-        ret = wolfSSL_CTX_UseCKS(ctx, (byte*)server_cks_order,
-            sizeof(server_cks_order));
-        if (ret != WOLFSSL_SUCCESS) {
-            fprintf(stderr, "Error setting CKS config to BOTH.\n");
-            exit(EXIT_FAILURE);
-        }
-        printf("Conf: Enforcing Dual-Sign (WOLFSSL_CKS_SIGSPEC_BOTH).\n");
-
-     #else
-         fprintf(stderr, "Error: WOLFSSL_DUAL_ALG_CERTS not enabled. Cannot run hybrid mode.\n");
-         exit(EXIT_FAILURE);
-     #endif
+     printf("Conf: Server credentials loaded.\n");
 
     if (wolfSSL_CTX_load_verify_locations(ctx, CA_CERT_FILE, NULL) != WOLFSSL_SUCCESS) {
         fprintf(stderr, "Error loading CA Cert %s.\n", CA_CERT_FILE);
@@ -201,14 +176,6 @@ void err_sys(const char* msg) {
             continue;
         }
 
-        if (wolfSSL_UseCKS(ssl, (byte*)server_cks_order,
-                sizeof(server_cks_order)) != WOLFSSL_SUCCESS) {
-            fprintf(stderr, "Error setting per-connection CKS to BOTH.\n");
-            wolfSSL_free(ssl);
-            close(clientfd);
-            continue;
-        }
-
         wolfSSL_set_fd(ssl, clientfd);
 
          if (wolfSSL_accept(ssl) != WOLFSSL_SUCCESS) {
@@ -232,27 +199,14 @@ void err_sys(const char* msg) {
             printf("TLS 1.3 Handshake Complete!\n");
             printf("Cipher: %s\n", wolfSSL_get_cipher_name(ssl));
 
-            if (!tls_verify_peer_cert(ssl)) {
+            if (wolfSSL_get_verify_result(ssl) != WOLFSSL_X509_V_OK) {
+                fprintf(stderr, "Error: Client certificate verification failed.\n");
                 wolfSSL_shutdown(ssl);
                 wolfSSL_free(ssl);
                 close(clientfd);
                 continue;
             }
             printf("Client certificate verified against %s.\n", CA_CERT_FILE);
-
-            if (!tls_require_local_dual_alt_sig(ssl)) {
-                wolfSSL_shutdown(ssl);
-                wolfSSL_free(ssl);
-                close(clientfd);
-                continue;
-            }
-            if (!tls_require_peer_dual_alt_sig(ssl)) {
-                wolfSSL_shutdown(ssl);
-                wolfSSL_free(ssl);
-                close(clientfd);
-                continue;
-            }
-            printf("Dual alt signature (CKS BOTH) confirmed.\n");
 
              readSz = wolfSSL_read(ssl, reply, sizeof(reply)-1);
              if (readSz > 0) {

@@ -3,10 +3,10 @@ package fel.cvut.node;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fel.cvut.TLS.TLSSocket;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,21 +55,25 @@ public class ServerKeyPayload {
     }
 
     /**
-     * Reads TLS records until the accumulated bytes form a complete payload.
-     * Needed because each {@code wolfSSL_write} may arrive as a separate record.
+     * Reads from the stream until the accumulated bytes form a complete JSON payload.
+     * Needed because TLS may deliver the payload across multiple read calls.
      */
-    public static ServerKeyPayload readFrom(TLSSocket socket) {
-        Objects.requireNonNull(socket, "socket must not be null");
+    public static ServerKeyPayload readFrom(InputStream in) throws IOException {
+        Objects.requireNonNull(in, "in must not be null");
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(4096);
         IOException lastIncomplete = null;
+        byte[] chunk = new byte[4096];
 
         while (buffer.size() < MAX_PAYLOAD_BYTES) {
-            byte[] chunk = socket.read();
-            if (chunk == null || chunk.length == 0) {
+            int n = in.read(chunk);
+            if (n < 0) {
                 break;
             }
-            buffer.write(chunk, 0, chunk.length);
+            if (n == 0) {
+                continue;
+            }
+            buffer.write(chunk, 0, n);
             try {
                 return OBJECT_MAPPER.readValue(buffer.toByteArray(), ServerKeyPayload.class);
             } catch (IOException ex) {

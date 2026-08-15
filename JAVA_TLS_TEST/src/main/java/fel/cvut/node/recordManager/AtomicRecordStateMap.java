@@ -1,15 +1,14 @@
 package fel.cvut.node.recordManager;
 
 import fel.cvut.db.ClientRecordStateRepository;
-import fel.cvut.db.DB;
 
+import javax.sql.DataSource;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,19 +18,26 @@ import java.util.Optional;
 public class AtomicRecordStateMap {
 
     private static final long IN_PROGRESS_TIMEOUT_MINUTES = 30;
-    private final ClientRecordStateRepository repository = new ClientRecordStateRepository();
+    private final DataSource dataSource;
+    private final ClientRecordStateRepository repository;
     private final String parentSaeId;
 
-    public AtomicRecordStateMap(String parentSaeId) {
+    public AtomicRecordStateMap(
+            String parentSaeId,
+            DataSource dataSource,
+            ClientRecordStateRepository repository
+    ) {
         validateSaeId(parentSaeId);
         this.parentSaeId = parentSaeId;
+        this.dataSource = Objects.requireNonNull(dataSource, "dataSource must not be null");
+        this.repository = Objects.requireNonNull(repository, "repository must not be null");
     }
 
     /**
      * Reads metadata for a client-hash pair.
      */
     public Optional<RecordMetadata> get(String clientHash1, String clientHash2) {
-        try (Connection connection = DB.connect()) {
+        try (Connection connection = dataSource.getConnection()) {
             return repository.findByHashes(connection, clientHash1, clientHash2);
         } catch (SQLException ex) {
             throw new IllegalStateException("Failed to read record state.", ex);
@@ -56,7 +62,7 @@ public class AtomicRecordStateMap {
         Instant now = Instant.now();
         Instant oldestAllowedInProgress = now.minus(IN_PROGRESS_TIMEOUT_MINUTES, ChronoUnit.MINUTES);
 
-        try (Connection connection = DB.connect()) {
+        try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 Optional<RecordMetadata> existing =
@@ -95,7 +101,7 @@ public class AtomicRecordStateMap {
      * Finishes an existing insertion by promoting in-progress state to available.
      */
     public boolean finishRecordInsert(String clientHash1, String clientHash2) {
-        try (Connection connection = DB.connect()) {
+        try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 boolean changed = repository.finishIfInProgress(connection, clientHash1, clientHash2);
@@ -114,7 +120,7 @@ public class AtomicRecordStateMap {
 
     public Optional<RecordMetadata> tryDelete(String clientHash1, String clientHash2, String issuingSaeId) {
         validateSaeId(issuingSaeId);
-        try (Connection connection = DB.connect()) {
+        try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 Optional<RecordMetadata> removed =
@@ -133,7 +139,7 @@ public class AtomicRecordStateMap {
     }
 
     public Optional<RecordMetadata> forceDelete(String clientHash1, String clientHash2) {
-        try (Connection connection = DB.connect()) {
+        try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 Optional<RecordMetadata> removed =
@@ -167,16 +173,15 @@ public class AtomicRecordStateMap {
             return StartRecordInsertOutcome.INSERTED;
         }
 
-        // Nothing to do for non in-progress records.
-        if (current.recordAvailability() != RecordAvailability.RECORD_IN_PROGRESS) {
-            if (Objects.equals(current.saeId(), saeId)
-                    && current.recordAvailability() == RecordAvailability.RECORD_AVAILABLE) {
+        // If record is available, check if it is from the correct SAE
+        if (current.recordAvailability() == RecordAvailability.RECORD_AVAILABLE) {
+            //
+            if (Objects.equals(current.saeId(), saeId)){
                 return StartRecordInsertOutcome.RECORD_AVAILABLE;
             }
-            if (!Objects.equals(current.saeId(), saeId)) {
+            else{
                 return StartRecordInsertOutcome.RECORD_SHARED_WITH_DIFFERENT_SAE;
             }
-            return StartRecordInsertOutcome.NOT_INSERTED;
         }
 
         // Rule 2 + Rule 3 + Rule 4:

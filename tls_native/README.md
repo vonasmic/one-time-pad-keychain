@@ -22,6 +22,7 @@ cd "$(git root)/wolfssl"
   --enable-keygen \
   --enable-tls13 \
   --enable-mlkem \
+  --enable-tls-mlkem-standalone \
   --enable-dilithium=yes,no-ctx \
   --enable-opensslall \
   --enable-ed25519 \
@@ -143,13 +144,21 @@ Enable verbose TLS logging in the bridge:
 
 Type `debug off` to disable verbose logging.
 
-## Local mTLS test (`tls_client` + `tls_server`)
+## Local mTLS test (`tls_client` vs JAVA_TLS_TEST)
+
+1. Generate certs from `JAVA_TLS_TEST/`: run `CertGenerator` option **3** (writes `certs/client/` ML-DSA PEM bundle)
+2. Terminal A: start a JAVA_TLS_TEST node (PURE_PQC command server on port 11111)
+3. Terminal B: `cd tls_native && make tls_client && ./tls_client`
+
+`tls_client` loads:
+- `../JAVA_TLS_TEST/certs/client/client-cert.pem`
+- `../JAVA_TLS_TEST/certs/client/client-key.pem`
+- `../JAVA_TLS_TEST/certs/root-ca.pem`
 
 1. `make certs-native` (from `tls_native/`)
 2. Terminal A: `./tls_server`
 3. Terminal B: `./tls_client_json_payload 127.0.0.1 11111 2` (last arg selects `client-1..3`)
 
-Both programs read `../JAVA_TLS_TEST/certs/native/{server,client}/`. Run the JNI server from `JAVA_TLS_TEST/` so `certs/native/server/` resolves correctly.
 
 ## Troubleshooting
 

@@ -9,22 +9,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <arpa/inet.h>
-
-#include "tls_hybrid_verify.h"
 
 #define SERVER_IP    "127.0.0.1"
 #define SERVER_PORT  11111
-#define NATIVE_CLIENT_CERTS  "../JAVA_TLS_TEST/certs/native/client"
-
-#define CA_CERT_FILE         NATIVE_CLIENT_CERTS "/root-ca.pem"
-#define CLIENT_CERT_FILE     NATIVE_CLIENT_CERTS "/server-cert-hybrid.pem"
-#define CLIENT_KEY_FILE      NATIVE_CLIENT_CERTS "/ecc-server-key.pem"
-#define CLIENT_ALT_KEY_FILE  NATIVE_CLIENT_CERTS "/dilithium-server.priv"
-
-static const byte client_cks_order[] = {
-    WOLFSSL_CKS_SIGSPEC_BOTH,
-};
+#define CERTS_DIR           "../JAVA_TLS_TEST/certs"
+#define CLIENT_CERT_FILE    CERTS_DIR "/client/client-cert.pem"
+#define CLIENT_KEY_FILE     CERTS_DIR "/client/client-key.pem"
+#define CA_CERT_FILE        CERTS_DIR "/root-ca.pem"
 
 void err_sys(const char* msg) {
     perror(msg);
@@ -53,16 +46,33 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
      WOLFSSL* ssl = NULL;
      char                msg[1024];
      int                 msgSz;
- 
+     const char*         server_addr = SERVER_IP;
+     int                 server_port = SERVER_PORT;
+     char*               port_end = NULL;
+     long                parsed_port;
+
+     if (argc > 3) {
+         fprintf(stderr, "Usage: %s [address] [port]\n", argv[0]);
+         return EXIT_FAILURE;
+     }
+     if (argc >= 2) {
+         server_addr = argv[1];
+     }
+     if (argc >= 3) {
+         errno = 0;
+         parsed_port = strtol(argv[2], &port_end, 10);
+         if (errno != 0 || port_end == argv[2] || *port_end != '\0' ||
+             parsed_port < 1 || parsed_port > 65535) {
+             fprintf(stderr, "Invalid port '%s'. Use a value from 1 to 65535.\n", argv[2]);
+             return EXIT_FAILURE;
+         }
+         server_port = (int)parsed_port;
+     }
+
      wolfSSL_Init();
  
      #if !defined(HAVE_PQC)
          fprintf(stderr, "Critical Error: 'HAVE_PQC' is not defined. Recompile wolfSSL with PQC support.\n");
-         exit(EXIT_FAILURE);
-     #endif
- 
-     #if !defined(WOLFSSL_DUAL_ALG_CERTS)
-         fprintf(stderr, "Critical Error: 'WOLFSSL_DUAL_ALG_CERTS' is not defined. Recompile wolfSSL with Dual-Alg support.\n");
          exit(EXIT_FAILURE);
      #endif
  
@@ -79,7 +89,9 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
          exit(EXIT_FAILURE);
      }
 
+    /* JAVA_TLS_TEST PURE_PQC uses standalone ML-KEM768; native tls_server uses hybrids. */
     int candidates[] = {
+        WOLFSSL_ML_KEM_768,
         WOLFSSL_SECP256R1MLKEM768,
         WOLFSSL_X25519MLKEM768
     };
@@ -95,7 +107,8 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
     }
 
     if (valid_count == 0) {
-        fprintf(stderr, "Error: No supported hybrid ML-KEM groups.\n");
+        fprintf(stderr, "Error: No supported ML-KEM groups.\n");
+        fprintf(stderr, "Rebuild wolfSSL with --enable-tls-mlkem-standalone for JAVA_TLS_TEST.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -106,36 +119,20 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
 
     if (wolfSSL_CTX_use_certificate_file(ctx, CLIENT_CERT_FILE,
             WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading Cert %s.\n", CLIENT_CERT_FILE);
-        fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
+        fprintf(stderr, "Error loading client cert %s.\n", CLIENT_CERT_FILE);
         exit(EXIT_FAILURE);
     }
 
     if (wolfSSL_CTX_use_PrivateKey_file(ctx, CLIENT_KEY_FILE,
             WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading Primary Key %s.\n", CLIENT_KEY_FILE);
-        fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
+        fprintf(stderr, "Error loading client key %s.\n", CLIENT_KEY_FILE);
         exit(EXIT_FAILURE);
     }
 
-    if (wolfSSL_CTX_use_AltPrivateKey_file(ctx, CLIENT_ALT_KEY_FILE,
-            WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading Alt Key %s.\n", CLIENT_ALT_KEY_FILE);
-        fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
-        exit(EXIT_FAILURE);
-    }
-    printf("Conf: Dual-Algorithm Credentials loaded.\n");
-
-    if (wolfSSL_CTX_UseCKS(ctx, (byte*)client_cks_order,
-            sizeof(client_cks_order)) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error setting CKS config to BOTH.\n");
-        exit(EXIT_FAILURE);
-    }
+    printf("Conf: Client credentials loaded.\n");
 
     if (wolfSSL_CTX_load_verify_locations(ctx, CA_CERT_FILE, NULL) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading CA Cert %s.\n", CA_CERT_FILE);
-        fprintf(stderr, "Generate native certs: cd tls_native && ./gen_native_certs.sh\n");
-        fprintf(stderr, "  (or: make certs-native)\n");
+        fprintf(stderr, "Error loading CA cert %s.\n", CA_CERT_FILE);
         exit(EXIT_FAILURE);
     }
 
@@ -145,25 +142,22 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
      if (ssl == NULL) err_sys("wolfSSL_new failed");
  
     if (wolfSSL_UseKeyShare(ssl, valid_groups[0]) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error: Failed to generate hybrid ML-KEM key share.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (wolfSSL_UseCKS(ssl, (byte*)client_cks_order,
-            sizeof(client_cks_order)) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error: Failed to set Dual-Alg (CKS) verification to BOTH.\n");
+        fprintf(stderr, "Error: Failed to generate ML-KEM key share.\n");
         exit(EXIT_FAILURE);
     }
  
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
      if (sockfd < 0) err_sys("socket creation failed");
- 
+
      memset(&servAddr, 0, sizeof(servAddr));
      servAddr.sin_family = AF_INET;
-     servAddr.sin_port = htons(SERVER_PORT);
-     inet_pton(AF_INET, SERVER_IP, &servAddr.sin_addr);
- 
-     printf("Connecting to %s:%d...\n", SERVER_IP, SERVER_PORT);
+     servAddr.sin_port = htons(server_port);
+     if (inet_pton(AF_INET, server_addr, &servAddr.sin_addr) != 1) {
+         fprintf(stderr, "Invalid address '%s'\n", server_addr);
+         return EXIT_FAILURE;
+     }
+
+     printf("Connecting to %s:%d...\n", server_addr, server_port);
      if (connect(sockfd, (struct sockaddr*)&servAddr, sizeof(servAddr)) < 0)
          err_sys("connect failed");
  
@@ -185,18 +179,11 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
     printf("TLS 1.3 Handshake Complete (Cipher: %s)\n",
         wolfSSL_get_cipher_name(ssl));
 
-    if (!tls_verify_peer_cert(ssl)) {
+    if (wolfSSL_get_verify_result(ssl) != WOLFSSL_X509_V_OK) {
+        fprintf(stderr, "Error: Peer certificate verification failed.\n");
         fail_handshake_cleanup(ssl, ctx, sockfd);
     }
     printf("Peer certificate verified against %s.\n", CA_CERT_FILE);
-
-    if (!tls_require_local_dual_alt_sig(ssl)) {
-        fail_handshake_cleanup(ssl, ctx, sockfd);
-    }
-    if (!tls_require_peer_dual_alt_sig(ssl)) {
-        fail_handshake_cleanup(ssl, ctx, sockfd);
-    }
-    printf("Dual alt signature (CKS BOTH) confirmed.\n");
 
     wolfSSL_write(ssl, "Hello", 5);
     msgSz = wolfSSL_read(ssl, msg, sizeof(msg) - 1);

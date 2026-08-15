@@ -13,9 +13,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <limits.h>
 
-#include "tls_hybrid_verify.h"
 #include <wolfssl/wolfcrypt/coding.h>
 #include <wolfssl/wolfcrypt/dilithium.h>
 #include <wolfssl/wolfcrypt/asn_public.h>
@@ -23,23 +21,12 @@
 
 #define SERVER_IP    "127.0.0.1"
 #define SERVER_PORT  11111
-#define NATIVE_CLIENT_CERTS_BASE "../JAVA_TLS_TEST/certs/native/client"
-#define MAX_CLIENT_ID 3
-#define CLIENT_CERT_FILENAME "server-cert-hybrid.pem"
-#define CLIENT_KEY_FILENAME "ecc-server-key.pem"
-#define CLIENT_ALT_KEY_FILENAME "dilithium-server.priv"
-#define CLIENT_ROOT_CA_FILENAME "root-ca.pem"
-
-static const byte client_cks_order[] = {
-    WOLFSSL_CKS_SIGSPEC_BOTH,
-};
-
-typedef struct ClientCredentialPaths {
-    char cert[PATH_MAX];
-    char key[PATH_MAX];
-    char alt_key[PATH_MAX];
-    char ca_cert[PATH_MAX];
-} ClientCredentialPaths;
+#define CERTS_DIR           "../JAVA_TLS_TEST/certs"
+#define CLIENT_CERT_FILE    CERTS_DIR "/client/client-cert.pem"
+#define CLIENT_KEY_FILE     CERTS_DIR "/client/client-key.pem"
+#define CA_CERT_FILE        CERTS_DIR "/root-ca.pem"
+#define FRIEND_CERT_FILE    CERTS_DIR "/Alice.pem"
+#define MAX_PUBKEY_DER_SZ   4096
 
 static int tls_write_all(WOLFSSL* ssl, const void* data, size_t len)
 {
@@ -72,56 +59,12 @@ void err_sys(const char* msg) {
     exit(EXIT_FAILURE);
 }
 
-static int parse_client_id(const char* value, int* out_client_id)
+static int credential_files_readable(void)
 {
-    char* end = NULL;
-    long parsed;
-
-    if (value == NULL || out_client_id == NULL) {
-        return 0;
-    }
-    errno = 0;
-    parsed = strtol(value, &end, 10);
-    if (errno != 0 || end == value || *end != '\0' || parsed < 1 || parsed > MAX_CLIENT_ID) {
-        return 0;
-    }
-    *out_client_id = (int)parsed;
-    return 1;
-}
-
-static int build_client_paths(int client_id, ClientCredentialPaths* paths)
-{
-    char client_dir[PATH_MAX];
-    int rc;
-
-    if (paths == NULL || client_id < 1 || client_id > MAX_CLIENT_ID) {
-        return 0;
-    }
-    rc = snprintf(client_dir, sizeof(client_dir), "%s/client-%d", NATIVE_CLIENT_CERTS_BASE, client_id);
-    if (rc < 0 || (size_t)rc >= sizeof(client_dir)) {
-        return 0;
-    }
-    rc = snprintf(paths->cert, sizeof(paths->cert), "%s/%s", client_dir, CLIENT_CERT_FILENAME);
-    if (rc < 0 || (size_t)rc >= sizeof(paths->cert)) {
-        return 0;
-    }
-    rc = snprintf(paths->key, sizeof(paths->key), "%s/%s", client_dir, CLIENT_KEY_FILENAME);
-    if (rc < 0 || (size_t)rc >= sizeof(paths->key)) {
-        return 0;
-    }
-    rc = snprintf(paths->alt_key, sizeof(paths->alt_key), "%s/%s", client_dir, CLIENT_ALT_KEY_FILENAME);
-    if (rc < 0 || (size_t)rc >= sizeof(paths->alt_key)) {
-        return 0;
-    }
-    rc = snprintf(paths->ca_cert, sizeof(paths->ca_cert), "%s/%s", client_dir, CLIENT_ROOT_CA_FILENAME);
-    if (rc < 0 || (size_t)rc >= sizeof(paths->ca_cert)) {
-        return 0;
-    }
-
-    return access(paths->cert, R_OK) == 0 &&
-           access(paths->key, R_OK) == 0 &&
-           access(paths->alt_key, R_OK) == 0 &&
-           access(paths->ca_cert, R_OK) == 0;
+    return access(CLIENT_CERT_FILE, R_OK) == 0 &&
+           access(CLIENT_KEY_FILE, R_OK) == 0 &&
+           access(CA_CERT_FILE, R_OK) == 0 &&
+           access(FRIEND_CERT_FILE, R_OK) == 0;
 }
 
 static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
@@ -139,10 +82,10 @@ static void fail_handshake_cleanup(WOLFSSL* ssl, WOLFSSL_CTX* ctx, int sockfd)
     exit(EXIT_FAILURE);
 }
 
-static int read_combined_public_key(const char* cert_file,
-                                    unsigned char* out,
-                                    size_t out_sz,
-                                    size_t* out_len)
+static int read_public_key_from_cert(const char* cert_file,
+                                     unsigned char* out,
+                                     size_t out_sz,
+                                     size_t* out_len)
 {
     enum {
         MAX_ECC_PUBKEY_DER_SZ = 128,
@@ -157,6 +100,7 @@ static int read_combined_public_key(const char* cert_file,
     unsigned char ecc_pubkey_buf[MAX_ECC_PUBKEY_DER_SZ];
     int ecc_pubkey_sz = (int)sizeof(ecc_pubkey_buf);
     int alt_pubkey_info_sz;
+
     if (cert_file == NULL || out == NULL || out_len == NULL) {
         return WOLFSSL_FAILURE;
     }
@@ -164,10 +108,6 @@ static int read_combined_public_key(const char* cert_file,
     cert = wolfSSL_X509_load_certificate_file(cert_file, WOLFSSL_FILETYPE_PEM);
     if (cert == NULL) {
         return WOLFSSL_FAILURE;
-    }
-    if (wolfSSL_X509_get_pubkey_buffer(cert, ecc_pubkey_buf, &ecc_pubkey_sz) != WOLFSSL_SUCCESS ||
-        ecc_pubkey_sz <= 0) {
-        goto cleanup;
     }
 
     cert_der = wolfSSL_X509_get_der(cert, &cert_der_sz);
@@ -180,20 +120,30 @@ static int read_combined_public_key(const char* cert_file,
     if (ParseCert(&decoded, CERT_TYPE, NO_VERIFY, NULL) != 0) {
         goto cleanup;
     }
-    if (!decoded.extSapkiSet || decoded.sapkiDer == NULL || decoded.sapkiLen <= 0) {
-        goto cleanup;
-    }
-    alt_pubkey_info_sz = decoded.sapkiLen;
 
-    /* Concatenate ECC||Dilithium then base64 encode for Java byte[]. */
-    if ((size_t)ecc_pubkey_sz > out_sz ||
-        (size_t)alt_pubkey_info_sz > out_sz - (size_t)ecc_pubkey_sz ||
-        (size_t)ecc_pubkey_sz + (size_t)alt_pubkey_info_sz > MAX_COMBINED_KEY_SZ) {
-        goto cleanup;
+    if (decoded.extSapkiSet && decoded.sapkiDer != NULL && decoded.sapkiLen > 0) {
+        if (wolfSSL_X509_get_pubkey_buffer(cert, ecc_pubkey_buf, &ecc_pubkey_sz) != WOLFSSL_SUCCESS ||
+            ecc_pubkey_sz <= 0) {
+            goto cleanup;
+        }
+        alt_pubkey_info_sz = decoded.sapkiLen;
+        if ((size_t)ecc_pubkey_sz > out_sz ||
+            (size_t)alt_pubkey_info_sz > out_sz - (size_t)ecc_pubkey_sz ||
+            (size_t)ecc_pubkey_sz + (size_t)alt_pubkey_info_sz > MAX_COMBINED_KEY_SZ) {
+            goto cleanup;
+        }
+        /* Hybrid cert: concatenate ECC||Dilithium for Java byte[]. */
+        memcpy(out, ecc_pubkey_buf, (size_t)ecc_pubkey_sz);
+        memcpy(out + ecc_pubkey_sz, decoded.sapkiDer, (size_t)alt_pubkey_info_sz);
+        *out_len = (size_t)ecc_pubkey_sz + (size_t)alt_pubkey_info_sz;
+    } else if (decoded.publicKey != NULL && decoded.pubKeySize > 0) {
+        if ((size_t)decoded.pubKeySize > out_sz) {
+            goto cleanup;
+        }
+        /* Pure PQC cert (e.g. CertGenerator client bundle). */
+        memcpy(out, decoded.publicKey, (size_t)decoded.pubKeySize);
+        *out_len = (size_t)decoded.pubKeySize;
     }
-    memcpy(out, ecc_pubkey_buf, (size_t)ecc_pubkey_sz);
-    memcpy(out + ecc_pubkey_sz, decoded.sapkiDer, (size_t)alt_pubkey_info_sz);
-    *out_len = (size_t)ecc_pubkey_sz + (size_t)alt_pubkey_info_sz;
 
 cleanup:
     if (decoded_init) {
@@ -224,81 +174,37 @@ static int encode_base64_no_nl(const unsigned char* input,
     return WOLFSSL_SUCCESS;
 }
 
-static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
+static int send_server_key_payload_json(WOLFSSL* ssl)
 {
     enum {
-        MAX_ECC_PUBKEY_DER_SZ = 128,
-        MAX_ALT_PUBKEY_DER_SZ = DILITHIUM_LEVEL3_PUB_KEY_DER_SIZE,
-        MAX_COMBINED_KEY_SZ = MAX_ECC_PUBKEY_DER_SZ + MAX_ALT_PUBKEY_DER_SZ,
-        MAX_B64_SZ = ((MAX_COMBINED_KEY_SZ + 2) / 3) * 4,
-        MAX_NICKNAME_SZ = 32
+        MAX_B64_SZ = ((MAX_PUBKEY_DER_SZ + 2) / 3) * 4
     };
-    unsigned char selected_key[MAX_COMBINED_KEY_SZ];
-    unsigned char friend_key_1[MAX_COMBINED_KEY_SZ];
-    unsigned char friend_key_2[MAX_COMBINED_KEY_SZ];
+    unsigned char selected_key[MAX_PUBKEY_DER_SZ];
+    unsigned char friend_key[MAX_PUBKEY_DER_SZ];
     size_t selected_key_sz = 0;
-    size_t friend_key_1_sz = 0;
-    size_t friend_key_2_sz = 0;
+    size_t friend_key_sz = 0;
     char selected_key_b64[MAX_B64_SZ];
-    char friend_key_1_b64[MAX_B64_SZ];
-    char friend_key_2_b64[MAX_B64_SZ];
+    char friend_key_b64[MAX_B64_SZ];
     size_t selected_key_b64_sz = 0;
-    size_t friend_key_1_b64_sz = 0;
-    size_t friend_key_2_b64_sz = 0;
-    char friend_nickname_1[MAX_NICKNAME_SZ];
-    char friend_nickname_2[MAX_NICKNAME_SZ];
-    int friend_ids[2];
-    int friend_index = 0;
-    int client_id;
-    ClientCredentialPaths selected_paths;
-    ClientCredentialPaths friend_paths_1;
-    ClientCredentialPaths friend_paths_2;
+    size_t friend_key_b64_sz = 0;
 
     if (ssl == NULL) {
         return WOLFSSL_FAILURE;
     }
-    if (!build_client_paths(selected_client_id, &selected_paths)) {
-        return WOLFSSL_FAILURE;
-    }
-    for (client_id = 1; client_id <= MAX_CLIENT_ID; client_id++) {
-        if (client_id == selected_client_id) {
-            continue;
-        }
-        friend_ids[friend_index++] = client_id;
-    }
-    if (friend_index != 2) {
-        return WOLFSSL_FAILURE;
-    }
-    if (!build_client_paths(friend_ids[0], &friend_paths_1) ||
-        !build_client_paths(friend_ids[1], &friend_paths_2)) {
-        return WOLFSSL_FAILURE;
-    }
-    if (read_combined_public_key(selected_paths.cert, selected_key, sizeof(selected_key), &selected_key_sz) != WOLFSSL_SUCCESS ||
-        read_combined_public_key(friend_paths_1.cert, friend_key_1, sizeof(friend_key_1), &friend_key_1_sz) != WOLFSSL_SUCCESS ||
-        read_combined_public_key(friend_paths_2.cert, friend_key_2, sizeof(friend_key_2), &friend_key_2_sz) != WOLFSSL_SUCCESS) {
+    if (read_public_key_from_cert(CLIENT_CERT_FILE, selected_key, sizeof(selected_key), &selected_key_sz) != WOLFSSL_SUCCESS ||
+        read_public_key_from_cert(FRIEND_CERT_FILE, friend_key, sizeof(friend_key), &friend_key_sz) != WOLFSSL_SUCCESS) {
         return WOLFSSL_FAILURE;
     }
     if (encode_base64_no_nl(selected_key, selected_key_sz, selected_key_b64, sizeof(selected_key_b64), &selected_key_b64_sz) != WOLFSSL_SUCCESS ||
-        encode_base64_no_nl(friend_key_1, friend_key_1_sz, friend_key_1_b64, sizeof(friend_key_1_b64), &friend_key_1_b64_sz) != WOLFSSL_SUCCESS ||
-        encode_base64_no_nl(friend_key_2, friend_key_2_sz, friend_key_2_b64, sizeof(friend_key_2_b64), &friend_key_2_b64_sz) != WOLFSSL_SUCCESS) {
-        return WOLFSSL_FAILURE;
-    }
-    if (snprintf(friend_nickname_1, sizeof(friend_nickname_1), "client-%d", friend_ids[0]) < 0 ||
-        snprintf(friend_nickname_2, sizeof(friend_nickname_2), "client-%d", friend_ids[1]) < 0) {
+        encode_base64_no_nl(friend_key, friend_key_sz, friend_key_b64, sizeof(friend_key_b64), &friend_key_b64_sz) != WOLFSSL_SUCCESS) {
         return WOLFSSL_FAILURE;
     }
 
     if (TLS_WRITE_LITERAL(ssl, "{\"clientpublickey\":\"") != WOLFSSL_SUCCESS ||
         tls_write_all(ssl, selected_key_b64, selected_key_b64_sz) != WOLFSSL_SUCCESS ||
         TLS_WRITE_LITERAL(ssl, "\",\"array\":[{\"secondPartyKey\":\"") != WOLFSSL_SUCCESS ||
-        tls_write_all(ssl, friend_key_1_b64, friend_key_1_b64_sz) != WOLFSSL_SUCCESS ||
-        TLS_WRITE_LITERAL(ssl, "\",\"nickname\":\"") != WOLFSSL_SUCCESS ||
-        tls_write_all(ssl, friend_nickname_1, strlen(friend_nickname_1)) != WOLFSSL_SUCCESS ||
-        TLS_WRITE_LITERAL(ssl, "\"},{\"secondPartyKey\":\"") != WOLFSSL_SUCCESS ||
-        tls_write_all(ssl, friend_key_2_b64, friend_key_2_b64_sz) != WOLFSSL_SUCCESS ||
-        TLS_WRITE_LITERAL(ssl, "\",\"nickname\":\"") != WOLFSSL_SUCCESS ||
-        tls_write_all(ssl, friend_nickname_2, strlen(friend_nickname_2)) != WOLFSSL_SUCCESS ||
-        TLS_WRITE_LITERAL(ssl, "\"}]}") != WOLFSSL_SUCCESS) {
+        tls_write_all(ssl, friend_key_b64, friend_key_b64_sz) != WOLFSSL_SUCCESS ||
+        TLS_WRITE_LITERAL(ssl, "\",\"nickname\":\"Alice\"}]}") != WOLFSSL_SUCCESS) {
         return WOLFSSL_FAILURE;
     }
 
@@ -321,11 +227,9 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
      long                parsed_port;
      int                 gai_rc;
      int                 connected = 0;
-     int                 selected_client_id = 1;
-     ClientCredentialPaths selected_paths;
 
-     if (argc > 4) {
-         fprintf(stderr, "Usage: %s [address] [port] [client-id 1-%d]\n", argv[0], MAX_CLIENT_ID);
+     if (argc > 3) {
+         fprintf(stderr, "Usage: %s [address] [port]\n", argv[0]);
          return EXIT_FAILURE;
      }
      if (argc >= 2) {
@@ -341,27 +245,22 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
          }
          server_port = (int)parsed_port;
      }
-     if (argc == 4) {
-         if (!parse_client_id(argv[3], &selected_client_id)) {
-             fprintf(stderr, "Invalid client-id '%s'. Use a value from 1 to %d.\n", argv[3], MAX_CLIENT_ID);
-             return EXIT_FAILURE;
-         }
-     }
-     if (!build_client_paths(selected_client_id, &selected_paths)) {
-         fprintf(stderr, "Failed to resolve cert paths for client-%d.\n", selected_client_id);
+     if (!credential_files_readable()) {
+         fprintf(stderr, "Failed to resolve cert paths.\n");
+         fprintf(stderr, "Expected:\n");
+         fprintf(stderr, "  %s\n", CLIENT_CERT_FILE);
+         fprintf(stderr, "  %s\n", CLIENT_KEY_FILE);
+         fprintf(stderr, "  %s\n", CA_CERT_FILE);
+         fprintf(stderr, "  %s\n", FRIEND_CERT_FILE);
+         fprintf(stderr, "Generate with CertGenerator option 3 in JAVA_TLS_TEST.\n");
          return EXIT_FAILURE;
      }
-     printf("Using client-%d credentials from %s\n", selected_client_id, selected_paths.cert);
+     printf("Using client credentials from %s\n", CLIENT_CERT_FILE);
  
      wolfSSL_Init();
  
      #if !defined(HAVE_PQC)
          fprintf(stderr, "Critical Error: 'HAVE_PQC' is not defined. Recompile wolfSSL with PQC support.\n");
-         exit(EXIT_FAILURE);
-     #endif
- 
-     #if !defined(WOLFSSL_DUAL_ALG_CERTS)
-         fprintf(stderr, "Critical Error: 'WOLFSSL_DUAL_ALG_CERTS' is not defined. Recompile wolfSSL with Dual-Alg support.\n");
          exit(EXIT_FAILURE);
      #endif
  
@@ -378,7 +277,9 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
          exit(EXIT_FAILURE);
      }
 
+    /* JAVA_TLS_TEST PURE_PQC uses standalone ML-KEM768; native tls_server uses hybrids. */
     int candidates[] = {
+        WOLFSSL_ML_KEM_768,
         WOLFSSL_SECP256R1MLKEM768,
         WOLFSSL_X25519MLKEM768
     };
@@ -394,7 +295,8 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
     }
 
     if (valid_count == 0) {
-        fprintf(stderr, "Error: No supported hybrid ML-KEM groups.\n");
+        fprintf(stderr, "Error: No supported ML-KEM groups.\n");
+        fprintf(stderr, "Rebuild wolfSSL with --enable-tls-mlkem-standalone for JAVA_TLS_TEST.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -403,38 +305,22 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
         exit(EXIT_FAILURE);
     }
 
-    if (wolfSSL_CTX_use_certificate_file(ctx, selected_paths.cert,
+    if (wolfSSL_CTX_use_certificate_file(ctx, CLIENT_CERT_FILE,
             WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading Cert %s.\n", selected_paths.cert);
-        fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
+        fprintf(stderr, "Error loading client cert %s.\n", CLIENT_CERT_FILE);
         exit(EXIT_FAILURE);
     }
 
-    if (wolfSSL_CTX_use_PrivateKey_file(ctx, selected_paths.key,
+    if (wolfSSL_CTX_use_PrivateKey_file(ctx, CLIENT_KEY_FILE,
             WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading Primary Key %s.\n", selected_paths.key);
-        fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
+        fprintf(stderr, "Error loading client key %s.\n", CLIENT_KEY_FILE);
         exit(EXIT_FAILURE);
     }
 
-    if (wolfSSL_CTX_use_AltPrivateKey_file(ctx, selected_paths.alt_key,
-            WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading Alt Key %s.\n", selected_paths.alt_key);
-        fprintf(stderr, "Generate: cd tls_native && ./gen_native_certs.sh\n");
-        exit(EXIT_FAILURE);
-    }
-    printf("Conf: Dual-Algorithm Credentials loaded.\n");
+    printf("Conf: Client credentials loaded.\n");
 
-    if (wolfSSL_CTX_UseCKS(ctx, (byte*)client_cks_order,
-            sizeof(client_cks_order)) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error setting CKS config to BOTH.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (wolfSSL_CTX_load_verify_locations(ctx, selected_paths.ca_cert, NULL) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error loading CA Cert %s.\n", selected_paths.ca_cert);
-        fprintf(stderr, "Generate native certs: cd tls_native && ./gen_native_certs.sh\n");
-        fprintf(stderr, "  (or: make certs-native)\n");
+    if (wolfSSL_CTX_load_verify_locations(ctx, CA_CERT_FILE, NULL) != WOLFSSL_SUCCESS) {
+        fprintf(stderr, "Error loading CA cert %s.\n", CA_CERT_FILE);
         exit(EXIT_FAILURE);
     }
 
@@ -444,13 +330,7 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
      if (ssl == NULL) err_sys("wolfSSL_new failed");
  
     if (wolfSSL_UseKeyShare(ssl, valid_groups[0]) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error: Failed to generate hybrid ML-KEM key share.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (wolfSSL_UseCKS(ssl, (byte*)client_cks_order,
-            sizeof(client_cks_order)) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "Error: Failed to set Dual-Alg (CKS) verification to BOTH.\n");
+        fprintf(stderr, "Error: Failed to generate ML-KEM key share.\n");
         exit(EXIT_FAILURE);
     }
  
@@ -501,20 +381,13 @@ static int send_server_key_payload_json(WOLFSSL* ssl, int selected_client_id)
     printf("TLS 1.3 Handshake Complete (Cipher: %s)\n",
         wolfSSL_get_cipher_name(ssl));
 
-    if (!tls_verify_peer_cert(ssl)) {
+    if (wolfSSL_get_verify_result(ssl) != WOLFSSL_X509_V_OK) {
+        fprintf(stderr, "Error: Peer certificate verification failed.\n");
         fail_handshake_cleanup(ssl, ctx, sockfd);
     }
-   printf("Peer certificate verified against %s.\n", selected_paths.ca_cert);
+   printf("Peer certificate verified against %s.\n", CA_CERT_FILE);
 
-    if (!tls_require_local_dual_alt_sig(ssl)) {
-        fail_handshake_cleanup(ssl, ctx, sockfd);
-    }
-    if (!tls_require_peer_dual_alt_sig(ssl)) {
-        fail_handshake_cleanup(ssl, ctx, sockfd);
-    }
-    printf("Dual alt signature (CKS BOTH) confirmed.\n");
-
-  if (send_server_key_payload_json(ssl, selected_client_id) != WOLFSSL_SUCCESS) {
+  if (send_server_key_payload_json(ssl) != WOLFSSL_SUCCESS) {
        fprintf(stderr, "Error: Failed to send JSON payload.\n");
        fail_handshake_cleanup(ssl, ctx, sockfd);
    }

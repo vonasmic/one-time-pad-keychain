@@ -1,7 +1,8 @@
 package fel.cvut.qkd;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fel.cvut.bouncyCastle.BouncyCastleTLS;
+import fel.cvut.tls.NodeTls;
+import fel.cvut.utimaco.Pqmi;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -12,49 +13,62 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * ETSI GS QKD 014 API client with mTLS and TLS 1.3 preference.
+ * ETSI GS QKD 014 API client with mTLS and classical TLS 1.3.
  */
 public class Qkd014Client {
+
+    private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
     private final URI baseUri;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public Qkd014Client(String baseUrl, SSLContext sslContext, BouncyCastleTLS.TlsPolicy tlsPolicy) {
-        BouncyCastleTLS.TlsPolicy effectivePolicy = tlsPolicy == null
-                ? BouncyCastleTLS.TlsPolicy.defaultPolicy()
-                : tlsPolicy;
+    public Qkd014Client(String baseUrl, SSLContext sslContext, NodeTls.TlsProfile tlsProfile) {
+        this(baseUrl, sslContext, tlsProfile, DEFAULT_CONNECT_TIMEOUT);
+    }
+
+    public Qkd014Client(
+            String baseUrl,
+            SSLContext sslContext,
+            NodeTls.TlsProfile tlsProfile,
+            Duration connectTimeout
+    ) {
+        NodeTls.TlsProfile effectiveProfile = tlsProfile == null
+                ? NodeTls.TlsProfile.CLASSICAL
+                : tlsProfile;
+        Duration effectiveTimeout = connectTimeout == null ? DEFAULT_CONNECT_TIMEOUT : connectTimeout;
 
         this.baseUri = URI.create(normalizeBaseUrl(baseUrl));
         this.objectMapper = new ObjectMapper();
         this.httpClient = HttpClient.newBuilder()
                 .sslContext(Objects.requireNonNull(sslContext, "sslContext must not be null"))
-                .sslParameters(BouncyCastleTLS.createTlsParameters(effectivePolicy))
-                .connectTimeout(effectivePolicy.connectTimeout())
+                .sslParameters(NodeTls.parameters(effectiveProfile))
+                .connectTimeout(effectiveTimeout)
                 .build();
     }
 
-    public static Qkd014Client fromPkcs12(
+    public static Qkd014Client fromHsm(
+            Pqmi session,
             String baseUrl,
-            Path clientKeyStorePath,
-            char[] clientKeyStorePassword,
+            String hsmKeyAlias,
             Path trustStorePath,
             char[] trustStorePassword,
-            BouncyCastleTLS.TlsPolicy tlsPolicy
+            NodeTls.TlsProfile tlsProfile
     ) throws Exception {
-        SSLContext sslContext = BouncyCastleTLS.createBouncyCastleContextFromPkcs12(
-                clientKeyStorePath,
-                clientKeyStorePassword,
+        SSLContext sslContext = NodeTls.createContextForQkd(
+                session,
+                hsmKeyAlias,
                 trustStorePath,
                 trustStorePassword
         );
-        return new Qkd014Client(baseUrl, sslContext, tlsPolicy);
+        return new Qkd014Client(baseUrl, sslContext, tlsProfile);
     }
 
     public KeyContainer getKey(String slaveSaeId, Integer number, Integer size) throws Qkd014ClientException {

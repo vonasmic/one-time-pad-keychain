@@ -1,15 +1,12 @@
 package fel.cvut.node.interNodeCommunication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fel.cvut.bouncyCastle.BouncyCastleTLS;
+import fel.cvut.tls.NodeTls;
 import fel.cvut.node.Address;
 
 import fel.cvut.node.NodeCommands;
 import java.io.InputStream;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLSocket;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
 import java.io.IOException;
@@ -27,42 +24,44 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Manages RMI lifecycle for node-to-node communication with purePQC TLS (ML-DSA + hybrid KEM, TLS 1.3).
+ * Manages RMI lifecycle for node-to-node communication with pure PQC TLS (ML-DSA + ML-KEM, TLS 1.3).
  */
 public class RmiManager {
 
     public static final String COMM_INTERFACE_NAME = "NodeCommands";
     private static final String SAE_NODES_RESOURCE = "/sae-nodes.json";
-    private static final BouncyCastleTLS.TlsPolicy TLS_POLICY = BouncyCastleTLS.TlsPolicy.purePqc();
+    private static final NodeTls.TlsProfile TLS_PROFILE = NodeTls.TlsProfile.PURE_PQC;
     private static final Map<String, Address> ADDRESS_BY_SAE_ID = loadSaeNodeAddresses();
     private static final List<SaeNode> KNOWN_SAE_NODES = loadKnownSaeNodes();
 
+    /** JVM-local TLS context for RMI sockets — must not be stored on serializable socket factories. */
+    private static volatile SSLContext installedTlsContext;
+
     private final Address myAddress;
-    private final String localTlsNodeId;
 
     private Registry registry;
     private NodeCommands messageReceiver;
     private boolean running = false;
 
-    public RmiManager(Address myAddress, String localTlsNodeId) {
+    public RmiManager(Address myAddress) {
         this.myAddress = Objects.requireNonNull(myAddress, "myAddress must not be null");
-        this.localTlsNodeId = Objects.requireNonNull(localTlsNodeId, "localTlsNodeId must not be null");
     }
 
     /**
      * Start exporting node commands over RMI/TLS.
      */
-    public synchronized void start(NodeCommands receiver) {
+    public synchronized void start(NodeCommands receiver, SSLContext tlsContext) {
         if (running) {
             return;
         }
 
+        installedTlsContext = Objects.requireNonNull(tlsContext, "tlsContext must not be null");
         System.setProperty("java.rmi.server.hostname", myAddress.hostname);
         try {
             this.messageReceiver = Objects.requireNonNull(receiver, "receiver must not be null");
 
-            PqcTlsRmiClientSocketFactory clientFactory = new PqcTlsRmiClientSocketFactory(localTlsNodeId);
-            PqcTlsRmiServerSocketFactory serverFactory = new PqcTlsRmiServerSocketFactory(localTlsNodeId, true);
+            PqcTlsRmiClientSocketFactory clientFactory = new PqcTlsRmiClientSocketFactory();
+            PqcTlsRmiServerSocketFactory serverFactory = new PqcTlsRmiServerSocketFactory(true);
 
             NodeCommands skeleton = (NodeCommands) UnicastRemoteObject.exportObject(
                     messageReceiver,
@@ -80,6 +79,7 @@ public class RmiManager {
             }
             running = true;
         } catch (Exception e) {
+            installedTlsContext = null;
             throw new IllegalStateException("Failed to start RMI manager.", e);
         }
     }
@@ -107,6 +107,7 @@ public class RmiManager {
         }
         messageReceiver = null;
         registry = null;
+        installedTlsContext = null;
         running = false;
     }
 
@@ -136,76 +137,59 @@ public class RmiManager {
     /**
      * Connect to remote node commands over RMI/TLS.
      */
-    public static NodeCommands connect(Address remoteAddress, String localTlsNodeId)
+    public NodeCommands connect(Address remoteAddress)
             throws RemoteException, NotBoundException {
-        return connect(remoteAddress, localTlsNodeId, COMM_INTERFACE_NAME);
+        return connect(remoteAddress, COMM_INTERFACE_NAME);
     }
 
     /**
      * Connects to remote node commands over RMI/TLS using SAE ID lookup from static configuration.
      */
-    public static NodeCommands connectBySaeId(String remoteSaeId, String localTlsNodeId)
+    public NodeCommands connectBySaeId(String remoteSaeId)
             throws RemoteException, NotBoundException {
         Address remoteAddress = getAddressForSaeId(remoteSaeId);
-        return connect(remoteAddress, localTlsNodeId, COMM_INTERFACE_NAME);
+        return connect(remoteAddress, COMM_INTERFACE_NAME);
     }
 
-    public static NodeCommands connect(Address remoteAddress, String localTlsNodeId, String bindingName)
+    public NodeCommands connect(Address remoteAddress, String bindingName)
             throws RemoteException, NotBoundException {
         Objects.requireNonNull(remoteAddress, "remoteAddress must not be null");
-        Objects.requireNonNull(localTlsNodeId, "localTlsNodeId must not be null");
         Objects.requireNonNull(bindingName, "bindingName must not be null");
+        requireInstalledTlsContext();
 
-        PqcTlsRmiClientSocketFactory clientFactory = new PqcTlsRmiClientSocketFactory(localTlsNodeId);
+        PqcTlsRmiClientSocketFactory clientFactory = new PqcTlsRmiClientSocketFactory();
         Registry remoteRegistry = LocateRegistry.getRegistry(remoteAddress.hostname, remoteAddress.port, clientFactory);
         return (NodeCommands) remoteRegistry.lookup(bindingName);
     }
 
-    private static final class PqcTlsRmiClientSocketFactory extends SslRMIClientSocketFactory {
-        private final String localTlsNodeId;
-
-        private PqcTlsRmiClientSocketFactory(String localTlsNodeId) {
-            this.localTlsNodeId = Objects.requireNonNull(localTlsNodeId, "localTlsNodeId must not be null");
+    private static SSLContext requireInstalledTlsContext() {
+        SSLContext context = installedTlsContext;
+        if (context == null) {
+            throw new IllegalStateException("RMI TLS context not installed — start RmiManager first");
         }
+        return context;
+    }
+
+    private static final class PqcTlsRmiClientSocketFactory extends SslRMIClientSocketFactory {
+        private static final long serialVersionUID = 1L;
 
         @Override
         public Socket createSocket(String host, int port) throws IOException {
-            SSLContext context = loadContext(localTlsNodeId);
-            SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket(host, port);
-            SSLParameters params = socket.getSSLParameters();
-            BouncyCastleTLS.applyTlsPolicy(params, TLS_POLICY);
-            socket.setSSLParameters(params);
-            socket.startHandshake();
-            return socket;
+            return NodeTls.createClientSocket(host, port, requireInstalledTlsContext(), TLS_PROFILE);
         }
     }
 
     private static final class PqcTlsRmiServerSocketFactory extends SslRMIServerSocketFactory {
-        private final String localTlsNodeId;
+        private static final long serialVersionUID = 1L;
         private final boolean needClientAuth;
 
-        private PqcTlsRmiServerSocketFactory(String localTlsNodeId, boolean needClientAuth) {
-            this.localTlsNodeId = Objects.requireNonNull(localTlsNodeId, "localTlsNodeId must not be null");
+        private PqcTlsRmiServerSocketFactory(boolean needClientAuth) {
             this.needClientAuth = needClientAuth;
         }
 
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
-            SSLContext context = loadContext(localTlsNodeId);
-            SSLServerSocket serverSocket = (SSLServerSocket) context.getServerSocketFactory().createServerSocket(port);
-            serverSocket.setNeedClientAuth(needClientAuth);
-            SSLParameters params = serverSocket.getSSLParameters();
-            BouncyCastleTLS.applyTlsPolicy(params, TLS_POLICY);
-            serverSocket.setSSLParameters(params);
-            return serverSocket;
-        }
-    }
-
-    private static SSLContext loadContext(String tlsNodeId) throws IOException {
-        try {
-            return BouncyCastleTLS.loadContextForNode(tlsNodeId);
-        } catch (Exception e) {
-            throw new IOException("Failed to load PQC TLS context for node: " + tlsNodeId, e);
+            return NodeTls.createServerSocket(port, requireInstalledTlsContext(), TLS_PROFILE, needClientAuth);
         }
     }
 

@@ -37,9 +37,13 @@ build/
 ### Mac OS ###
 .DS_Store
 
-### Local env (keep .env.example) ###
-.env
+### Local env (keep .env.example / hsm.env.example) ###
+env/.env
 env/*.env
+!env/*.env.example
+
+### Utimaco vendor tree (copy locally from QuantumProtect Java_UTI) ###
+vendor/pqmi-java/
 
 ###local Maven cache ###
 .m2/

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -12,36 +13,16 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <log4j2.version>2.25.4</log4j2.version>
-        <hibernate.core.version>6.6.53.Final</hibernate.core.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <exec.mainClass>fel.cvut.node.Node</exec.mainClass>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Pin secure versions for commonly vulnerable transitive deps -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>${log4j2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${hibernate.core.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.84</version> </dependency>
+            <version>1.84</version>
+        </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bctls-jdk18on</artifactId>
@@ -62,7 +43,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.21.3</version>
         </dependency>
-        <!-- Source: https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -74,14 +54,56 @@
             <artifactId>HikariCP</artifactId>
             <version>7.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>de.utimaco</groupId>
+            <artifactId>cryptoservercxi</artifactId>
+            <version>local</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/vendor/cryptoservercxi.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>de.utimaco</groupId>
+            <artifactId>securityserver-jce</artifactId>
+            <version>local</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/vendor/securityserver-jce.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-
-            <!-- Compiler -->
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-pqmi-vendor-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>vendor/pqmi-java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -108,21 +130,15 @@
                 </dependencies>
             </plugin>
 
-            <!-- Run main class -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
                 <configuration>
-                    <mainClass>fel.cvut.PQCHybridServer</mainClass>
-                    <systemProperties>
-                        <systemProperty>
-                            <key>java.library.path</key>
-                            <value>${project.basedir}/src/main/native_tls</value>
-                        </systemProperty>
-                    </systemProperties>
+                    <mainClass>${exec.mainClass}</mainClass>
+                    <classpathScope>compile</classpathScope>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
