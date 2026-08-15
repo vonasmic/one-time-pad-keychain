@@ -1,7 +1,8 @@
 package fel.cvut.certGen;
 
 import CryptoServerJCE.CryptoServerProvider;
-import CryptoServerJCE.CryptoServerProviderBuilder;
+import fel.cvut.tls.NodeTls;
+import fel.cvut.utimaco.HsmGate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.IOException;
@@ -27,9 +28,8 @@ final class HsmKeyImporter {
 
     static void importPkcs12(String alias, Path pkcs12Path, char[] password) throws Exception {
         Objects.requireNonNull(alias, "alias must not be null");
-
-        CryptoServerProvider cryptoServer = openCryptoServer();
-        try {
+        CryptoServerProvider cryptoServer = NodeTls.requireCryptoServer();
+        HsmGate.run(() -> {
             KeyStore soft = loadPkcs12(pkcs12Path, password);
             String softAlias = findKeyAlias(soft);
             PrivateKey softKey = (PrivateKey) soft.getKey(softAlias, password);
@@ -48,19 +48,7 @@ final class HsmKeyImporter {
                 hsm.deleteEntry(alias);
             }
             hsm.setKeyEntry(alias, hsmKey, null, chain);
-        } finally {
-            cryptoServer.close();
-        }
-    }
-
-    private static CryptoServerProvider openCryptoServer() throws Exception {
-        CryptoServerProvider cs = new CryptoServerProviderBuilder()
-                .device(requireEnv("HSM_DEVICE"))
-                .timeout(Integer.parseInt(requireEnv("HSM_TIMEOUT_MS")))
-                .connectionTimeout(3000)
-                .build();
-        cs.loginPassword(requireEnv("HSM_USER"), requireEnv("HSM_PIN"));
-        return cs;
+        });
     }
 
     private static KeyStore loadPkcs12(Path keyStorePath, char[] keyStorePassword) throws Exception {
@@ -94,13 +82,5 @@ final class HsmKeyImporter {
             }
         }
         throw new IllegalStateException("No key entry in keystore");
-    }
-
-    private static String requireEnv(String name) {
-        String v = System.getenv(name);
-        if (v == null || v.isBlank()) {
-            throw new IllegalStateException("Required environment variable not set: " + name);
-        }
-        return v.trim();
     }
 }

@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -154,9 +155,9 @@ public class Qkd014Client {
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new Qkd014ClientException("HTTP call interrupted", e);
+            throw new Qkd014ClientException("QKD HTTP call interrupted: " + request.uri(), e);
         } catch (IOException e) {
-            throw new Qkd014ClientException("HTTP call failed", e);
+            throw new Qkd014ClientException(describeTransportFailure(request.uri(), e), e);
         }
 
         int statusCode = response.statusCode();
@@ -165,7 +166,7 @@ public class Qkd014Client {
             try {
                 return objectMapper.readValue(body, responseType);
             } catch (IOException e) {
-                throw new Qkd014ClientException("Failed to parse successful response body", e);
+                throw new Qkd014ClientException("Failed to parse successful QKD response from " + request.uri(), e);
             }
         }
 
@@ -180,6 +181,50 @@ public class Qkd014Client {
                 ? errorResponse.message
                 : "QKD API call failed with HTTP " + statusCode + (body.isBlank() ? "" : ": " + body);
         throw new Qkd014ClientException(message, statusCode, errorResponse);
+    }
+
+    private static String describeTransportFailure(URI uri, IOException e) {
+        String detail = deepestMessage(e);
+        if (causeChainContains(e, "NoSuchAlgorithmException")
+                || causeChainContains(e, "RSASSA-PSS")
+                || causeChainContains(e, "TlsHsmAlternate")
+                || causeChainContains(e, "TlsFatalAlert")) {
+            return "QKD mTLS handshake failed for " + uri
+                    + " (local HSM/TLS client signing, not peer SAE connectivity): "
+                    + detail;
+        }
+        if (causeChainContains(e, "ConnectException")
+                || causeChainContains(e, "Connection refused")
+                || causeChainContains(e, "UnknownHostException")) {
+            return "QKD server unreachable at " + uri + ": " + detail;
+        }
+        return "QKD HTTP call failed for " + uri + ": " + detail;
+    }
+
+    private static boolean causeChainContains(Throwable throwable, String needle) {
+        String upperNeedle = needle.toUpperCase(Locale.ROOT);
+        for (Throwable current = throwable; current != null; current = current.getCause()) {
+            String message = current.getMessage();
+            if (message != null && message.toUpperCase(Locale.ROOT).contains(upperNeedle)) {
+                return true;
+            }
+            if (current.getClass().getName().toUpperCase(Locale.ROOT).contains(upperNeedle)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String deepestMessage(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+        String message = current.getMessage();
+        if (message != null && !message.isBlank()) {
+            return current.getClass().getSimpleName() + ": " + message;
+        }
+        return current.getClass().getSimpleName();
     }
 
     private String writeJson(Object value) throws Qkd014ClientException {

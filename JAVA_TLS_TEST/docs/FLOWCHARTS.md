@@ -94,7 +94,7 @@ sequenceDiagram
 
 ## 3. Terminal ↔ SAE communication
 
-The terminal is operated locally on the SAE machine. The SAE builds selection lists from the client payload and its configured peer SAEs.
+The terminal now runs as its own process — `fel.cvut.terminalapp.TerminalApp` — connecting to the SAE's dedicated terminal gateway port over TLS (same `NodeTls`/`PURE_PQC` bootstrap nodes use for RMI). The SAE builds selection lists from the client payload and its configured peer SAEs, then sends them to whichever terminal app is currently connected.
 
 ```mermaid
 flowchart TD

@@ -2,7 +2,9 @@
 
 QKD mTLS uses **HSM-backed** SAE client keys (Utimaco CryptoServer JCE). Private keys are **not** loaded from PKCS#12 at runtime.
 
-`CertGenerator` is only for internal PQC node certs (`certs/Alice.pem`, etc.) used by RMI/TLS.
+`CertGenerator` handles both this import (option 2) and the unrelated internal PQC node certs
+(`certs/Alice.pem`, etc., option 1/3) used by RMI/TLS — see the main
+[`JAVA_TLS_TEST/README.md`](../../README.md).
 
 ## Target layout
 

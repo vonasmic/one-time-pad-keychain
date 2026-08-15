@@ -27,24 +27,33 @@ public final class NodeTls {
     private NodeTls() {
     }
 
+    /**
+     * TLS cipher configuration per profile. Each constant is the single source of truth for its
+     * protocols/named-groups/signature-schemes — to change or add a profile's preferred crypto,
+     * edit (or add) the constant below; no branching logic elsewhere needs to change.
+     */
     public enum TlsProfile {
-        CLASSICAL,
-        PURE_PQC
+        CLASSICAL(new String[]{"TLSv1.3"}, new String[]{"x25519"}, null),
+        PURE_PQC(new String[]{"TLSv1.3"}, new String[]{"MLKEM768"}, new String[]{"mldsa44"});
+
+        private final String[] protocols;
+        private final String[] namedGroups;
+        private final String[] signatureSchemes;
+
+        TlsProfile(String[] protocols, String[] namedGroups, String[] signatureSchemes) {
+            this.protocols = protocols;
+            this.namedGroups = namedGroups;
+            this.signatureSchemes = signatureSchemes;
+        }
     }
 
     public static SSLParameters parameters(TlsProfile profile) {
         Objects.requireNonNull(profile, "profile must not be null");
         SSLParameters params = new SSLParameters();
-        switch (profile) {
-            case CLASSICAL -> {
-                params.setProtocols(new String[]{"TLSv1.3"});
-                params.setNamedGroups(new String[]{"x25519"});
-            }
-            case PURE_PQC -> {
-                params.setProtocols(new String[]{"TLSv1.3"});
-                params.setNamedGroups(new String[]{"MLKEM768"});
-                params.setSignatureSchemes(new String[]{"mldsa44"});
-            }
+        params.setProtocols(profile.protocols);
+        params.setNamedGroups(profile.namedGroups);
+        if (profile.signatureSchemes != null) {
+            params.setSignatureSchemes(profile.signatureSchemes);
         }
         return params;
     }
@@ -69,18 +78,26 @@ public final class NodeTls {
         return socket;
     }
 
+    /**
+     * Registers JCE/JSSE providers and logs into CryptoServer. Idempotent.
+     * Called by the TLS context factories; CertGenerator uses the same entry.
+     */
+    public static void install(Pqmi session) throws Exception {
+        TlsProviders.install(session);
+    }
+
     /** Classical QKD: CryptoServer keystore alias + public trust store. */
     public static SSLContext createContextForQkd(
             Pqmi session, String hsmAlias, Path trustStorePath, char[] trustStorePassword
     ) throws Exception {
-        TlsProviders.install(session);
+        install(session);
         TlsProviders.HsmIdentity id = TlsProviders.loadHsmIdentity(hsmAlias);
         return hsmContext(id.key(), id.chain(), TlsStores.loadTrustStore(trustStorePath, trustStorePassword));
     }
 
     /** Inter-node PQC: PQMI key + PEM leaf/CA. */
     public static SSLContext createContextForNode(Pqmi session, String nodeId) throws Exception {
-        TlsProviders.install(session);
+        install(session);
         session.loadIdentityKey(session.keyRefForNode(nodeId));
 
         Path certsDir = TlsStores.resolveCertsDir();
@@ -102,7 +119,7 @@ public final class NodeTls {
 
     /**
      * Returns the installed CryptoServer JCE provider.
-     * Requires a prior {@link #createContextForNode} / {@link #createContextForQkd} call.
+     * Requires a prior {@link #install} call.
      */
     public static CryptoServerProvider requireCryptoServer() {
         return TlsProviders.requireCryptoServer();

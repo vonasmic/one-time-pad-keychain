@@ -60,6 +60,11 @@
             <version>2.0.17</version>
         </dependency>
         <dependency>
+            <groupId>com.fazecast</groupId>
+            <artifactId>jSerialComm</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <dependency>
             <groupId>de.utimaco</groupId>
             <artifactId>cryptoservercxi</artifactId>
             <version>local</version>

@@ -37,17 +37,19 @@ public final class NodeBootstrap {
     /**
      * Wires collaborators and returns a ready-to-start {@link Node}.
      *
-     * @param selfRef           local node reference
-     * @param tlsNodeId         TLS identity used for RMI PQC context loading
-     * @param commandServerPort TLS command server listening port ({@code NODE_NATIVE_PORT})
-     * @param qkdClient         QKD client for KME API access
-     * @param commandHandler    per-connection handler for command sockets
+     * @param selfRef             local node reference
+     * @param tlsNodeId           TLS identity used for RMI PQC context loading
+     * @param commandServerPort   TLS command server listening port ({@code NODE_NATIVE_PORT})
+     * @param terminalGatewayPort TLS terminal gateway port for the standalone terminal app ({@code NODE_TERMINAL_PORT})
+     * @param qkdClient           QKD client for KME API access
+     * @param commandHandler      per-connection handler for command sockets
      * @return configured node instance (not yet started)
      */
     public Node create(
             NodeRef selfRef,
             String tlsNodeId,
             int commandServerPort,
+            int terminalGatewayPort,
             Qkd014Client qkdClient,
             Consumer<SSLSocket> commandHandler
     ) {
@@ -73,6 +75,7 @@ public final class NodeBootstrap {
                 selfRef,
                 tlsNodeId,
                 commandServerPort,
+                terminalGatewayPort,
                 qkdClient,
                 commandHandler,
                 objectMapper,

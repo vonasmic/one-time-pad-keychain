@@ -237,7 +237,7 @@ public final class Pqmi implements AutoCloseable {
     private static byte[] requireSigningHandle(int pqmiMid, CryptoServerCXI cxi, KeyRef ref) throws Exception {
         try {
             return loadSigningHandle(pqmiMid, cxi, ref);
-        } catch (IllegalStateException e) {
+        } catch (Exception e) {
             throw new IllegalStateException(
                     "HSM identity key not found: " + ref.group() + "/" + ref.name()
                             + " — run CertGenerator (option 3) after HSM init/reinit.",

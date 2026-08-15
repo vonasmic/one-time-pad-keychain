@@ -11,7 +11,6 @@ import fel.cvut.qkd.KeyItem;
 import fel.cvut.qkd.KeyItems;
 import fel.cvut.qkd.Qkd014Client;
 import fel.cvut.qkd.Qkd014ClientException;
-import fel.cvut.terminal.TerminalOutput;
 import fel.cvut.tls.NodeTls;
 import fel.cvut.utimaco.Pqmi;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,9 +48,11 @@ public class Node implements AutoCloseable {
     private final NodeRef selfRef;
     private final String tlsNodeId;
     private final int commandServerPort;
+    private final int terminalGatewayPort;
     private final Qkd014Client qkdClient;
     private final Consumer<SSLSocket> commandHandler;
     private final InputHandler inputHandler;
+    private final TerminalGateway terminalGateway;
     private final NodeCommands nodeCommands;
     private final AtomicRecordStateMap localRecordStateMap;
     private final SharedKeyMaterialStore sharedKeyMaterialStore;
@@ -71,6 +72,8 @@ public class Node implements AutoCloseable {
      * @param selfRef                local node reference
      * @param tlsNodeId              TLS identity used for RMI PQC context loading
      * @param commandServerPort      TLS command server listening port ({@code NODE_NATIVE_PORT})
+     * @param terminalGatewayPort    TLS terminal gateway port the standalone terminal app connects to
+     *                               ({@code NODE_TERMINAL_PORT}) — uses the same TLS bootstrap as RMI
      * @param qkdClient              QKD client for KME API access
      * @param commandHandler         per-connection handler for command sockets
      * @param objectMapper           JSON mapper shared with persistence
@@ -83,6 +86,7 @@ public class Node implements AutoCloseable {
             NodeRef selfRef,
             String tlsNodeId,
             int commandServerPort,
+            int terminalGatewayPort,
             Qkd014Client qkdClient,
             Consumer<SSLSocket> commandHandler,
             ObjectMapper objectMapper,
@@ -94,6 +98,7 @@ public class Node implements AutoCloseable {
         this.selfRef = Objects.requireNonNull(selfRef, "selfRef must not be null");
         this.tlsNodeId = Objects.requireNonNull(tlsNodeId, "tlsNodeId must not be null");
         this.commandServerPort = commandServerPort;
+        this.terminalGatewayPort = terminalGatewayPort;
         this.qkdClient = Objects.requireNonNull(qkdClient, "qkdClient must not be null");
         this.commandHandler = Objects.requireNonNull(commandHandler, "commandHandler must not be null");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
@@ -105,11 +110,12 @@ public class Node implements AutoCloseable {
         this.nodeCommands = Objects.requireNonNull(nodeCommands, "nodeCommands must not be null");
         this.rmiManager = Objects.requireNonNull(rmiManager, "rmiManager must not be null");
         this.inputHandler = new InputHandler();
+        this.terminalGateway = new TerminalGateway(terminalGatewayPort);
         this.executor = Executors.newCachedThreadPool(newDaemonFactory("node-worker"));
     }
 
     /**
-     * Starts RMI first and then the TLS command server accept loop.
+     * Starts RMI first, then the TLS command server accept loop and the terminal gateway.
      * Uses {@link #usePqmi(Pqmi)} if already set (so QKD can share the same {@code Pqmi} config).
      */
     public synchronized void start() {
@@ -130,11 +136,13 @@ public class Node implements AutoCloseable {
                     NodeTls.TlsProfile.PURE_PQC,
                     true
             );
+            terminalGateway.start(tlsContext, executor);
             running = true;
             executor.submit(this::acceptLoop);
         } catch (Exception ex) {
             closeHsmResources();
             rmiManager.stop();
+            terminalGateway.close();
             commandServer = null;
             throw new IllegalStateException("Failed to start node.", ex);
         }
@@ -201,12 +209,14 @@ public class Node implements AutoCloseable {
     }
 
     private void handleConnection(SSLSocket socket) {
+        boolean outcomeReported = false;
         try {
+            socket.setSoTimeout(100_000);
             socket.startHandshake();
             List<RmiManager.SaeNode> friendlySaeNodes = RmiManager.getKnownSaeNodes().stream()
                     .filter(node -> node != null && !Objects.equals(node.saeId(), selfRef.getNodeId()))
                     .toList();
-            ClientRecord clientRecord = inputHandler.handleInput(socket.getInputStream(), friendlySaeNodes);
+            ClientRecord clientRecord = inputHandler.handleInput(socket.getInputStream(), friendlySaeNodes, terminalGateway);
             System.out.println("Created client record from input: " + clientRecord);
             Optional<String> payloadToReturn = processClientRecord(clientRecord);
             if (payloadToReturn.isPresent()) {
@@ -214,6 +224,7 @@ public class Node implements AutoCloseable {
                 socket.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
                 socket.getOutputStream().flush();
                 System.out.println("Sent payload to TLS client (" + payload.length() + " bytes)");
+                reportTransmissionOutcome(true);
             } else {
                 ClientRecord.ClientHeader header = clientRecord.getClientHeader();
                 System.out.println(
@@ -224,21 +235,57 @@ public class Node implements AutoCloseable {
                                 + " and target SAE "
                                 + header.saeId()
                 );
+                reportTransmissionOutcome(false);
             }
+            outcomeReported = true;
             commandHandler.accept(socket);
         } catch (Exception ex) {
+            if (!outcomeReported) {
+                reportTransmissionOutcome(false);
+            }
             logSocketFailure(ex);
         } finally {
             closeTlsClientSocket(socket);
         }
     }
 
-    private static void logSocketFailure(Exception ex) {
-        System.err.println("Socket input handling failed: " + ex.getMessage());
-        Throwable cause = ex.getCause();
-        if (cause != null) {
-            System.err.println("  Cause: " + cause.getMessage());
+    private void reportTransmissionOutcome(boolean success) {
+        String message = success ? "transmission successful" : "transmission failed";
+        try {
+            terminalGateway.showMessage(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send transmission status to terminal: " + e.getMessage());
         }
+    }
+
+    private static void logSocketFailure(Exception ex) {
+        System.err.println("Socket input handling failed: " + explainFailure(ex));
+        Throwable cause = ex.getCause();
+        int depth = 0;
+        while (cause != null && depth < 6) {
+            System.err.println("  Caused by: " + cause.getClass().getSimpleName()
+                    + (cause.getMessage() == null || cause.getMessage().isBlank()
+                    ? ""
+                    : ": " + cause.getMessage()));
+            cause = cause.getCause();
+            depth++;
+        }
+    }
+
+    private static String explainFailure(Throwable ex) {
+        if (ex instanceof Qkd014ClientException) {
+            return ex.getMessage();
+        }
+        if (ex instanceof NotBoundException) {
+            return "Target SAE RMI object not found — is the peer node running and registered? ("
+                    + ex.getMessage() + ")";
+        }
+        if (ex instanceof RemoteException) {
+            return "Target SAE unreachable over RMI/TLS — check that the second node is up ("
+                    + ex.getMessage() + ")";
+        }
+        String message = ex.getMessage();
+        return message == null || message.isBlank() ? ex.getClass().getSimpleName() : message;
     }
 
     private static void closeTlsClientSocket(SSLSocket socket) {
@@ -285,6 +332,23 @@ public class Node implements AutoCloseable {
                                     + clientHeader.clientHash2()
                     );
                     return Optional.empty();
+                } catch (Qkd014ClientException ex) {
+                    tryDeleteLocalRecord(
+                            clientHeader.clientHash1(),
+                            clientHeader.clientHash2(),
+                            localSaeId,
+                            "rolled back after QKD key fetch failed"
+                    );
+                    throw ex;
+                } catch (RemoteException | NotBoundException ex) {
+                    tryDeleteLocalRecord(
+                            clientHeader.clientHash1(),
+                            clientHeader.clientHash2(),
+                            localSaeId,
+                            "rolled back after target SAE " + clientHeader.saeId()
+                                    + " was unreachable or rejected the insert"
+                    );
+                    throw ex;
                 } catch (Exception ex) {
                     tryDeleteLocalRecord(
                             clientHeader.clientHash1(),
@@ -381,7 +445,7 @@ public class Node implements AutoCloseable {
     private boolean promptDelete(
             AtomicRecordStateMap.RecordMetadata metadata,
             ClientRecord.ClientHeader clientHeader
-    ) {
+    ) throws IOException {
         String message = "Secret keys already shared for hashes "
                 + clientHeader.clientHash1()
                 + " / "
@@ -390,7 +454,13 @@ public class Node implements AutoCloseable {
                 + metadata.saeId()
                 + " at "
                 + metadata.dateOfCreation();
-        return TerminalOutput.promptDeletion(message);
+        try {
+            return terminalGateway.confirmDeletion(message);
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException("Operator deletion confirmation failed", e);
+        }
     }
 
     private void tryDeleteLocalRecord(
@@ -472,14 +542,14 @@ public class Node implements AutoCloseable {
                     header.clientHash1(),
                     header.clientHash2(),
                     localSaeId,
-                    "rolled back after target SAE connection or insert failed"
+                    "rolled back after target SAE " + header.saeId() + " connection or insert failed"
             );
             throw ex;
         }
     }
 
     /**
-     * Stops RMI, closes the TLS command server, and terminates worker threads.
+     * Stops RMI, closes the TLS command server and terminal gateway, and terminates worker threads.
      **/
     @Override
     public synchronized void close() {
@@ -490,6 +560,7 @@ public class Node implements AutoCloseable {
 
         running = false;
         rmiManager.stop();
+        terminalGateway.close();
 
         SSLServerSocket localServer = commandServer;
         commandServer = null;
@@ -522,6 +593,7 @@ public class Node implements AutoCloseable {
      *   <li>{@code SAE_ID}            – local SAE identifier (must match {@code sae-nodes.json})</li>
      *   <li>{@code NODE_RMI_PORT}     – RMI registry port (must match {@code sae-nodes.json} for this SAE)</li>
      *   <li>{@code NODE_NATIVE_PORT} – TLS command server port</li>
+     *   <li>{@code NODE_TERMINAL_PORT} – TLS terminal gateway port for the standalone terminal app</li>
      *   <li>{@code QKD_BASE_URL}              – KME API base URL for {@link Qkd014Client}</li>
      *   <li>{@code QKD_HSM_KEY_ALIAS}         – CryptoServer keystore alias (CertGenerator option 2)</li>
      *   <li>{@code QKD_TRUSTSTORE_PATH}       – QuKayDee KME server CA (PKCS#12 or PEM; public only)</li>
@@ -532,7 +604,8 @@ public class Node implements AutoCloseable {
      * </ul>
      *
      * <p>HSM connection ({@code HSM_DEVICE}, {@code HSM_USER}, {@code HSM_PIN}, …) comes from
-     * {@code env/hsm.env} — use {@code ./run-node.sh} which sources it automatically.
+     * {@code env/hsm.env} — source it together with the node's own env file before running
+     * {@code mvn exec:java} (see the JAVA_TLS_TEST README's "Node startup" section).
      *
      * <p>Optional environment variables:
      * <ul>
@@ -548,6 +621,7 @@ public class Node implements AutoCloseable {
         String saeId = requireEnv("SAE_ID");
         int rmiPort = requireEnvInt("NODE_RMI_PORT");
         int commandPort = requireEnvInt("NODE_NATIVE_PORT");
+        int terminalPort = requireEnvInt("NODE_TERMINAL_PORT");
         String qkdBaseUrl = requireEnv("QKD_BASE_URL");
 
         String hostname = envOrDefault("NODE_HOSTNAME", "127.0.0.1");
@@ -573,6 +647,7 @@ public class Node implements AutoCloseable {
                     selfRef,
                     tlsNodeId,
                     commandPort,
+                    terminalPort,
                     qkdClient,
                     socket -> {}
             );
@@ -583,7 +658,8 @@ public class Node implements AutoCloseable {
             }, "node-shutdown"));
 
             node.start();
-            System.out.println("Node " + saeId + " started — RMI " + address + ", TLS command port " + commandPort);
+            System.out.println("Node " + saeId + " started — RMI " + address
+                    + ", TLS command port " + commandPort + ", terminal gateway port " + terminalPort);
 
             Thread.currentThread().join();
         } catch (Exception ex) {

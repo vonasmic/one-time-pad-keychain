@@ -8,7 +8,6 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jcajce.spec.MLDSAPublicKeySpec;
 import org.bouncycastle.operator.ContentSigner;
@@ -50,23 +49,24 @@ public class CertGenerator {
     private static final Pattern QKD_CLIENT_P12 = Pattern.compile("(.+)-client\\.p12$");
     private static final String DEFAULT_PKCS12_PASSWORD = "password";
 
-    static { Security.addProvider(new BouncyCastleProvider()); }
-
     public static void main(String[] args) throws Exception {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("=== FEL CVUT HSM / PKI TOOL ===");
-        System.out.println("1) PQC node cert (single node, PQMI ML-DSA)");
-        System.out.println("2) Import QuKayDee SAE PKCS#12 into HSM (auto from certs/qkd/, or manual)");
-        System.out.println("3) Full provision: all node PEMs → HSM + leaf certs + native client bundle (default)");
-        System.out.print("Choice [3]: ");
-        String choice = sc.nextLine().trim();
-        if (choice.isEmpty()) {
-            choice = "3";
-        }
-        switch (choice) {
-            case "1" -> provisionPqcNode(sc);
-            case "2" -> importQkdKey(sc);
-            default -> provisionAll();
+        try (Pqmi pqmi = Pqmi.fromEnvironment()) {
+            NodeTls.install(pqmi);
+            Scanner sc = new Scanner(System.in);
+            System.out.println("=== FEL CVUT HSM / PKI TOOL ===");
+            System.out.println("1) PQC node cert (single node, PQMI ML-DSA)");
+            System.out.println("2) Import QuKayDee SAE PKCS#12 into HSM (auto from certs/qkd/, or manual)");
+            System.out.println("3) Full provision: all node PEMs → HSM + leaf certs + native client bundle (default)");
+            System.out.print("Choice [3]: ");
+            String choice = sc.nextLine().trim();
+            if (choice.isEmpty()) {
+                choice = "3";
+            }
+            switch (choice) {
+                case "1" -> provisionPqcNode(sc, pqmi);
+                case "2" -> importQkdKey(sc);
+                default -> provisionAll(pqmi);
+            }
         }
     }
 
@@ -204,7 +204,7 @@ public class CertGenerator {
         return new RootCaMaterial(caKeys, caCert);
     }
 
-    private static void provisionAll() throws Exception {
+    private static void provisionAll(Pqmi pqmi) throws Exception {
         RootCaMaterial rootCa = loadOrCreateRootCa();
         exportCertPem(rootCa.cert(), CA_PEM);
 
@@ -215,10 +215,8 @@ public class CertGenerator {
         } else {
             System.out.println("[*] Provisioning " + nodeNames.size()
                     + " node identity key(s) in HSM from existing leaf cert names...");
-            try (Pqmi pqmi = Pqmi.fromEnvironment()) {
-                for (String name : nodeNames) {
-                    provisionNodeIdentity(pqmi, rootCa, name, false);
-                }
+            for (String name : nodeNames) {
+                provisionNodeIdentity(pqmi, rootCa, name, false);
             }
         }
 
@@ -262,7 +260,7 @@ public class CertGenerator {
         System.out.println("   [SUCCESS] " + name + ".pem");
     }
 
-    private static void provisionPqcNode(Scanner sc) throws Exception {
+    private static void provisionPqcNode(Scanner sc, Pqmi pqmi) throws Exception {
         RootCaMaterial rootCa = loadOrCreateRootCa();
         exportCertPem(rootCa.cert(), CA_PEM);
 
@@ -276,9 +274,7 @@ public class CertGenerator {
         boolean overwrite = sc.nextLine().trim().equalsIgnoreCase("y");
 
         System.out.println("-> Generating Pure PQC node key in HSM (ML-DSA)...");
-        try (Pqmi pqmi = Pqmi.fromEnvironment()) {
-            provisionNodeIdentity(pqmi, rootCa, name, overwrite);
-        }
+        provisionNodeIdentity(pqmi, rootCa, name, overwrite);
     }
 
     private static void writeNativeClientBundle(X509Certificate caCert, KeyPair caKeys) throws Exception {

@@ -12,6 +12,8 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedKeyManager;
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
+import java.security.AlgorithmParameters;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -26,17 +28,25 @@ import java.security.SignatureException;
 import java.security.SignatureSpi;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 /**
- * JCE/JSSE provider bootstrap, CryptoServer keystore helpers, and HSM ML-DSA signing shim.
+ * JCE/JSSE provider bootstrap, CryptoServer keystore helpers, and HSM signing.
  *
- * <p>Routing: CryptoServer (classical) → BC (ML-KEM / verify) → PQMI shim (HSM ML-DSA sign, alternate only).
+ * <p>Global {@link Security} order is JSSE → software Mac (BC) → CryptoServer → BC. Unscoped
+ * {@code Mac.getInstance} must not hit CryptoServer: PostgreSQL SCRAM uses a software
+ * {@code SecretKeySpec("HmacSHA256")}, and {@code CryptoServerMac} then fails with
+ * {@code / by zero} (never sets {@code blockSize} for non-AES/DES keys). TLS identity signing
+ * does not use that list: the JSSE helper is pinned to BC, and {@link HsmSigningProvider} is
+ * the JSSE alternate (never registered globally). BC {@code initSign} on an HSM key throws
+ * {@link InvalidKeyException}; JSSE then uses the alternate (CryptoServer + {@link HsmGate},
+ * or PQMI for ML-DSA).
  */
 final class TlsProviders {
 
-    private static final String PQMI_SHIM_NAME = "PqmiShim";
     private static final Object INSTALL_LOCK = new Object();
     private static volatile boolean installed;
     private static CryptoServerProvider cryptoServer;
@@ -45,12 +55,8 @@ final class TlsProviders {
     }
 
     /**
-     * Registers CryptoServer + BC and BC JSSE with PQMI signing alternate.
-     * Idempotent. Does not register the PQMI shim in {@link Security}.
-     *
-     * <p>Logs in one {@link CryptoServerProvider} for the JVM lifetime; all classical HSM
-     * JCE ops reuse it. PQMI still opens ephemeral CXI per call — both must use
-     * {@link fel.cvut.utimaco.HsmGate}.
+     * Registers BC JSSE, BC Mac preference, CryptoServer (HSM-first for other unscoped JCE),
+     * and Bouncy Castle. Idempotent. Does not register the HSM signing shim in {@link Security}.
      */
     static void install(Pqmi session) throws Exception {
         Objects.requireNonNull(session, "session must not be null");
@@ -59,35 +65,88 @@ final class TlsProviders {
                 return;
             }
 
-            CryptoServerProvider cs = new CryptoServerProviderBuilder()
-                    .device(session.device())
-                    .timeout(session.timeoutMs())
-                    .connectionTimeout(3000)
-                    .build();
-            cs.loginPassword(session.user(), new String(session.pin()));
-            Security.insertProviderAt(cs, 1);
-            Security.insertProviderAt(new SigningAuditProvider(cs), 1);
+            CryptoServerProvider cs = loggedInCryptoServer(session);
             cryptoServer = cs;
+            Provider bc = new BouncyCastleProvider();
 
-            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-                Security.insertProviderAt(new BouncyCastleProvider(), 2);
-            }
-
-            if (Security.getProvider(BouncyCastleJsseProvider.PROVIDER_NAME) != null) {
-                Security.removeProvider(BouncyCastleJsseProvider.PROVIDER_NAME);
-            }
-            // DefaultJcaJceHelper uses global order (CryptoServer → BC). Do not setProvider().
-            JcaTlsCryptoProvider crypto = new JcaTlsCryptoProvider()
-                    .setAlternateProvider(new PqmiShimProvider());
-            Security.insertProviderAt(new BouncyCastleJsseProvider(false, crypto), 1);
+            // Highest priority first:
+            //   1. BC JSSE        — TLS engine; helper = BC, alternate = HsmSigningProvider
+            //   2. Software Mac   — BC Mac so JDBC SCRAM is not routed to CryptoServer
+            //   3. CryptoServer   — HSM-first for unscoped JCE (AES, KeyGen, …)
+            //   4. Bouncy Castle  — ML-KEM, verify, PEM/PKCS#12
+            installOrdered(List.of(
+                    bcJsseWithHsmAlternate(cs, bc),
+                    softwareMacPreferred(bc),
+                    cs,
+                    bc));
 
             installed = true;
         }
     }
 
+    private static CryptoServerProvider loggedInCryptoServer(Pqmi session) throws Exception {
+        CryptoServerProvider cs = new CryptoServerProviderBuilder()
+                .device(session.device())
+                .timeout(session.timeoutMs())
+                .connectionTimeout(3000)
+                .build();
+        cs.loginPassword(session.user(), new String(session.pin()));
+        return cs;
+    }
+
+    /**
+     * Advertises only {@code Mac} from BC, ahead of CryptoServer. Explicit
+     * {@code Mac.getInstance(alg, cryptoServer)} still uses the HSM.
+     */
+    private static Provider softwareMacPreferred(Provider bc) {
+        return new SoftwareMacProvider(bc);
+    }
+
+    private static final class SoftwareMacProvider extends Provider {
+        SoftwareMacProvider(Provider bc) {
+            super("SoftwareMac", "1.0",
+                    "BC HMAC so unscoped Mac is not served by CryptoServer");
+            for (Service service : bc.getServices()) {
+                if (!"Mac".equals(service.getType())) {
+                    continue;
+                }
+                Service backend = service;
+                putService(new Service(this, backend.getType(), backend.getAlgorithm(),
+                        backend.getClassName(), null, null) {
+                    @Override
+                    public Object newInstance(Object constructorParameter) throws NoSuchAlgorithmException {
+                        return backend.newInstance(constructorParameter);
+                    }
+                });
+            }
+        }
+    }
+
+    private static BouncyCastleJsseProvider bcJsseWithHsmAlternate(CryptoServerProvider cs, Provider bc) {
+        // Pin the default helper to BC. If CryptoServer is first in Security, JSSE would
+        // initSign HSM keys on Ultimaco directly and never call the alternate (no HsmGate).
+        JcaTlsCryptoProvider crypto = new JcaTlsCryptoProvider()
+                .setProvider(bc)
+                .setAlternateProvider(HsmSigningProvider.jsseAlternate(cs));
+        return new BouncyCastleJsseProvider(false, crypto);
+    }
+
+    /**
+     * Installs providers so {@link Security} order matches {@code
+     * providersHighestPriorityFirst}. Existing providers with the same name are removed first.
+     */
+    private static void installOrdered(List<Provider> providersHighestPriorityFirst) {
+        for (Provider provider : providersHighestPriorityFirst) {
+            Security.removeProvider(provider.getName());
+        }
+        for (int i = providersHighestPriorityFirst.size() - 1; i >= 0; i--) {
+            Security.insertProviderAt(providersHighestPriorityFirst.get(i), 1);
+        }
+    }
+
     static CryptoServerProvider requireCryptoServer() {
         if (cryptoServer == null) {
-            throw new IllegalStateException("CryptoServer not installed — call a NodeTls context factory first");
+            throw new IllegalStateException("CryptoServer not installed — call NodeTls.install first");
         }
         return cryptoServer;
     }
@@ -232,16 +291,38 @@ final class TlsProviders {
         }
     }
 
-    /** BC JSSE alternate only — not registered via {@link Security#addProvider}. */
-    private static final class PqmiShimProvider extends Provider {
-        PqmiShimProvider() {
-            super(PQMI_SHIM_NAME, "1.0", "HSM ML-DSA signing shim");
-            putService(new Service(this, "Signature", "ML-DSA", MlDsaSpi.class.getName(), null, null) {
+    /**
+     * JSSE alternate for TLS identity signing. Never registered in {@link Security}.
+     * Classical sign → CryptoServer + {@link HsmGate}; ML-DSA sign → PQMI.
+     */
+    private static final class HsmSigningProvider extends Provider {
+        private HsmSigningProvider() {
+            super("TlsHsmAlternate", "1.0", "JSSE alternate for HSM signing");
+        }
+
+        static HsmSigningProvider jsseAlternate(CryptoServerProvider cs) {
+            HsmSigningProvider provider = new HsmSigningProvider();
+            provider.putService(new Service(provider, "Signature", "ML-DSA", MlDsaSpi.class.getName(), null, null) {
                 @Override
                 public Object newInstance(Object ctorParam) {
                     return new MlDsaSpi();
                 }
             });
+            for (HsmSignatureAlgorithm algorithm : HSM_SIGNATURE_ALGORITHMS) {
+                provider.putService(new Service(
+                        provider,
+                        "Signature",
+                        algorithm.advertisedName(),
+                        HsmSignatureSpi.class.getName(),
+                        algorithm.aliases(),
+                        null) {
+                    @Override
+                    public Object newInstance(Object ctorParam) {
+                        return new HsmSignatureSpi(algorithm, cs);
+                    }
+                });
+            }
+            return provider;
         }
     }
 
@@ -283,7 +364,7 @@ final class TlsProviders {
             byte[] message = buffer.toByteArray();
             try {
                 byte[] signature = pqmi.sign(message);
-                SigningAudit.log(true, "PQMI", "ML-DSA-44", message.length);
+                SigningAudit.log("PQMI", "ML-DSA-44", message.length);
                 return signature;
             } catch (Exception e) {
                 throw new SignatureException("HSM sign failed", e);
@@ -310,40 +391,51 @@ final class TlsProviders {
         }
     }
 
-    private static final String[] AUDITED_SIGNATURE_ALGORITHMS = {
-            "SHA256withRSA",
-            "SHA384withRSA",
-            "SHA512withRSA",
-            "SHA256withECDSA",
-            "SHA384withECDSA",
-            "SHA512withECDSA",
-    };
+    /**
+     * Classical TLS identity algorithms advertised by {@link HsmSigningProvider}.
+     * BC JSSE asks for {@code SHA256WITHRSAANDMGF1} then falls back to
+     * {@code SHA256WITHRSASSA-PSS}; CryptoServer registers the latter form.
+     */
+    private record HsmSignatureAlgorithm(String advertisedName, String cryptoServerName, List<String> aliases) {
+        static HsmSignatureAlgorithm pkcs1(String name) {
+            return new HsmSignatureAlgorithm(name, name, List.of());
+        }
 
-    /** Logs classical TLS identity signing before delegating to CryptoServer or BC. */
-    private static final class SigningAuditProvider extends Provider {
-        SigningAuditProvider(CryptoServerProvider cryptoServer) {
-            super("TlsSigningAudit", "1.0", "TLS identity signing audit");
-            for (String algorithm : AUDITED_SIGNATURE_ALGORITHMS) {
-                putService(new Service(this, "Signature", algorithm, AuditedSignatureSpi.class.getName(),
-                        java.util.List.of("Algorithm=" + algorithm), null) {
-                    @Override
-                    public Object newInstance(Object ctorParam) throws NoSuchAlgorithmException {
-                        return new AuditedSignatureSpi(algorithm, cryptoServer);
-                    }
-                });
-            }
+        static HsmSignatureAlgorithm rsaPss(String digest) {
+            String cryptoServerName = digest + "withRSASSA-PSS";
+            return new HsmSignatureAlgorithm(
+                    cryptoServerName,
+                    cryptoServerName,
+                    List.of(
+                            digest + "WITHRSASSA-PSS",
+                            digest + "withRSAANDMGF1",
+                            digest + "WITHRSAANDMGF1"
+                    )
+            );
         }
     }
 
-    private static final class AuditedSignatureSpi extends SignatureSpi {
-        private final String algorithm;
+    private static final HsmSignatureAlgorithm[] HSM_SIGNATURE_ALGORITHMS = {
+            HsmSignatureAlgorithm.pkcs1("SHA256withRSA"),
+            HsmSignatureAlgorithm.pkcs1("SHA384withRSA"),
+            HsmSignatureAlgorithm.pkcs1("SHA512withRSA"),
+            HsmSignatureAlgorithm.rsaPss("SHA256"),
+            HsmSignatureAlgorithm.rsaPss("SHA384"),
+            HsmSignatureAlgorithm.rsaPss("SHA512"),
+            HsmSignatureAlgorithm.pkcs1("SHA256withECDSA"),
+            HsmSignatureAlgorithm.pkcs1("SHA384withECDSA"),
+            HsmSignatureAlgorithm.pkcs1("SHA512withECDSA"),
+    };
+
+    /** HSM-only classical TLS sign; BC verify if JSSE ever routes verify to the alternate. */
+    private static final class HsmSignatureSpi extends SignatureSpi {
+        private final HsmSignatureAlgorithm algorithm;
         private final CryptoServerProvider cryptoServer;
         private Signature delegate;
-        private boolean hsm;
-        private String backend;
+        private AlgorithmParameterSpec pendingParams;
         private int messageBytes;
 
-        AuditedSignatureSpi(String algorithm, CryptoServerProvider cryptoServer) {
+        HsmSignatureSpi(HsmSignatureAlgorithm algorithm, CryptoServerProvider cryptoServer) {
             this.algorithm = algorithm;
             this.cryptoServer = cryptoServer;
         }
@@ -352,7 +444,8 @@ final class TlsProviders {
         protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {
             messageBytes = 0;
             try {
-                delegate = Signature.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+                delegate = Signature.getInstance(algorithm.cryptoServerName(), BouncyCastleProvider.PROVIDER_NAME);
+                applyPendingParams();
                 delegate.initVerify(publicKey);
             } catch (Exception e) {
                 throw new InvalidKeyException("verify init failed", e);
@@ -363,21 +456,15 @@ final class TlsProviders {
         protected void engineInitSign(PrivateKey privateKey) throws InvalidKeyException {
             messageBytes = 0;
             try {
-                delegate = Signature.getInstance(algorithm, cryptoServer);
+                delegate = Signature.getInstance(algorithm.cryptoServerName(), cryptoServer);
+                applyPendingParams();
                 delegate.initSign(privateKey);
-                backend = "CryptoServer";
-                hsm = privateKey.getEncoded() == null;
-            } catch (InvalidKeyException cryptoServerFailure) {
-                try {
-                    delegate = Signature.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-                    delegate.initSign(privateKey);
-                    backend = "BC";
-                    hsm = false;
-                } catch (Exception bcFailure) {
-                    throw cryptoServerFailure;
-                }
             } catch (Exception e) {
-                throw new InvalidKeyException("sign init failed", e);
+                throw new InvalidKeyException(
+                        "HSM sign init failed for " + algorithm.cryptoServerName()
+                                + " — TLS identity must be an HSM key that supports this algorithm",
+                        e
+                );
             }
         }
 
@@ -396,21 +483,39 @@ final class TlsProviders {
         @Override
         protected byte[] engineSign() throws SignatureException {
             try {
-                byte[] signature = hsm && "CryptoServer".equals(backend)
-                        ? HsmGate.call(delegate::sign)
-                        : delegate.sign();
-                SigningAudit.log(hsm, backend, algorithm, messageBytes);
+                byte[] signature = HsmGate.call(delegate::sign);
+                SigningAudit.log("CryptoServer", algorithm.cryptoServerName(), messageBytes);
                 return signature;
             } catch (SignatureException e) {
                 throw e;
             } catch (Exception e) {
-                throw new SignatureException("HSM sign failed", e);
+                throw new SignatureException("HSM sign failed (" + algorithm.cryptoServerName() + ")", e);
             }
         }
 
         @Override
         protected boolean engineVerify(byte[] sigBytes) throws SignatureException {
             return delegate.verify(sigBytes);
+        }
+
+        @Override
+        protected void engineSetParameter(AlgorithmParameterSpec params)
+                throws InvalidAlgorithmParameterException {
+            pendingParams = params;
+            if (delegate != null) {
+                delegate.setParameter(params);
+            }
+        }
+
+        @Override
+        protected AlgorithmParameters engineGetParameters() {
+            return delegate != null ? delegate.getParameters() : null;
+        }
+
+        private void applyPendingParams() throws InvalidAlgorithmParameterException {
+            if (pendingParams != null) {
+                delegate.setParameter(pendingParams);
+            }
         }
 
         @Override
@@ -430,14 +535,9 @@ final class TlsProviders {
         private SigningAudit() {
         }
 
-        static void log(boolean hsm, String backend, String algorithm, int messageBytes) {
-            if (hsm) {
-                System.out.println("[TLS] Identity signing on HSM ("
-                        + backend + ", " + algorithm + "), message=" + messageBytes + " bytes");
-            } else {
-                System.out.println("[TLS] Identity signing NOT on HSM ("
-                        + backend + ", " + algorithm + "), message=" + messageBytes + " bytes");
-            }
+        static void log(String backend, String algorithm, int messageBytes) {
+            System.out.println("[TLS] Identity signing on HSM ("
+                    + backend + ", " + algorithm + "), message=" + messageBytes + " bytes");
         }
     }
 }

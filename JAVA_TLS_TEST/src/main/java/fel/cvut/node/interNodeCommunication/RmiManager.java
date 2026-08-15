@@ -148,7 +148,24 @@ public class RmiManager {
     public NodeCommands connectBySaeId(String remoteSaeId)
             throws RemoteException, NotBoundException {
         Address remoteAddress = getAddressForSaeId(remoteSaeId);
-        return connect(remoteAddress, COMM_INTERFACE_NAME);
+        try {
+            return connect(remoteAddress, COMM_INTERFACE_NAME);
+        } catch (NotBoundException ex) {
+            NotBoundException clarified = new NotBoundException(
+                    "Peer SAE '" + remoteSaeId + "' RMI binding not found at "
+                            + remoteAddress.hostname + ":" + remoteAddress.port
+                            + " — start that node before targeting it"
+            );
+            clarified.setStackTrace(ex.getStackTrace());
+            throw clarified;
+        } catch (RemoteException ex) {
+            throw new RemoteException(
+                    "Peer SAE '" + remoteSaeId + "' unreachable at "
+                            + remoteAddress.hostname + ":" + remoteAddress.port
+                            + " — is the second node running? (" + ex.getMessage() + ")",
+                    ex
+            );
+        }
     }
 
     public NodeCommands connect(Address remoteAddress, String bindingName)

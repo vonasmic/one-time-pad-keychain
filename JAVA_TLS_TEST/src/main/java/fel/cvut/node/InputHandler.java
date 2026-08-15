@@ -3,6 +3,7 @@ package fel.cvut.node;
 import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.ClientRecord;
 import fel.cvut.terminal.ClientSelector;
+import fel.cvut.terminal.OperatorConsole;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,11 +14,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Handles incoming socket payload parsing and user-driven selection.
+ * Handles incoming socket payload parsing and operator-driven selection.
  */
 public class InputHandler {
 
-    public ClientRecord handleInput(InputStream in, List<RmiManager.SaeNode> saeNodes) throws IOException {
+    public ClientRecord handleInput(
+            InputStream in, List<RmiManager.SaeNode> saeNodes, OperatorConsole operatorConsole
+    ) throws IOException {
         Objects.requireNonNull(in, "in must not be null");
         ServerKeyPayload payload = ServerKeyPayload.readFrom(in);
 
@@ -26,7 +29,14 @@ public class InputHandler {
         List<ClientSelector.LabeledOption> clientOptions = buildClientOptions(payload.getArray());
         List<ClientSelector.LabeledOption> saeOptions = buildSaeOptions(saeNodes);
 
-        ClientSelector.Selection selection = ClientSelector.select(clientOptions, saeOptions);
+        ClientSelector.Selection selection;
+        try {
+            selection = operatorConsole.selectTarget(clientOptions, saeOptions);
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException("Operator target selection failed", e);
+        }
         String clientHash1 = toHex(sha256(clientPublicKey));
         String clientHash2 = selection.clientId();
         return new ClientRecord(clientHash1, clientHash2, List.of(), selection.saeId());

@@ -2,38 +2,100 @@
 
 Java SAE node stack using **Bouncy Castle JSSE** for the TLS protocol engine, **Utimaco SecurityServer JCE** for classical crypto, and **PQMI** for HSM ML-DSA identity signing.
 
+## Contents
+
+- [TLS](#tls)
+- [HSM / PQMI](#hsm--pqmi)
+- [Terminal app](#terminal-app)
+- [HSM setup](#hsm-setup)
+- [Database](#database)
+
 ## TLS
 
 - Profiles: `NodeTls.TlsProfile.CLASSICAL` (TLS 1.3 + x25519) and `PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44)
-- Inter-node RMI and the inbound command server use `PURE_PQC`
+- Inter-node RMI, the inbound command server, and the terminal gateway all use `PURE_PQC`
 - QKD KME mTLS uses `CLASSICAL` with CryptoServer HSM keys (`CertGenerator` option 2 → `QKD_HSM_KEY_ALIAS`); truststore is public KME CA only
 - Node identity: `CertGenerator` option 3 (default) → all `certs/{Node}.pem` → HSM keys + refreshed leaf certs + native client bundle
 
 ### Provider routing (`TlsProviders.install`)
 
+`NodeTls.install(session)` (also used by the TLS context factories) logs into CryptoServer,
+then `installOrdered(...)` so `Security` order is this list, highest priority first:
 
-| Need                                | Provider                             | How                                                            |
-| ----------------------------------- | ------------------------------------ | -------------------------------------------------------------- |
-| Classical algs (AES, EC, x25519, …) | Utimaco `CryptoServer` JCE           | `Security.insertProviderAt`                                    |
-| ML-KEM768 + ML-DSA verify           | Bouncy Castle (`bcprov`)             | next in global provider order                                  |
-| ML-DSA HSM sign                     | PQMI shim                            | BC JSSE **alternate** only (not in `Security`)                 |
-| TLS protocol                        | `BouncyCastleJsseProvider` (`bctls`) | wired with `JcaTlsCryptoProvider` (default helper + alternate) |
+| # | Provider                            | Need                                         | How                                                                 |
+| - | ----------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| 1 | `BouncyCastleJsseProvider` (`bctls`) | TLS protocol                                  | helper pinned to BC; alternate = `HsmSigningProvider`               |
+| 2 | Utimaco `CryptoServer` JCE          | Unscoped JCE (AES, KeyGen, …) HSM-first      | one logged-in instance for the JVM lifetime                         |
+| 3 | Bouncy Castle (`bcprov`)            | ML-KEM, verify, PEM/PKCS#12                   | `installOrdered` reseats any pre-existing `BC`                      |
+| — | `HsmSigningProvider`                | TLS identity sign (CryptoServer or PQMI)      | JSSE **alternate** only (not in `Security`); `HsmGate` + audit log  |
 
+JSSE tries BC `initSign` first; an HSM private key fails with `InvalidKeyException`, then the
+alternate signs on the HSM. There is no software fallback for TLS identity keys.
+`NodeTls.TlsProfile` is a data-driven enum (protocols/named-groups/signature-schemes per
+constant), so adding or tuning a cipher profile means editing one enum constant, not a
+switch statement.
 
 ## HSM / PQMI
 
-
 | File                                                                              | Role                                                                    |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `[tls/NodeTls.java](src/main/java/fel/cvut/tls/NodeTls.java)`                     | Public TLS API: profiles, `SSLContext` factories, server sockets        |
-| `[tls/TlsProviders.java](src/main/java/fel/cvut/tls/TlsProviders.java)`           | JCE/JSSE bootstrap, CryptoServer keystore import/load, PQMI ML-DSA shim |
-| `[tls/TlsStores.java](src/main/java/fel/cvut/tls/TlsStores.java)`                 | Trust/leaf PEM & PKCS#12 loading (public material)                      |
-| `[utimaco/Pqmi.java](src/main/java/fel/cvut/utimaco/Pqmi.java)`                   | HSM env + ephemeral CXI/PQMI ops (ML-DSA keygen/sign)                   |
-| `[utimaco/HsmGate.java](src/main/java/fel/cvut/utimaco/HsmGate.java)`             | Serializes PQMI CXI and CryptoServer JCE access to one device           |
-| `[certGen/CertGenerator.java](src/main/java/fel/cvut/certGen/CertGenerator.java)` | Provision: PQC node certs + QuKayDee PKCS#12 → HSM                      |
-
+| [`tls/NodeTls.java`](src/main/java/fel/cvut/tls/NodeTls.java)                     | Public TLS API: profiles, `SSLContext` factories, server sockets        |
+| [`tls/TlsProviders.java`](src/main/java/fel/cvut/tls/TlsProviders.java)           | JCE/JSSE bootstrap, CryptoServer keystore import/load, PQMI ML-DSA shim |
+| [`tls/TlsStores.java`](src/main/java/fel/cvut/tls/TlsStores.java)                 | Trust/leaf PEM & PKCS#12 loading (public material)                      |
+| [`utimaco/Pqmi.java`](src/main/java/fel/cvut/utimaco/Pqmi.java)                   | HSM env + ephemeral CXI/PQMI ops (ML-DSA keygen/sign)                   |
+| [`utimaco/HsmGate.java`](src/main/java/fel/cvut/utimaco/HsmGate.java)             | Serializes PQMI CXI and CryptoServer JCE access to one device           |
+| [`certGen/CertGenerator.java`](src/main/java/fel/cvut/certGen/CertGenerator.java) | Provision: PQC node certs + QuKayDee PKCS#12 → HSM                      |
 
 `Node` owns a `Pqmi` config handle and `SSLContext`; `TlsProviders.install` keeps one logged-in CryptoServer JCE provider for the JVM. Both paths use `HsmGate` so CXI and JCE never overlap on the HSM.
+
+## Terminal app
+
+The operator console (target SAE/client selection, shared-record deletion confirmation) runs as
+its own process, `fel.cvut.terminalapp.TerminalApp`, instead of blocking inside the node on stdin.
+
+- The terminal app connects to a node's dedicated terminal gateway port using the **same TLS
+  bootstrap nodes use to talk to each other**: `NodeTls.createContextForNode` (HSM-backed identity)
+  + `NodeTls.TlsProfile.PURE_PQC`. It authenticates like any other node — provision its identity
+  the same way (`CertGenerator`, `certs/{TLS_NODE_ID}.pem`).
+- `Node` runs `TerminalGateway` (`fel.cvut.node.TerminalGateway`), a small TLS server on
+  `NODE_TERMINAL_PORT` that accepts exactly one terminal session at a time and implements
+  `fel.cvut.terminal.OperatorConsole` by forwarding requests to it over a newline-delimited JSON
+  protocol (`fel.cvut.terminal.TerminalWireProtocol`).
+- `InputHandler`/`Node` depend only on the `OperatorConsole` abstraction — `TerminalGateway` (remote,
+  used by `Node`) and `LocalOperatorConsole` (stdin, used by `TerminalApp` itself) are its two
+  implementations.
+
+Run it with:
+
+```bash
+export TLS_NODE_ID=Terminal      # HSM identity provisioned via CertGenerator
+export NODE_HOSTNAME=127.0.0.1   # node to connect to
+export NODE_TERMINAL_PORT=...    # node's terminal gateway port
+export NODE_NATIVE_PORT=11111    # node's TLS command server (USB CDC is redirected here)
+mvn exec:java -Dexec.mainClass=fel.cvut.terminalapp.TerminalApp
+```
+
+### USB redirect (embedded device)
+
+The terminal app is the **sole native-client endpoint** for the embedded (STM32) device — the
+node itself has no USB awareness. USB is **required**: `TerminalApp` opens `/dev/ttyACM0` (override
+with `USB_SERIAL_PORT`), asserts DTR/RTS, waits for the device's TLS ClientHello (`0x16`), then
+forwards bytes to `NODE_NATIVE_PORT`. Startup fails if the port cannot be opened.
+
+```bash
+export NODE_NATIVE_PORT=11111
+# export USB_SERIAL_PORT=/dev/ttyACM0   # default
+export USB_BAUD_RATE=115200             # optional
+```
+
+| File                                                                                  | Role                                                                  |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`terminal/OperatorConsole.java`](src/main/java/fel/cvut/terminal/OperatorConsole.java) | Abstraction over operator interactions a node needs                  |
+| [`terminal/LocalOperatorConsole.java`](src/main/java/fel/cvut/terminal/LocalOperatorConsole.java) | stdin-backed `OperatorConsole`, used by `TerminalApp`         |
+| [`terminal/TerminalWireProtocol.java`](src/main/java/fel/cvut/terminal/TerminalWireProtocol.java) | Newline-delimited JSON request/response protocol              |
+| [`node/TerminalGateway.java`](src/main/java/fel/cvut/node/TerminalGateway.java)         | Node-side TLS endpoint + remote `OperatorConsole` implementation      |
+| [`terminalapp/TerminalApp.java`](src/main/java/fel/cvut/terminalapp/TerminalApp.java)   | Standalone terminal app entry point                                   |
+| [`terminalapp/UsbTcpBridge.java`](src/main/java/fel/cvut/terminalapp/UsbTcpBridge.java) | USB-serial ↔ node TCP command-server byte relay for the embedded device |
 
 Node identity is `certs/{Node}.pem` plus the HSM key (`{HSM_MLDSA_GROUP}/{Node}`). Legacy `certs/{Node}.p12` files from the old software-keystore path are not used at runtime.
 
@@ -43,7 +105,9 @@ Node identity is `certs/{Node}.pem` plus the HSM key (`{HSM_MLDSA_GROUP}/{Node}`
 
 `vendor/cryptoservercxi.jar` is the full CryptoServer CXI API (from Utimaco `CryptoServerCXI.jar`), pre-adjusted for JCE compatibility (`CryptoServerCXI.Item` and `TAG_*` are public). Copy from your Utimaco install only if you upgrade SDK versions — then re-apply the same visibility patch or keep this vendor copy.
 
-### HSM one-time init (csadm)
+## HSM setup
+
+### One-time init (csadm)
 
 Unzip both Utimaco SDKs into one parent folder and run everything from there:
 
@@ -135,11 +199,22 @@ Root CA stays in `root-ca.p12` (software).
 
 ### Node startup
 
-HSM connection lives in `env/hsm.env` (shared). Each node env sets `TLS_NODE_ID` to pick its HSM key and leaf cert (`certs/{TLS_NODE_ID}.pem`). After HSM reinit, run CertGenerator (default option 3) before starting nodes — runtime does not create HSM keys automatically.
+`env/hsm.env` (copy from `env/example/hsm.env.example`) holds the Utimaco connection
+(`HSM_DEVICE`, `HSM_USER`, `HSM_PIN`, `HSM_MLDSA_GROUP`) shared by every node process. Each
+node's own env file (`env/node-N.env`, from `env/example/.env.example`) sets `TLS_NODE_ID` to
+select its HSM key and leaf cert (`certs/{TLS_NODE_ID}.pem`). Source both before starting a node
+— there is no wrapper script:
 
 ```bash
-./run-node.sh env/node-1.env   # sources env/hsm.env, then node env
+set -a
+source env/hsm.env
+source env/node-1.env
+set +a
+mvn exec:java -Dexec.mainClass=fel.cvut.node.Node
 ```
+
+After an HSM reinit, run `CertGenerator` (option 3) before starting nodes — the node process does
+not create HSM keys automatically.
 
 ## Database
 
@@ -151,19 +226,19 @@ PostgreSQL stores client record state. Use **one database per node** (e.g. `qkd-
 2. Set `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` in that file.
 3. Create the database:
 
-```bash
-createdb qkd-db-sae-1
-```
+   ```bash
+   createdb qkd-db-sae-1
+   ```
 
-1. Run migrations **before starting a node**:
+4. Run migrations **before starting a node**:
 
-```bash
-./migrate.sh              # uses .env
-./migrate.sh env/node-1.env
-./migrate-all.sh          # all env/node-*.env (node-1, node-2, node-3, …)
-```
+   ```bash
+   ./migrate.sh              # uses .env
+   ./migrate.sh env/node-1.env
+   ./migrate-all.sh          # all env/node-*.env (node-1, node-2, node-3, …)
+   ```
 
-The script loads env vars and runs `mvn flyway:migrate`.
+   The script loads env vars and runs `mvn flyway:migrate`.
 
 Alternatively, with env already exported:
 
