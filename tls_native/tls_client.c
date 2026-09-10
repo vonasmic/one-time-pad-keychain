@@ -17,7 +17,7 @@
 #define CERTS_DIR           "../JAVA_TLS_TEST/certs"
 #define CLIENT_CERT_FILE    CERTS_DIR "/client/client-cert.pem"
 #define CLIENT_KEY_FILE     CERTS_DIR "/client/client-key.pem"
-#define CA_CERT_FILE        CERTS_DIR "/root-ca.pem"
+#define CA_CERT_FILE        CERTS_DIR "/ca/root-ca.pem"
 
 void err_sys(const char* msg) {
     perror(msg);

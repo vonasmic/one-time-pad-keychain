@@ -78,9 +78,58 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/vendor/securityserver-jce.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.14.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.21.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.21.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>12.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>12.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.zonky.test</groupId>
+            <artifactId>embedded-postgres</artifactId>
+            <version>2.1.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
+        <sourceDirectory>src/SaeNode/main/java</sourceDirectory>
+        <testSourceDirectory>src/SaeNode/test/java</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/SaeNode/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -88,14 +137,33 @@
                 <version>3.6.0</version>
                 <executions>
                     <execution>
-                        <id>add-pqmi-vendor-sources</id>
+                        <id>add-app-and-vendor-sources</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>add-source</goal>
                         </goals>
                         <configuration>
                             <sources>
+                                <source>src/CertGenerator/main/java</source>
+                                <source>src/TerminalBridge/main/java</source>
+                                <source>src/UserApp/main/java</source>
+                                <source>src/LabSwitch/main/java</source>
                                 <source>vendor/pqmi-java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-app-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/CertGenerator/test/java</source>
+                                <source>src/TerminalBridge/test/java</source>
+                                <source>src/UserApp/test/java</source>
+                                <source>src/LabSwitch/test/java</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -112,6 +180,15 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+                <configuration>
+                    <excludedGroups>hsm</excludedGroups>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>12.8.1</version>
@@ -123,7 +200,7 @@
                     <!--suppress UnresolvedMavenProperty -->
                     <password>${env.DB_PASSWORD}</password>
                     <locations>
-                        <location>filesystem:src/main/resources/db/migration</location>
+                        <location>filesystem:src/SaeNode/main/resources/db/migration</location>
                     </locations>
                 </configuration>
                 <dependencies>

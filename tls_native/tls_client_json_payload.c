@@ -24,7 +24,7 @@
 #define CERTS_DIR           "../JAVA_TLS_TEST/certs"
 #define CLIENT_CERT_FILE    CERTS_DIR "/client/client-cert.pem"
 #define CLIENT_KEY_FILE     CERTS_DIR "/client/client-key.pem"
-#define CA_CERT_FILE        CERTS_DIR "/root-ca.pem"
+#define CA_CERT_FILE        CERTS_DIR "/ca/root-ca.pem"
 #define FRIEND_CERT_FILE    CERTS_DIR "/Alice.pem"
 #define MAX_PUBKEY_DER_SZ   4096
 

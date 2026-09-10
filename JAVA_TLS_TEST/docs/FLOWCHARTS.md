@@ -133,6 +133,7 @@ flowchart TD
 ## 4. SAE database persistence decisions
 
 The database tracks **record state** (not the key material itself). Key material is stored on the peer SAE.
+Origin publishes the **reversed** hash pair to the peer SAE (`(peerHash, myHash)`); each node looks up only the pair it stored.
 
 ### 4a. Can a new record be started?
 
@@ -158,6 +159,8 @@ flowchart TD
 flowchart TD
     Start([After database check])
     Result{Result?}
+
+    Start --> Result
 
     Result -->|New record allowed| FetchQKD[Fetch keys from QKD]
     FetchQKD --> SyncPeer[Sync with peer SAE]

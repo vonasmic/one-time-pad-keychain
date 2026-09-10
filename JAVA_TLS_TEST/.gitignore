@@ -42,6 +42,9 @@ env/.env
 env/*.env
 !env/*.env.example
 
+### Tropic host pairing backup (written by UserApp INIT) ###
+certs/**/pairing.key
+
 ### Utimaco vendor tree (copy locally from QuantumProtect Java_UTI) ###
 vendor/pqmi-java/
 

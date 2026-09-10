@@ -152,14 +152,14 @@ Type `debug off` to disable verbose logging.
 
 ## Local mTLS test (`tls_client` vs JAVA_TLS_TEST)
 
-1. Generate certs from `JAVA_TLS_TEST/`: run `CertGenerator` option **3** (writes `certs/client/` ML-DSA PEM bundle)
+1. Generate certs from `JAVA_TLS_TEST/`: run `CertGenerator` (writes `certs/client/` ML-DSA PEM bundle signed by `client_ca`, plus `certs/ca/client_ca.pem`)
 2. Terminal A: start a JAVA_TLS_TEST node (PURE_PQC command server on port 11111)
 3. Terminal B: `cd tls_native && make tls_client && ./tls_client`
 
 `tls_client` loads:
-- `../JAVA_TLS_TEST/certs/client/client-cert.pem`
+- `../JAVA_TLS_TEST/certs/client/client-cert.pem` (issued by `client_ca`)
 - `../JAVA_TLS_TEST/certs/client/client-key.pem`
-- `../JAVA_TLS_TEST/certs/root-ca.pem`
+- `../JAVA_TLS_TEST/certs/ca/root-ca.pem` (to verify the SAE node)
 
 1. `make certs-native` (from `tls_native/`)
 2. Terminal A: `./tls_server`

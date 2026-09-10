@@ -4,10 +4,40 @@ import serial
 import select
 import os
 
-# --- Configuration ---
-DEFAULT_USB_PORT = '/dev/ttyACM0' 
+DEBUG_PREFIX = b"DEBUG:"
+DEBUG_SUFFIX = b":DEBUG"
+
+DEFAULT_USB_PORT = '/dev/ttyACM0'
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_TCP_PORT = 11111
+
+
+def split_debug_and_tls(buf: bytes) -> tuple[bytes, bytes, list[bytes]]:
+    """Return (kept_buf, tls_from_hello, debug_frames). Incomplete DEBUG stays in kept_buf."""
+    frames: list[bytes] = []
+    tls = b""
+    while buf:
+        buf = buf.lstrip(b"\r\n")
+        if not buf:
+            break
+        if buf.startswith(DEBUG_PREFIX):
+            closer = buf.find(DEBUG_SUFFIX, len(DEBUG_PREFIX))
+            if closer < 0:
+                break
+            frames.append(buf[: closer + len(DEBUG_SUFFIX)])
+            buf = buf[closer + len(DEBUG_SUFFIX) :]
+            continue
+        hello = buf.find(b"\x16")
+        if hello >= 0:
+            if hello > 0:
+                frames.append(buf[:hello])
+            tls = buf[hello:]
+            buf = b""
+            break
+        frames.append(buf)
+        buf = b""
+        break
+    return buf, tls, frames
 
 def main():
     usb_port = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_USB_PORT
@@ -37,6 +67,7 @@ def main():
 
     inputs = [ser, sock, sys.stdin]
     tls_active = False
+    usb_buf = b""
     
     try:
         while True:
@@ -60,28 +91,18 @@ def main():
                     try:
                         data = ser.read(4096)
                         if data:
-                            # A. ALWAYS print to screen (Safe decoding)
-                            # We use 'replace' so binary bytes become '?' instead of crashing
-                            text_view = data.decode('utf-8', errors='replace')
-                            sys.stdout.flush()
-                            if "DEBUG:" in data.decode("utf-8", "ignore"):
-                                print(data)
-                                print("works")
-                                continue
-
-                            # B. Forwarding Logic
                             if tls_active:
-                                # Forward everything once TLS has started
                                 sock.sendall(data)
-                            else:
-                                # Check for TLS ClientHello (0x16) to engage bridge
-                                if b'\x16' in data:
-                                    print(f"\n[+] TLS Handshake detected! Forwarding to Server...")
-                                    tls_active = True
-                                    
-                                    # Forward only the binary part (skip echoed text)
-                                    start_index = data.find(b'\x16')
-                                    sock.sendall(data[start_index:])
+                                continue
+                            usb_buf += data
+                            usb_buf, tls, frames = split_debug_and_tls(usb_buf)
+                            for frame in frames:
+                                print(frame.decode("utf-8", errors="replace"), end="" if frame.endswith((b"\r", b"\n")) else "\n")
+                            sys.stdout.flush()
+                            if tls:
+                                print("\n[+] TLS Handshake detected! Forwarding to Server...")
+                                tls_active = True
+                                sock.sendall(tls)
                     except Exception as e:
                         print(f"\n[!] Error reading Serial: {e}")
                         return

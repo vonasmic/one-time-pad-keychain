@@ -11,3 +11,12 @@
 [submodule "PQClean"]
 	path = PQClean
 	url = https://github.com/PQClean/PQClean.git
+[submodule "stm32u535-trustzone-usb"]
+	path = stm32u535-trustzone-usb
+	url = git@github.com:vonasmic/stm32u535-trustzone-usb.git
+[submodule "libtropic"]
+	path = libtropic
+	url = https://github.com/tropicsquare/libtropic.git
+[submodule "QKD/qukaydee-generate-client-certificates"]
+	path = QKD/qukaydee-generate-client-certificates
+	url = https://github.com/brunorijsman/qukaydee-generate-client-certificates.git

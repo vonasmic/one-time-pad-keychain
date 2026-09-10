@@ -1,3 +1,6 @@
+# tmux pane output from scripts/run-all.sh
+scripts/logs/
+
 tags
 *.swp
 *.swo
@@ -6,3 +9,12 @@ app/build/*
 **Debug**
 **vendor/**
 JAVA_TLS_TEST/vendor/**
+
+# Utimaco SDKs (proprietary). Only READMEs are tracked.
+ultimaco/hsm-simulator/**
+!ultimaco/hsm-simulator/
+!ultimaco/hsm-simulator/README.md
+ultimaco/quantum-protect/**
+!ultimaco/quantum-protect/
+!ultimaco/quantum-protect/README.md
+
