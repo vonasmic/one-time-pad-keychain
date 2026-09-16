@@ -11,7 +11,7 @@ same non-interactive run that provisions PQC node certs (`certs/Alice.pem`, etc.
 ```text
 JAVA_TLS_TEST/certs/qkd/
   qkd-server-ca.p12     # trust anchor for the KME server (public CA only)
-  # sae-*-client.p12    # temporary — import into HSM, then delete
+  sae-*-client.p12      # imported into HSM; left on disk
 ```
 
 HSM keystore aliases (after import): `sae-1`, `sae-2`, …

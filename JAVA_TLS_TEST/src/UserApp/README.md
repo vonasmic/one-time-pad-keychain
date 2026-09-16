@@ -1,8 +1,9 @@
 # UserApp
 
-USB console for the home-PC user: **raw chip commands**, OTP **encrypt / decrypt**,
-**peer add from a cert hash**, and a one-shot **chip INIT**. Provision is still the
-SAE node plus [TerminalBridge](../TerminalBridge/README.md). This process does
+**USER** application: USB console for the home-PC user. This is **not** an SAE.
+The device connects to this process for OTP **encrypt / decrypt** and **MANAGE**
+(INIT / OWNER / PEER / CREDS). Provision is a separate **SAE** path: the SAE
+node plus [TerminalBridge](../TerminalBridge/README.md). This process does
 **not** use the HSM: the user ML-DSA key is loaded from `certs/user/` into an
 in-memory PKCS#12 store and Bouncy Castle JSSE signs in process. The user key is
 never embedded in firmware.
@@ -22,18 +23,17 @@ line is sent straight to the chip console (same as TerminalBridge transact).
 | --- | --- |
 | `ENCRYPT` / `E` | Arm TLS encrypt, send PIN + message, print pad reply hex |
 | `DECRYPT` / `D` | Arm TLS decrypt, send PIN + encrypt reply (empty = last) |
-| `LEFT` | USB `TROPIC OTP LEFT` — remaining/capacity pad kilobytes (`enc=A/B kb dec=C/D kb`), no PIN |
-| `PEER ADD` | nickname + 96-hex peer hash → unsigned MANAGE TLS (owner-pinned, not mTLS) |
+| `LEFT` / `OTP LEFT` | USB `TROPIC OTP LEFT` — remaining/capacity pad kilobytes (`enc=A/B kb dec=C/D kb`), no PIN |
+| `PEER ADD` | nickname + 96-hex peer hash + PIN → unsigned MANAGE TLS |
 | `PEER LIST` / `PEER REMOVE` | LIST is USB; REMOVE is unsigned MANAGE TLS with PIN |
 | `INIT` | Wizard: OWNER SET blob, KEYGEN, MANAGE KEM INIT, PAIRING (see below) |
 | `OWNER` | Enroll this UserApp cert (`OWNER SET` unsigned blob + reset password + device creds) |
 | `REPLACE` | `OWNER REPLACE` over unsigned MANAGE TLS (reset password, not M&D) |
 
-USB command for OTP is still `{MODE} {unix}`. After TLS this process is a loopback
+USB command for OTP is `{MODE} {unix}`. After TLS this process is a loopback
 TLS server over CDC. PIN for ENCRYPT/DECRYPT is **only inside TLS**.
 
-`PEER ADD` hashes the certificate the same way firmware does
-(raw subjectPublicKey bits). The UserApp certificate **is** the device owner key.
+`PEER ADD` takes a 96-hex SHA-384 of the peer SPKI (same width firmware stores). The UserApp certificate **is** the device owner key.
 
 ### Chip lines (passthrough)
 
@@ -67,9 +67,10 @@ KEYGEN, because SH0 is already burned. Use **n** whenever you do not want a new 
 
 Stops if a probe fails; does not send CONFIRM / `y` after a failed step.
 
-KEM INIT stores the ML-KEM public key in NV (no reflash). Enroll the UserApp
-certificate as owner (`OWNER SET`) and load device TLS creds (`CREDS DEVICE` /
-`CREDS SAE`) before PROVISION/ENCRYPT/DECRYPT.
+KEM INIT stores the ML-KEM public key in NV (no reflash). `OWNER` / `INIT` write the
+UserApp owner SPKI plus device cert/key and SAE CA in the `OWNER SET` blob. That is
+enough for PROVISION/ENCRYPT/DECRYPT; CREDS SAE / CREDS DEVICE are MANAGE TLS commands
+used by other enroll paths, not a UserApp USB step.
 
 ## Lab USB
 
@@ -123,7 +124,7 @@ Template: [`env/example/userapp.env.example`](../../env/example/userapp.env.exam
 | `USERAPP_DEVICE_CERT` | no | `client/client-cert.pem` | Device leaf written into the chip |
 | `USERAPP_DEVICE_KEY` | no | `client/client-key.pem` | Device private key written into the chip |
 | `USERAPP_PAIRING_KEY` | no | next to the device cert: `pairing.key` | Host backup of Tropic X25519 pairing priv/pub |
-| `USERAPP_SAE_CA` | no | `ca/root-ca.pem` | SAE root CA imported into the chip (required at startup) |
+| `USERAPP_SAE_CA` | no | `ca/root-ca.pem` | SAE root CA written into the chip on OWNER / INIT |
 
 No HSM variables. This process never calls `Pqmi`.
 
@@ -132,11 +133,11 @@ No HSM variables. This process never calls `Pqmi`.
 ```text
 src/UserApp/
   README.md
-  main/java/fel/cvut/userapp/        UserApplication, PeerCertHash, ChipInit
+  main/java/fel/cvut/userapp/        UserApplication, OwnerAuth, PeerCertHash, ChipInit
   test/java/fel/cvut/userapp/        PeerCertHashTest
 ```
 
 USB link (including `transact` / `readConsole`) lives in [TerminalBridge](../TerminalBridge/README.md).
 OTP framing (`SecureOtp`, `SeBytes`) and software-PEM TLS (`NodeTls.createContextFromPem`)
 live in [SaeNode](../SaeNode/README.md).
-Chip verbs: [COMMANDS.md](../../stm32u535-trustzone-usb/docs/COMMANDS.md).
+Chip verbs: [COMMANDS.md](../../../stm32u535-trustzone-usb/docs/COMMANDS.md).

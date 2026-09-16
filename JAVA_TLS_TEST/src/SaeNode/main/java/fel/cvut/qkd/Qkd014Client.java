@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * ETSI GS QKD 014 API client with mTLS and classical TLS 1.3.
+ * ETSI GS QKD 014 API client with mTLS. Defaults to {@link NodeTls.TlsProfile#CLASSICAL}
+ * (prefer TLS 1.3 / ML-KEM-768 / ML-DSA-44, allow TLS 1.2 and classical).
  */
 public class Qkd014Client {
 

@@ -1,7 +1,9 @@
 # SaeNode
 
-SAE node process: inter-node RMI, ETSI 014 QKD client, TLS command server for the
-secure element, terminal gateway, PostgreSQL record state, and HSM-backed crypto.
+**SAE** node process: inter-node RMI, ETSI 014 QKD client, TLS command server for
+device **PROVISION**, terminal gateway, PostgreSQL record state, and HSM-backed
+crypto. This is **not** UserApp. Encrypt / decrypt / manage stay on the **USER**
+process ([UserApp](../UserApp/README.md)).
 
 Entry point: `fel.cvut.node.Node`.
 
@@ -11,9 +13,9 @@ Working directory must be `JAVA_TLS_TEST` (so `certs/` and `env/` resolve).
 
 - Authenticates with an HSM ML-DSA identity (`certs/{TLS_NODE_ID}.pem` + PQMI key)
 - Serves **PURE_PQC** TLS to peer nodes (RMI) and to [TerminalBridge](../TerminalBridge/README.md)
-- Serves **PURE_PQC** TLS on `NODE_NATIVE_PORT` with `client_ca` trust (device / [TerminalBridge](../TerminalBridge/README.md) USB relay)
+- Serves **PURE_PQC** TLS on `NODE_NATIVE_PORT` with `client_ca` trust (device mTLS for **PROVISION** / TerminalBridge USB relay). Encrypt / decrypt / manage stay on [UserApp](../UserApp/README.md).
 - Talks to the QuKayDee KME over **CLASSICAL** mTLS (`QKD_HSM_KEY_ALIAS` + KME CA truststore)
-- Stores client record state and encrypted pad material in **one PostgreSQL database per node**
+- Stores client record state and HSM-encrypted QKD key material in **one PostgreSQL database per node**
 - Forwards operator SELECT / CONFIRM / NOTIFY to the terminal app via `TerminalGateway`
 
 The node never creates HSM keys. After an HSM reinit, run [CertGenerator](../CertGenerator/README.md) first.
@@ -31,6 +33,14 @@ The node never creates HSM keys. After an HSM reinit, run [CertGenerator](../Cer
 
 ## How to run
 
+From the repo root (sources `env/hsm.env` and the given node env):
+
+```bash
+scripts/java.sh node env/node-1.env
+```
+
+Or from `JAVA_TLS_TEST`:
+
 ```bash
 cd JAVA_TLS_TEST
 cp env/example/hsm.env.example env/hsm.env          # once; do not commit the PIN
@@ -46,9 +56,9 @@ set +a
 mvn exec:java -Dexec.mainClass=fel.cvut.node.Node
 ```
 
-There is no wrapper script. Source **both** env files — Java only sees process environment
-variables. `env/hsm.env` is the shared Utimaco connection; `env/node-N.env` is this node's
-identity, ports, QKD URL, and database.
+Source **both** env files — Java only sees process environment variables. `env/hsm.env` is
+the shared Utimaco connection; `env/node-N.env` is this node's identity, ports, QKD URL,
+and database.
 
 Default `mvn exec:java` (no `-Dexec.mainClass`) also starts `Node`.
 
@@ -91,7 +101,8 @@ All of these are required (`Pqmi.fromEnvironment`).
 
 ## Database
 
-PostgreSQL stores client record state. Use **one database per node**.
+PostgreSQL stores `client_record_state` and HSM-encrypted QKD key material
+(`shared_key_material`). Use **one database per node**.
 On start the node runs a timed thread that deletes rows older than
 `RECORD_RETENTION_DAYS` (default 14) immediately and then every 24 hours.
 Key material follows via `ON DELETE CASCADE`.
@@ -114,9 +125,11 @@ mvn flyway:migrate
 ```text
 src/SaeNode/
   README.md
-  main/java/fel/cvut/node/      Node, bootstrap, terminal gateway, RMI, records
-  main/java/fel/cvut/db/        JDBC + repositories
-  main/java/fel/cvut/qkd/       ETSI 014 client
+  main/java/fel/cvut/node/      Node, bootstrap, TerminalGateway, PeerRecordSync
+    interNodeCommunication/     RMI commands
+    recordManager/              Client records
+  main/java/fel/cvut/db/        JDBC + repositories + RecordRetention
+  main/java/fel/cvut/qkd/       ETSI 014 client, Qkd014Demo
   main/java/fel/cvut/se/        Secure-element session / OTP framing
   main/java/fel/cvut/tls/       Shared JSSE / BC / HSM TLS bootstrap
   main/java/fel/cvut/utimaco/   PQMI, HSM gate, AES-GCM
@@ -133,7 +146,7 @@ CertGenerator and TerminalBridge.
 | Use | Profile | Trust |
 | --- | --- | --- |
 | Inter-node RMI, terminal gateway | `PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44) | `certs/ca/root-ca.pem` |
-| Command server (`NODE_NATIVE_PORT`) | `PURE_PQC` | `certs/ca/client_ca.pem` (device / user) |
-| QKD KME mTLS | `CLASSICAL` (TLS 1.3 + x25519) | `QKD_TRUSTSTORE_PATH` |
+| Command server (`NODE_NATIVE_PORT`) | `PURE_PQC` | `certs/ca/client_ca.pem` (device certs, `PROVISION`) |
+| QKD KME mTLS | `CLASSICAL` (prefer TLS 1.3 + MLKEM768 + mldsa44; allow TLS 1.2 + x25519 / classical signatures) | `QKD_TRUSTSTORE_PATH` |
 
 Provider routing is documented in the [JAVA_TLS_TEST README](../../README.md#tls).

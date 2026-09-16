@@ -264,7 +264,7 @@ public class Node implements AutoCloseable {
                                 + " and target SAE "
                                 + header.saeId()
                 );
-                notifyOperator("No keys were sent to the device.");
+                notifyOperator(processResult.notifyText());
             }
             outcomeReported = true;
             commandHandler.accept(socket);
@@ -390,10 +390,11 @@ public class Node implements AutoCloseable {
                     }
                     return existing;
                 }
-                default -> {
+                case NOT_INSERTED -> {
                     System.out.println(
                             "Skipping record processing due to map insertion outcome: " + insertOutcome);
-                    return SharedPayloadResolution.noPayload();
+                    return SharedPayloadResolution.noPayload(
+                            "Provision in progress on another device. Wait for it to finish and then retry");
                 }
             }
         }
@@ -441,7 +442,8 @@ public class Node implements AutoCloseable {
                             + " / "
                             + clientHeader.clientHash2()
             );
-            return SharedPayloadResolution.noPayload();
+            return SharedPayloadResolution.noPayload(
+                    "Target SAE rejected the insert. Wait for any provision in progress there to finish and then retry");
         } catch (Qkd014ClientException ex) {
             tryDeleteLocalRecord(
                     clientHeader.clientHash1(),
@@ -481,7 +483,8 @@ public class Node implements AutoCloseable {
         if (existingMetadata.isEmpty()) {
             System.out.println("Shared record fallback requested but no metadata found for hashes "
                     + clientHeader.clientHash1() + " / " + clientHeader.clientHash2());
-            return SharedPayloadResolution.noPayload();
+            return SharedPayloadResolution.noPayload(
+                    "Shared-key record disappeared before it could be used. Retry.");
         }
 
         AtomicRecordStateMap.RecordMetadata metadata = existingMetadata.get();
@@ -492,7 +495,8 @@ public class Node implements AutoCloseable {
         }
         if (Objects.equals(metadata.issuingSaeId(), localSaeId)) {
             if (!promptDelete(metadata)) {
-                return SharedPayloadResolution.noPayload();
+                return SharedPayloadResolution.noPayload(
+                        "Existing keys were kept. No keys were sent to the device.");
             }
             return deleteShareAndRestart(clientHeader, metadata);
         }
@@ -516,7 +520,8 @@ public class Node implements AutoCloseable {
                             + " / "
                             + clientHash2
             );
-            return SharedPayloadResolution.noPayload();
+            return SharedPayloadResolution.noPayload(
+                    "Shared keys were found but the stored payload is missing. Retry.");
         }
         sharedKeyMaterialStore.remove(clientHash1, clientHash2);
         notifyOperator("Shared keys found. Downloading them to the device.");
@@ -547,21 +552,33 @@ public class Node implements AutoCloseable {
         return kemFill.buildDownlink(uplink, keyMaterial, decryptHalf);
     }
 
-    private record SharedPayloadResolution(Optional<byte[]> payload, boolean restartInsert, boolean reselect) {
-        private static SharedPayloadResolution noPayload() {
-            return new SharedPayloadResolution(Optional.empty(), false, false);
+    private record SharedPayloadResolution(
+            Optional<byte[]> payload,
+            boolean restartInsert,
+            boolean reselect,
+            String operatorMessage
+    ) {
+        private static SharedPayloadResolution noPayload(String operatorMessage) {
+            return new SharedPayloadResolution(Optional.empty(), false, false, operatorMessage);
         }
 
         private static SharedPayloadResolution forRestartInsert() {
-            return new SharedPayloadResolution(Optional.empty(), true, false);
+            return new SharedPayloadResolution(Optional.empty(), true, false, null);
         }
 
         private static SharedPayloadResolution withPayload(byte[] payload) {
-            return new SharedPayloadResolution(Optional.of(payload), false, false);
+            return new SharedPayloadResolution(Optional.of(payload), false, false, null);
         }
 
         private static SharedPayloadResolution forReselect() {
-            return new SharedPayloadResolution(Optional.empty(), false, true);
+            return new SharedPayloadResolution(Optional.empty(), false, true, null);
+        }
+
+        private String notifyText() {
+            if (operatorMessage != null && !operatorMessage.isBlank()) {
+                return operatorMessage;
+            }
+            return "No keys were sent to the device.";
         }
     }
 

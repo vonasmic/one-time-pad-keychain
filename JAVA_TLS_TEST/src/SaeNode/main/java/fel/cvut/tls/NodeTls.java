@@ -39,9 +39,32 @@ public final class NodeTls {
      * TLS cipher configuration per profile. Each constant is the single source of truth for its
      * protocols/named-groups/signature-schemes — to change or add a profile's preferred crypto,
      * edit (or add) the constant below; no branching logic elsewhere needs to change.
+     * Arrays are preference order (first is tried first).
      */
     public enum TlsProfile {
-        CLASSICAL(new String[]{"TLSv1.3"}, new String[]{"x25519"}, null),
+        /**
+         * Same PQC suite as {@link #PURE_PQC}, then classical: TLS 1.2 and x25519 / RSA / ECDSA /
+         * Ed25519. Used for ETSI 014 KMEs that do not speak PQC.
+         */
+        CLASSICAL(
+                new String[]{"TLSv1.3", "TLSv1.2"},
+                new String[]{"MLKEM768", "x25519"},
+                new String[]{
+                        "mldsa44",
+                        "ed25519",
+                        "ecdsa_secp256r1_sha256",
+                        "ecdsa_secp384r1_sha384",
+                        "ecdsa_secp521r1_sha512",
+                        "rsa_pss_pss_sha256",
+                        "rsa_pss_pss_sha384",
+                        "rsa_pss_pss_sha512",
+                        "rsa_pss_rsae_sha256",
+                        "rsa_pss_rsae_sha384",
+                        "rsa_pss_rsae_sha512",
+                        "rsa_pkcs1_sha256",
+                        "rsa_pkcs1_sha384",
+                        "rsa_pkcs1_sha512"
+                }),
         PURE_PQC(new String[]{"TLSv1.3"}, new String[]{"MLKEM768"}, new String[]{"mldsa44"});
 
         private final String[] protocols;
@@ -131,7 +154,7 @@ public final class NodeTls {
         TlsProviders.installSoftware();
     }
 
-    /** Classical QKD: CryptoServer keystore alias + public trust store. */
+    /** QKD KME mTLS: CryptoServer keystore alias + public trust store ({@link TlsProfile#CLASSICAL}). */
     public static SSLContext createContextForQkd(
             Pqmi session, String hsmAlias, Path trustStorePath, char[] trustStorePassword
     ) throws Exception {

@@ -1,6 +1,6 @@
 # Run all
 
-Starts the Java SAE stack and the TROPIC01 host model (`se_host`) from the repo root.
+Starts the Java **SAE** and **USER** processes and the TROPIC01 host model (`se_host`) from the repo root.
 
 **HSM:** start the Windows simulator yourself (`cs_sim.bat` — [JAVA_TLS_TEST HSM setup](JAVA_TLS_TEST/README.md#hsm-setup)) so `HSM_DEVICE` in `env/hsm.env` is reachable. These scripts do **not** launch the simulator.
 

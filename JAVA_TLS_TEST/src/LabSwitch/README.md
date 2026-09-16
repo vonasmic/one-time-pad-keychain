@@ -13,14 +13,15 @@ selected keychain. Pane layout does not change.
 
 Entry point: `fel.cvut.lab.LabSwitchApp`.
 
-Owner and client are independent. CL 1 is always SAE 1; CL 2 is always SAE 2.
+Owner and client are independent. **USER** and **SAE** are the two applications that
+may own USB CDC (never both at once). CL 1 is always SAE 1; CL 2 is always SAE 2.
 
 ## Commands
 
 | Input | Effect |
 | --- | --- |
-| `USER` | UserApp may open USB (default at file create). Selected client is unchanged. |
-| `SAE` | Terminal owns USB. Selected client is unchanged (CL 1 → SAE 1, CL 2 → SAE 2). |
+| `USER` | **UserApp** may open USB (encrypt / decrypt / manage). Selected client is unchanged. |
+| `SAE` | **TerminalBridge** owns USB and relays `PROVISION` to that client's SAE. Selected client is unchanged (CL 1 → SAE 1, CL 2 → SAE 2). |
 | `CL 1` / `1` / `SAE 1` | Select keychain + SAE 1 (`/tmp/ttyACM-se1`, node-1). Owner is unchanged. |
 | `CL 2` / `2` / `SAE 2` | Select keychain + SAE 2 (`/tmp/ttyACM-se2`, node-2). Owner is unchanged. |
 | `status` | Print current file |
@@ -61,8 +62,8 @@ lab CLI / wrapper only).
 }
 ```
 
-`mode` is only `USER` or `SAE`. Older files with `CLIENT1` / `CLIENT2` / `SAE1` / `SAE2` as
-mode are migrated to `SAE` plus that client.
+`mode` is only `USER` or `SAE`. File values `CLIENT1` / `CLIENT2` / `SAE1` / `SAE2` are
+accepted as `SAE` plus that client.
 
 Each `se_host` publishes its own PTY; only one Java process opens CDC at a time.
 

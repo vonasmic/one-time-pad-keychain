@@ -1,6 +1,8 @@
 # JAVA_TLS_TEST
 
-Java SAE node stack using **Bouncy Castle JSSE** for the TLS protocol engine, **Utimaco SecurityServer JCE** for classical crypto, and **PQMI** for HSM ML-DSA identity signing.
+Java applications using **Bouncy Castle JSSE** for the TLS protocol engine, **Utimaco SecurityServer JCE** for classical crypto (SAE / CertGenerator / TerminalBridge), and **PQMI** for HSM ML-DSA identity signing. **UserApp does not use the HSM.**
+
+The device connects to **two** of these processes over USB CDC: **USER** (UserApp) and **SAE** (SaeNode, usually via TerminalBridge). UserApp is not an SAE.
 
 Applications live under `src/`. Each folder is one runnable process; supporting packages
 sit inside the app that owns them. Run every `mvn exec:java` from `JAVA_TLS_TEST` so
@@ -9,9 +11,10 @@ sit inside the app that owns them. Run every `mvn exec:java` from `JAVA_TLS_TEST
 | Application | Entry point | README |
 | --- | --- | --- |
 | [CertGenerator](src/CertGenerator/README.md) | `fel.cvut.certGen.CertGenerator` | PKI / HSM provision |
-| [SaeNode](src/SaeNode/README.md) | `fel.cvut.node.Node` | SAE node, QKD, DB, RMI |
-| [TerminalBridge](src/TerminalBridge/README.md) | `fel.cvut.terminalapp.TerminalApp` | Operator console + optional USB relay |
-| [UserApp](src/UserApp/README.md) | `fel.cvut.userapp.UserApplication` | USB OTP encrypt / decrypt |
+| [SaeNode](src/SaeNode/README.md) | `fel.cvut.node.Node` | **SAE**: QKD, DB, RMI, provision TLS server |
+| [TerminalBridge](src/TerminalBridge/README.md) | `fel.cvut.terminalapp.TerminalApp` | SAE operator console + optional USB relay for `PROVISION` |
+| [UserApp](src/UserApp/README.md) | `fel.cvut.userapp.UserApplication` | **USER**: USB OTP encrypt / decrypt / manage (not SAE) |
+| [LabSwitch](src/LabSwitch/README.md) | `fel.cvut.lab.LabSwitchApp` | Lab cable + client selector (`./run-all.sh` only) |
 
 ## Contents
 
@@ -21,9 +24,9 @@ sit inside the app that owns them. Run every `mvn exec:java` from `JAVA_TLS_TEST
 
 ## TLS
 
-- Profiles: `NodeTls.TlsProfile.CLASSICAL` (TLS 1.3 + x25519) and `PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44)
+- Profiles: `NodeTls.TlsProfile.PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44 only) and `CLASSICAL` (same PQC preferred, then TLS 1.2 + x25519 / classical signatures)
 - Inter-node RMI and the terminal gateway use `PURE_PQC` with SAE `root-ca` trust
-- The inbound command server uses `PURE_PQC` with the same HSM node identity, but client auth trusts `client_ca` (device / user certs)
+- The SAE inbound command server (`NODE_NATIVE_PORT`) uses `PURE_PQC` with the same HSM node identity; client auth trusts `client_ca` (**device** certs for `PROVISION`). UserApp is a separate TLS server over CDC and is not this socket.
 - QKD KME mTLS uses `CLASSICAL` with CryptoServer HSM keys (`CertGenerator` imports `certs/qkd/*-client.p12` → `QKD_HSM_KEY_ALIAS`); truststore is public KME CA only
 - Node identity: `CertGenerator` (`env/certgen.env`) → listed node PEMs + HSM keys, client CA, device/user bundles, and QuKayDee PKCS#12 import
 
@@ -64,7 +67,7 @@ How to run the operator console and the optional USB↔TCP pump:
 How to run the USB OTP encrypt/decrypt console (no HSM):
 [`src/UserApp/README.md`](src/UserApp/README.md).
 
-Node identity is `certs/{Node}.pem` plus the HSM key (`{HSM_MLDSA_GROUP}/{Node}`). Legacy `certs/{Node}.p12` files from the old software-keystore path are not used at runtime.
+Node identity is `certs/{Node}.pem` plus the HSM key (`{HSM_MLDSA_GROUP}/{Node}`).
 
 `vendor/pqmi-java/` is copied locally from Utimaco QuantumProtect Java_UTI (not committed; Utimaco license). Maven compiles it as an extra source root.
 
@@ -79,7 +82,7 @@ Unzip the Utimaco SDKs into the repo (contents are gitignored; see the folder RE
 - [`ultimaco/hsm-simulator/`](../ultimaco/hsm-simulator/README.md) — SecurityServer / ADMIN key / `csadm`
 - [`ultimaco/quantum-protect/`](../ultimaco/quantum-protect/README.md) — QP simulator + PQC firmware (`.mtc`)
 
-PIN `12345678` must match `env/hsm.env`. `./run-all.sh` (or `scripts/hsm.sh`) talks to an already-running simulator and runs one-time `csadm` init when `CXI_HMAC` / PQMI firmware are missing. It does not start the Windows simulator.
+PIN `12345678` must match `env/hsm.env`. From the **repo root**, `./run-all.sh` (or `scripts/hsm.sh`) talks to an already-running simulator and runs one-time `csadm` init when `CXI_HMAC` / PQMI firmware are missing. It does not start the Windows simulator.
 
 Paths below use the git root so they work from any directory.
 
@@ -162,18 +165,26 @@ set -a && source env/hsm.env && set +a
 mvn exec:java -Dexec.mainClass=fel.cvut.certGen.CertGenerator
 ```
 
+From the repo root the same run is `scripts/java.sh certgen`.
+
 No menu. Missing CAs, node HSM keys / PEMs, client bundles, and QuKayDee PKCS#12 aliases
 are created or imported; existing material is left alone.
 
-SAE root CA stays in `certs/ca/root-ca.p12` (software). Client CA stays in `certs/ca/client_ca.p12` (software) for the Java user/client bundles. The device does **not** embed a client CA: ENCRYPT/DECRYPT pin the TLS peer to the enrolled owner key (UserApp cert). Enroll with USB `OWNER SET` / `CREDS SAE` / `CREDS DEVICE`.
+SAE root CA stays in `certs/ca/root-ca.p12` (software). Client CA stays in `certs/ca/client_ca.p12` (software) for the Java user/client bundles. The device does **not** embed a client CA: ENCRYPT/DECRYPT pin the TLS peer to the enrolled owner key (UserApp cert). Enroll over USB `OWNER SET` (unsigned blob: reset password + owner SPKI + optional device cert/key + SAE CA). CREDS SAE / CREDS DEVICE are unsigned **MANAGE TLS** commands, not USB ASCII lines.
 
 ### Node startup
 
 `env/hsm.env` (copy from `env/example/hsm.env.example`) holds the Utimaco connection
 (`HSM_DEVICE`, `HSM_USER`, `HSM_PIN`, `HSM_MLDSA_GROUP`) shared by every node process. Each
 node's own env file (`env/node-N.env`, from `env/example/.env.example`) sets `TLS_NODE_ID` to
-select its HSM key and leaf cert (`certs/{TLS_NODE_ID}.pem`). Source both before starting a node
-— there is no wrapper script:
+select its HSM key and leaf cert (`certs/{TLS_NODE_ID}.pem`). From the repo root:
+
+```bash
+scripts/java.sh node env/node-1.env
+```
+
+Or source both env files and run Maven from `JAVA_TLS_TEST` — Java only sees process environment
+variables:
 
 ```bash
 set -a

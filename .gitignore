@@ -4,7 +4,6 @@ scripts/logs/
 tags
 *.swp
 *.swo
-app/build/*
 **debug**
 **Debug**
 **vendor/**

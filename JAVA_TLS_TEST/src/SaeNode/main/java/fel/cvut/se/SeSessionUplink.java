@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Typed SE TLS session uplink (LV version 3), after binding verification.
+ * Typed SE TLS session uplink (LV version 4), after binding verification.
  */
 public record SeSessionUplink(
         byte[] clientHash,

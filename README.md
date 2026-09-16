@@ -1,77 +1,70 @@
-# STM32U5 TLS/PQC Firmware
+# One-time-pad keychain
 
-This project is based on the [TROPIC01 USB devkit firmware](https://github.com/tropicsquare/tropic01-stm32u5-usb-devkit-fw). It extends the original firmware with TLS 1.3 communication, post-quantum cryptography (PQC) support, and TrustZone security features.
+QKD-backed one-time-pad keychain: a TrustZone STM32U535 device stores pads on TROPIC01.
+The device is a TLS client and connects to **two** Java applications over USB CDC:
+**USER** (UserApp: encrypt / decrypt / manage) and **SAE** (SaeNode via TerminalBridge:
+provision / QKD fill). UserApp is not an SAE.
 
 ## Contents
 
-- [Project structure](#project-structure)
-- [Building and flashing](#building-and-flashing)
-- [Usage](#usage)
-- [Testing](#testing)
+- [Layout](#layout)
+- [Lab stack](#lab-stack)
+- [Firmware](#firmware)
+- [Java applications](#java-applications)
 - [Requirements](#requirements)
 - [License](#license)
 
-## Project Structure
+## Layout
 
-The project consists of three main components:
+| Path | Role |
+| --- | --- |
+| [`JAVA_TLS_TEST/`](JAVA_TLS_TEST/README.md) | SaeNode (SAE), UserApp (USER), TerminalBridge, CertGenerator, LabSwitch |
+| [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) | Current SE firmware (CubeIDE `SE_firmware`) + host `se_host` |
+| [`ultimaco/`](ultimaco/hsm-simulator/README.md) | Drop-in location for Utimaco HSM + Quantum Protect SDKs |
+| [`scripts/`](scripts/) | `run-all.sh`, `java.sh`, `host.sh`, `hsm.sh` |
 
-- **`TrustZone_app/`** - TrustZone setup and secure/non-secure world implementation
-  - Secure world: Cryptographic operations, key storage, TLS state management
-  - Non-secure world: USB device stack, command processing, application logic
+USB console syntax: [`stm32u535-trustzone-usb/docs/COMMANDS.md`](stm32u535-trustzone-usb/docs/COMMANDS.md). TLS / LV framing: [`docs/COMMUNICATION.md`](stm32u535-trustzone-usb/docs/COMMUNICATION.md).
 
-- **`app/`** - Main application with TLS communication and function setup
-  - USB CDC interface for host communication
-  - Command-line interface for device control
-  - TLS 1.3 client with PQC support (ML-KEM, Dilithium)
+## Lab stack
 
-- **`tls_native/`** - Python bridge and native TLS client/server tools for testing
-  - USB-to-TCP bridge (`usb_tcp_bridge.py`)
-  - TLS test server/client with hybrid certificate support
-  - Certificate generation and embedding tools
+Start the Windows HSM simulator yourself (`cs_sim.bat` — [JAVA_TLS_TEST HSM setup](JAVA_TLS_TEST/README.md#hsm-setup)). Then from this repo root:
 
-- **`JAVA_TLS_TEST/`** - Java SAE node stack (separate Maven project) that the device connects to
-  as a QKD key-management peer; see [`JAVA_TLS_TEST/README.md`](./JAVA_TLS_TEST/README.md)
-
-## Building and Flashing
-
-See [`BUILD_AND_FLASH.md`](./BUILD_AND_FLASH.md) for detailed build and flash instructions.
-
-Quick start:
 ```bash
-cd app
-make clean
-make
-make flash
+./run-all.sh
 ```
 
-## Usage
+That builds `se_host`, migrates the node databases, and opens a tmux session with two Tropic models, two SAE nodes, TerminalBridge, UserApp, LabSwitch, and two simulated keychains. Details: [`RUN_ALL.md`](RUN_ALL.md).
 
-The device appears as a USB CDC serial port. Connect using any serial terminal at 115200 baud.
+## Firmware
 
-Available commands:
-- `TLS` - Perform TLS 1.3 handshake with embedded client certificates
-- `HELP` - List all available commands
+Silicon (TS13 DevKit): CubeIDE build and flash — [`stm32u535-trustzone-usb/docs/HOW_TO_RUN.md`](stm32u535-trustzone-usb/docs/HOW_TO_RUN.md).
 
-See [`API.md`](./API.md) for the complete command reference.
+Host model (no board): [`stm32u535-trustzone-usb/host/README.md`](stm32u535-trustzone-usb/host/README.md).
 
-## Testing
+The device enumerates as USB CDC ACM. Arm TLS with `PROVISION` (SAE) / `ENCRYPT` / `DECRYPT` / `MANAGE <unix>` (USER) — PIN and payloads ride inside TLS after the handshake. `HELP` lists console names.
 
-The `tls_native/` directory contains tools for testing TLS communication:
+## Java applications
 
-1. Build and run the TLS server (see `tls_native/README.md`)
-2. Use the Python bridge to connect the device to the server:
-   ```bash
-   python3 tls_native/usb_tcp_bridge.py /dev/ttyACM0 localhost 11111
-   ```
-3. Type `TLS` in the bridge to initiate the handshake
+**USER** = [`UserApp`](JAVA_TLS_TEST/src/UserApp/README.md). **SAE** = [`SaeNode`](JAVA_TLS_TEST/src/SaeNode/README.md) plus [`TerminalBridge`](JAVA_TLS_TEST/src/TerminalBridge/README.md) for the USB relay. They are different processes; only one may open CDC.
+
+Working directory for Maven is `JAVA_TLS_TEST` (so `certs/` and `env/` resolve). Wrappers from the repo root:
+
+```bash
+scripts/java.sh certgen
+scripts/java.sh node env/node-1.env
+scripts/java.sh terminal
+scripts/java.sh userapp
+```
+
+Or source `env/hsm.env` plus the process env file and run `mvn exec:java` as documented in each app README.
 
 ## Requirements
 
-- `arm-none-eabi-gcc` toolchain
-- `dfu-util` or `st-flash` for flashing
-- Python 3 for testing tools
-- wolfSSL library (configured with PQC support)
+- Java 21, Maven, PostgreSQL
+- Python 3, cmake, a C compiler, make, tmux, git (lab stack)
+- STM32CubeIDE + STM32CubeProgrammer (silicon)
+- Utimaco SDKs under `ultimaco/` and JCE jars under `JAVA_TLS_TEST/vendor/` (not committed)
 
 ## License
 
-See [`LICENSE.txt`](./LICENSE.txt) for license information.
+See [`LICENSE.txt`](LICENSE.txt).

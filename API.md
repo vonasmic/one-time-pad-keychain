@@ -1,67 +1,26 @@
 # API
 
-This file describes USB devkit's communication interface over serial port.
+USB CDC console for the **current** SE firmware in [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md).
 
-# Communication
+Authoritative tables: [`stm32u535-trustzone-usb/docs/COMMANDS.md`](stm32u535-trustzone-usb/docs/COMMANDS.md).
+TLS / LV framing: [`docs/COMMUNICATION.md`](stm32u535-trustzone-usb/docs/COMMUNICATION.md).
 
-When connected to Linux compatible OS, the device appears as a USB CDC (Communications Device Class) interface (e.g., **/dev/ttyACM\*** on Linux and Android).
+The device appears as USB CDC ACM (`/dev/ttyACM*` on Linux). Lines end with `\n` (`\r` ignored). Max line **160** characters. `HELP` (or `?`) lists names.
 
-Communication uses ASCII characters lines ended by `\r` or `\n` (0x0D or 0x0A).
+PIN for provisioned OTP never appears on the ASCII line. Arm a mode and a Unix time; PIN and payloads ride inside TLS after the handshake. **SAE** is the TLS peer for `PROVISION`. **USER** (UserApp) is the TLS peer for `ENCRYPT` / `DECRYPT` / `MANAGE`.
 
-> [!IMPORTANT]
-> To send SPI data just put HEX values string (i.e. "0A1B2C3D") and new line character.
-> Any such line will issue CS low signal and line end will issue CS high signal.
-> Character `x` or `\` at the end of line will cause leaving CS low (continuous data reading).
+## Top-level commands
 
-Received data will be printed the same way (same number of bytes as were sent).
+| Syntax | What it does |
+| --- | --- |
+| `HELP` | Print usage lines |
+| `OWNER SET` | First-wins unsigned blob (password + owner SPKI + optional device cert/key + SAE CA) |
+| `PROVISION <unix>` | Arm TLS mode 1 (**SAE**: mTLS provision, uplink v4, downlink v2) |
+| `ENCRYPT <unix>` | Arm TLS mode 2 (**USER**: owner-pinned mTLS encrypt) |
+| `DECRYPT <unix>` | Arm TLS mode 3 (**USER**: owner-pinned mTLS decrypt) |
+| `MANAGE <unix>` | Arm TLS mode 4 (**USER**: owner-pinned, no device client cert; KEM INIT / KEYGEN / PEER / CREDS / OWNER REPLACE) |
+| `PEER LIST` | Print NV peers |
+| `CLIENT HASH` | 96 hex digits: `SHA384(device_cert_spki \|\| ecc_pub)` |
+| `TROPIC PING` / `INFO` / `PUB` / `KEYGEN` / `SIGN` / `PAIRING` / `KEM INIT` / `KEM PUB` / `OTP LEFT` | Tropic / OTP console |
 
-Example SPI communication with TROPIC01 :
-```
-> 010202002b98
-< 01FFFFFFFFFF
-> aaffffffffffffff
-< 010400000300E073
-```
-
-### All Commands
-
-Beside just transferring data between host and TROPIC01, this usb device also has own set of commands:
-
-* `HELP` : Print quick help
-* `AUTO` : Show automatic response reading status.
-* `AUTO=<mode>[,<get_resp>,<no_resp>]` : Automatic response reading set \
-    `<mode>` : 1 = enable, 0 = disable (default 0) \
-    `<get_resp>` : HEX value of byte used for reading \
-    `<no_resp>` : HEX value of byte which mean no response available
-* `BUTTON` : Get button state.
-* `CLKDIV` : Show SCK clock divisor current value.
-* `CLKDIV=<n>` : SCK clock divisor set \
-    `<n>` : 2,4,8,16,32,64,128 or 256 to select SCK frequency as `48MHz / <n>`
-* `CS` : Show SPI CS state (1 == active == LOW) 
-* `CS=<n>` : Set SPI CS state (0 == idle, 1 == active == LOW) 
-* `GPO` : Show GPO state 
-* `ID` : Request product id
-* `PWR` : Show power status.
-* `PWR=<mode>` : Get/set target power \
-    `<mode>` : 1 = power ON, 0 = power OFF
-* `RESET` : Instant reset
-* `SN`: Request product serial number, same as `iSerial` identification on USB.
-* `VER` : Request version information
-* `TLS` : Perform TLS 1.3 handshake over USB (ML-KEM-768) using embedded certificates.
-
-Execution of any command is finished with message "OK" or "`ERROR: <reason>`".
-
-Possible error results `<reason>`:
-
-* "illegal parameter"
-* "invalid parameter"
-* "missing parameter"
-* "unknown command"
-* "USB RX overflow !"
-
-### LED signalization
-
- * LED OFF == no power
- * LED ON == power OK and USB connection established correctly (ready to use)
- * Blinking regularly == power OK but USB not working properly
- * Short flashes during SPI transaction
+`<unix>` is a non-zero decimal Unix UTC timestamp. Occupied `KEYGEN` and `KEM INIT` print `use MANAGE <unix>`.

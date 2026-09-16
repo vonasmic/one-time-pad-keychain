@@ -1,10 +1,11 @@
 # TerminalBridge
 
-Standalone operator console for a running [SaeNode](../SaeNode/README.md). It answers
+Standalone **SAE** operator console for a running [SaeNode](../SaeNode/README.md). It answers
 SELECT / CONFIRM / NOTIFY over TLS instead of blocking inside the node on stdin.
 
 Optionally it also relays USB CDC from the embedded device to the node's command
-server (`UsbTcpBridge`). The node itself has no USB awareness.
+server (`UsbTcpBridge`) for **PROVISION**. The node itself has no USB awareness.
+This is not UserApp: encrypt / decrypt / manage stay on [UserApp](../UserApp/README.md).
 
 Entry point: `fel.cvut.terminalapp.TerminalApp`.
 
@@ -88,4 +89,5 @@ src/TerminalBridge/
 ```
 
 TLS / HSM helpers live in [SaeNode](../SaeNode/README.md). Provision USB relay is this
-app only; [UserApp](../UserApp/README.md) is ENCRYPT / DECRYPT.
+app only; [UserApp](../UserApp/README.md) is INIT / OWNER / PEER / ENCRYPT / DECRYPT
+(and chip passthrough).

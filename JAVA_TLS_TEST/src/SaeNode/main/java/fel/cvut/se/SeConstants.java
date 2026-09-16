@@ -7,7 +7,6 @@ package fel.cvut.se;
 public final class SeConstants {
 
     public static final int LV_DOWNLINK_VERSION = 2;
-    /** v4 widened client and peer hashes from SHA-256 to SHA-384. */
     public static final int LV_UPLINK_VERSION = 4;
     public static final int LV_UPLINK_FIXED_ITEMS = 7;
     /** Downlink v2 item 1: which pad half this device uses for decrypt. */

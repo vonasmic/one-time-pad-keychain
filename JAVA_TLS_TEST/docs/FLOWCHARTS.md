@@ -1,10 +1,12 @@
-# SAE / SE / Terminal Flowcharts
+# SAE / USER / SE / Terminal Flowcharts
 
-High-level flowcharts for the key-exchange process. These reflect the actual system behavior but omit internal implementation details.
+High-level flowcharts. **SAE** (SaeNode + TerminalBridge) is provision / QKD fill.
+**USER** (UserApp) is encrypt / decrypt / manage. UserApp is not an SAE. These
+reflect the actual system behavior but omit internal implementation details.
 
 ---
 
-## 1. Main end-to-end flow
+## 1. Main end-to-end provision flow (device ↔ SAE)
 
 ```mermaid
 flowchart TD
@@ -66,18 +68,21 @@ flowchart TD
 
 ---
 
-## 2. SE ↔ SAE communication
+## 2. SE ↔ SAE communication (`PROVISION` only)
+
+Device TLS client to the SAE command server (usually via TerminalBridge USB relay).
+This is **not** encrypt / decrypt — those sessions are device ↔ USER.
 
 ```mermaid
 sequenceDiagram
     participant SE as Client SE
     participant SAE as Origin SAE
 
-    SE->>SAE: Connect over TLS
+    SE->>SAE: Connect over TLS (PROVISION)
     SAE-->>SE: Secure channel established
 
     SE->>SAE: Send public key and list of possible peer keys
-    Note over SAE: User selects target peer and SAE via terminal
+    Note over SAE: Operator selects target peer and SAE via TerminalBridge
 
     alt New key exchange
         SAE-->>SE: Return secret keys
@@ -92,9 +97,40 @@ sequenceDiagram
 
 ---
 
-## 3. Terminal ↔ SAE communication
+## 3. SE ↔ USER communication (`ENCRYPT` / `DECRYPT` / `MANAGE`)
 
-The terminal now runs as its own process — `fel.cvut.terminalapp.TerminalApp` — connecting to the SAE's dedicated terminal gateway port over TLS (same `NodeTls`/`PURE_PQC` bootstrap nodes use for RMI). The SAE builds selection lists from the client payload and its configured peer SAEs, then sends them to whichever terminal app is currently connected.
+Device TLS client to **UserApp**. UserApp is not an SAE. PIN and OTP payloads
+never go to SaeNode.
+
+```mermaid
+sequenceDiagram
+    participant SE as Client SE
+    participant USER as UserApp
+
+    Note over USER: USB ASCII ENCRYPT / DECRYPT / MANAGE then TLS over CDC
+    SE->>USER: Connect over TLS (owner-pinned)
+    USER-->>SE: Secure channel established
+
+    alt ENCRYPT
+        USER->>SE: PIN + plaintext
+        SE-->>USER: OTP ciphertext chunks
+    else DECRYPT
+        USER->>SE: PIN + encrypt reply
+        SE-->>USER: plaintext chunks
+    else MANAGE
+        USER->>SE: unsigned cmd + optional PIN + body
+        SE-->>USER: status
+    end
+
+    SE-->>USER: close_notify
+    USER-->>SE: close_notify
+```
+
+---
+
+## 4. Terminal ↔ SAE communication
+
+The terminal now runs as its own process — `fel.cvut.terminalapp.TerminalApp` — connecting to the SAE's dedicated terminal gateway port over TLS (same `NodeTls`/`PURE_PQC` bootstrap nodes use for RMI). This is the SAE operator console, **not** UserApp. The SAE builds selection lists from the client payload and its configured peer SAEs, then sends them to whichever terminal app is currently connected.
 
 ```mermaid
 flowchart TD
@@ -130,12 +166,12 @@ flowchart TD
 
 ---
 
-## 4. SAE database persistence decisions
+## 5. SAE database persistence decisions
 
 The database tracks **record state** (not the key material itself). Key material is stored on the peer SAE.
 Origin publishes the **reversed** hash pair to the peer SAE (`(peerHash, myHash)`); each node looks up only the pair it stored.
 
-### 4a. Can a new record be started?
+### 5a. Can a new record be started?
 
 ```mermaid
 flowchart TD
@@ -153,7 +189,7 @@ flowchart TD
     State -->|In progress, different peer| SharedElsewhere
 ```
 
-### 4b. What happens after the check?
+### 5b. What happens after the check?
 
 ```mermaid
 flowchart TD
@@ -184,7 +220,7 @@ flowchart TD
     Result -->|Cannot proceed| NoKeys
 ```
 
-### 4c. Peer SAE side
+### 5c. Peer SAE side
 
 ```mermaid
 flowchart TD
@@ -206,14 +242,16 @@ flowchart TD
 ```mermaid
 flowchart LR
     SE[Client SE]
+    UserApp[USER / UserApp]
     OriginSAE[Origin SAE]
-    Terminal[Terminal]
+    Terminal[TerminalBridge]
     PeerSAE[Peer SAE]
     QKD[QKD 014]
     DB[(Database)]
 
-    SE <-->|TLS| OriginSAE
-    OriginSAE <-->|User input| Terminal
+    SE <-->|ENCRYPT / DECRYPT / MANAGE TLS| UserApp
+    SE <-->|PROVISION TLS| OriginSAE
+    OriginSAE <-->|Operator SELECT / CONFIRM| Terminal
     OriginSAE <-->|Inter-SAE sync| PeerSAE
     OriginSAE --> QKD
     PeerSAE --> QKD

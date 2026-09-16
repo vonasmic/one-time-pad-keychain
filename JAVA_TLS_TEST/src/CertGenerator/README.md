@@ -1,6 +1,6 @@
 # CertGenerator
 
-Non-interactive PKI / HSM provisioner for the SAE node stack. There is no menu: one run
+Non-interactive PKI / HSM provisioner for SAE nodes and UserApp bundles. There is no menu: one run
 creates anything still missing and leaves existing material alone.
 
 Working directory must be `JAVA_TLS_TEST` (so `certs/` and `env/` resolve).
@@ -29,8 +29,9 @@ Each run, in order:
      current root CA, which re-issues it from the HSM public key.
 4. **Software client bundles** (`CERTGEN_CLIENTS`) — ML-DSA key + cert signed by the client
    CA, only when the bundle files are missing. Trust is `certs/ca/{CERTGEN_CLIENT_CA}.pem`
-   (not copied into the client folder). A bundle left over from an older client CA is
-   re-signed in place, keeping its key so the device `client_hash` does not move.
+   (not copied into the client folder). If an existing cert is not signed by the current
+   client CA, it is re-signed in place and the key is kept so the device `client_hash`
+   does not move.
    Incomplete pairs (cert without key, or the reverse) fail the run.
 5. **QuKayDee SAE keys** — import every `certs/qkd/*-client.p12` whose CryptoServer alias
    is not already present. Those keys are **not** generated in the HSM. If the directory or
@@ -72,7 +73,8 @@ Optional: `CERTGEN_ENV=/path/to/file` selects a different certgen env file.
 Already-exported variables override values from the certgen file.
 
 If the device client bundle was created or replaced, enroll it on the device with
-USB `OWNER SET` / `CREDS DEVICE`. Firmware does not compile client certs in.
+USB `OWNER SET` (unsigned blob may include device cert/key and SAE CA). Firmware does
+not compile client certs in. CREDS SAE / CREDS DEVICE are unsigned MANAGE TLS commands.
 
 QuKayDee PKCS#12 build steps (openssl / keytool) are in [`certs/qkd/README.md`](../../certs/qkd/README.md).
 CertGenerator only imports files that are already there.

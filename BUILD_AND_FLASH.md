@@ -1,109 +1,17 @@
-# Building and Flashing Instructions
+# Building and flashing
 
-## Building the Firmware
+Current SE firmware is the CubeIDE project in [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) (`SE_firmware_Secure` then `SE_firmware_NonSecure`).
 
-### Requirements
+Full steps (option bytes, both ELFs, first Tropic bring-up):
+[`stm32u535-trustzone-usb/docs/HOW_TO_RUN.md`](stm32u535-trustzone-usb/docs/HOW_TO_RUN.md).
 
-- `arm-none-eabi-gcc` toolchain
-- `make`
-- `dfu-util` or `st-flash` for flashing
+Flash map and pins: [`docs/HARDWARE.md`](stm32u535-trustzone-usb/docs/HARDWARE.md).
 
-### Build Steps
+Host model without a board: [`stm32u535-trustzone-usb/host/README.md`](stm32u535-trustzone-usb/host/README.md). Lab stack: [`RUN_ALL.md`](RUN_ALL.md).
 
-```bash
-cd app
-make clean          # optional; only needed for full rebuild
-make                # builds the firmware
-```
+Expected Cube outputs:
 
-Build artifacts are written to `build/app.elf`, `build/app.hex`, and `build/app.bin`.
+- `stm32u535-trustzone-usb/Secure/Debug/SE_firmware_Secure.elf`
+- `stm32u535-trustzone-usb/NonSecure/Debug/SE_firmware_NonSecure.elf`
 
-### Verify Build
-
-Check the firmware size:
-```bash
-arm-none-eabi-size build/app.elf
-```
-
-## Flashing the Firmware
-
-### Option 1: Using st-flash (recommended)
-
-1. Connect the STM32 board via SWD (ST-Link or compatible)
-2. Flash:
-   ```bash
-   cd app
-   make flash
-   ```
-   This runs: `st-flash --format ihex --reset write build/app.hex`
-
-### Option 2: Using DFU mode
-
-1. Use the provided flash script:
-   ```bash
-   ./flash_tool.sh
-   ```
-2. Follow the prompts:
-   - Connect the board while pressing the button to enter DFU mode
-   - Release button when instructed
-   - The script will flash automatically
-
-Or manually:
-```bash
-# Enter DFU mode (press button while connecting)
-dfu-util -a 0 -s 0x08000000:leave -D app/build/app.bin
-```
-
-## Connecting and Testing
-
-### Find the USB CDC device
-
-After flashing, the device appears as a USB CDC/ACM serial port:
-- Linux: `/dev/ttyACM0` (or `/dev/ttyACM1`, etc.)
-- Windows: `COMx` (check Device Manager)
-- macOS: `/dev/cu.usbmodem*` or `/dev/tty.usbmodem*`
-
-### Connect via serial terminal
-
-**Linux/macOS:**
-```bash
-minicom -D /dev/ttyACM0 -b 115200
-# or
-screen /dev/ttyACM0 115200
-```
-
-**Windows:**
-- Use PuTTY, Tera Term, or similar
-- Set baud rate to 115200
-- Select the appropriate COM port
-
-### Testing
-
-Once connected, you should see:
-```
-APP START
-# BUILD DATE: ...
-# RESET TYPE: ...
-```
-
-Type `HELP` to see available commands. See [`API.md`](./API.md) for command reference.
-
-### Troubleshooting
-
-**Device not appearing:**
-- Check USB connection
-- Try resetting the board
-- Check `dmesg` (Linux) or Device Manager (Windows)
-
-**Serial communication issues:**
-- Verify baud rate is 115200
-- Try disconnecting/reconnecting USB
-- Check permissions: `sudo chmod 666 /dev/ttyACM0` (Linux)
-
-**WSL (Windows Subsystem for Linux) issues:**
-- WSL doesn't automatically forward USB devices. Use `usbipd`:
-  1. Install `usbipd-win` on Windows: `winget install --id=usbipd -e`
-  2. In Windows PowerShell (as Administrator): `usbipd list`
-  3. Attach device: `usbipd bind --busid <BUSID>` then `usbipd attach --wsl --busid <BUSID>`
-  4. In WSL, verify: `lsusb` should show the device
-- Alternatively, use a Windows-native serial terminal instead of WSL
+After flash, USB enumerates as CDC ACM. Open the serial port; `HELP` lists commands ([`API.md`](API.md) / [`COMMANDS.md`](stm32u535-trustzone-usb/docs/COMMANDS.md)).
