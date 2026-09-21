@@ -1,7 +1,7 @@
 package fel.cvut.utimaco;
 
 import CryptoServerJCE.CryptoServerProvider;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -46,7 +46,7 @@ public final class HsmAesGcm {
      */
     public void ensureKey() throws Exception {
         HsmGate.run(() -> {
-            CryptoServerProvider cs = NodeTls.requireCryptoServer();
+            CryptoServerProvider cs = HsmNodeTls.requireCryptoServer();
             KeyStore ks = KeyStore.getInstance("CryptoServer", cs);
             ks.load(null, null);
             if (ks.containsAlias(keyAlias)) {
@@ -71,7 +71,7 @@ public final class HsmAesGcm {
 
         return HsmGate.call(() -> {
             SecretKey key = loadSecretKey(keyAlias);
-            CryptoServerProvider cs = NodeTls.requireCryptoServer();
+            CryptoServerProvider cs = HsmNodeTls.requireCryptoServer();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", cs);
             cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_BITS, iv));
             byte[] ciphertext = cipher.doFinal(plaintext);
@@ -84,7 +84,7 @@ public final class HsmAesGcm {
 
         return HsmGate.call(() -> {
             SecretKey key = loadSecretKey(sealed.hsmKeyAlias());
-            CryptoServerProvider cs = NodeTls.requireCryptoServer();
+            CryptoServerProvider cs = HsmNodeTls.requireCryptoServer();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", cs);
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(sealed.gcmTagBits(), sealed.gcmIv()));
             return cipher.doFinal(sealed.ciphertext());
@@ -92,7 +92,7 @@ public final class HsmAesGcm {
     }
 
     private SecretKey loadSecretKey(String alias) throws Exception {
-        CryptoServerProvider cs = NodeTls.requireCryptoServer();
+        CryptoServerProvider cs = HsmNodeTls.requireCryptoServer();
         KeyStore ks = KeyStore.getInstance("CryptoServer", cs);
         ks.load(null, null);
         Key key = ks.getKey(alias, null);

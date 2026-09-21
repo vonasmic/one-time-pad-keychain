@@ -1,6 +1,7 @@
 package fel.cvut.utimaco;
 
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -20,7 +21,7 @@ class HsmLiveNoFallbackTest {
     @Test
     void encryptDecryptRoundTripOnCryptoServer() throws Exception {
         try (Pqmi pqmi = Pqmi.fromEnvironment()) {
-            NodeTls.install(pqmi);
+            HsmNodeTls.install(pqmi);
             HsmAesGcm hsm = new HsmAesGcm();
             byte[] plaintext = "sae-hsm-roundtrip".getBytes(StandardCharsets.UTF_8);
             HsmAesGcm.SealedBlob sealed = hsm.encrypt(plaintext);
@@ -32,7 +33,7 @@ class HsmLiveNoFallbackTest {
     @Test
     void missingAliasDoesNotFallBackToInMemoryAes() throws Exception {
         try (Pqmi pqmi = Pqmi.fromEnvironment()) {
-            NodeTls.install(pqmi);
+            HsmNodeTls.install(pqmi);
             HsmAesGcm hsm = new HsmAesGcm("missing-shared-key-aes");
             HsmAesGcm.SealedBlob sealed = new HsmAesGcm.SealedBlob(
                     new byte[32],

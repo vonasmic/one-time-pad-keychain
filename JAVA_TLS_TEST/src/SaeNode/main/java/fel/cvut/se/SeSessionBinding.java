@@ -1,8 +1,6 @@
 package fel.cvut.se;
 
-import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
@@ -105,13 +103,7 @@ public final class SeSessionBinding {
             if (!(chain[0] instanceof X509Certificate x509)) {
                 throw new IOException("Peer certificate is not X.509");
             }
-            ASN1BitString bits = SubjectPublicKeyInfo
-                    .getInstance(x509.getPublicKey().getEncoded())
-                    .getPublicKeyData();
-            if (bits == null || bits.getBytes().length == 0) {
-                throw new IOException("Peer certificate has no subjectPublicKey");
-            }
-            return bits.getBytes();
+            return SeCerts.rawSubjectPublicKeyBits(x509);
         } catch (SSLPeerUnverifiedException ex) {
             throw new IOException("Peer not verified; cannot read TLS SPKI", ex);
         }

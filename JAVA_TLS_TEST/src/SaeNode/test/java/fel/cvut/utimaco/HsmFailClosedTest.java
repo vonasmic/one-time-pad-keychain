@@ -5,7 +5,8 @@ import fel.cvut.harness.SaePostgresExtension;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
 import fel.cvut.node.recordManager.ClientRecord;
 import fel.cvut.node.recordManager.SharedKeyMaterialStore;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -46,7 +47,7 @@ class HsmFailClosedTest {
     @Test
     void encryptWithoutCryptoServerDoesNotFallBackToSoftwareAes() {
         try {
-            NodeTls.requireCryptoServer();
+            HsmNodeTls.requireCryptoServer();
             Assumptions.abort("CryptoServer already installed in this JVM");
         } catch (IllegalStateException expected) {
             assertTrue(expected.getMessage().contains("CryptoServer not installed"));

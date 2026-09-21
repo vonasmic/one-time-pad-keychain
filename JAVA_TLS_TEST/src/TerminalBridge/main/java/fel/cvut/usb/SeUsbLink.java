@@ -12,18 +12,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Locale;
+import fel.cvut.se.SeUsbDump;
+
 import java.util.Objects;
 
 /**
- * USB CDC ACM console: ASCII commands ({@link #transact} / {@link #readConsole}), then
- * opaque TLS bytes after ClientHello {@code 0x16}. Framed {@code DEBUG:<text>:DEBUG}
- * status is printed and never returned as TLS; a glued hello after {@code :DEBUG} is.
+ * USB CDC ACM serial adapter: ASCII ({@link #transact} / {@link #readConsole}),
+ * typed {@link #readDump} frames, then TLS via {@link UsbCdcRxMachine}. Dump
+ * bodies may contain {@code 0x16}; length prefix wins over ClientHello.
  *
  * <p>After application data, {@link javax.net.ssl.SSLSocket#close()} sends
  * {@code close_notify}. The chip stays in TLS until that alert (and its own)
- * complete, then {@link #resetConsole} drains DEBUG back to ASCII.
+ * complete, then {@link #resetConsole} drains back to ASCII.
  *
  * <p>Serial path is {@code USB_SERIAL_PORT}. SAE host/ports are the process
  * {@code NODE_HOSTNAME} / {@code NODE_NATIVE_PORT} / {@code NODE_TERMINAL_PORT}.
@@ -33,7 +33,7 @@ public final class SeUsbLink implements AutoCloseable {
     public static final String DEFAULT_PORT = "/dev/ttyACM0";
     public static final int DEFAULT_BAUD = 115200;
     /**
-     * Firmware {@code TLS_CMD_MAX}: fits {@code TROPIC PAIRING LOAD <slot> <64-hex> <64-hex>}.
+     * Firmware {@code TLS_CMD_MAX}: short ASCII command plus unix time.
      */
     public static final int MAX_COMMAND_CHARS = 160;
     /** Quiet window after the last console byte before {@link #readConsole} returns. */
@@ -50,12 +50,6 @@ public final class SeUsbLink implements AutoCloseable {
     private static final int USB_CHUNK = 4096;
     private static final long RESET_DRAIN_IDLE_MS = 150;
     private static final long RESET_DRAIN_MAX_MS = 1_000;
-    private static final String DEBUG_PREFIX = "DEBUG:";
-    private static final String DEBUG_SUFFIX = ":DEBUG";
-    private static final byte[] DEBUG_PREFIX_BYTES = DEBUG_PREFIX.getBytes(StandardCharsets.US_ASCII);
-    private static final byte[] DEBUG_SUFFIX_BYTES = DEBUG_SUFFIX.getBytes(StandardCharsets.US_ASCII);
-    /** Firmware debug frames fit in 192 bytes; wait a bit longer for a split USB read. */
-    private static final int MAX_DEBUG_FRAME = 256;
 
     private final String serialPortName;
     private final SerialPort serial;
@@ -63,13 +57,9 @@ public final class SeUsbLink implements AutoCloseable {
     private final OutputStream serialOut;
     private final InputStream tlsIn;
     private final OutputStream tlsOut;
+    private final UsbCdcRxMachine rx = new UsbCdcRxMachine();
 
     private final byte[] scratch = new byte[USB_CHUNK];
-    private byte[] leftover = new byte[0];
-    private int leftoverPos;
-    private int leftoverLen;
-    private boolean tlsActive;
-    private String tlsArmFailure;
     private volatile boolean closed;
 
     private SeUsbLink(String serialPortName, SerialPort serial) {
@@ -98,7 +88,7 @@ public final class SeUsbLink implements AutoCloseable {
             throw new IllegalArgumentException("command longer than " + MAX_COMMAND_CHARS + " chars");
         }
         ensureOpen();
-        clearTlsParseState();
+        rx.reset();
         String line = trimmed.endsWith("\n") ? trimmed : trimmed + "\n";
         try {
             serialOut.write(line.getBytes(StandardCharsets.US_ASCII));
@@ -116,8 +106,7 @@ public final class SeUsbLink implements AutoCloseable {
     public synchronized void writeRaw(byte[] data) throws IOException {
         Objects.requireNonNull(data, "data");
         ensureOpen();
-        tlsActive = false;
-        tlsArmFailure = null;
+        rx.disarmTls();
         try {
             serialOut.write(data);
             serialOut.flush();
@@ -129,8 +118,8 @@ public final class SeUsbLink implements AutoCloseable {
 
     /**
      * Arm ENCRYPT/DECRYPT/MANAGE/PROVISION and wait until the chip sends ClientHello.
-     * Firmware refusals ({@code TLS refused}, {@code TLS start failed}) throw instead of
-     * leaving {@link javax.net.ssl.SSLSocket#startHandshake()} blocked forever.
+     * Firmware refusals ({@code failed}) throw instead of leaving
+     * {@link javax.net.ssl.SSLSocket#startHandshake()} blocked forever.
      */
     public void armTls(String verb) throws IOException {
         Objects.requireNonNull(verb, "verb");
@@ -139,7 +128,7 @@ public final class SeUsbLink implements AutoCloseable {
     }
 
     /**
-     * Pump CDC until ClientHello ({@code 0x16}) or a TLS-arm abort debug frame.
+     * Pump CDC until ClientHello ({@code 0x16}) or ASCII {@code failed}.
      * Leaves hello bytes in leftover for the next {@link #readTls}.
      */
     public synchronized void awaitTlsOrThrow(long maxMs) throws IOException {
@@ -149,19 +138,19 @@ public final class SeUsbLink implements AutoCloseable {
         ensureOpen();
         throwIfTlsArmFailed();
         long start = System.currentTimeMillis();
-        while (!tlsActive) {
+        while (!rx.isTlsActive()) {
             throwIfTlsArmFailed();
             if (System.currentTimeMillis() - start >= maxMs) {
                 throw new IOException("TLS start timed out");
             }
-            if (leftoverLen > leftoverPos) {
-                int pending = leftoverLen - leftoverPos;
-                takePreTls(scratch, 0, 0);
+            if (rx.pending() > 0) {
+                int pending = rx.pending();
+                rx.takeTls(scratch, 0, 0);
                 throwIfTlsArmFailed();
-                if (tlsActive) {
+                if (rx.isTlsActive()) {
                     return;
                 }
-                if (leftoverLen - leftoverPos < pending) {
+                if (rx.pending() < pending) {
                     continue;
                 }
             }
@@ -181,7 +170,7 @@ public final class SeUsbLink implements AutoCloseable {
                 throw new IOException("USB serial is closed");
             }
             if (n > 0) {
-                appendLeftover(scratch, 0, n);
+                rx.feed(scratch, 0, n);
             }
         }
     }
@@ -192,8 +181,7 @@ public final class SeUsbLink implements AutoCloseable {
      * has already been exchanged.
      */
     public synchronized void resetConsole() {
-        clearTlsParseState();
-        leftover = new byte[0];
+        rx.reset();
         if (!isOpen()) {
             return;
         }
@@ -222,24 +210,22 @@ public final class SeUsbLink implements AutoCloseable {
 
     /**
      * Read ASCII console until {@code idleMs} of silence after the first byte, or {@code maxMs} total.
-     * {@code DEBUG:<text>:DEBUG} wrappers are stripped. Does not treat {@code 0x16} as TLS.
+     * Dump frames are skipped. Does not treat {@code 0x16} as TLS.
      */
     public synchronized String readConsole(long idleMs, long maxMs) throws IOException {
         if (idleMs < 0 || maxMs < 0) {
             throw new IllegalArgumentException("idleMs and maxMs must be >= 0");
         }
         ensureOpen();
-        tlsActive = false;
+        rx.disarmTls();
         StringBuilder out = new StringBuilder();
         StringBuilder line = new StringBuilder();
         long start = System.currentTimeMillis();
         long lastByteAt = 0L;
-        if (leftoverLen - leftoverPos > 0) {
+        byte[] pending = rx.takePendingRaw();
+        if (pending.length > 0) {
             lastByteAt = start;
-            appendConsoleBytes(leftover, leftoverPos, leftoverLen - leftoverPos, line, out);
-            leftoverPos = 0;
-            leftoverLen = 0;
-            leftover = new byte[0];
+            appendConsoleBytes(pending, 0, pending.length, line, out);
         }
         while (true) {
             long now = System.currentTimeMillis();
@@ -288,8 +274,68 @@ public final class SeUsbLink implements AutoCloseable {
         return readConsole(idleMs, maxMs);
     }
 
+    public synchronized SeUsbDump transactDump(String command) throws IOException {
+        return transactDump(command, CONSOLE_SLOW_MAX_MS);
+    }
+
     /**
-     * One serial poll. Returns TLS bytes only (0 on idle / debug, -1 if the port closed).
+     * Send an ASCII command and wait for one {@code 0xB1} dump (PUB / CSR / HASH / OTP LEFT / PEER LIST / OWNER SET).
+     */
+    public synchronized SeUsbDump transactDump(String command, long maxMs) throws IOException {
+        sendCommand(command);
+        return readDump(maxMs);
+    }
+
+    /**
+     * Wait for one dump frame. ASCII {@code failed} throws. Timeout throws.
+     */
+    public synchronized SeUsbDump readDump(long maxMs) throws IOException {
+        if (maxMs < 0) {
+            throw new IllegalArgumentException("maxMs must be >= 0");
+        }
+        ensureOpen();
+        rx.disarmTls();
+        throwIfTlsArmFailed();
+        long start = System.currentTimeMillis();
+        SeUsbDump dump = rx.takeDump();
+        if (dump != null) {
+            return dump;
+        }
+        while (System.currentTimeMillis() - start < maxMs) {
+            throwIfTlsArmFailed();
+            int n;
+            try {
+                n = serialIn.read(scratch);
+            } catch (SerialPortTimeoutException e) {
+                dump = rx.takeDump();
+                if (dump != null) {
+                    return dump;
+                }
+                continue;
+            } catch (IOException e) {
+                System.out.println("[usb] Serial closed");
+                markSerialGone();
+                throw e;
+            }
+            if (n < 0) {
+                System.out.println("[usb] Serial closed");
+                markSerialGone();
+                throw new IOException("USB serial is closed");
+            }
+            if (n > 0) {
+                rx.feed(scratch, 0, n);
+            }
+            dump = rx.takeDump();
+            if (dump != null) {
+                return dump;
+            }
+        }
+        throwIfTlsArmFailed();
+        throw new IOException("failed");
+    }
+
+    /**
+     * One serial poll. Returns TLS bytes only (0 on idle / dump, -1 if the port closed).
      */
     public synchronized int readTls(byte[] dest, int off, int len) throws IOException {
         Objects.requireNonNull(dest, "dest");
@@ -303,13 +349,13 @@ public final class SeUsbLink implements AutoCloseable {
             return -1;
         }
         throwIfTlsArmFailed();
-        if (tlsActive) {
-            int fromLeftover = drainLeftover(dest, off, len);
+        if (rx.isTlsActive()) {
+            int fromLeftover = rx.takeTls(dest, off, len);
             if (fromLeftover > 0) {
                 return fromLeftover;
             }
-        } else if (leftoverLen > leftoverPos) {
-            int fromFrame = takePreTls(dest, off, len);
+        } else if (rx.pending() > 0) {
+            int fromFrame = rx.takeTls(dest, off, len);
             throwIfTlsArmFailed();
             if (fromFrame != 0) {
                 return fromFrame;
@@ -333,11 +379,8 @@ public final class SeUsbLink implements AutoCloseable {
         if (n == 0) {
             return 0;
         }
-        appendLeftover(scratch, 0, n);
-        if (tlsActive) {
-            return drainLeftover(dest, off, len);
-        }
-        int fromFrame = takePreTls(dest, off, len);
+        rx.feed(scratch, 0, n);
+        int fromFrame = rx.takeTls(dest, off, len);
         throwIfTlsArmFailed();
         return fromFrame;
     }
@@ -399,186 +442,12 @@ public final class SeUsbLink implements AutoCloseable {
         }
     }
 
-    private int drainLeftover(byte[] dest, int off, int len) {
-        if (leftoverLen - leftoverPos <= 0) {
-            return 0;
-        }
-        int n = Math.min(len, leftoverLen - leftoverPos);
-        System.arraycopy(leftover, leftoverPos, dest, off, n);
-        leftoverPos += n;
-        return n;
-    }
-
-    private void appendLeftover(byte[] src, int off, int len) {
-        if (len <= 0) {
-            return;
-        }
-        int keep = leftoverLen - leftoverPos;
-        byte[] next = new byte[keep + len];
-        if (keep > 0) {
-            System.arraycopy(leftover, leftoverPos, next, 0, keep);
-        }
-        System.arraycopy(src, off, next, keep, len);
-        leftover = next;
-        leftoverPos = 0;
-        leftoverLen = next.length;
-    }
-
-    private void compactLeftover() {
-        if (leftoverPos == 0) {
-            return;
-        }
-        int keep = leftoverLen - leftoverPos;
-        leftover = keep <= 0 ? new byte[0] : Arrays.copyOfRange(leftover, leftoverPos, leftoverLen);
-        leftoverPos = 0;
-        leftoverLen = leftover.length;
-    }
-
-    /**
-     * Strip complete {@code DEBUG:<text>:DEBUG} frames. Remaining {@code 0x16} becomes TLS.
-     */
-    private int takePreTls(byte[] dest, int off, int len) {
-        while (leftoverPos < leftoverLen) {
-            skipCrlf();
-            if (leftoverPos >= leftoverLen) {
-                break;
-            }
-            if (startsWithDebugPrefix()) {
-                int suffixAt = indexOfDebugSuffix(leftoverPos + DEBUG_PREFIX_BYTES.length);
-                if (suffixAt < 0) {
-                    if (leftoverLen - leftoverPos > MAX_DEBUG_FRAME) {
-                        emitPreTlsAscii(leftoverPos, leftoverLen);
-                        leftoverPos = leftoverLen;
-                        break;
-                    }
-                    compactLeftover();
-                    return 0;
-                }
-                emitDebugFrame(leftoverPos + DEBUG_PREFIX_BYTES.length, suffixAt);
-                leftoverPos = suffixAt + DEBUG_SUFFIX_BYTES.length;
-                continue;
-            }
-            if (isIncompleteDebugPrefix()) {
-                compactLeftover();
-                return 0;
-            }
-            if ((leftover[leftoverPos] & 0xFF) == 0x16) {
-                tlsActive = true;
-                System.out.println("[usb] TLS Handshake detected");
-                compactLeftover();
-                return drainLeftover(dest, off, len);
-            }
-            int end = leftoverPos + 1;
-            while (end < leftoverLen) {
-                if ((leftover[end] & 0xFF) == 0x16) {
-                    break;
-                }
-                if (startsWithAt(end, DEBUG_PREFIX_BYTES)) {
-                    break;
-                }
-                end++;
-            }
-            emitPreTlsAscii(leftoverPos, end);
-            leftoverPos = end;
-        }
-        compactLeftover();
-        return 0;
-    }
-
-    private void skipCrlf() {
-        while (leftoverPos < leftoverLen) {
-            byte b = leftover[leftoverPos];
-            if (b != '\r' && b != '\n') {
-                return;
-            }
-            leftoverPos++;
-        }
-    }
-
-    private boolean startsWithDebugPrefix() {
-        return startsWithAt(leftoverPos, DEBUG_PREFIX_BYTES);
-    }
-
-    private boolean startsWithAt(int from, byte[] needle) {
-        if (from < 0 || leftoverLen - from < needle.length) {
-            return false;
-        }
-        for (int i = 0; i < needle.length; i++) {
-            if (leftover[from + i] != needle[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean isIncompleteDebugPrefix() {
-        int n = leftoverLen - leftoverPos;
-        if (n <= 0 || n >= DEBUG_PREFIX_BYTES.length) {
-            return false;
-        }
-        for (int i = 0; i < n; i++) {
-            if (leftover[leftoverPos + i] != DEBUG_PREFIX_BYTES[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private int indexOfDebugSuffix(int from) {
-        int last = leftoverLen - DEBUG_SUFFIX_BYTES.length;
-        for (int i = from; i <= last; i++) {
-            if (startsWithAt(i, DEBUG_SUFFIX_BYTES)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private void emitDebugFrame(int bodyFrom, int bodyTo) {
-        String body = new String(leftover, bodyFrom, bodyTo - bodyFrom, StandardCharsets.ISO_8859_1)
-                .strip();
-        if (!body.isEmpty()) {
-            System.out.println(DEBUG_PREFIX + " " + body);
-            if (tlsArmFailure == null && isTlsArmAbort(body)) {
-                tlsArmFailure = body;
-            }
-        }
-    }
-
-    /** Firmware DEBUG body that means TLS was not armed (no ClientHello will follow). */
-    static boolean isTlsArmAbort(String body) {
-        if (body == null || body.isBlank()) {
-            return false;
-        }
-        String lower = body.strip().toLowerCase(Locale.ROOT);
-        return lower.contains("tls start failed")
-                || lower.contains("tls refused")
-                || lower.startsWith("tls setup:")
-                || lower.contains("tls aborted");
-    }
-
-    private void clearTlsParseState() {
-        tlsActive = false;
-        tlsArmFailure = null;
-        leftoverPos = 0;
-        leftoverLen = 0;
-    }
-
     private void throwIfTlsArmFailed() throws IOException {
-        if (tlsArmFailure == null) {
+        String msg = rx.consumeArmFailure();
+        if (msg == null) {
             return;
         }
-        String msg = tlsArmFailure;
-        tlsArmFailure = null;
-        throw new IOException("TLS start failed: " + msg);
-    }
-
-    private void emitPreTlsAscii(int from, int to) {
-        if (to <= from) {
-            return;
-        }
-        System.out.print(new String(leftover, from, to - from, StandardCharsets.ISO_8859_1));
-        System.out.flush();
+        throw new IOException("failed");
     }
 
     private static void appendConsoleBytes(
@@ -598,7 +467,7 @@ public final class SeUsbLink implements AutoCloseable {
     }
 
     private static void emitConsoleLine(String raw, StringBuilder out) {
-        String line = stripDebugPrefix(raw);
+        String line = raw.strip();
         if (line.isEmpty()) {
             return;
         }
@@ -607,17 +476,6 @@ public final class SeUsbLink implements AutoCloseable {
             out.append('\n');
         }
         out.append(line);
-    }
-
-    private static String stripDebugPrefix(String raw) {
-        String trimmed = raw.strip();
-        if (trimmed.startsWith(DEBUG_PREFIX)) {
-            trimmed = trimmed.substring(DEBUG_PREFIX.length()).strip();
-        }
-        if (trimmed.endsWith(DEBUG_SUFFIX)) {
-            trimmed = trimmed.substring(0, trimmed.length() - DEBUG_SUFFIX.length()).strip();
-        }
-        return trimmed;
     }
 
     private static SerialPort openWhenPresent(String serialPortName, int baudRate)
@@ -680,7 +538,7 @@ public final class SeUsbLink implements AutoCloseable {
 
         @Override
         public int available() {
-            return Math.max(0, leftoverLen - leftoverPos);
+            return rx.pending();
         }
 
         @Override

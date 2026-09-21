@@ -53,14 +53,14 @@ set -a
 source env/hsm.env
 source env/node-1.env
 set +a
-mvn exec:java -Dexec.mainClass=fel.cvut.node.Node
+mvn -pl :sae-node -am exec:java
 ```
 
 Source **both** env files — Java only sees process environment variables. `env/hsm.env` is
 the shared Utimaco connection; `env/node-N.env` is this node's identity, ports, QKD URL,
 and database.
 
-Default `mvn exec:java` (no `-Dexec.mainClass`) also starts `Node`.
+Default `mvn -pl :sae-node exec:java` starts `Node`.
 
 ## Config — `env/node-N.env`
 

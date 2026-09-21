@@ -109,10 +109,10 @@ main() {
   [[ -d "$SE_DIR" ]] || die "stm32u535-trustzone-usb not found"
 
   "$SCRIPTS/hsm.sh"
+  "$SCRIPTS/java.sh" compile
   "$SCRIPTS/java.sh" certgen
   "$SCRIPTS/host.sh" prepare
   "$SCRIPTS/java.sh" migrate
-  "$SCRIPTS/java.sh" compile
   start_stack
 }
 
@@ -124,6 +124,7 @@ Usage: $(basename "$0")
 Start the HSM simulator first. Then:
 
   scripts/hsm.sh           csadm setup if needed
+  scripts/java.sh compile  mvn install (local reactor jars)
   scripts/java.sh certgen  CertGenerator
   scripts/host.sh prepare  embed certs + build se_host
   scripts/java.sh migrate  Flyway node-1 / node-2

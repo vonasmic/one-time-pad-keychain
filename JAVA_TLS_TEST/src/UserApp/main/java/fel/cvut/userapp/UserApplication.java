@@ -1,46 +1,60 @@
 package fel.cvut.userapp;
 
 import fel.cvut.se.SeBytes;
+import fel.cvut.se.SeManage;
+import fel.cvut.se.SeUsbDump;
 import fel.cvut.se.SecureOtp;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.SoftwareLeaf;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.usb.SeUsbLink;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 /**
- * USB console: raw chip commands, OTP encrypt/decrypt, peer hash/add, and chip INIT.
- * TLS identity is the software ML-DSA PEM bundle in {@code certs/user/} (no HSM).
+ * USB console: raw chip commands, OTP encrypt/decrypt, peer hash/add, and chip INIT LAB/PROD.
+ * TLS identity is the software ML-DSA PKCS#12 (or PEM fallback) in {@code certs/user/} (no HSM).
  *
  * <p>USB path is {@code USB_SERIAL_PORT}.
  */
 public final class UserApplication {
 
-    private static final Pattern PIN = Pattern.compile("[0-9]{4,8}");
     private static final String HASH_PROMPT = "Peer cert hash (96 hex): ";
 
     public static void main(String[] args) throws Exception {
         String serialPort = envOrDefault("USB_SERIAL_PORT", SeUsbLink.DEFAULT_PORT);
         int baudRate = Integer.parseInt(envOrDefault("USB_BAUD_RATE", Integer.toString(SeUsbLink.DEFAULT_BAUD)));
 
-        Path certs = NodeTls.certsDir();
+        Path certs = SoftwareTls.certsDir();
         Path ownerCertPath = certPath(certs, "USERAPP_OWNER_CERT", "user/user-cert.pem");
         Path ownerKeyPath = certPath(certs, "USERAPP_OWNER_KEY", "user/user-key.pem");
+        Path ownerP12Path = certPath(certs, "USERAPP_OWNER_P12", "user/user.p12");
         Path deviceCertPath = certPath(certs, "USERAPP_DEVICE_CERT", "client/client-cert.pem");
-        Path deviceKeyPath = certPath(certs, "USERAPP_DEVICE_KEY", "client/client-key.pem");
         Path saeCaPath = certPath(certs, "USERAPP_SAE_CA", "ca/root-ca.pem");
-        Path pairingKeyPath = pairingKeyPath(certs, deviceCertPath);
+        Path clientCaP12Path = certPath(certs, "USERAPP_CLIENT_CA_P12", "ca/client_ca.p12");
 
-        SSLContext ctx = NodeTls.createContextFromPem(ownerCertPath, ownerKeyPath, NodeTls.clientCaPem());
-        X509Certificate ownerCert = PeerCertHash.loadCert(ownerCertPath);
+        char[] p12Password = envOrDefault("USERAPP_OWNER_P12_PASSWORD", "password").toCharArray();
+        SSLContext ctx;
+        X509Certificate ownerCert;
+        try {
+            if (Files.isRegularFile(ownerP12Path)) {
+                ctx = SoftwareTls.createContextFromPkcs12(ownerP12Path, p12Password, SoftwareTls.clientCaPem());
+                ownerCert = SoftwareTls.softwareLeafFromPkcs12(ownerP12Path, p12Password);
+            } else {
+                ctx = SoftwareTls.createContextFromPem(ownerCertPath, ownerKeyPath, SoftwareTls.clientCaPem());
+                ownerCert = SoftwareTls.softwareLeafFromPem(ownerCertPath);
+            }
+        } finally {
+            java.util.Arrays.fill(p12Password, '\0');
+        }
         byte[] ownerSpki = PeerCertHash.rawSpkiBits(ownerCert);
+        String deviceCn = deviceCnFor(deviceCertPath);
 
         byte[] lastEncryptReply = null;
 
@@ -48,7 +62,7 @@ public final class UserApplication {
              UsbSession usb = new UsbSession(serialPort, baudRate)) {
             usb.require();
             while (true) {
-                System.out.print("APP [ENCRYPT/DECRYPT/LEFT/PEER/INIT/OWNER/REPLACE/quit] or chip line: ");
+                System.out.print("APP [ENCRYPT/DECRYPT/LEFT/PEER/INIT LAB/INIT PROD/OWNER/REPLACE/quit] or chip line: ");
                 System.out.flush();
                 if (!sc.hasNextLine()) {
                     return;
@@ -63,51 +77,59 @@ public final class UserApplication {
                 String raw = stripped.toUpperCase(Locale.ROOT);
 
                 try {
+                    ChipService chip = new ChipService(usb.require(), ctx);
                     if (raw.equals("ENCRYPT") || raw.equals("E")) {
-                        byte[] reply = runEncryptFlow(sc, usb, ctx);
+                        byte[] reply = runEncryptFlow(sc, chip);
                         if (reply != null) {
                             lastEncryptReply = reply;
                         }
                     } else if (raw.equals("DECRYPT") || raw.equals("D")) {
-                        runDecryptFlow(sc, usb, ctx, lastEncryptReply);
+                        runDecryptFlow(sc, chip, lastEncryptReply);
                     } else if (raw.equals("LEFT") || raw.equals("OTP LEFT")) {
-                        usb.require().transact("TROPIC OTP LEFT");
-                    } else if (raw.equals("INIT")) {
+                        printDump(chip.otpLeft());
+                    } else if (ChipInit.isInitLab(raw)) {
                         ChipInit.run(sc, usb.require(), UserApplication::readPin, ctx,
-                                deviceCertPath, deviceKeyPath, saeCaPath, ownerSpki, pairingKeyPath);
+                                deviceCertPath, saeCaPath, clientCaP12Path, deviceCn, ownerSpki,
+                                ChipInit.Profile.LAB);
+                    } else if (ChipInit.isInitProd(raw)) {
+                        ChipInit.run(sc, usb.require(), UserApplication::readPin, ctx,
+                                deviceCertPath, saeCaPath, clientCaP12Path, deviceCn, ownerSpki,
+                                ChipInit.Profile.PROD);
+                    } else if (raw.equals("INIT") || raw.equals("INIT SAFE") || raw.equals("INITSAFE")) {
+                        System.err.println("Use INIT LAB or INIT PROD.");
+                        System.err.println("INIT LAB signs the on-chip CSR with the local client CA and never pairs.");
+                        System.err.println("INIT PROD does not sign locally and may burn factory SH0 — confirm before using it.");
                     } else if (raw.equals("OWNER")) {
-                        runOwnerSet(sc, usb, deviceCertPath, deviceKeyPath, saeCaPath, ownerSpki);
+                        runOwnerSet(sc, chip, saeCaPath, ownerSpki);
                     } else if (raw.equals("REPLACE")) {
-                        runOwnerReplace(sc, usb, ctx, ownerSpki);
+                        runOwnerReplace(sc, chip, ownerSpki);
                     } else if (raw.equals("PEER") || raw.startsWith("PEER ")) {
-                        runPeer(sc, usb, stripped, ctx);
+                        runPeer(sc, chip, stripped);
                     } else {
-                        runRawCommand(usb, stripped);
+                        runRawCommand(chip, stripped);
                     }
                 } catch (Exception e) {
                     System.err.println("Command failed: " + e.getMessage());
-                    if (e.getMessage() != null
-                            && e.getMessage().toLowerCase(Locale.ROOT).contains("no owner")) {
-                        System.err.println("No owner enrolled. Use INIT or OWNER, then retry.");
-                    }
                 }
             }
         }
     }
 
-    private static void runRawCommand(UsbSession usb, String line) throws Exception {
+    private static void runRawCommand(ChipService chip, String line) throws Exception {
         if (isTlsArming(line)) {
             System.err.println("TLS-arming commands (PROVISION/ENCRYPT/DECRYPT/MANAGE) switch "
                     + "the pipe to opaque TLS. Use APP ENCRYPT/DECRYPT/PEER/INIT, or TerminalBridge "
                     + "for provision.");
             return;
         }
-        SeUsbLink link = usb.require();
-        link.resetConsole();
-        link.transact(line);
+        if (isDumpCommand(line)) {
+            printDump(chip.dump(line));
+            return;
+        }
+        chip.transact(line);
     }
 
-    private static byte[] runEncryptFlow(Scanner sc, UsbSession usb, SSLContext ctx) throws Exception {
+    private static byte[] runEncryptFlow(Scanner sc, ChipService chip) throws Exception {
         String pin = readPin(sc);
         if (pin == null) {
             return null;
@@ -121,15 +143,17 @@ public final class UserApplication {
             System.err.println("Message must not be empty.");
             return null;
         }
-        SeUsbLink link = usb.require();
         try {
-            return runEncrypt(link, ctx, pin, message);
-        } finally {
-            link.resetConsole();
+            byte[] raw = chip.encrypt(pin, message);
+            System.out.println("Encrypt reply (hex): " + SeBytes.toHex(raw));
+            return raw;
+        } catch (SecureOtp.OtpException e) {
+            System.err.println(e.getMessage());
+            return null;
         }
     }
 
-    private static void runDecryptFlow(Scanner sc, UsbSession usb, SSLContext ctx, byte[] lastEncryptReply)
+    private static void runDecryptFlow(Scanner sc, ChipService chip, byte[] lastEncryptReply)
             throws Exception {
         String pin = readPin(sc);
         if (pin == null) {
@@ -139,70 +163,57 @@ public final class UserApplication {
         if (decryptReplyRaw == null) {
             return;
         }
-        SeUsbLink link = usb.require();
         try {
-            runDecrypt(link, ctx, pin, decryptReplyRaw);
-        } finally {
-            link.resetConsole();
+            byte[] plaintext = chip.decrypt(pin, decryptReplyRaw);
+            System.out.println("Plaintext: " + new String(plaintext, StandardCharsets.UTF_8));
+        } catch (SecureOtp.OtpException e) {
+            System.err.println(e.getMessage());
         }
     }
 
     private static void runOwnerSet(
-            Scanner sc, UsbSession usb, Path deviceCert, Path deviceKey, Path saeCa, byte[] ownerSpki
+            Scanner sc, ChipService chip, Path saeCa, byte[] ownerSpki
     ) throws Exception {
-        String pw = readRequired(sc, "Reset password (8-64 printable ASCII): ");
+        String pw = ChipInit.readOwnerPassword(sc);
         if (pw == null) {
             return;
         }
-        if (pw.length() < OwnerAuth.PW_MIN || pw.length() > OwnerAuth.PW_MAX) {
-            System.err.println("Reset password must be 8–64 characters.");
-            return;
-        }
-        byte[] deviceCertDer = PeerCertHash.loadCert(deviceCert).getEncoded();
-        byte[] deviceKeyDer = NodeTls.softwarePrivateKey(deviceKey).getEncoded();
+        byte[] pwBytes = pw.getBytes(StandardCharsets.US_ASCII);
         byte[] saeCaDer = PeerCertHash.loadCert(saeCa).getEncoded();
-        SeUsbLink link = usb.require();
-        link.resetConsole();
-        String begin = link.transact("OWNER SET");
-        if (ChipInit.ownerSetRefused(begin)) {
-            System.err.println("OWNER SET refused (already enrolled). Use REPLACE.");
-            return;
-        }
-        String done = OwnerAuth.completeOwnerSet(
-                link, pw.getBytes(StandardCharsets.US_ASCII), ownerSpki, deviceCertDer, deviceKeyDer, saeCaDer,
-                SeUsbLink.CONSOLE_IDLE_MS, SeUsbLink.CONSOLE_SLOW_MAX_MS);
-        if (!ChipInit.okLine(done, "owner set ok")) {
-            System.err.println("OWNER SET failed.");
+        switch (chip.ownerSet(pwBytes, ownerSpki, saeCaDer)) {
+            case ChipInit.OwnerSetResult.AlreadyEnrolled ignored ->
+                    System.err.println("OWNER SET refused (already enrolled). Use REPLACE.");
+            case ChipInit.OwnerSetResult.Failed failed ->
+                    System.err.println("OWNER SET failed: " + failed.detail());
+            case ChipInit.OwnerSetResult.Ok ignored -> {
+            }
         }
     }
 
-    private static void runOwnerReplace(Scanner sc, UsbSession usb, SSLContext ctx, byte[] ownerSpki)
+    private static void runOwnerReplace(Scanner sc, ChipService chip, byte[] ownerSpki)
             throws Exception {
-        String oldPw = readRequired(sc, "Current reset password: ");
+        String oldPw = readRequired(sc, "Current owner password (device renew): ");
         if (oldPw == null) {
             return;
         }
-        String newPw = readRequired(sc, "New reset password (8-64 printable ASCII): ");
+        String newPw = ChipInit.readOwnerPassword(sc, ChipInit.NEW_OWNER_PASSWORD_PROMPT);
         if (newPw == null) {
             return;
         }
-        if (newPw.length() < OwnerAuth.PW_MIN || newPw.length() > OwnerAuth.PW_MAX) {
-            System.err.println("Reset password must be 8–64 characters.");
-            return;
-        }
-        SeUsbLink link = usb.require();
-        OwnerAuth.ManageResult r = OwnerAuth.manage(
-                link, ctx, OwnerAuth.CMD_OWNER_REPLACE, null,
-                OwnerAuth.ownerReplaceBody(
-                        oldPw.getBytes(StandardCharsets.US_ASCII),
-                        newPw.getBytes(StandardCharsets.US_ASCII),
-                        ownerSpki));
+        byte[] newBytes = newPw.getBytes(StandardCharsets.US_ASCII);
+        SeManage.Reply r = chip.ownerReplace(
+                oldPw.getBytes(StandardCharsets.US_ASCII), newBytes, ownerSpki);
         if (!r.ok()) {
-            System.err.println("OWNER REPLACE failed: " + r.msg());
+            if (r.status() == SeManage.PW_FAIL) {
+                System.err.println("OWNER REPLACE failed: current owner password is wrong "
+                        + "(each lab device keeps its own password from the INIT/OWNER that enrolled it).");
+            } else {
+                System.err.println("OWNER REPLACE failed: " + r.msg());
+            }
         }
     }
 
-    private static void runPeer(Scanner sc, UsbSession usb, String command, SSLContext ctx) throws Exception {
+    private static void runPeer(Scanner sc, ChipService chip, String command) throws Exception {
         String afterPeer = command.length() > 4 ? command.substring(4).strip() : "";
         if (afterPeer.isEmpty()) {
             System.out.print("PEER [ADD/REMOVE/LIST]: ");
@@ -213,7 +224,7 @@ public final class UserApplication {
         }
         String sub = afterPeer.toUpperCase(Locale.ROOT);
         if (sub.equals("LIST") || sub.equals("L")) {
-            usb.require().transact("PEER LIST");
+            printDump(chip.peerList());
             return;
         }
         if (sub.equals("REMOVE") || sub.equals("R") || sub.startsWith("REMOVE")) {
@@ -232,9 +243,7 @@ public final class UserApplication {
             if (pin == null) {
                 return;
             }
-            SeUsbLink link = usb.require();
-            OwnerAuth.ManageResult r = OwnerAuth.manage(
-                    link, ctx, OwnerAuth.CMD_PEER_REMOVE, pin, OwnerAuth.peerRemoveBody(name));
+            SeManage.Reply r = chip.peerRemove(pin, name);
             if (!r.ok()) {
                 System.err.println("PEER REMOVE failed: " + r.msg());
             }
@@ -268,10 +277,7 @@ public final class UserApplication {
             if (pin == null) {
                 return;
             }
-            SeUsbLink link = usb.require();
-            OwnerAuth.ManageResult r = OwnerAuth.manage(
-                    link, ctx, OwnerAuth.CMD_PEER_ADD, pin,
-                    OwnerAuth.peerAddBody(name, SeBytes.fromHex(hash)));
+            SeManage.Reply r = chip.peerAdd(pin, name, SeBytes.fromHex(hash));
             if (!r.ok()) {
                 System.err.println("PEER ADD failed: " + r.msg());
             }
@@ -289,41 +295,6 @@ public final class UserApplication {
             return "";
         }
         return afterPeer.substring(verb.length()).strip();
-    }
-
-    private static byte[] runEncrypt(SeUsbLink usb, SSLContext ctx, String pin, String message)
-            throws Exception {
-        usb.armTls("ENCRYPT");
-        try (SSLSocket ssl = NodeTls.wrapServer(ctx, usb.asSocket())) {
-            ssl.startHandshake();
-            byte[] plaintext = message.getBytes(StandardCharsets.UTF_8);
-            ssl.getOutputStream().write(SecureOtp.encodeEncryptRequest(pin, plaintext));
-            ssl.getOutputStream().flush();
-            try {
-                byte[] raw = SecureOtp.readEncryptReply(ssl.getInputStream()).toBytes();
-                System.out.println("Encrypt reply (hex): " + SeBytes.toHex(raw));
-                return raw;
-            } catch (SecureOtp.OtpException e) {
-                System.err.println(e.getMessage());
-                return null;
-            }
-        }
-    }
-
-    private static void runDecrypt(SeUsbLink usb, SSLContext ctx, String pin, byte[] encryptReply)
-            throws Exception {
-        usb.armTls("DECRYPT");
-        try (SSLSocket ssl = NodeTls.wrapServer(ctx, usb.asSocket())) {
-            ssl.startHandshake();
-            ssl.getOutputStream().write(SecureOtp.encodeDecryptRequest(pin, encryptReply));
-            ssl.getOutputStream().flush();
-            try {
-                byte[] plaintext = SecureOtp.readDecryptReply(ssl.getInputStream()).plaintext();
-                System.out.println("Plaintext: " + new String(plaintext, StandardCharsets.UTF_8));
-            } catch (SecureOtp.OtpException e) {
-                System.err.println(e.getMessage());
-            }
-        }
     }
 
     private static byte[] readEncryptReplyHex(Scanner sc, byte[] lastEncryptReply) {
@@ -351,15 +322,15 @@ public final class UserApplication {
 
     static String readPin(Scanner sc) {
         while (true) {
-            System.out.print("PIN (4-8 digits): ");
+            System.out.print(ChipInit.TROPIC_PIN_PROMPT);
             if (!sc.hasNextLine()) {
                 return null;
             }
-            String pin = sc.nextLine().trim();
-            if (PIN.matcher(pin).matches()) {
+            String pin = sc.nextLine();
+            if (SeManage.pinOk(pin)) {
                 return pin;
             }
-            System.err.println("PIN must be 4 to 8 decimal digits.");
+            System.err.println("Tropic PIN must be 8 to 16 printable ASCII characters.");
         }
     }
 
@@ -381,6 +352,57 @@ public final class UserApplication {
         return upper.equals("QUIT") || upper.equals("Q") || upper.equals("EXIT");
     }
 
+    private static boolean isDumpCommand(String line) {
+        String u = line.strip().toUpperCase(Locale.ROOT);
+        return u.equals("OWNER SET")
+                || u.equals("PEER LIST")
+                || u.equals("CLIENT HASH")
+                || u.equals("CLIENT CSR")
+                || u.equals("TROPIC PUB")
+                || u.equals("TROPIC KEM PUB")
+                || u.equals("TROPIC OTP LEFT");
+    }
+
+    private static void printDump(SeUsbDump dump) {
+        if (dump == null) {
+            System.err.println("failed");
+            return;
+        }
+        if (dump.refused()) {
+            System.out.println("refused");
+            return;
+        }
+        if (dump.empty()) {
+            System.out.println("empty");
+            return;
+        }
+        if (!dump.ok()) {
+            System.err.println("failed");
+            return;
+        }
+        if (dump.body.length == 0) {
+            System.out.println("ok");
+            return;
+        }
+        int[] otp = dump.otpLeft();
+        if (otp != null) {
+            System.out.println("enc " + otp[0] + "/" + otp[1] + " dec " + otp[2] + "/" + otp[3]);
+            return;
+        }
+        var peers = dump.peers();
+        if (peers != null) {
+            if (peers.isEmpty()) {
+                System.out.println("empty");
+                return;
+            }
+            for (SeUsbDump.Peer p : peers) {
+                System.out.println(p.name() + " " + SeBytes.toHex(p.hash()));
+            }
+            return;
+        }
+        System.out.println(SeBytes.toHex(dump.body));
+    }
+
     private static boolean isTlsArming(String line) {
         String first = line.strip().split("\\s+", 2)[0];
         return first.equalsIgnoreCase("PROVISION")
@@ -389,13 +411,12 @@ public final class UserApplication {
                 || first.equalsIgnoreCase("MANAGE");
     }
 
-    private static Path pairingKeyPath(Path certsDir, Path deviceCert) {
-        String spec = envOrDefault("USERAPP_PAIRING_KEY", "");
-        if (!spec.isBlank()) {
-            return certPath(certsDir, "USERAPP_PAIRING_KEY", spec);
-        }
+    private static String deviceCnFor(Path deviceCert) {
         Path parent = deviceCert.getParent();
-        return (parent == null ? deviceCert : parent).resolve("pairing.key");
+        if (parent != null && "client2".equals(parent.getFileName().toString())) {
+            return SoftwareLeaf.DEVICE_CLIENT_CN_2;
+        }
+        return SoftwareLeaf.DEVICE_CLIENT_CN;
     }
 
     private static Path certPath(Path certsDir, String env, String defaultRel) {

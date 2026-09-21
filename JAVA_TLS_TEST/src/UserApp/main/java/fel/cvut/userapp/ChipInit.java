@@ -1,65 +1,181 @@
 package fel.cvut.userapp;
 
 import fel.cvut.se.SeBytes;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.se.SeManage;
+import fel.cvut.tls.SoftwareLeaf;
 import fel.cvut.usb.SeUsbLink;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import javax.net.ssl.SSLContext;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.Security;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Application-side chip bring-up: unsigned OWNER SET blob, KEYGEN, MANAGE KEM INIT, PAIRING.
+ * Chip enrollment as one sequence. LAB signs the on-chip ML-DSA CSR with the
+ * local client CA and never pairs. PROD writes the CSR, does not sign it, and
+ * may burn factory SH0 over MANAGE + PIN. USB is {@link ChipPort}; cert files
+ * are {@link Certs}.
  */
 final class ChipInit {
 
-    private static final Pattern PIN = Pattern.compile("[0-9]{4,8}");
-    private static final Pattern KEY_LINE = Pattern.compile(
-            "TROPIC PAIRING KEY ([1-3]) ([0-9a-fA-F]{64}) ([0-9a-fA-F]{64})",
-            Pattern.CASE_INSENSITIVE);
-    private static final Pattern SLOT_LINE = Pattern.compile("slot\\s*=\\s*([1-3])", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PRIV_LINE = Pattern.compile("priv\\s*=\\s*([0-9a-fA-F]{64})", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PUB_LINE = Pattern.compile("pub\\s*=\\s*([0-9a-fA-F]{64})", Pattern.CASE_INSENSITIVE);
+    enum Profile {
+        LAB {
+            @Override
+            boolean replaceOccupiedEcc() {
+                return false;
+            }
+
+            @Override
+            boolean signLocally() {
+                return true;
+            }
+
+            @Override
+            boolean allowPairing() {
+                return false;
+            }
+        },
+        PROD {
+            @Override
+            boolean replaceOccupiedEcc() {
+                return true;
+            }
+
+            @Override
+            boolean signLocally() {
+                return false;
+            }
+
+            @Override
+            boolean allowPairing() {
+                return true;
+            }
+        };
+
+        abstract boolean replaceOccupiedEcc();
+
+        abstract boolean signLocally();
+
+        abstract boolean allowPairing();
+    }
+
+    sealed interface OwnerSetResult {
+        record AlreadyEnrolled() implements OwnerSetResult {
+        }
+
+        record Ok() implements OwnerSetResult {
+        }
+
+        record Failed(String detail) implements OwnerSetResult {
+        }
+    }
+
+    interface ChipPort {
+        OwnerSetResult ownerSet(byte[] password, byte[] spki, byte[] saeCa) throws Exception;
+
+        Optional<byte[]> tropicPub() throws Exception;
+
+        /** Present when KEM INIT has already stored the ML-KEM public key (slot 510). */
+        Optional<byte[]> tropicKemPub() throws Exception;
+
+        SeManage.Reply manage(int cmd, String pin, byte[] body) throws Exception;
+
+        byte[] clientCsrPub() throws Exception;
+
+        /** Present when device cert + Tropic ECC exist ({@code CLIENT HASH}). */
+        Optional<byte[]> clientHash() throws Exception;
+    }
+
+    interface Certs {
+        byte[] signLab(Path clientCaP12, byte[] csrPub, String deviceCn) throws Exception;
+
+        void writePem(byte[] certDer, Path path) throws Exception;
+
+        Optional<byte[]> loadDerIfPresent(Path path) throws Exception;
+
+        void writeCsrHex(Path path, byte[] pub) throws IOException;
+
+        boolean isRegularFile(Path path);
+    }
+
+    record EnrollRequest(
+            byte[] resetPassword,
+            String pin,
+            String currentPin,
+            Optional<Integer> pairingSlot,
+            Path deviceCert,
+            Path clientCaP12,
+            String deviceCn,
+            byte[] ownerSpki,
+            byte[] saeCaDer
+    ) {
+        EnrollRequest {
+            Objects.requireNonNull(resetPassword, "resetPassword");
+            Objects.requireNonNull(pin, "pin");
+            Objects.requireNonNull(pairingSlot, "pairingSlot");
+            Objects.requireNonNull(deviceCert, "deviceCert");
+            Objects.requireNonNull(deviceCn, "deviceCn");
+            Objects.requireNonNull(ownerSpki, "ownerSpki");
+            Objects.requireNonNull(saeCaDer, "saeCaDer");
+        }
+    }
+
+    record EnrollResult(boolean ok, String stoppedAt, String message) {
+        static EnrollResult ok(String message) {
+            return new EnrollResult(true, null, message);
+        }
+
+        static EnrollResult stop(String at, String message) {
+            return new EnrollResult(false, at, message);
+        }
+    }
+
+    static final Certs FILE_CERTS = new FileCerts();
+
+    static final String MSG_KEM_ALREADY_PROVISIONED =
+            "ML-KEM is already provisioned (slot 510 / TROPIC KEM PUB). "
+                    + "INIT cannot change the Tropic PIN or re-run KEM INIT. "
+                    + "Use REPLACE to change the owner password (device renew); "
+                    + "use MANAGE KEYGEN, PEER, and CREDS DEVICE for other enrollment changes.";
+
+    static final String OWNER_PASSWORD_PROMPT =
+            "Owner password for device renew (not attempt-locked — use a strong password; 8-64 printable ASCII): ";
+    static final String NEW_OWNER_PASSWORD_PROMPT =
+            "New owner password for device renew (not attempt-locked — use a strong password; 8-64 printable ASCII): ";
+    static final String OWNER_PASSWORD_CONFIRM_PROMPT = "Confirm owner password: ";
+    static final String TROPIC_PIN_PROMPT =
+            "Tropic PIN for encrypt/decrypt (8 attempts max; 8-16 printable ASCII): ";
+    static final String TROPIC_PIN_CONFIRM_PROMPT = "Confirm Tropic PIN: ";
 
     private ChipInit() {
     }
 
     static void run(Scanner sc, SeUsbLink usb, Function<Scanner, String> readPin,
-                    SSLContext ctx, Path deviceCert, Path deviceKey, Path saeCa, byte[] ownerSpki,
-                    Path pairingKey)
+                    SSLContext ctx, Path deviceCert, Path saeCa, Path clientCaP12,
+                    String deviceCn, byte[] ownerSpki, Profile profile)
             throws Exception {
-        boolean restore = pairingKey != null && Files.isRegularFile(pairingKey);
-        System.out.println("""
-                --- Chip INIT ---
-                This will:
-                  1. Enroll this UserApp certificate as owner (OWNER SET) if the slot is empty
-                     (unsigned USB blob: password + owner SPKI + device cert/key + SAE CA)
-                  2. Generate (or PIN-replace over MANAGE TLS) Tropic ECC P-256 slot 0
-                  3. Set the ML-KEM PIN over MANAGE TLS (unsigned; owner-pinned, not mTLS)
-                  4. Optionally write a new X25519 pairing key (slot 1-3, invalidates
-                     factory SH0) or skip with n. If pairing.key exists, n restores it
-                     into MCU NV after a reflash (same key, no Tropic write).
+        printWizard(profile);
 
-                WARNING: losing the PIN loses the ML-KEM seed / pad unwrap.
-                WARNING: PAIRING (1-3) is irreversible on real silicon (factory SH0 is burned).
-                WARNING: keep pairing.key next to the device cert; MCU reflash without it bricks L3.
-                WARNING: replacing an occupied ECC slot destroys the previous identity key.
-                WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
-                WARNING: KEM INIT stores the ML-KEM public key in NV (no reflash).
-                """);
-        if (restore) {
-            System.out.println("Found " + pairingKey + " — n restores it (no new Tropic key); 1-3 writes a new one.");
+        OwnerAuth chip = new OwnerAuth(usb, ctx);
+        EnrollResult preflight = refuseIfKemProvisioned(chip);
+        if (!preflight.ok()) {
+            System.err.println("INIT refused: " + preflight.message());
+            return;
         }
 
-        String resetPw = readResetPassword(sc);
+        String resetPw = readOwnerPassword(sc);
         if (resetPw == null) {
             return;
         }
@@ -67,12 +183,13 @@ final class ChipInit {
         if (pin == null) {
             return;
         }
-        String slot = readPairingSlot(sc);
-        if (slot == null) {
-            return;
+        Optional<Integer> slot = Optional.empty();
+        if (profile.allowPairing()) {
+            slot = readPairingSlot(sc);
+            if (slot == null) {
+                return;
+            }
         }
-        boolean skipPairing = isSkipPairing(slot);
-        boolean loadSaved = restore && skipPairing;
 
         System.out.print("Type YES to continue (anything else cancels): ");
         if (!sc.hasNextLine()) {
@@ -83,127 +200,241 @@ final class ChipInit {
             return;
         }
 
-        byte[] deviceCertDer = derCert(deviceCert);
-        byte[] deviceKeyDer = NodeTls.softwarePrivateKey(deviceKey).getEncoded();
-        byte[] saeCaDer = derCert(saeCa);
-
-        usb.resetConsole();
-
-        if (loadSaved) {
-            PairingBackup backup = PairingBackup.readFile(pairingKey);
-            String loadReply = transactSlow(usb, backup.loadCommand());
-            if (chipFailed(loadReply) || !okLine(loadReply, "pairing load ok")) {
-                System.err.println("INIT stopped at PAIRING LOAD. Delete pairing.key only if this Tropic was never paired.");
+        String currentPin = null;
+        if (profile.replaceOccupiedEcc() && chip.tropicPub().isPresent()) {
+            System.out.println("ECC slot 0 is occupied. Enter the current Tropic PIN "
+                    + "(encrypt/decrypt; 8 attempts max) to replace it over MANAGE TLS.");
+            currentPin = readPin.apply(sc);
+            if (currentPin == null) {
                 return;
             }
-            System.out.println("Restored pairing key from " + pairingKey);
         }
 
-        String ownerBegin = transactSlow(usb, "OWNER SET");
-        if (ownerSetRefused(ownerBegin)) {
-            System.out.println("Owner already enrolled; skipping OWNER SET.");
+        EnrollResult result = enroll(
+                chip,
+                FILE_CERTS,
+                profile,
+                new EnrollRequest(
+                        resetPw.getBytes(StandardCharsets.US_ASCII),
+                        pin,
+                        currentPin,
+                        slot,
+                        deviceCert,
+                        clientCaP12,
+                        deviceCn,
+                        ownerSpki,
+                        derCert(saeCa)));
+        if (!result.ok()) {
+            System.err.println("INIT stopped at " + result.stoppedAt() + ": " + result.message());
+        } else if (result.message() != null && !result.message().isBlank()) {
+            System.out.println(result.message());
+        }
+    }
+
+    /**
+     * Typed LAB/PROD pipeline. USB text stays behind {@link ChipPort}.
+     */
+    static EnrollResult enroll(ChipPort chip, Certs certs, Profile profile, EnrollRequest req)
+            throws Exception {
+        Objects.requireNonNull(chip, "chip");
+        Objects.requireNonNull(certs, "certs");
+        Objects.requireNonNull(profile, "profile");
+        Objects.requireNonNull(req, "req");
+
+        EnrollResult preflight = refuseIfKemProvisioned(chip);
+        if (!preflight.ok()) {
+            return preflight;
+        }
+
+        switch (chip.ownerSet(req.resetPassword(), req.ownerSpki(), req.saeCaDer())) {
+            case OwnerSetResult.Failed failed -> {
+                return EnrollResult.stop("OWNER SET", failed.detail());
+            }
+            case OwnerSetResult.AlreadyEnrolled ignored -> {
+            }
+            case OwnerSetResult.Ok ignored -> {
+            }
+        }
+
+        Optional<byte[]> eccPub = chip.tropicPub();
+        if (eccPub.isPresent()) {
+            if (profile.replaceOccupiedEcc()) {
+                if (req.currentPin() == null || req.currentPin().isEmpty()) {
+                    return EnrollResult.stop("KEYGEN", "ECC occupied; current PIN required");
+                }
+                SeManage.Reply replaced = chip.manage(SeManage.CMD_KEYGEN, req.currentPin(), null);
+                if (!replaced.ok()) {
+                    return EnrollResult.stop("KEYGEN", replaced.msg());
+                }
+            }
         } else {
-            String ownerDone = OwnerAuth.completeOwnerSet(
-                    usb,
-                    resetPw.getBytes(StandardCharsets.US_ASCII),
-                    ownerSpki,
-                    deviceCertDer,
-                    deviceKeyDer,
-                    saeCaDer,
-                    SeUsbLink.CONSOLE_IDLE_MS,
-                    SeUsbLink.CONSOLE_SLOW_MAX_MS);
-            if (!okLine(ownerDone, "owner set ok")) {
-                System.err.println("INIT stopped at OWNER SET.");
-                return;
+            SeManage.Reply generated = chip.manage(SeManage.CMD_KEYGEN, req.pin(), null);
+            if (!generated.ok()) {
+                return EnrollResult.stop("KEYGEN", generated.msg());
             }
         }
 
-        String keygen = transactSlow(usb, "TROPIC KEYGEN");
-        if (slotOccupied(keygen) || okLine(keygen, "use manage")) {
-            System.out.println("ECC slot 0 is occupied. Enter the current PIN to replace it over MANAGE TLS.");
-            String current = readPin.apply(sc);
-            if (current == null) {
-                return;
-            }
-            OwnerAuth.ManageResult replaced = OwnerAuth.manage(usb, ctx, OwnerAuth.CMD_KEYGEN, current, null);
-            if (!replaced.ok()) {
-                System.err.println("INIT stopped at KEYGEN: " + replaced.msg());
-                return;
-            }
-        } else if (chipFailed(keygen)) {
-            System.err.println("INIT stopped at KEYGEN.");
-            return;
-        }
-
-        OwnerAuth.ManageResult kem = OwnerAuth.manage(usb, ctx, OwnerAuth.CMD_KEM_INIT, pin, null);
+        SeManage.Reply kem = chip.manage(SeManage.CMD_KEM_INIT, req.pin(), null);
         if (!kem.ok()) {
-            System.err.println("INIT stopped at KEM INIT: " + kem.msg());
-            return;
+            return EnrollResult.stop("KEM INIT", kem.msg());
         }
 
-        if (skipPairing) {
-            if (loadSaved) {
-                System.out.println("INIT finished (pairing unchanged; restored from " + pairingKey + ").");
-            } else {
-                System.out.println("INIT finished (pairing unchanged).");
+        byte[] csrPub = chip.clientCsrPub();
+        if (csrPub == null) {
+            return EnrollResult.stop("CLIENT CSR", "could not parse device public key");
+        }
+        if (isAllZero(csrPub)) {
+            return EnrollResult.stop("CLIENT CSR",
+                    "device public key is all zeros (reflash firmware with CLIENT CSR export fix)");
+        }
+        Path clientDir = req.deviceCert().getParent() == null ? req.deviceCert() : req.deviceCert().getParent();
+        Path csrPath = clientDir.resolve("client-csr.hex");
+        certs.writeCsrHex(csrPath, csrPub);
+
+        if (profile.signLocally()) {
+            if (req.clientCaP12() == null || !certs.isRegularFile(req.clientCaP12())) {
+                return EnrollResult.stop("CREDS DEVICE", "INIT LAB needs the local client CA PKCS#12 at "
+                        + req.clientCaP12());
             }
-            return;
+            byte[] issued = certs.signLab(req.clientCaP12(), csrPub, req.deviceCn());
+            certs.writePem(issued, req.deviceCert());
+            EnrollResult installed = installDeviceCert(chip, issued);
+            if (!installed.ok()) {
+                return installed;
+            }
+        } else {
+            Optional<byte[]> existing = certs.loadDerIfPresent(req.deviceCert());
+            if (existing.isPresent()) {
+                EnrollResult installed = installDeviceCert(chip, existing.get());
+                if (!installed.ok()) {
+                    return installed;
+                }
+            }
         }
 
-        String pairingProbe = transactSlow(usb, "TROPIC PAIRING " + slot);
-        if (chipFailed(pairingProbe) || pairingSlotRejected(pairingProbe)) {
-            System.err.println("INIT stopped at PAIRING probe.");
-            return;
+        if (!profile.allowPairing() || req.pairingSlot().isEmpty()) {
+            return finishWithClientHash(chip,
+                    "INIT " + profile + " finished (pairing unchanged; factory SH0 not burned).");
         }
 
-        String pairingConfirm = transactSlow(usb, "TROPIC PAIRING " + slot + " y");
-        if (chipFailed(pairingConfirm)) {
-            System.err.println("INIT stopped at PAIRING confirm.");
+        SeManage.Reply pairing = chip.manage(
+                SeManage.CMD_PAIRING, req.pin(),
+                SeManage.encodePairingBody(req.pairingSlot().orElseThrow()));
+        if (!pairing.ok()) {
+            return EnrollResult.stop("PAIRING", pairing.msg());
+        }
+        return finishWithClientHash(chip,
+                "INIT PROD finished (pairing private key was not saved or printed).");
+    }
+
+    private static EnrollResult finishWithClientHash(ChipPort chip, String done) throws Exception {
+        Optional<byte[]> hash = chip.clientHash();
+        if (hash.isEmpty()) {
+            return EnrollResult.ok(done + "\nCLIENT HASH unavailable (needs device cert + Tropic ECC).");
+        }
+        return EnrollResult.ok(done + "\nCLIENT HASH (96 hex):\n" + SeBytes.toHex(hash.get()));
+    }
+
+    private static EnrollResult installDeviceCert(ChipPort chip, byte[] certDer) throws Exception {
+        SeManage.Reply creds = chip.manage(
+                SeManage.CMD_CREDS_DEVICE, null, SeManage.encodeDeviceCertBody(certDer));
+        if (!creds.ok()) {
+            return EnrollResult.stop("CREDS DEVICE", creds.msg());
+        }
+        return EnrollResult.ok(creds.msg());
+    }
+
+    static EnrollResult refuseIfKemProvisioned(ChipPort chip) throws Exception {
+        if (chip.tropicKemPub().isPresent()) {
+            return EnrollResult.stop("INIT", MSG_KEM_ALREADY_PROVISIONED);
+        }
+        return EnrollResult.ok("");
+    }
+
+    private static void printWizard(Profile profile) {
+        System.out.println("Profile: " + profile);
+        if (profile == Profile.LAB) {
+            System.out.println("""
+                    --- Chip INIT LAB ---
+                    This will:
+                      1. Enroll this UserApp certificate as owner (OWNER SET) if the slot is empty
+                         (unsigned USB blob: owner password + owner SPKI + SAE CA).
+                         Owner password is for device renew; it is not attempt-locked, so use a strong one.
+                      2. Generate Tropic ECC P-256 slot 0 over MANAGE TLS only if empty
+                         (occupied slot is left alone; occupancy from TROPIC PUB)
+                      3. Set the Tropic PIN (encrypt/decrypt; 8 attempts max) over MANAGE TLS if slot 510 is empty
+                      4. Dump CLIENT CSR (on-chip ML-DSA pub) into the client folder and sign it
+                         with the local client CA, then MANAGE CREDS DEVICE (cert only)
+                      5. Print CLIENT HASH (96 hex) for copy
+
+                    Pairing is not run; factory SH0 stays. TLS encrypt waits until the signed cert
+                    is on the device (this wizard installs it).
+
+                    WARNING: Tropic PIN is for encrypt/decrypt (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
+                    WARNING: owner password is for device renew and is not attempt-locked — use a strong password.
+                    WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
+                    WARNING: KEM INIT stores the ML-KEM public key in NV.
+                    """);
             return;
         }
+        System.err.println("""
+                WARNING: INIT PROD is the production enrollment path.
+                WARNING: it will not sign the device CSR with the lab client CA.
+                WARNING: ENCRYPT/DECRYPT/PROVISION stay down until a client-CA-signed cert
+                         is installed with MANAGE CREDS DEVICE.
+                WARNING: pairing (if you choose 1-3) burns factory SH0 and is irreversible
+                         on silicon. The pairing private key is never printed or saved.
+                """);
+        System.out.println("""
+                --- Chip INIT PROD ---
+                This will:
+                  1. Enroll this UserApp certificate as owner (OWNER SET) if the slot is empty
+                     (unsigned USB blob: owner password + owner SPKI + SAE CA).
+                     Owner password is for device renew; it is not attempt-locked, so use a strong one.
+                  2. Generate (or Tropic-PIN-replace over MANAGE TLS) Tropic ECC P-256 slot 0
+                  3. Set the Tropic PIN (encrypt/decrypt; 8 attempts max) over MANAGE TLS
+                     (unsigned; owner-pinned, not mTLS)
+                  4. Dump CLIENT CSR into the client folder (no local CA sign)
+                  5. If a signed device cert is already in that folder, install it
+                  6. Optionally write a new X25519 pairing key (slot 1-3, invalidates
+                     factory SH0) over MANAGE + Tropic PIN, or skip with n
+                  7. Print CLIENT HASH (96 hex) for copy
 
-        PairingBackup created = PairingBackup.parseReply(pairingConfirm);
-        if (created == null) {
-            System.err.println("PAIRING succeeded on chip but TROPIC PAIRING KEY was missing from the reply.");
-            System.err.println("Copy that line now; MCU reflash without pairing.key bricks L3.");
-            return;
-        }
-        try {
-            created.save(pairingKey);
-            System.out.println("Saved pairing key to " + pairingKey);
-        } catch (IOException e) {
-            System.err.println("PAIRING succeeded on chip but failed to save " + pairingKey + ": " + e.getMessage());
-            System.err.println("Copy the TROPIC PAIRING KEY line now; MCU reflash without it bricks L3.");
-        }
-
-        System.out.println("INIT finished.");
+                WARNING: Tropic PIN is for encrypt/decrypt (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
+                WARNING: owner password is for device renew and is not attempt-locked — use a strong password.
+                WARNING: PAIRING (1-3) is irreversible on real silicon (factory SH0 is burned).
+                WARNING: replacing an occupied ECC slot destroys the previous identity key.
+                WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
+                WARNING: KEM INIT stores the ML-KEM public key in NV.
+                """);
     }
 
     private static byte[] derCert(Path path) throws Exception {
-        X509Certificate cert = PeerCertHash.loadCert(path);
-        return cert.getEncoded();
+        return PeerCertHash.loadCert(path).getEncoded();
     }
 
-    private static String transactSlow(SeUsbLink usb, String command) throws java.io.IOException {
-        return usb.transact(command, SeUsbLink.CONSOLE_IDLE_MS, SeUsbLink.CONSOLE_SLOW_MAX_MS);
+    static String readOwnerPassword(Scanner sc) {
+        return readOwnerPassword(sc, OWNER_PASSWORD_PROMPT);
     }
 
-    private static String readResetPassword(Scanner sc) {
-        System.out.print("Reset password (8-64 printable ASCII): ");
+    static String readOwnerPassword(Scanner sc, String prompt) {
+        System.out.print(prompt);
         if (!sc.hasNextLine()) {
             return null;
         }
         String pw = sc.nextLine();
-        if (pw.length() < OwnerAuth.PW_MIN || pw.length() > OwnerAuth.PW_MAX) {
-            System.err.println("Reset password must be 8–64 characters.");
+        byte[] bytes = pw.getBytes(StandardCharsets.US_ASCII);
+        if (!SeManage.passwordOk(bytes)) {
+            System.err.println("Owner password must be 8–64 printable ASCII characters.");
             return null;
         }
-        for (int i = 0; i < pw.length(); i++) {
-            char c = pw.charAt(i);
-            if (c < 0x20 || c > 0x7e) {
-                System.err.println("Reset password must be printable ASCII.");
-                return null;
-            }
+        System.out.print(OWNER_PASSWORD_CONFIRM_PROMPT);
+        if (!sc.hasNextLine()) {
+            return null;
+        }
+        if (!pw.equals(sc.nextLine())) {
+            System.err.println("Owner password confirmation did not match.");
+            return null;
         }
         return pw;
     }
@@ -213,25 +444,25 @@ final class ChipInit {
         if (pin == null) {
             return null;
         }
-        System.out.print("Confirm PIN: ");
+        System.out.print(TROPIC_PIN_CONFIRM_PROMPT);
         if (!sc.hasNextLine()) {
             return null;
         }
-        String again = sc.nextLine().trim();
-        if (!PIN.matcher(again).matches() || !pin.equals(again)) {
-            System.err.println("PIN confirmation did not match.");
+        String again = sc.nextLine();
+        if (!SeManage.pinOk(again) || !pin.equals(again)) {
+            System.err.println("Tropic PIN confirmation did not match.");
             return null;
         }
         return pin;
     }
 
-    private static String readPairingSlot(Scanner sc) {
+    private static Optional<Integer> readPairingSlot(Scanner sc) {
         while (true) {
             System.out.print("Pairing slot to replace SH0 [1-3], or n to skip: ");
             if (!sc.hasNextLine()) {
                 return null;
             }
-            String choice = parsePairingChoice(sc.nextLine());
+            Optional<Integer> choice = parsePairingChoice(sc.nextLine());
             if (choice != null) {
                 return choice;
             }
@@ -239,132 +470,92 @@ final class ChipInit {
         }
     }
 
-    /** {@code 1}/{@code 2}/{@code 3} to pair, {@code n} to skip; null if invalid. */
-    static String parsePairingChoice(String raw) {
+    /**
+     * {@code 1}/{@code 2}/{@code 3} to pair, empty to skip; {@code null} if invalid.
+     */
+    static Optional<Integer> parsePairingChoice(String raw) {
         if (raw == null) {
             return null;
         }
         String slot = raw.trim();
         if (slot.equals("1") || slot.equals("2") || slot.equals("3")) {
-            return slot;
+            return Optional.of(Integer.parseInt(slot));
         }
         if (slot.equalsIgnoreCase("n")) {
-            return "n";
+            return Optional.empty();
         }
         return null;
     }
 
-    static boolean isSkipPairing(String choice) {
-        return "n".equalsIgnoreCase(choice);
+    static boolean isInitLab(String raw) {
+        return initToken(raw, "INIT LAB", "INITLAB");
     }
 
-    static boolean slotOccupied(String reply) {
-        return reply != null && reply.toLowerCase(Locale.ROOT).contains("slot occupied");
+    static boolean isInitProd(String raw) {
+        return initToken(raw, "INIT PROD", "INITPROD");
     }
 
-    static boolean pairingSlotRejected(String reply) {
-        if (reply == null) {
+    private static boolean initToken(String raw, String spaced, String packed) {
+        if (raw == null) {
             return false;
         }
-        String lower = reply.toLowerCase(Locale.ROOT);
-        return lower.contains("slot must be") || lower.contains("bad tropic pairing");
+        String cmd = raw.strip().toUpperCase(Locale.ROOT).replaceAll("\\s+", " ");
+        return cmd.equals(spaced) || cmd.equals(packed);
     }
 
-    static boolean ownerSetRefused(String reply) {
-        if (reply == null) {
-            return false;
-        }
-        String lower = reply.toLowerCase(Locale.ROOT);
-        return lower.contains("owner set refused") || lower.contains("already enrolled");
-    }
-
-    static boolean okLine(String reply, String token) {
-        return reply != null && reply.toLowerCase(Locale.ROOT).contains(token);
-    }
-
-    static boolean chipFailed(String reply) {
-        if (reply == null || reply.isBlank()) {
+    static boolean isAllZero(byte[] data) {
+        if (data == null) {
             return true;
         }
-        String lower = reply.toLowerCase(Locale.ROOT);
-        return lower.contains("command failed")
-                || lower.contains("pin mismatch")
-                || lower.contains("bad tropic")
-                || lower.contains("bad peer")
-                || lower.contains("device_tampered")
-                || lower.contains("not ready")
-                || lower.contains("unknown command")
-                || lower.contains("unknown tropic")
-                || lower.contains("unknown peer");
+        for (byte b : data) {
+            if (b != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    record PairingBackup(int slot, byte[] priv, byte[] pub) {
-        PairingBackup {
-            if (slot < 1 || slot > 3) {
-                throw new IllegalArgumentException("pairing slot must be 1-3");
-            }
-            if (priv == null || priv.length != 32 || pub == null || pub.length != 32) {
-                throw new IllegalArgumentException("pairing keys must be 32 bytes");
-            }
+    static void writeCsrHex(Path path, byte[] pub) throws IOException {
+        Path parent = path.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        Files.writeString(path, SeBytes.toHex(pub) + "\n");
+    }
+
+    private static final class FileCerts implements Certs {
+        @Override
+        public byte[] signLab(Path clientCaP12, byte[] csrPub, String deviceCn) throws Exception {
+            return SoftwareLeaf.signRawMlDsa44Leaf(clientCaP12, "password", csrPub, deviceCn).getEncoded();
         }
 
-        String loadCommand() {
-            return "TROPIC PAIRING LOAD " + slot + " " + SeBytes.toHex(priv) + " " + SeBytes.toHex(pub);
+        @Override
+        public void writePem(byte[] certDer, Path path) throws Exception {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.addProvider(new BouncyCastleProvider());
+            }
+            CertificateFactory cf = CertificateFactory.getInstance(
+                    "X.509", BouncyCastleProvider.PROVIDER_NAME);
+            X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certDer));
+            SoftwareLeaf.writeCertPem(cert, path);
         }
 
-        void save(Path path) throws IOException {
-            Path parent = path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
+        @Override
+        public Optional<byte[]> loadDerIfPresent(Path path) throws Exception {
+            if (!Files.isRegularFile(path)) {
+                return Optional.empty();
             }
-            String body = "slot=" + slot + "\npriv=" + SeBytes.toHex(priv) + "\npub=" + SeBytes.toHex(pub) + "\n";
-            Files.writeString(path, body);
+            return Optional.of(PeerCertHash.loadCert(path).getEncoded());
         }
 
-        static PairingBackup parseReply(String reply) {
-            if (reply == null || reply.isBlank()) {
-                return null;
-            }
-            for (String line : reply.split("\\R")) {
-                Matcher m = KEY_LINE.matcher(line.strip());
-                if (m.matches()) {
-                    return new PairingBackup(
-                            Integer.parseInt(m.group(1)),
-                            SeBytes.fromHex(m.group(2)),
-                            SeBytes.fromHex(m.group(3)));
-                }
-            }
-            return null;
+        @Override
+        public void writeCsrHex(Path path, byte[] pub) throws IOException {
+            ChipInit.writeCsrHex(path, pub);
         }
 
-        static PairingBackup readFile(Path path) throws IOException {
-            String slotHex = null;
-            String privHex = null;
-            String pubHex = null;
-            for (String raw : Files.readAllLines(path)) {
-                String line = raw.strip();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-                Matcher slot = SLOT_LINE.matcher(line);
-                if (slot.matches()) {
-                    slotHex = slot.group(1);
-                    continue;
-                }
-                Matcher priv = PRIV_LINE.matcher(line);
-                if (priv.matches()) {
-                    privHex = priv.group(1);
-                    continue;
-                }
-                Matcher pub = PUB_LINE.matcher(line);
-                if (pub.matches()) {
-                    pubHex = pub.group(1);
-                }
-            }
-            if (slotHex == null || privHex == null || pubHex == null) {
-                throw new IOException(path + " must contain slot=, priv=, and pub= (64 hex each)");
-            }
-            return new PairingBackup(Integer.parseInt(slotHex), SeBytes.fromHex(privHex), SeBytes.fromHex(pubHex));
+        @Override
+        public boolean isRegularFile(Path path) {
+            return path != null && Files.isRegularFile(path);
         }
     }
 }

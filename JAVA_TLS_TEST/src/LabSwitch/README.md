@@ -5,7 +5,7 @@ never reads it.** [scripts/lab-run.py](../../../scripts/lab-run.py) (the command
 inside the existing `terminal` and `userapp` tmux panes) watches the file and
 restarts those JVMs with `USB_SERIAL_PORT` / `NODE_HOSTNAME` /
 `NODE_NATIVE_PORT` / `NODE_TERMINAL_PORT` rewritten. For UserApp it also sets
-`USERAPP_DEVICE_CERT` / `USERAPP_DEVICE_KEY` to `client/` or `client2/` per
+`USERAPP_DEVICE_CERT` to `client/` or `client2/` per
 selected keychain. Pane layout does not change.
 
 **Not used in production** — run `scripts/java.sh terminal` / `userapp` on silicon
@@ -32,7 +32,7 @@ One-shot:
 ```bash
 cd JAVA_TLS_TEST
 export USB_LAB_FILE=/tmp/otp-keychain-lab.json
-mvn exec:java -Dexec.mainClass=fel.cvut.lab.LabSwitchApp -Dexec.args='CL 2'
+mvn -pl :lab-switch -am exec:java -Dexec.args='CL 2'
 # or: scripts/java.sh lab 'SAE'
 ```
 

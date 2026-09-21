@@ -1,7 +1,8 @@
 package fel.cvut.qkd;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.utimaco.Pqmi;
 
 import javax.net.ssl.SSLContext;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * ETSI GS QKD 014 API client with mTLS. Defaults to {@link NodeTls.TlsProfile#CLASSICAL}
+ * ETSI GS QKD 014 API client with mTLS. Defaults to {@link SoftwareTls.TlsProfile#CLASSICAL}
  * (prefer TLS 1.3 / ML-KEM-768 / ML-DSA-44, allow TLS 1.2 and classical).
  */
 public class Qkd014Client {
@@ -33,18 +34,18 @@ public class Qkd014Client {
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public Qkd014Client(String baseUrl, SSLContext sslContext, NodeTls.TlsProfile tlsProfile) {
+    public Qkd014Client(String baseUrl, SSLContext sslContext, SoftwareTls.TlsProfile tlsProfile) {
         this(baseUrl, sslContext, tlsProfile, DEFAULT_CONNECT_TIMEOUT);
     }
 
     public Qkd014Client(
             String baseUrl,
             SSLContext sslContext,
-            NodeTls.TlsProfile tlsProfile,
+            SoftwareTls.TlsProfile tlsProfile,
             Duration connectTimeout
     ) {
-        NodeTls.TlsProfile effectiveProfile = tlsProfile == null
-                ? NodeTls.TlsProfile.CLASSICAL
+        SoftwareTls.TlsProfile effectiveProfile = tlsProfile == null
+                ? SoftwareTls.TlsProfile.CLASSICAL
                 : tlsProfile;
         Duration effectiveTimeout = connectTimeout == null ? DEFAULT_CONNECT_TIMEOUT : connectTimeout;
 
@@ -52,7 +53,7 @@ public class Qkd014Client {
         this.objectMapper = new ObjectMapper();
         this.httpClient = HttpClient.newBuilder()
                 .sslContext(Objects.requireNonNull(sslContext, "sslContext must not be null"))
-                .sslParameters(NodeTls.parameters(effectiveProfile))
+                .sslParameters(SoftwareTls.parameters(effectiveProfile))
                 .connectTimeout(effectiveTimeout)
                 .build();
     }
@@ -63,9 +64,9 @@ public class Qkd014Client {
             String hsmKeyAlias,
             Path trustStorePath,
             char[] trustStorePassword,
-            NodeTls.TlsProfile tlsProfile
+            SoftwareTls.TlsProfile tlsProfile
     ) throws Exception {
-        SSLContext sslContext = NodeTls.createContextForQkd(
+        SSLContext sslContext = HsmNodeTls.createContextForQkd(
                 session,
                 hsmKeyAlias,
                 trustStorePath,

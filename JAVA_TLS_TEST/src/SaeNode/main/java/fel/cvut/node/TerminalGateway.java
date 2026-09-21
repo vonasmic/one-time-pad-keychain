@@ -3,7 +3,7 @@ package fel.cvut.node;
 import fel.cvut.terminal.ClientSelector;
 import fel.cvut.terminal.OperatorConsole;
 import fel.cvut.terminal.TerminalWireProtocol;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.SoftwareTls;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -19,8 +19,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Dedicated TLS endpoint the standalone terminal app connects to for operator interaction
  * (target selection, deletion confirmation, status messages).
  *
- * <p>Reuses the exact TLS bootstrap nodes use to talk to each other — {@link NodeTls#createServerSocket}
- * with {@link NodeTls.TlsProfile#PURE_PQC} on the node's own {@code tlsContext} — so the terminal
+ * <p>Reuses the exact TLS bootstrap nodes use to talk to each other — {@link SoftwareTls#createServerSocket}
+ * with {@link SoftwareTls.TlsProfile#PURE_PQC} on the node's own {@code tlsContext} — so the terminal
  * app authenticates the same way any other node would, instead of a separate ad hoc TLS setup.
  *
  * <p>Only one terminal session is served at a time. While that session is open, further
@@ -45,7 +45,7 @@ final class TerminalGateway implements OperatorConsole, AutoCloseable {
     }
 
     void start(SSLContext tlsContext, ExecutorService executor) throws IOException {
-        gatewayServer = NodeTls.createServerSocket(port, tlsContext, NodeTls.TlsProfile.PURE_PQC, true);
+        gatewayServer = SoftwareTls.createServerSocket(port, tlsContext, SoftwareTls.TlsProfile.PURE_PQC, true);
         running = true;
         executor.submit(this::acceptLoop);
     }

@@ -207,10 +207,14 @@ class SeProtocolTest {
 
     @Test
     void provisionAckParsesSeOkLine() throws Exception {
-        SeProvisionAck.Result ack = SeProvisionAck.read(
-                new ByteArrayInputStream("SE_OK 241913\n".getBytes(StandardCharsets.US_ASCII)));
-        assertEquals(241913L, ack.tropicBytes());
-        assertEquals("Device consumed 236.2 KB", ack.downloadMessage());
+        SeProvisionAck.read(new ByteArrayInputStream("SE_OK\n".getBytes(StandardCharsets.US_ASCII)));
+        assertEquals("Sent 236.2 KB", SeProvisionAck.downloadMessage(241913L));
+    }
+
+    @Test
+    void provisionAckRejectsByteCount() {
+        assertThrows(IOException.class, () -> SeProvisionAck.read(
+                new ByteArrayInputStream("SE_OK 241913\n".getBytes(StandardCharsets.US_ASCII))));
     }
 
     @Test

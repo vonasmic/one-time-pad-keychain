@@ -14,7 +14,7 @@ Working directory must be `JAVA_TLS_TEST` (so `certs/` and `env/` resolve).
 ## What it does
 
 - Connects to `NODE_HOSTNAME:NODE_TERMINAL_PORT` using the **same TLS bootstrap nodes
-  use for RMI**: `NodeTls.createContextForNode` (HSM identity) + `PURE_PQC`
+  use for RMI**: `HsmNodeTls.createContextForNode` (HSM identity) + `PURE_PQC`
 - Authenticates as a provisioned node identity (`certs/{TLS_NODE_ID}.pem`, typically
   `Terminal`) — not a bespoke client cert
 - Implements `OperatorConsole` locally via stdin (`LocalOperatorConsole`)
@@ -22,7 +22,7 @@ Working directory must be `JAVA_TLS_TEST` (so `certs/` and `env/` resolve).
 - Keeps one long-lived operator-gateway TLS session; reconnects only after it ends or the node is unreachable
 - If `USB_BRIDGE=1`, opens the serial port and relays TLS (from ClientHello `0x16`) to
   `NODE_HOSTNAME:NODE_NATIVE_PORT`, sending `PROVISION <unix>` when the device speaks.
-  Framed `DEBUG:<text>:DEBUG` status from the device is printed, not forwarded.
+  ASCII `failed` and dump frames from the device are printed, not forwarded as TLS.
 
 Lab CL 1 / CL 2 is **not** handled here. `./run-all.sh` runs
 `scripts/java.sh lab-terminal` in the same tmux pane, which restarts this process
@@ -50,7 +50,7 @@ set -a
 source env/hsm.env
 source env/terminal-1.env
 set +a
-mvn exec:java -Dexec.mainClass=fel.cvut.terminalapp.TerminalApp
+mvn -pl :terminal-bridge -am exec:java
 ```
 
 `env/hsm.env` must be **sourced**. You can also export the variables by hand.

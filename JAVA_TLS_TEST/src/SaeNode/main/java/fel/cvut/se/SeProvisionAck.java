@@ -7,9 +7,9 @@ import java.nio.charset.StandardCharsets;
 /**
  * Provision downlink acknowledgement from the SE over TLS application data.
  *
- * <p>After the full LV downlink is stored on TROPIC01, the device sends {@code SE_OK <bytes>\n}
- * where {@code bytes} is the sum of key payload written (framing not counted). The SAE
- * forwards that count to the operator terminal with {@link #downloadMessage()}.
+ * <p>After the full LV downlink is stored on TROPIC01, the device sends {@code SE_OK\n}.
+ * The SAE reports the downlink size it wrote ({@link #downloadMessage(long)}), not a
+ * device-side byte count.
  */
 public final class SeProvisionAck {
 
@@ -18,27 +18,15 @@ public final class SeProvisionAck {
     private SeProvisionAck() {
     }
 
-    public record Result(long tropicBytes) {
-
-        /** User-facing status after provision completes (1024-byte KB). */
-        public String downloadMessage() {
-            return String.format("Device consumed %.1f KB", tropicBytes / 1024.0);
-        }
+    /** User-facing status after provision completes (1024-byte KB). */
+    public static String downloadMessage(long nodeBytes) {
+        return String.format("Sent %.1f KB", nodeBytes / 1024.0);
     }
 
-    public static Result read(InputStream in) throws IOException {
+    public static void read(InputStream in) throws IOException {
         String line = readLine(in);
-        if (!line.startsWith("SE_OK ")) {
+        if (!line.equals("SE_OK")) {
             throw new IOException("Expected SE_OK from device, got: " + line);
-        }
-        try {
-            long bytes = Long.parseLong(line.substring(6).trim());
-            if (bytes < 0L) {
-                throw new IOException("Invalid SE_OK byte count: " + bytes);
-            }
-            return new Result(bytes);
-        } catch (NumberFormatException e) {
-            throw new IOException("Malformed SE_OK line: " + line, e);
         }
     }
 

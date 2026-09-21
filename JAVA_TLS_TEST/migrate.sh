@@ -16,4 +16,4 @@ set -a
 source <(tr -d '\r' < "$ENV_FILE")
 set +a
 
-mvn flyway:migrate
+mvn -pl :sae-node flyway:migrate

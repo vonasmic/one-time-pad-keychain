@@ -4,9 +4,7 @@ Java applications using **Bouncy Castle JSSE** for the TLS protocol engine, **Ut
 
 The device connects to **two** of these processes over USB CDC: **USER** (UserApp) and **SAE** (SaeNode, usually via TerminalBridge). UserApp is not an SAE.
 
-Applications live under `src/`. Each folder is one runnable process; supporting packages
-sit inside the app that owns them. Run every `mvn exec:java` from `JAVA_TLS_TEST` so
-`certs/` and `env/` resolve.
+Applications live under `src/`. Maven modules: `se-wire`, `usb-cdc`, `tls-software`, `tls-hsm`, `cert-generator`, `user-app`, `sae-node`, `terminal-bridge`, `lab-switch`. Run every `mvn -pl :<module> -am exec:java` from `JAVA_TLS_TEST` so `certs/` and `env/` resolve. UserApp depends on `tls-software` only (no HSM / RMI / DB).
 
 | Application | Entry point | README |
 | --- | --- | --- |
@@ -24,7 +22,7 @@ sit inside the app that owns them. Run every `mvn exec:java` from `JAVA_TLS_TEST
 
 ## TLS
 
-- Profiles: `NodeTls.TlsProfile.PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44 only) and `CLASSICAL` (same PQC preferred, then TLS 1.2 + x25519 / classical signatures)
+- Profiles: `SoftwareTls.TlsProfile.PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44 only) and `CLASSICAL` (same PQC preferred, then TLS 1.2 + x25519 / classical signatures)
 - Inter-node RMI and the terminal gateway use `PURE_PQC` with SAE `root-ca` trust
 - The SAE inbound command server (`NODE_NATIVE_PORT`) uses `PURE_PQC` with the same HSM node identity; client auth trusts `client_ca` (**device** certs for `PROVISION`). UserApp is a separate TLS server over CDC and is not this socket.
 - QKD KME mTLS uses `CLASSICAL` with CryptoServer HSM keys (`CertGenerator` imports `certs/qkd/*-client.p12` → `QKD_HSM_KEY_ALIAS`); truststore is public KME CA only
@@ -32,7 +30,7 @@ sit inside the app that owns them. Run every `mvn exec:java` from `JAVA_TLS_TEST
 
 ### Provider routing (`TlsProviders.install`)
 
-`NodeTls.install(session)` (also used by the TLS context factories) logs into CryptoServer,
+`HsmNodeTls.install(session)` (also used by the TLS context factories) logs into CryptoServer,
 then `installOrdered(...)` so `Security` order is this list, highest priority first:
 
 | # | Provider                            | Need                                         | How                                                                 |
@@ -44,7 +42,7 @@ then `installOrdered(...)` so `Security` order is this list, highest priority fi
 
 JSSE tries BC `initSign` first; an HSM private key fails with `InvalidKeyException`, then the
 alternate signs on the HSM. There is no software fallback for TLS identity keys.
-`NodeTls.TlsProfile` is a data-driven enum (protocols/named-groups/signature-schemes per
+`SoftwareTls.TlsProfile` is a data-driven enum (protocols/named-groups/signature-schemes per
 constant), so adding or tuning a cipher profile means editing one enum constant, not a
 switch statement.
 
@@ -52,7 +50,8 @@ switch statement.
 
 | File | Role |
 | --- | --- |
-| [`tls/NodeTls.java`](src/SaeNode/main/java/fel/cvut/tls/NodeTls.java) | Public TLS API: profiles, `SSLContext` factories, server sockets |
+| [`tls/SoftwareTls.java`](src/SaeNode/main/java/fel/cvut/tls/SoftwareTls.java) | Software TLS: profiles, PEM/PKCS#12, USB wrapServer |
+| [`tls/HsmNodeTls.java`](src/SaeNode/main/java/fel/cvut/tls/HsmNodeTls.java) | SAE HSM TLS factories |
 | [`tls/TlsProviders.java`](src/SaeNode/main/java/fel/cvut/tls/TlsProviders.java) | JCE/JSSE bootstrap, CryptoServer keystore import/load, PQMI ML-DSA shim |
 | [`tls/TlsStores.java`](src/SaeNode/main/java/fel/cvut/tls/TlsStores.java) | Trust/leaf PEM & PKCS#12 loading (public material) |
 | [`utimaco/Pqmi.java`](src/SaeNode/main/java/fel/cvut/utimaco/Pqmi.java) | HSM env + ephemeral CXI/PQMI ops (ML-DSA keygen/sign) |
@@ -162,7 +161,7 @@ With the simulator running:
 cp env/example/hsm.env.example env/hsm.env
 cp env/example/certgen.env.example env/certgen.env
 set -a && source env/hsm.env && set +a
-mvn exec:java -Dexec.mainClass=fel.cvut.certGen.CertGenerator
+mvn -pl :cert-generator -am exec:java
 ```
 
 From the repo root the same run is `scripts/java.sh certgen`.
@@ -170,7 +169,7 @@ From the repo root the same run is `scripts/java.sh certgen`.
 No menu. Missing CAs, node HSM keys / PEMs, client bundles, and QuKayDee PKCS#12 aliases
 are created or imported; existing material is left alone.
 
-SAE root CA stays in `certs/ca/root-ca.p12` (software). Client CA stays in `certs/ca/client_ca.p12` (software) for the Java user/client bundles. The device does **not** embed a client CA: ENCRYPT/DECRYPT pin the TLS peer to the enrolled owner key (UserApp cert). Enroll over USB `OWNER SET` (unsigned blob: reset password + owner SPKI + optional device cert/key + SAE CA). CREDS SAE / CREDS DEVICE are unsigned **MANAGE TLS** commands, not USB ASCII lines.
+SAE root CA stays in `certs/ca/root-ca.p12` (software). Client CA stays in `certs/ca/client_ca.p12` (software) for the Java user bundle and for signing on-chip device CSRs. The device does **not** embed a client CA: ENCRYPT/DECRYPT pin the TLS peer to the enrolled owner key (UserApp cert). Enroll over USB `OWNER SET` (unsigned blob: reset password + owner SPKI + optional SAE CA). Device ML-DSA is generated on-chip; `CLIENT CSR` + MANAGE `CREDS DEVICE` (cert only) install the leaf.
 
 ### Node startup
 
@@ -191,7 +190,7 @@ set -a
 source env/hsm.env
 source env/node-1.env
 set +a
-mvn exec:java -Dexec.mainClass=fel.cvut.node.Node
+mvn -pl :sae-node -am exec:java
 ```
 
 After an HSM reinit, run `CertGenerator` before starting nodes — the node process does

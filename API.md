@@ -14,13 +14,13 @@ PIN for provisioned OTP never appears on the ASCII line. Arm a mode and a Unix t
 | Syntax | What it does |
 | --- | --- |
 | `HELP` | Print usage lines |
-| `OWNER SET` | First-wins unsigned blob (password + owner SPKI + optional device cert/key + SAE CA) |
+| `OWNER SET` | First-wins unsigned blob (password + owner SPKI + optional SAE CA) |
 | `PROVISION <unix>` | Arm TLS mode 1 (**SAE**: mTLS provision, uplink v4, downlink v2) |
 | `ENCRYPT <unix>` | Arm TLS mode 2 (**USER**: owner-pinned mTLS encrypt) |
 | `DECRYPT <unix>` | Arm TLS mode 3 (**USER**: owner-pinned mTLS decrypt) |
-| `MANAGE <unix>` | Arm TLS mode 4 (**USER**: owner-pinned, no device client cert; KEM INIT / KEYGEN / PEER / CREDS / OWNER REPLACE) |
+| `MANAGE <unix>` | Arm TLS mode 4 (**USER**: owner-pinned, no device client cert; KEM INIT / KEYGEN / PEER / CREDS / OWNER REPLACE / PAIRING) |
 | `PEER LIST` | Print NV peers |
 | `CLIENT HASH` | 96 hex digits: `SHA384(device_cert_spki \|\| ecc_pub)` |
-| `TROPIC PING` / `INFO` / `PUB` / `KEYGEN` / `SIGN` / `PAIRING` / `KEM INIT` / `KEM PUB` / `OTP LEFT` | Tropic / OTP console |
+| `TROPIC PING` / `INFO` / `PUB` / `KEM PUB` / `OTP LEFT` | Tropic / OTP console |
 
-`<unix>` is a non-zero decimal Unix UTC timestamp. Occupied `KEYGEN` and `KEM INIT` print `use MANAGE <unix>`.
+`<unix>` is a non-zero decimal Unix UTC timestamp.

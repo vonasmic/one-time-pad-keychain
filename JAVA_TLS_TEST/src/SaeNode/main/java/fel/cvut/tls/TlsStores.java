@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /** PKCS#12 / PEM trust and leaf certificate loading. */
-final class TlsStores {
+public final class TlsStores {
 
     static final String CERTS_DIR_PROPERTY = "pqc.certs.dir";
     static final String DEFAULT_CERTS_DIR = "certs";
@@ -33,7 +33,7 @@ final class TlsStores {
     private TlsStores() {
     }
 
-    static Path resolveCertsDir() {
+    public static Path resolveCertsDir() {
         String fromProperty = System.getProperty(CERTS_DIR_PROPERTY);
         if (fromProperty != null && !fromProperty.isBlank()) {
             return Path.of(fromProperty.trim());
@@ -45,19 +45,19 @@ final class TlsStores {
         return Path.of(DEFAULT_CERTS_DIR);
     }
 
-    static Path caDir() {
+    public static Path caDir() {
         return resolveCertsDir().resolve(CA_SUBDIR);
     }
 
-    static Path rootCaPem() {
+    public static Path rootCaPem() {
         return caPem(caBaseName("CERTGEN_ROOT_CA", DEFAULT_ROOT_CA));
     }
 
-    static Path clientCaPem() {
+    public static Path clientCaPem() {
         return caPem(caBaseName("CERTGEN_CLIENT_CA", DEFAULT_CLIENT_CA));
     }
 
-    static Path nodeLeafPem(String nodeId) {
+    public static Path nodeLeafPem(String nodeId) {
         return resolveCertsDir().resolve(certNameForNode(nodeId) + ".pem");
     }
 
@@ -77,7 +77,7 @@ final class TlsStores {
         return name;
     }
 
-    static String certNameForNode(String nodeId) {
+    public static String certNameForNode(String nodeId) {
         String normalizedNodeId = Objects.requireNonNull(nodeId, "nodeId must not be null")
                 .toUpperCase(Locale.ROOT);
         return switch (normalizedNodeId) {
@@ -88,7 +88,7 @@ final class TlsStores {
         };
     }
 
-    static KeyStore loadPkcs12(Path keyStorePath, char[] keyStorePassword) throws Exception {
+    public static KeyStore loadPkcs12(Path keyStorePath, char[] keyStorePassword) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
         try (var in = Files.newInputStream(keyStorePath)) {
             keyStore.load(in, keyStorePassword);
@@ -98,12 +98,27 @@ final class TlsStores {
         return keyStore;
     }
 
+    /** First X.509 certificate attached to a key entry in a PKCS#12 identity store. */
+    public static X509Certificate leafFromPkcs12(KeyStore keyStore, Path source) throws Exception {
+        var aliases = keyStore.aliases();
+        while (aliases.hasMoreElements()) {
+            String alias = aliases.nextElement();
+            if (keyStore.isKeyEntry(alias)) {
+                Certificate cert = keyStore.getCertificate(alias);
+                if (cert instanceof X509Certificate x509) {
+                    return x509;
+                }
+            }
+        }
+        throw new IOException("no X.509 key entry in " + source);
+    }
+
     /**
      * Loads a trust store from PKCS#12 or PEM (.pem / .crt).
      * OpenSSL {@code pkcs12 -export -nokeys} often produces PKCS#12 files that Java cannot read (0 entries);
      * use {@code keytool -importcert} for PKCS#12 trust stores, or pass the server CA as PEM.
      */
-    static KeyStore loadTrustStore(Path trustStorePath, char[] trustStorePassword) throws Exception {
+    public static KeyStore loadTrustStore(Path trustStorePath, char[] trustStorePassword) throws Exception {
         String fileName = trustStorePath.getFileName().toString().toLowerCase(Locale.ROOT);
         if (fileName.endsWith(".pem") || fileName.endsWith(".crt")) {
             return trustStoreFromCerts(readPemCerts(trustStorePath), trustStorePath);
@@ -120,12 +135,12 @@ final class TlsStores {
         return trustStore;
     }
 
-    static KeyStore trustStoreFromCert(X509Certificate cert, Path source) throws Exception {
+    public static KeyStore trustStoreFromCert(X509Certificate cert, Path source) throws Exception {
         return trustStoreFromCerts(List.of(cert), source);
     }
 
     /** Parses all X.509 certificates from a PEM/DER stream. */
-    static List<X509Certificate> readPemCerts(Path pemPath) throws Exception {
+    public static List<X509Certificate> readPemCerts(Path pemPath) throws Exception {
         CertificateFactory cf = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME);
         List<X509Certificate> out = new ArrayList<>();
         try (InputStream in = new BufferedInputStream(Files.newInputStream(pemPath))) {
@@ -142,7 +157,7 @@ final class TlsStores {
     }
 
     /** Parses a PKCS#8 or traditional PEM private key. */
-    static PrivateKey readPemPrivateKey(Path pemPath) throws Exception {
+    public static PrivateKey readPemPrivateKey(Path pemPath) throws Exception {
         try (var reader = Files.newBufferedReader(pemPath);
              PEMParser parser = new PEMParser(reader)) {
             Object obj = parser.readObject();

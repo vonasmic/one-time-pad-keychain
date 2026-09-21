@@ -9,12 +9,12 @@ import fel.cvut.node.recordManager.ClientRecord;
 import fel.cvut.node.recordManager.SharedKeyMaterialStore;
 import fel.cvut.qkd.Qkd014Client;
 import fel.cvut.qkd.Qkd014ClientException;
-import fel.cvut.se.SeConstants;
 import fel.cvut.se.SeKemFill;
 import fel.cvut.se.SeProvisionAck;
 import fel.cvut.se.SeSessionBinding;
 import fel.cvut.se.SeSessionUplink;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.utimaco.Pqmi;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -133,14 +133,14 @@ public class Node implements AutoCloseable {
             if (pqmi == null) {
                 pqmi = Pqmi.fromEnvironment();
             }
-            tlsContext = NodeTls.createContextForNode(pqmi, tlsNodeId);
-            SSLContext commandServerContext = NodeTls.createContextForCommandServer(pqmi, tlsNodeId);
+            tlsContext = HsmNodeTls.createContextForNode(pqmi, tlsNodeId);
+            SSLContext commandServerContext = HsmNodeTls.createContextForCommandServer(pqmi, tlsNodeId);
 
             rmiManager.start(nodeCommands, tlsContext);
-            commandServer = NodeTls.createServerSocket(
+            commandServer = SoftwareTls.createServerSocket(
                     commandServerPort,
                     commandServerContext,
-                    NodeTls.TlsProfile.PURE_PQC,
+                    SoftwareTls.TlsProfile.PURE_PQC,
                     true
             );
             terminalGateway.start(tlsContext, executor);
@@ -231,7 +231,8 @@ public class Node implements AutoCloseable {
                     .toList();
             InputHandler.OperatorSelection selection =
                     inputHandler.handleInput(socket, exporter.require(), friendlySaeNodes, terminalGateway);
-            SharedPayloadResolution processResult;
+            ProvisionSession.Outcome processResult;
+            ProvisionSession session = provisionSession();
             while (true) {
                 ClientRecord clientRecord = selection.clientRecord();
                 SeSessionUplink uplink = selection.uplink();
@@ -239,21 +240,26 @@ public class Node implements AutoCloseable {
                         + " (slotSize=" + uplink.slotSize()
                         + ", padCount=" + uplink.padCount()
                         + ", plainMax=" + uplink.plainMax() + ")");
-                processResult = processClientRecord(clientRecord, uplink);
-                if (!processResult.reselect()) {
+                processResult = session.process(clientRecord, uplink);
+                if (!(processResult instanceof ProvisionSession.Outcome.Reselect)) {
                     break;
                 }
                 selection = inputHandler.selectForUplink(uplink, friendlySaeNodes, terminalGateway);
             }
             ClientRecord clientRecord = selection.clientRecord();
-            if (processResult.payload().isPresent()) {
-                byte[] payload = processResult.payload().get();
+            byte[] payload = switch (processResult) {
+                case ProvisionSession.Outcome.Generated generated -> generated.payload();
+                case ProvisionSession.Outcome.Existing existing -> existing.payload();
+                default -> null;
+            };
+            if (payload != null) {
                 socket.getOutputStream().write(payload);
                 socket.getOutputStream().flush();
                 System.out.println("Sent LV downlink to TLS client (" + payload.length + " bytes)");
-                SeProvisionAck.Result ack = SeProvisionAck.read(socket.getInputStream());
-                System.out.println(ack.downloadMessage());
-                notifyOperator(ack.downloadMessage());
+                SeProvisionAck.read(socket.getInputStream());
+                String status = SeProvisionAck.downloadMessage(payload.length);
+                System.out.println(status);
+                notifyOperator(status);
             } else {
                 ClientRecord.ClientHeader header = clientRecord.getClientHeader();
                 System.out.println(
@@ -264,7 +270,10 @@ public class Node implements AutoCloseable {
                                 + " and target SAE "
                                 + header.saeId()
                 );
-                notifyOperator(processResult.notifyText());
+                String msg = processResult instanceof ProvisionSession.Outcome.InProgress inProgress
+                        ? inProgress.operatorMessage()
+                        : "No keys were sent to the device.";
+                notifyOperator(msg);
             }
             outcomeReported = true;
             commandHandler.accept(socket);
@@ -290,6 +299,59 @@ public class Node implements AutoCloseable {
         } catch (Exception e) {
             System.err.println("Failed to send status to terminal: " + e.getMessage());
         }
+    }
+
+    private ProvisionSession provisionSession() {
+        return new ProvisionSession(
+                selfRef.getNodeId(),
+                new ProvisionSession.Records() {
+                    @Override
+                    public AtomicRecordStateMap.StartRecordInsertOutcome startRecordInsert(
+                            ClientRecord.ClientHeader header, String localSaeId) {
+                        return localRecordStateMap.startRecordInsert(header, localSaeId);
+                    }
+
+                    @Override
+                    public Optional<AtomicRecordStateMap.RecordMetadata> get(String clientHash1, String clientHash2) {
+                        return localRecordStateMap.get(clientHash1, clientHash2);
+                    }
+
+                    @Override
+                    public void tryDelete(String clientHash1, String clientHash2, String issuingSaeId, String reason) {
+                        tryDeleteLocalRecord(clientHash1, clientHash2, issuingSaeId, reason);
+                    }
+
+                    @Override
+                    public void forceDeleteLocal(String clientHash1, String clientHash2, String reason) {
+                        forceDeleteLocalRecord(clientHash1, clientHash2, reason);
+                    }
+
+                    @Override
+                    public Optional<List<String>> readPayload(String clientHash1, String clientHash2)
+                            throws IOException {
+                        return sharedKeyMaterialStore.readPayload(clientHash1, clientHash2);
+                    }
+
+                    @Override
+                    public void removePayload(String clientHash1, String clientHash2) throws IOException {
+                        sharedKeyMaterialStore.remove(clientHash1, clientHash2);
+                    }
+                },
+                peerRecordSync::completeNewExchange,
+                new ProvisionSession.Operator() {
+                    @Override
+                    public boolean confirm(String message) throws IOException {
+                        return promptOperator(message);
+                    }
+
+                    @Override
+                    public void notify(String message) {
+                        notifyOperator(message);
+                    }
+                },
+                this::forceDeleteRemoteRecord,
+                kemFill
+        );
     }
 
     private static void logSocketFailure(Exception ex) {
@@ -364,241 +426,6 @@ public class Node implements AutoCloseable {
         } catch (IOException ex) {
             System.err.println("TLS client socket close failed: " + ex.getMessage());
         }
-    }
-
-    private SharedPayloadResolution processClientRecord(ClientRecord clientRecord, SeSessionUplink uplink)
-            throws RemoteException, Qkd014ClientException, IOException, NotBoundException {
-        boolean skipGeneratePrompt = false;
-        while (true) {
-            String localSaeId = selfRef.getNodeId();
-            ClientRecord.ClientHeader clientHeader = clientRecord.getClientHeader();
-            AtomicRecordStateMap.StartRecordInsertOutcome insertOutcome = localRecordStateMap.startRecordInsert(
-                    clientHeader,
-                    localSaeId
-            );
-
-            switch (insertOutcome) {
-                case INSERTED -> {
-                    return generateNewShare(clientRecord, uplink, skipGeneratePrompt);
-                }
-                case RECORD_AVAILABLE, RECORD_SHARED_WITH_DIFFERENT_SAE -> {
-                    SharedPayloadResolution existing = resolveExistingShare(
-                            clientHeader, localSaeId, uplink, insertOutcome);
-                    if (existing.restartInsert()) {
-                        skipGeneratePrompt = true;
-                        continue;
-                    }
-                    return existing;
-                }
-                case NOT_INSERTED -> {
-                    System.out.println(
-                            "Skipping record processing due to map insertion outcome: " + insertOutcome);
-                    return SharedPayloadResolution.noPayload(
-                            "Provision in progress on another device. Wait for it to finish and then retry");
-                }
-            }
-        }
-    }
-
-    private SharedPayloadResolution generateNewShare(
-            ClientRecord clientRecord,
-            SeSessionUplink uplink,
-            boolean skipGeneratePrompt
-    ) throws RemoteException, Qkd014ClientException, IOException, NotBoundException {
-        String localSaeId = selfRef.getNodeId();
-        ClientRecord.ClientHeader clientHeader = clientRecord.getClientHeader();
-        try {
-            if (!skipGeneratePrompt && !promptOperator(
-                    "No shared keys were found for this pair.\nGenerate new keys now?")) {
-                tryDeleteLocalRecord(
-                        clientHeader.clientHash1(),
-                        clientHeader.clientHash2(),
-                        localSaeId,
-                        "operator declined to generate new keys"
-                );
-                return SharedPayloadResolution.forReselect();
-            }
-            System.out.println(
-                    "No shared keys found — generating new keys for hashes "
-                            + clientHeader.clientHash1()
-                            + " / "
-                            + clientHeader.clientHash2()
-            );
-            notifyOperator("Generating new keys.");
-            Optional<List<String>> keyMaterial = peerRecordSync.completeNewExchange(clientRecord, uplink);
-            if (keyMaterial.isPresent()) {
-                System.out.println(
-                        "Record finalized through target for hashes "
-                                + clientHeader.clientHash1()
-                                + " / "
-                                + clientHeader.clientHash2()
-                );
-                return SharedPayloadResolution.withPayload(encodeDownlink(
-                        uplink, keyMaterial.get(), SeConstants.DECRYPT_HALF_ORIGIN));
-            }
-            System.out.println(
-                    "No payload returned because target/origin finalization failed for hashes "
-                            + clientHeader.clientHash1()
-                            + " / "
-                            + clientHeader.clientHash2()
-            );
-            return SharedPayloadResolution.noPayload(
-                    "Target SAE rejected the insert. Wait for any provision in progress there to finish and then retry");
-        } catch (Qkd014ClientException ex) {
-            tryDeleteLocalRecord(
-                    clientHeader.clientHash1(),
-                    clientHeader.clientHash2(),
-                    localSaeId,
-                    "rolled back after QKD key fetch failed"
-            );
-            throw ex;
-        } catch (RemoteException | NotBoundException ex) {
-            tryDeleteLocalRecord(
-                    clientHeader.clientHash1(),
-                    clientHeader.clientHash2(),
-                    localSaeId,
-                    "rolled back after target SAE " + clientHeader.saeId()
-                            + " was unreachable or rejected the insert"
-            );
-            throw ex;
-        } catch (Exception ex) {
-            tryDeleteLocalRecord(
-                    clientHeader.clientHash1(),
-                    clientHeader.clientHash2(),
-                    localSaeId,
-                    "rolled back after key fetch or target orchestration failed"
-            );
-            throw ex;
-        }
-    }
-
-    private SharedPayloadResolution resolveExistingShare(
-            ClientRecord.ClientHeader clientHeader,
-            String localSaeId,
-            SeSessionUplink uplink,
-            AtomicRecordStateMap.StartRecordInsertOutcome insertOutcome
-    ) throws IOException, RemoteException, NotBoundException {
-        Optional<AtomicRecordStateMap.RecordMetadata> existingMetadata =
-                localRecordStateMap.get(clientHeader.clientHash1(), clientHeader.clientHash2());
-        if (existingMetadata.isEmpty()) {
-            System.out.println("Shared record fallback requested but no metadata found for hashes "
-                    + clientHeader.clientHash1() + " / " + clientHeader.clientHash2());
-            return SharedPayloadResolution.noPayload(
-                    "Shared-key record disappeared before it could be used. Retry.");
-        }
-
-        AtomicRecordStateMap.RecordMetadata metadata = existingMetadata.get();
-        if (insertOutcome == AtomicRecordStateMap.StartRecordInsertOutcome.RECORD_SHARED_WITH_DIFFERENT_SAE) {
-            return promptUseExisting(metadata)
-                    ? deliverExistingShare(clientHeader, metadata, uplink)
-                    : deleteShareAndRestart(clientHeader, metadata);
-        }
-        if (Objects.equals(metadata.issuingSaeId(), localSaeId)) {
-            if (!promptDelete(metadata)) {
-                return SharedPayloadResolution.noPayload(
-                        "Existing keys were kept. No keys were sent to the device.");
-            }
-            return deleteShareAndRestart(clientHeader, metadata);
-        }
-        return deliverExistingShare(clientHeader, metadata, uplink);
-    }
-
-    private SharedPayloadResolution deliverExistingShare(
-            ClientRecord.ClientHeader clientHeader,
-            AtomicRecordStateMap.RecordMetadata metadata,
-            SeSessionUplink uplink
-    ) throws IOException, RemoteException, NotBoundException {
-        String clientHash1 = clientHeader.clientHash1();
-        String clientHash2 = clientHeader.clientHash2();
-        forceDeleteRemoteRecord(metadata.issuingSaeId(), clientHash1, clientHash2);
-        Optional<List<String>> keyMaterial = sharedKeyMaterialStore.readPayload(clientHash1, clientHash2);
-        forceDeleteLocalRecord(clientHash1, clientHash2, "shared payload delivered to requesting SAE");
-        if (keyMaterial.isEmpty()) {
-            System.out.println(
-                    "Shared record present in map but no shared key material found for hashes "
-                            + clientHash1
-                            + " / "
-                            + clientHash2
-            );
-            return SharedPayloadResolution.noPayload(
-                    "Shared keys were found but the stored payload is missing. Retry.");
-        }
-        sharedKeyMaterialStore.remove(clientHash1, clientHash2);
-        notifyOperator("Shared keys found. Downloading them to the device.");
-        System.out.println(
-                "Shared keys found — returning stored payload for hashes "
-                        + clientHash1
-                        + " / "
-                        + clientHash2
-        );
-        return SharedPayloadResolution.withPayload(
-                encodeDownlink(uplink, keyMaterial.get(), SeConstants.DECRYPT_HALF_PEER));
-    }
-
-    private SharedPayloadResolution deleteShareAndRestart(
-            ClientRecord.ClientHeader clientHeader,
-            AtomicRecordStateMap.RecordMetadata metadata
-    ) throws RemoteException, NotBoundException {
-        forceDeleteLocalRecord(
-                clientHeader.clientHash1(),
-                clientHeader.clientHash2(),
-                "user confirmed deletion of shared record"
-        );
-        forceDeleteRemoteRecord(metadata.saeId(), clientHeader.clientHash1(), clientHeader.clientHash2());
-        return SharedPayloadResolution.forRestartInsert();
-    }
-
-    private byte[] encodeDownlink(SeSessionUplink uplink, List<String> keyMaterial, byte decryptHalf) {
-        return kemFill.buildDownlink(uplink, keyMaterial, decryptHalf);
-    }
-
-    private record SharedPayloadResolution(
-            Optional<byte[]> payload,
-            boolean restartInsert,
-            boolean reselect,
-            String operatorMessage
-    ) {
-        private static SharedPayloadResolution noPayload(String operatorMessage) {
-            return new SharedPayloadResolution(Optional.empty(), false, false, operatorMessage);
-        }
-
-        private static SharedPayloadResolution forRestartInsert() {
-            return new SharedPayloadResolution(Optional.empty(), true, false, null);
-        }
-
-        private static SharedPayloadResolution withPayload(byte[] payload) {
-            return new SharedPayloadResolution(Optional.of(payload), false, false, null);
-        }
-
-        private static SharedPayloadResolution forReselect() {
-            return new SharedPayloadResolution(Optional.empty(), false, true, null);
-        }
-
-        private String notifyText() {
-            if (operatorMessage != null && !operatorMessage.isBlank()) {
-                return operatorMessage;
-            }
-            return "No keys were sent to the device.";
-        }
-    }
-
-    private boolean promptUseExisting(AtomicRecordStateMap.RecordMetadata metadata) throws IOException {
-        return promptExistingShare(metadata, "Did you mean to use those keys?");
-    }
-
-    private boolean promptDelete(AtomicRecordStateMap.RecordMetadata metadata) throws IOException {
-        return promptExistingShare(metadata, "Delete them and generate new keys?");
-    }
-
-    private boolean promptExistingShare(AtomicRecordStateMap.RecordMetadata metadata, String question)
-            throws IOException {
-        return promptOperator(
-                "Shared keys already exist with SAE "
-                        + metadata.saeId()
-                        + " (created "
-                        + metadata.dateOfCreation()
-                        + ").\n"
-                        + question);
     }
 
     private boolean promptOperator(String message) throws IOException {
@@ -794,7 +621,7 @@ public class Node implements AutoCloseable {
                 hsmAlias,
                 Path.of(truststorePath),
                 password,
-                NodeTls.TlsProfile.CLASSICAL
+                SoftwareTls.TlsProfile.CLASSICAL
         );
     }
 

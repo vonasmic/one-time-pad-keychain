@@ -6,9 +6,24 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 
 compile() {
-  log "mvn compile (JAVA_TLS_TEST)"
+  log "mvn install (JAVA_TLS_TEST)"
   cd "$JAVA_DIR"
-  mvn -q compile
+  mvn -q install -DskipTests
+}
+
+# Sibling modules are not on Maven Central; install the module subgraph into ~/.m2.
+# Do not pass -am to exec:java — that also binds exec to java-tls-parent (no mainClass).
+install_module_deps() {
+  local module="$1"
+  cd "$JAVA_DIR"
+  mvn -q -pl ":${module}" -am install -DskipTests
+}
+
+run_module() {
+  local module="$1"
+  shift
+  cd "$JAVA_DIR"
+  exec mvn -q -pl ":${module}" "$@" exec:java
 }
 
 ensure_env_files() {
@@ -30,7 +45,8 @@ certgen() {
   log "CertGenerator"
   cd "$JAVA_DIR"
   source_env env/hsm.env
-  mvn exec:java -Dexec.mainClass=fel.cvut.certGen.CertGenerator
+  install_module_deps cert-generator
+  run_module cert-generator
 }
 
 migrate() {
@@ -43,25 +59,25 @@ migrate() {
 node() {
   local env_file="${1:-}"
   [[ -n "$env_file" ]] || die "usage: java.sh node env/node-N.env"
-  compile
+  cd "$JAVA_DIR"
   source_env env/hsm.env
   source_env "$env_file"
-  exec mvn exec:java -Dexec.mainClass=fel.cvut.node.Node
+  run_module sae-node
 }
 
 terminal() {
-  compile
+  cd "$JAVA_DIR"
   source_env env/hsm.env
   source_env env/terminal-1.env
   unset USB_LAB_FILE
-  exec mvn exec:java -Dexec.mainClass=fel.cvut.terminalapp.TerminalApp
+  run_module terminal-bridge
 }
 
 userapp() {
-  compile
+  cd "$JAVA_DIR"
   source_env env/userapp.env
   unset USB_LAB_FILE
-  exec mvn exec:java -Dexec.mainClass=fel.cvut.userapp.UserApplication
+  run_module user-app
 }
 
 lab_file() {
@@ -69,34 +85,33 @@ lab_file() {
 }
 
 lab_terminal() {
-  compile
+  cd "$JAVA_DIR"
   source_env env/hsm.env
   source_env env/terminal-1.env
   local file
   file="$(lab_file)"
   unset USB_LAB_FILE
   exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role terminal -- \
-    mvn exec:java -Dexec.mainClass=fel.cvut.terminalapp.TerminalApp
+    mvn -pl :terminal-bridge exec:java
 }
 
 lab_userapp() {
-  compile
+  cd "$JAVA_DIR"
   source_env env/userapp.env
   local file
   file="$(lab_file)"
   unset USB_LAB_FILE
   exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role userapp -- \
-    mvn exec:java -Dexec.mainClass=fel.cvut.userapp.UserApplication
+    mvn -pl :user-app exec:java
 }
 
 lab() {
-  compile
   USB_LAB_FILE="$(lab_file)"
   export USB_LAB_FILE
   if [[ $# -gt 0 ]]; then
-    exec mvn exec:java -Dexec.mainClass=fel.cvut.lab.LabSwitchApp -Dexec.args="$*"
+    run_module lab-switch -Dexec.args="$*"
   fi
-  exec mvn exec:java -Dexec.mainClass=fel.cvut.lab.LabSwitchApp
+  run_module lab-switch
 }
 
 case "${1:-}" in

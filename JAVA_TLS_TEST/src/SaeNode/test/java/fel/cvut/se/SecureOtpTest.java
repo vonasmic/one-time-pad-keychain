@@ -15,7 +15,7 @@ class SecureOtpTest {
 
     @Test
     void encryptRequestRoundTripKeepsPinAndPlaintext() {
-        byte[] pin = "1234".getBytes(StandardCharsets.US_ASCII);
+        byte[] pin = "12345678".getBytes(StandardCharsets.US_ASCII);
         byte[] plaintext = "hello-otp".getBytes(StandardCharsets.UTF_8);
         byte[] wire = SecureOtp.encodeEncryptRequest(pin, plaintext);
 
@@ -52,11 +52,11 @@ class SecureOtpTest {
         byte[] encryptReply = SecureOtp.encodeEncryptReply(new SecureOtp.EncryptReply(List.of(
                 new SecureOtp.EncryptPad(1, new byte[] {4, 5})
         )));
-        byte[] wire = SecureOtp.encodeDecryptRequest("9999", encryptReply);
-        assertEquals(4, wire[0] & 0xFF);
-        assertArrayEquals("9999".getBytes(StandardCharsets.US_ASCII),
-                java.util.Arrays.copyOfRange(wire, 1, 5));
-        assertArrayEquals(encryptReply, java.util.Arrays.copyOfRange(wire, 5, wire.length));
+        byte[] wire = SecureOtp.encodeDecryptRequest("99999999", encryptReply);
+        assertEquals(8, wire[0] & 0xFF);
+        assertArrayEquals("99999999".getBytes(StandardCharsets.US_ASCII),
+                java.util.Arrays.copyOfRange(wire, 1, 9));
+        assertArrayEquals(encryptReply, java.util.Arrays.copyOfRange(wire, 9, wire.length));
     }
 
     @Test
@@ -84,20 +84,20 @@ class SecureOtpTest {
     }
 
     @Test
-    void pinMustBeFourToEightBytes() {
+    void pinMustBeEightToSixteenBytes() {
         byte[] plaintext = new byte[] {1};
         assertThrows(IllegalArgumentException.class,
-                () -> SecureOtp.encodeEncryptRequest("12", plaintext));
+                () -> SecureOtp.encodeEncryptRequest("1234567", plaintext));
         assertThrows(IllegalArgumentException.class,
-                () -> SecureOtp.encodeEncryptRequest("123456789", plaintext));
-        SecureOtp.encodeEncryptRequest("1234", plaintext);
+                () -> SecureOtp.encodeEncryptRequest("12345678901234567", plaintext));
         SecureOtp.encodeEncryptRequest("12345678", plaintext);
+        SecureOtp.encodeEncryptRequest("1234567890123456", plaintext);
     }
 
     @Test
     void emptyPlaintextIsRejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> SecureOtp.encodeEncryptRequest("1234", new byte[0]));
+                () -> SecureOtp.encodeEncryptRequest("12345678", new byte[0]));
     }
 
     @Test

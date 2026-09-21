@@ -82,7 +82,7 @@ not read the lab file.
 
 Typical loop:
 
-1. Leave lab on **`USER`**. `CL 1` or `CL 2` only picks the keychain. Bring-up in UserApp (`INIT`, or chip lines `TROPIC KEYGEN` / `TROPIC KEM INIT`).
+1. Leave lab on **`USER`**. `CL 1` or `CL 2` only picks the keychain. Bring-up in UserApp (`INIT LAB` / `INIT PROD`).
 2. **Provision:** type **`SAE`**. The terminal pane restarts TerminalApp on that client's PTY and relays to SAE 1 or SAE 2 (`PROVISION` on each start).
 3. **Encrypt/decrypt:** type **`USER`**, then `ENCRYPT` / `DECRYPT` in UserApp (same selected client).
 

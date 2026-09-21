@@ -2,7 +2,7 @@ package fel.cvut.se;
 
 /**
  * Wire and crypto sizes matching SE firmware ({@code secure_lv.h}, {@code se_tropic_rmem.h},
- * {@code se_tropic_mlkem.h}, {@code se_tropic_session.h}).
+ * {@code se_tropic_mlkem.h}, {@code se_tropic_session.h}, {@code se_manage.h}, {@code se_owner.h}).
  */
 public final class SeConstants {
 
@@ -45,8 +45,21 @@ public final class SeConstants {
     /** Max sum of downlink key payload bytes (framing not counted). Matches firmware. */
     public static final int QKD_MAX_BYTES = MLKEM_CT_LEN + PAD_COUNT * RMEM_SLOT_MAX;
 
-    public static final int PIN_SIZE_MIN = 4;
-    public static final int PIN_SIZE_MAX = 8;
+    public static final int PIN_SIZE_MIN = 8;
+    public static final int PIN_SIZE_MAX = 16;
+    /** Reset password on OWNER SET / OWNER REPLACE ({@code se_owner.h}). */
+    public static final int OWNER_PW_MIN = 8;
+    public static final int OWNER_PW_MAX = 64;
+    /** Peer nickname on MANAGE PEER ADD/REMOVE ({@code SE_NV_PEER_NAME_MAX}). */
+    public static final int PEER_NAME_MAX = 16;
+    /** FLASH_CREDS DER cap ({@code SE_CREDS_DER_MAX}). */
+    public static final int CREDS_DER_MAX = 4000;
+    /** MANAGE body cap ({@code SE_MANAGE_BODY_MAX}): u16le + device cert DER. */
+    public static final int MANAGE_BODY_MAX = 2 + CREDS_DER_MAX;
+    /** MANAGE reply ASCII detail ({@code SE_MANAGE_MSG_MAX}). */
+    public static final int MANAGE_MSG_MAX = 80;
+    /** Raw ML-DSA-44 public key (CLIENT CSR / owner SPKI). */
+    public static final int MLDSA_PUB_LEN = 1312;
 
     public static final String SLOT_LABEL = "SE_tropic_qkd_slot_v3";
 

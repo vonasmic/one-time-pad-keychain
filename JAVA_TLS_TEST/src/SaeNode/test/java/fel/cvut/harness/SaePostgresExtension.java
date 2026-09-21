@@ -14,6 +14,8 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -85,8 +87,16 @@ public final class SaePostgresExtension implements BeforeAllCallback, BeforeEach
     }
 
     private static boolean dockerAvailable() {
-        return java.nio.file.Files.exists(java.nio.file.Path.of("/var/run/docker.sock"))
-                && DockerClientFactory.instance().isDockerAvailable();
+        if (!java.nio.file.Files.exists(java.nio.file.Path.of("/var/run/docker.sock"))) {
+            return false;
+        }
+        try {
+            return CompletableFuture.supplyAsync(() -> DockerClientFactory.instance().isDockerAvailable())
+                    .orTimeout(3, TimeUnit.SECONDS)
+                    .join();
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private static void startTestcontainers() {

@@ -1,6 +1,7 @@
 package fel.cvut.utimaco;
 
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -24,21 +25,21 @@ public final class HsmTlsProbe {
 
         try (Pqmi pqmi = Pqmi.fromEnvironment()) {
             if (jce) {
-                NodeTls.createContextForNode(pqmi, nodeId);
+                HsmNodeTls.createContextForNode(pqmi, nodeId);
             } else {
                 pqmi.loadIdentityKey(pqmi.keyRefForNode(nodeId));
             }
 
-            SSLContext ctx = NodeTls.createContextForNode(pqmi, nodeId);
+            SSLContext ctx = HsmNodeTls.createContextForNode(pqmi, nodeId);
             int port = 0;
             SSLServerSocket server = (SSLServerSocket) ctx.getServerSocketFactory().createServerSocket(0);
             port = server.getLocalPort();
             server.setNeedClientAuth(false);
-            server.setSSLParameters(NodeTls.parameters(NodeTls.TlsProfile.PURE_PQC));
+            server.setSSLParameters(SoftwareTls.parameters(SoftwareTls.TlsProfile.PURE_PQC));
 
             CompletableFuture<String> serverDone = CompletableFuture.supplyAsync(() -> {
                 try (SSLServerSocket ss = server; SSLSocket peer = (SSLSocket) ss.accept()) {
-                    peer.setSSLParameters(NodeTls.parameters(NodeTls.TlsProfile.PURE_PQC));
+                    peer.setSSLParameters(SoftwareTls.parameters(SoftwareTls.TlsProfile.PURE_PQC));
                     peer.startHandshake();
                     return peer.getSession().getCipherSuite();
                 } catch (Exception e) {
@@ -47,7 +48,7 @@ public final class HsmTlsProbe {
             });
 
             try (SSLSocket client = (SSLSocket) ctx.getSocketFactory().createSocket("127.0.0.1", port)) {
-                client.setSSLParameters(NodeTls.parameters(NodeTls.TlsProfile.PURE_PQC));
+                client.setSSLParameters(SoftwareTls.parameters(SoftwareTls.TlsProfile.PURE_PQC));
                 client.startHandshake();
                 System.out.println("[probe] client handshake OK: " + client.getSession().getCipherSuite());
             }

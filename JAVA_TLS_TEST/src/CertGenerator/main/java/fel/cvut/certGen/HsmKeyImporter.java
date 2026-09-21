@@ -1,7 +1,8 @@
 package fel.cvut.certGen;
 
 import CryptoServerJCE.CryptoServerProvider;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.utimaco.HsmGate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -28,7 +29,7 @@ final class HsmKeyImporter {
 
     static void importPkcs12(String alias, Path pkcs12Path, char[] password) throws Exception {
         Objects.requireNonNull(alias, "alias must not be null");
-        CryptoServerProvider cryptoServer = NodeTls.requireCryptoServer();
+        CryptoServerProvider cryptoServer = HsmNodeTls.requireCryptoServer();
         HsmGate.run(() -> {
             KeyStore soft = loadPkcs12(pkcs12Path, password);
             String softAlias = findKeyAlias(soft);

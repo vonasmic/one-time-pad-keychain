@@ -20,7 +20,7 @@ device ↔ USER. Provision is the SAE path.
 
 | Path | Role |
 | --- | --- |
-| [`JAVA_TLS_TEST/`](JAVA_TLS_TEST/README.md) | Maven apps: CertGenerator, SaeNode, TerminalBridge, UserApp, LabSwitch |
+| JAVA_TLS_TEST | Maven reactor: `se-wire`, `usb-cdc`, `tls-software`, `tls-hsm`, `cert-generator`, `user-app`, `sae-node`, `terminal-bridge`, `lab-switch` |
 | [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) | CubeIDE `SE_firmware`: Secure (wolfSSL TLS, Tropic SPI, NV) + NonSecure (USB CDC parser) |
 | [`stm32u535-trustzone-usb/host/`](stm32u535-trustzone-usb/host/README.md) | `se_host` PTY device + Tropic `model_server` tests A–K |
 | [`diagrams/`](diagrams/) | draw.io architecture and provision-flow figures |

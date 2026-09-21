@@ -1,6 +1,6 @@
 package fel.cvut.qkd;
 
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.utimaco.Pqmi;
 
 import java.nio.file.Files;
@@ -26,7 +26,7 @@ public class Qkd014Demo {
 
         Path trustStore = resolveExistingPath("qkd.truststore", "certs/qkd/qkd-server-ca.p12");
         char[] trustPassword = System.getProperty("qkd.truststorePassword", "password").toCharArray();
-        NodeTls.TlsProfile tlsProfile = NodeTls.TlsProfile.CLASSICAL;
+        SoftwareTls.TlsProfile tlsProfile = SoftwareTls.TlsProfile.CLASSICAL;
 
         try (Pqmi pqmi = Pqmi.fromEnvironment()) {
             Qkd014Client masterClient = Qkd014Client.fromHsm(

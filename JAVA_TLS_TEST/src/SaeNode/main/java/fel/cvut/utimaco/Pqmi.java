@@ -5,7 +5,7 @@ import com.utimaco.cs2.mdl.any.CxiKeyAttributes;
 import com.utimaco.cs2.mdl.pqmi.MLDSA_KeyGen;
 import com.utimaco.cs2.mdl.pqmi.MLDSA_Sign;
 import com.utimaco.cs2.mdl.pqmi.PqmiKeyStore;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.SoftwareTls;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -70,7 +70,7 @@ public final class Pqmi implements AutoCloseable {
     }
 
     public KeyRef keyRefForNode(String nodeId) {
-        return new KeyRef(NodeTls.certNameForNode(nodeId), group, spec);
+        return new KeyRef(SoftwareTls.certNameForNode(nodeId), group, spec);
     }
 
     /**

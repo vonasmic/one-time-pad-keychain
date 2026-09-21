@@ -5,7 +5,8 @@ import fel.cvut.terminal.LocalOperatorConsole;
 import fel.cvut.terminal.OperatorConsole;
 import fel.cvut.terminal.TerminalOutput;
 import fel.cvut.terminal.TerminalWireProtocol;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.utimaco.Pqmi;
 
 import javax.net.ssl.SSLContext;
@@ -20,8 +21,8 @@ import java.util.List;
  * Standalone operator terminal.
  *
  * <p>Connects to a node's dedicated terminal gateway port over TLS using the exact same TLS
- * bootstrap nodes use to talk to each other — {@link NodeTls#createContextForNode} (HSM-backed
- * identity via {@link Pqmi}) and {@link NodeTls.TlsProfile#PURE_PQC}.
+ * bootstrap nodes use to talk to each other — {@link SoftwareTls#createContextForNode} (HSM-backed
+ * identity via {@link Pqmi}) and {@link SoftwareTls.TlsProfile#PURE_PQC}.
  *
  * <p>Target node and USB path come from {@code NODE_HOSTNAME} / {@code NODE_TERMINAL_PORT}
  * / {@code NODE_NATIVE_PORT} / {@code USB_SERIAL_PORT}.
@@ -44,7 +45,7 @@ public final class TerminalApp {
         OperatorConsole console = new LocalOperatorConsole();
 
         try (Pqmi pqmi = Pqmi.fromEnvironment()) {
-            SSLContext ctx = NodeTls.createContextForNode(pqmi, tlsNodeId);
+            SSLContext ctx = HsmNodeTls.createContextForNode(pqmi, tlsNodeId);
             boolean usbStarted = false;
             while (!Thread.currentThread().isInterrupted()) {
                 try (SSLSocket socket = connectGateway(host, port, ctx)) {
@@ -68,7 +69,7 @@ public final class TerminalApp {
 
     private static SSLSocket connectGateway(String host, int port, SSLContext ctx) throws IOException {
         System.out.println("Connecting to node terminal gateway at " + host + ":" + port + " ...");
-        return NodeTls.createClientSocket(host, port, ctx, NodeTls.TlsProfile.PURE_PQC);
+        return SoftwareTls.createClientSocket(host, port, ctx, SoftwareTls.TlsProfile.PURE_PQC);
     }
 
     private static boolean sleepRetry() {

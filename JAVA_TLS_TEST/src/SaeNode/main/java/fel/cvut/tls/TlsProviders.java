@@ -49,7 +49,6 @@ final class TlsProviders {
 
     private static final Object INSTALL_LOCK = new Object();
     private static volatile boolean installed;
-    private static volatile boolean softwareInstalled;
     private static CryptoServerProvider cryptoServer;
 
     private TlsProviders() {
@@ -82,6 +81,7 @@ final class TlsProviders {
                     bc));
 
             installed = true;
+            SoftwareTls.markProvidersInstalled();
         }
     }
 
@@ -90,17 +90,7 @@ final class TlsProviders {
      * already ran in this JVM.
      */
     static void installSoftware() {
-        synchronized (INSTALL_LOCK) {
-            if (installed || softwareInstalled) {
-                return;
-            }
-            Provider bc = new BouncyCastleProvider();
-            JcaTlsCryptoProvider crypto = new JcaTlsCryptoProvider().setProvider(bc);
-            installOrdered(List.of(
-                    new BouncyCastleJsseProvider(false, crypto),
-                    bc));
-            softwareInstalled = true;
-        }
+        SoftwareTls.installSoftware();
     }
 
     private static CryptoServerProvider loggedInCryptoServer(Pqmi session) throws Exception {
@@ -165,7 +155,7 @@ final class TlsProviders {
 
     static CryptoServerProvider requireCryptoServer() {
         if (cryptoServer == null) {
-            throw new IllegalStateException("CryptoServer not installed — call NodeTls.install first");
+            throw new IllegalStateException("CryptoServer not installed — call HsmNodeTls.install first");
         }
         return cryptoServer;
     }

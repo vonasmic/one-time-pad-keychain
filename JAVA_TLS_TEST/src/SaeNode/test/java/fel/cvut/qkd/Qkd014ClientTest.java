@@ -2,7 +2,7 @@ package fel.cvut.qkd;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.SoftwareTls;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -218,7 +218,7 @@ class Qkd014ClientTest {
         return new Qkd014Client(
                 "http://127.0.0.1:" + server.getAddress().getPort(),
                 ssl,
-                NodeTls.TlsProfile.CLASSICAL
+                SoftwareTls.TlsProfile.CLASSICAL
         );
     }
 }

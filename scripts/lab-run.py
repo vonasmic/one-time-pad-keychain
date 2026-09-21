@@ -139,10 +139,8 @@ def child_env(state: dict[str, Any], role: str) -> dict[str, str]:
     elif role == "userapp":
         if state["client"] == CLIENT2:
             env["USERAPP_DEVICE_CERT"] = "client2/client-cert.pem"
-            env["USERAPP_DEVICE_KEY"] = "client2/client-key.pem"
         else:
             env["USERAPP_DEVICE_CERT"] = "client/client-cert.pem"
-            env["USERAPP_DEVICE_KEY"] = "client/client-key.pem"
     return env
 
 

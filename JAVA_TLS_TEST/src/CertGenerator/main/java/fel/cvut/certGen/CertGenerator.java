@@ -1,6 +1,8 @@
 package fel.cvut.certGen;
 
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.HsmNodeTls;
+import fel.cvut.tls.SoftwareLeaf;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.utimaco.HsmGate;
 import fel.cvut.utimaco.Pqmi;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -57,9 +59,9 @@ public class CertGenerator {
     private static final String QKD_DIR = "certs/qkd";
     private static final Pattern QKD_CLIENT_P12 = Pattern.compile("(.+)-client\\.p12$");
     private static final String DEFAULT_PKCS12_PASSWORD = "password";
-    static final String DEVICE_CLIENT_CN = "native-tls-client";
-    static final String DEVICE_CLIENT_CN_2 = "native-tls-client-2";
-    static final String USER_CLIENT_CN = "otp-user";
+    public static final String DEVICE_CLIENT_CN = SoftwareLeaf.DEVICE_CLIENT_CN;
+    public static final String DEVICE_CLIENT_CN_2 = SoftwareLeaf.DEVICE_CLIENT_CN_2;
+    public static final String USER_CLIENT_CN = "otp-user";
 
     public static void main(String[] args) throws Exception {
         CertGenConfig config = CertGenConfig.load();
@@ -68,7 +70,7 @@ public class CertGenerator {
         try {
             try {
                 pqmi = Pqmi.fromEnvironment();
-                NodeTls.install(pqmi);
+                HsmNodeTls.install(pqmi);
                 hsm = true;
             } catch (Exception e) {
                 if (!isHsmConnectionFailure(e)) {
@@ -81,7 +83,7 @@ public class CertGenerator {
                     pqmi.close();
                     pqmi = null;
                 }
-                NodeTls.installSoftware();
+                SoftwareTls.installSoftware();
             }
             provisionAll(pqmi, config, hsm);
         } finally {
@@ -238,7 +240,7 @@ public class CertGenerator {
 
     private static boolean hsmAliasExists(String alias) throws Exception {
         return HsmGate.call(() -> {
-            KeyStore hsm = KeyStore.getInstance("CryptoServer", NodeTls.requireCryptoServer());
+            KeyStore hsm = KeyStore.getInstance("CryptoServer", HsmNodeTls.requireCryptoServer());
             hsm.load(null, null);
             return hsm.containsAlias(alias);
         });
@@ -275,7 +277,7 @@ public class CertGenerator {
     private static void provisionNodeIdentity(
             Pqmi pqmi, CaMaterial rootCa, String rawName, Path certsDir
     ) throws Exception {
-        String name = NodeTls.certNameForNode(CertGenConfig.token(rawName, "CERTGEN_NODES"));
+        String name = SoftwareTls.certNameForNode(CertGenConfig.token(rawName, "CERTGEN_NODES"));
         Pqmi.KeyRef keyRef = pqmi.keyRefForNode(name);
         Path pem = certsDir.resolve(name + ".pem");
         boolean keyExists = pqmi.identityKeyExists(keyRef);
@@ -303,6 +305,10 @@ public class CertGenerator {
     private static void provisionClientBundle(CaMaterial clientCa, String cn, Path certsDir) throws Exception {
         ClientBundle bundle = clientBundle(cn, certsDir);
         System.out.println("-> client " + bundle.cn() + " (" + bundle.dir() + ")");
+        if (isOnChipDevice(bundle.cn())) {
+            System.out.println("   [skip] device identity is on-chip; UserApp INIT LAB or an external CA signs CLIENT CSR");
+            return;
+        }
         boolean certExists = Files.isRegularFile(bundle.certPath());
         boolean keyExists = Files.isRegularFile(bundle.keyPath());
         if (certExists && keyExists) {
@@ -310,27 +316,61 @@ public class CertGenerator {
             if (issuedBy(existing, clientCa.cert())) {
                 System.out.println("   [skip] bundle already present");
             } else {
-                /* Keep the key — the device flashes its SPKI into client_hash — and re-sign it. */
                 warn("   [!] " + bundle.certFile() + " is not signed by the current Client CA — re-issuing");
                 X509Certificate reissued = issuePurePqcFromPublicKey(
                         clientCa.cert(), clientCa.keys(), existing.getPublicKey(), bundle.cn());
                 exportCertPem(reissued, bundle.certPath().toString());
                 System.out.println("   [SUCCESS] re-issued " + bundle.certFile());
+                existing = reissued;
             }
+            if (USER_CLIENT_CN.equals(bundle.cn())) {
+                writeOwnerPkcs12(bundle, existing, SoftwareTls.softwarePrivateKey(bundle.keyPath()), clientCa.cert());
+            }
+            return;
+        }
+        if (certExists ^ keyExists) {
+            throw new IllegalStateException(
+                    "Incomplete client bundle for " + bundle.cn() + ": expected both "
+                            + bundle.certPath() + " and " + bundle.keyPath());
+        }
+        System.out.println("   [*] Generating software ML-DSA key (signed by Client CA)...");
+        KeyPair keys = generatePqcKeyPair();
+        X509Certificate cert = issuePurePqc(clientCa.cert(), clientCa.keys(), keys, bundle.cn());
+        Files.createDirectories(bundle.dir());
+        exportCertPem(cert, bundle.certPath().toString());
+        exportPrivateKeyPem(keys.getPrivate(), bundle.keyPath().toString());
+        if (USER_CLIENT_CN.equals(bundle.cn())) {
+            writeOwnerPkcs12(bundle, cert, keys.getPrivate(), clientCa.cert());
+            System.out.println("   [SUCCESS] wrote " + bundle.certFile() + " + " + bundle.keyFile()
+                    + " + " + bundle.dir().resolve("user.p12"));
         } else {
-            if (certExists ^ keyExists) {
-                throw new IllegalStateException(
-                        "Incomplete client bundle for " + bundle.cn() + ": expected both "
-                                + bundle.certPath() + " and " + bundle.keyPath());
-            }
-            System.out.println("   [*] Generating software ML-DSA key (signed by Client CA)...");
-            KeyPair keys = generatePqcKeyPair();
-            X509Certificate cert = issuePurePqc(clientCa.cert(), clientCa.keys(), keys, bundle.cn());
-            Files.createDirectories(bundle.dir());
-            exportCertPem(cert, bundle.certPath().toString());
-            exportPrivateKeyPem(keys.getPrivate(), bundle.keyPath().toString());
             System.out.println("   [SUCCESS] wrote " + bundle.certFile() + " + " + bundle.keyFile());
         }
+    }
+
+    private static boolean isOnChipDevice(String cn) {
+        return DEVICE_CLIENT_CN.equals(cn) || DEVICE_CLIENT_CN_2.equals(cn);
+    }
+
+    /**
+     * Issue a client-CA leaf from a raw ML-DSA-44 public key (on-chip device CSR).
+     * Used by UserApp INIT LAB; CertGenerator's main path does not sign device CSRs.
+     */
+    public static X509Certificate signRawMlDsa44Leaf(Path caP12, String password, byte[] rawPub, String cn)
+            throws Exception {
+        return SoftwareLeaf.signRawMlDsa44Leaf(caP12, password, rawPub, cn);
+    }
+
+    public static void writeCertPem(X509Certificate cert, Path path) throws Exception {
+        SoftwareLeaf.writeCertPem(cert, path);
+    }
+
+    private static void writeOwnerPkcs12(
+            ClientBundle bundle, X509Certificate cert, PrivateKey key, X509Certificate ca
+    ) throws Exception {
+        Path p12 = bundle.dir().resolve("user.p12");
+        save(p12.toString(), "user", key, cert, ca);
+        System.out.println("   [+] owner PKCS#12 " + p12);
     }
 
     private static X509Certificate readCert(Path pem) throws Exception {

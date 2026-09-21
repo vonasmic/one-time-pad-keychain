@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 /**
  * USB-serial ↔ TCP relay for provision: arm the device, then copy TLS bytes to the SAE.
  *
- * <p>USB open, ASCII commands, and DEBUG vs ClientHello filtering live in {@link SeUsbLink}.
- * Serial path and SAE host/port are constructor / {@link #run} arguments from the process
- * environment.
+ * <p>USB open and ASCII commands live in {@link SeUsbLink}. Dump vs ClientHello
+ * filtering lives in {@link fel.cvut.usb.UsbCdcRxMachine}. Serial path and SAE host/port
+ * are constructor / {@link #run} arguments from the process environment.
  */
 public final class UsbTcpBridge {
 

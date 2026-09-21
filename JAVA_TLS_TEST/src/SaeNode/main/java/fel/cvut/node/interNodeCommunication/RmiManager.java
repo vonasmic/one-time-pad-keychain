@@ -1,7 +1,7 @@
 package fel.cvut.node.interNodeCommunication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fel.cvut.tls.NodeTls;
+import fel.cvut.tls.SoftwareTls;
 import fel.cvut.node.Address;
 
 import fel.cvut.node.NodeCommands;
@@ -30,7 +30,7 @@ public class RmiManager {
 
     public static final String COMM_INTERFACE_NAME = "NodeCommands";
     private static final String SAE_NODES_RESOURCE = "/sae-nodes.json";
-    private static final NodeTls.TlsProfile TLS_PROFILE = NodeTls.TlsProfile.PURE_PQC;
+    private static final SoftwareTls.TlsProfile TLS_PROFILE = SoftwareTls.TlsProfile.PURE_PQC;
     private static final Map<String, Address> ADDRESS_BY_SAE_ID = loadSaeNodeAddresses();
     private static final List<SaeNode> KNOWN_SAE_NODES = loadKnownSaeNodes();
 
@@ -192,7 +192,7 @@ public class RmiManager {
 
         @Override
         public Socket createSocket(String host, int port) throws IOException {
-            return NodeTls.createClientSocket(host, port, requireInstalledTlsContext(), TLS_PROFILE);
+            return SoftwareTls.createClientSocket(host, port, requireInstalledTlsContext(), TLS_PROFILE);
         }
     }
 
@@ -206,7 +206,7 @@ public class RmiManager {
 
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
-            return NodeTls.createServerSocket(port, requireInstalledTlsContext(), TLS_PROFILE, needClientAuth);
+            return SoftwareTls.createServerSocket(port, requireInstalledTlsContext(), TLS_PROFILE, needClientAuth);
         }
     }
 
