@@ -32,6 +32,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * JCE/JSSE provider bootstrap, CryptoServer keystore helpers, and HSM signing.
@@ -47,6 +48,7 @@ import java.util.Objects;
  */
 final class TlsProviders {
 
+    private static final Logger LOG = Logger.getLogger(TlsProviders.class.getName());
     private static final Object INSTALL_LOCK = new Object();
     private static volatile boolean installed;
     private static CryptoServerProvider cryptoServer;
@@ -545,7 +547,7 @@ final class TlsProviders {
         }
 
         static void log(String backend, String algorithm, int messageBytes) {
-            System.out.println("[TLS] Identity signing on HSM ("
+            LOG.info("[TLS] Identity signing on HSM ("
                     + backend + ", " + algorithm + "), message=" + messageBytes + " bytes");
         }
     }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 /**
  * Fetches ETSI 014 key material for pad slots advertised by the SE uplink.
@@ -22,6 +23,8 @@ import java.util.function.Consumer;
  * encrypt/decrypt 50/50.
  */
 public final class QkdPadMaterialFetcher {
+
+    private static final Logger LOG = Logger.getLogger(QkdPadMaterialFetcher.class.getName());
 
     static final int MIN_PARTIAL_PADS = 2;
 
@@ -47,7 +50,7 @@ public final class QkdPadMaterialFetcher {
     private final Consumer<String> log;
 
     public QkdPadMaterialFetcher(Qkd014Client qkdClient) {
-        this(qkdClient, duration -> Thread.sleep(duration.toMillis()), DEFAULT_POLL, DEFAULT_DEADLINE, System.out::println);
+        this(qkdClient, duration -> Thread.sleep(duration.toMillis()), DEFAULT_POLL, DEFAULT_DEADLINE, LOG::info);
     }
 
     /** Same defaults as {@link #QkdPadMaterialFetcher(Qkd014Client)} with a custom progress sink. */

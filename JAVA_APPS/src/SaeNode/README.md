@@ -101,10 +101,15 @@ Template: [`env/example/hsm.env.example`](../../env/example/hsm.env.example).
 
 ## Database
 
-SQLite stores `client_record_state` and HSM-encrypted QKD key material
-(`shared_key_material`). Use **one file per node**. The file is created with
-POSIX mode `0600` when missing. WAL + `BEGIN IMMEDIATE` transactions serialize
-writers from this process only.
+SQLite stores `client_record_state`, HSM-encrypted QKD key material
+(`shared_key_material`), and `application_log`. Use **one file per node**. The
+file is created with POSIX mode `0600` when missing. WAL + `BEGIN IMMEDIATE`
+transactions serialize writers from this process only.
+
+`application_log` receives `fel.cvut` messages at INFO and above, and WARNING
+and above from every other logger (including Bouncy Castle and HikariCP). The
+same filter is applied to the console. SLF4J is bridged through
+`java.util.logging`.
 
 New-share states: `RECORD_SYNCHRONIZATION` (may be taken over by a higher issuing
 SAE) → `RECORD_FETCHING_STARTED` after both SAEs synchronize and origin locks

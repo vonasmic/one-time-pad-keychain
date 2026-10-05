@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 
 /**
  * Dedicated TLS endpoint the standalone terminal app connects to for operator interaction
@@ -29,6 +30,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * concurrent client connections that each need operator input.
  */
 final class TerminalGateway implements OperatorConsole, AutoCloseable {
+
+    private static final Logger LOG = Logger.getLogger(TerminalGateway.class.getName());
 
     private final int port;
     private final ReentrantLock requestLock = new ReentrantLock();
@@ -62,7 +65,7 @@ final class TerminalGateway implements OperatorConsole, AutoCloseable {
                 adoptSession(socket);
             } catch (IOException ex) {
                 if (running) {
-                    System.err.println("Terminal gateway accept loop failed: " + ex.getMessage());
+                    LOG.warning("Terminal gateway accept loop failed: " + ex.getMessage());
                 }
                 return;
             }
@@ -72,7 +75,7 @@ final class TerminalGateway implements OperatorConsole, AutoCloseable {
     private void adoptSession(SSLSocket socket) throws IOException {
         synchronized (sessionLock) {
             if (sessionLive()) {
-                System.out.println("Terminal app already connected — rejecting "
+                LOG.info("Terminal app already connected — rejecting "
                         + socket.getRemoteSocketAddress());
                 try {
                     socket.close();
@@ -85,7 +88,7 @@ final class TerminalGateway implements OperatorConsole, AutoCloseable {
             session = socket;
             sessionIn = TerminalWireProtocol.reader(socket.getInputStream());
             sessionOut = socket.getOutputStream();
-            System.out.println("Terminal app connected: " + socket.getRemoteSocketAddress());
+            LOG.info("Terminal app connected: " + socket.getRemoteSocketAddress());
         }
     }
 
@@ -144,7 +147,7 @@ final class TerminalGateway implements OperatorConsole, AutoCloseable {
             try {
                 localServer.close();
             } catch (IOException ex) {
-                System.err.println("Terminal gateway close failed: " + ex.getMessage());
+                LOG.warning("Terminal gateway close failed: " + ex.getMessage());
             }
         }
     }

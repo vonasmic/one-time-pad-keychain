@@ -16,11 +16,14 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * Default {@link NodeCommands} implementation exposed over RMI.
  */
 public class NodeCommandsService implements fel.cvut.node.NodeCommands {
+
+    private static final Logger LOG = Logger.getLogger(NodeCommandsService.class.getName());
 
     private final NodeRef selfRef;
     private final AtomicRecordStateMap atomicRecordStateMap;
@@ -153,7 +156,7 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
     }
 
     private static void logDeleteAttempt(String clientHash1, String clientHash2, String reason) {
-        System.out.println(
+        LOG.info(
                 "Attempting to delete record for hashes "
                         + clientHash1
                         + " / "

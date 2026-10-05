@@ -96,6 +96,7 @@ public final class SaeSqliteExtension implements BeforeAllCallback, BeforeEachCa
             statement.execute("PRAGMA foreign_keys = ON");
             statement.execute("DELETE FROM shared_key_material");
             statement.execute("DELETE FROM client_record_state");
+            statement.execute("DELETE FROM application_log");
         }
     }
 

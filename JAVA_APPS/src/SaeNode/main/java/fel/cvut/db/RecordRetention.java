@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Timed thread that deletes {@code client_record_state} rows older than
@@ -19,6 +21,8 @@ import java.util.concurrent.TimeUnit;
  * (defense against database replay).
  */
 public final class RecordRetention implements AutoCloseable {
+
+    private static final Logger LOG = Logger.getLogger(RecordRetention.class.getName());
 
     public static final int DEFAULT_RETENTION_DAYS = 14;
 
@@ -71,7 +75,7 @@ public final class RecordRetention implements AutoCloseable {
             });
             scheduled.scheduleAtFixedRate(this::runOnce, 0, 1, TimeUnit.DAYS);
             scheduler = scheduled;
-            System.out.println("Record retention started — every 24h, RECORD_RETENTION_DAYS="
+            LOG.info("Record retention started — every 24h, RECORD_RETENTION_DAYS="
                     + retention.toDays());
         }
     }
@@ -115,11 +119,10 @@ public final class RecordRetention implements AutoCloseable {
     private void runOnce() {
         try {
             int deleted = purgeExpired(dataSource, retention);
-            System.out.println("Record retention deleted=" + deleted
+            LOG.info("Record retention deleted=" + deleted
                     + " retentionDays=" + retention.toDays());
         } catch (Exception ex) {
-            System.err.println("Record retention purge failed: " + ex.getMessage());
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, "Record retention purge failed: " + ex.getMessage(), ex);
         }
     }
 }

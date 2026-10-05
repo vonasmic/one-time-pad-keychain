@@ -2,6 +2,7 @@ package fel.cvut.node;
 
 import fel.cvut.db.DB;
 import fel.cvut.db.DatabaseConfig;
+import fel.cvut.db.SqliteLogging;
 import fel.cvut.db.RecordRetention;
 import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
@@ -34,6 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Main node orchestration class.
@@ -46,6 +49,8 @@ import java.util.function.Consumer;
  * </ul>
  */
 public class Node implements AutoCloseable {
+
+    private static final Logger LOG = Logger.getLogger(Node.class.getName());
 
     private final NodeRef selfRef;
     private final String tlsNodeId;
@@ -211,7 +216,7 @@ public class Node implements AutoCloseable {
                 executor.submit(() -> handleConnection(socket));
             } catch (IOException ex) {
                 if (running) {
-                    System.err.println("TLS command server accept loop failed: " + ex.getMessage());
+                    LOG.warning("TLS command server accept loop failed: " + ex.getMessage());
                 }
                 return;
             }
@@ -237,7 +242,7 @@ public class Node implements AutoCloseable {
             while (true) {
                 ClientRecord clientRecord = selection.clientRecord();
                 SeSessionUplink uplink = selection.uplink();
-                System.out.println("Created client record from LV uplink: " + clientRecord
+                LOG.info("Created client record from LV uplink: " + clientRecord
                         + " (slotSize=" + uplink.slotSize()
                         + ", padCount=" + uplink.padCount()
                         + ", plainMax=" + uplink.plainMax() + ")");
@@ -256,14 +261,14 @@ public class Node implements AutoCloseable {
             if (payload != null) {
                 socket.getOutputStream().write(payload);
                 socket.getOutputStream().flush();
-                System.out.println("Sent LV downlink to TLS client (" + payload.length + " bytes)");
+                LOG.info("Sent LV downlink to TLS client (" + payload.length + " bytes)");
                 SeProvisionAck.read(socket.getInputStream());
                 String status = SeProvisionAck.downloadMessage(payload.length);
-                System.out.println(status);
+                LOG.info(status);
                 notifyOperator(status);
             } else {
                 ClientRecord.ClientHeader header = clientRecord.getClientHeader();
-                System.out.println(
+                LOG.info(
                         "No payload sent to TLS client for hashes "
                                 + header.clientHash1()
                                 + " / "
@@ -286,7 +291,7 @@ public class Node implements AutoCloseable {
             if (handshakeDone) {
                 logSocketFailure(ex);
             } else {
-                System.err.println("TLS command handshake aborted: " + explainFailure(ex));
+                LOG.warning("TLS command handshake aborted: " + explainFailure(ex));
             }
         } finally {
             exporter.detach(socket);
@@ -298,7 +303,7 @@ public class Node implements AutoCloseable {
         try {
             terminalGateway.showMessage(message);
         } catch (Exception e) {
-            System.err.println("Failed to send status to terminal: " + e.getMessage());
+            LOG.warning("Failed to send status to terminal: " + e.getMessage());
         }
     }
 
@@ -356,17 +361,7 @@ public class Node implements AutoCloseable {
     }
 
     private static void logSocketFailure(Exception ex) {
-        System.err.println("Socket input handling failed: " + explainFailure(ex));
-        Throwable cause = ex.getCause();
-        int depth = 0;
-        while (cause != null && depth < 6) {
-            System.err.println("  Caused by: " + cause.getClass().getSimpleName()
-                    + (cause.getMessage() == null || cause.getMessage().isBlank()
-                    ? ""
-                    : ": " + cause.getMessage()));
-            cause = cause.getCause();
-            depth++;
-        }
+        LOG.log(Level.WARNING, "Socket input handling failed: " + explainFailure(ex), ex);
     }
 
     private static String operatorFailure(Throwable ex) {
@@ -425,7 +420,7 @@ public class Node implements AutoCloseable {
         try {
             socket.close();
         } catch (IOException ex) {
-            System.err.println("TLS client socket close failed: " + ex.getMessage());
+            LOG.warning("TLS client socket close failed: " + ex.getMessage());
         }
     }
 
@@ -446,7 +441,7 @@ public class Node implements AutoCloseable {
             String reason
     ) {
         localRecordStateMap.tryDelete(clientHash1, clientHash2, issuingSaeId)
-                .ifPresent(metadata -> System.out.println(
+                .ifPresent(metadata -> LOG.info(
                         "Deleted local record for hashes "
                                 + clientHash1
                                 + " / "
@@ -458,7 +453,7 @@ public class Node implements AutoCloseable {
 
     private void forceDeleteLocalRecord(String clientHash1, String clientHash2, String reason) {
         localRecordStateMap.forceDelete(clientHash1, clientHash2)
-                .ifPresent(metadata -> System.out.println(
+                .ifPresent(metadata -> LOG.info(
                         "Deleted local record for hashes "
                                 + clientHash1
                                 + " / "
@@ -473,7 +468,7 @@ public class Node implements AutoCloseable {
         NodeCommands remoteNode = rmiManager.connectBySaeId(saeId);
         AtomicRecordStateMap.RecordMetadata removed = remoteNode.removeRecord(clientHash2, clientHash1);
         if (removed != null) {
-            System.out.println(
+            LOG.info(
                     "Deleted remote record on SAE "
                             + saeId
                             + " for hashes "
@@ -505,7 +500,7 @@ public class Node implements AutoCloseable {
             try {
                 localServer.close();
             } catch (IOException ex) {
-                System.err.println("TLS command server close failed: " + ex.getMessage());
+                LOG.warning("TLS command server close failed: " + ex.getMessage());
             }
         }
         recordRetention.close();
@@ -558,6 +553,7 @@ public class Node implements AutoCloseable {
      * device mTLS. Provision with {@code CertGenerator}.
      */
     public static void main(String[] args) throws InterruptedException {
+        SqliteLogging.install(DatabaseConfig.getDbUrl());
         String saeId = requireEnv("SAE_ID");
         int rmiPort = requireEnvInt("NODE_RMI_PORT");
         int commandPort = requireEnvInt("NODE_NATIVE_PORT");
@@ -569,9 +565,9 @@ public class Node implements AutoCloseable {
 
         HikariDataSource dataSource = DB.createDataSource();
         try (var connection = dataSource.getConnection()) {
-            System.out.println("Connected to SQLite: " + DatabaseConfig.getDbUrl());
+            LOG.info("Connected to SQLite: " + DatabaseConfig.getDbUrl());
         } catch (SQLException e) {
-            System.err.println("Database connection failed: " + e.getMessage());
+            LOG.log(Level.SEVERE, "Database connection failed: " + e.getMessage(), e);
             dataSource.close();
             System.exit(1);
         }
@@ -598,13 +594,12 @@ public class Node implements AutoCloseable {
             }, "node-shutdown"));
 
             node.start();
-            System.out.println("Node " + saeId + " started — RMI " + address
+            LOG.info("Node " + saeId + " started — RMI " + address
                     + ", TLS command port " + commandPort + ", terminal gateway port " + terminalPort);
 
             Thread.currentThread().join();
         } catch (Exception ex) {
-            System.err.println("Failed to start node: " + ex.getMessage());
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, "Failed to start node: " + ex.getMessage(), ex);
             dataSource.close();
             System.exit(1);
         }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 /**
  * Origin-side new-record exchange: peer synchronize, lock fetch on both sides,
@@ -21,6 +22,8 @@ import java.util.function.Consumer;
  * compensating deletes so a failed exchange does not leave split-brain metadata.
  */
 public final class PeerRecordSync {
+
+    private static final Logger LOG = Logger.getLogger(PeerRecordSync.class.getName());
 
     private final NodeRef selfRef;
     private final AtomicRecordStateMap localRecordStateMap;
@@ -33,7 +36,7 @@ public final class PeerRecordSync {
             RmiManager rmiManager,
             Qkd014Client qkdClient
     ) {
-        this(selfRef, localRecordStateMap, rmiManager, qkdClient, System.out::println);
+        this(selfRef, localRecordStateMap, rmiManager, qkdClient, LOG::info);
     }
 
     public PeerRecordSync(
@@ -71,7 +74,7 @@ public final class PeerRecordSync {
             peerTouched = true;
             if (!targetNode.synchronize(peerHeader, localSaeId)) {
                 rollbackOrigin(clientHeader, localSaeId, "rolled back after target SAE rejected synchronize");
-                System.out.println("Target SAE rejected synchronize for hashes "
+                LOG.info("Target SAE rejected synchronize for hashes "
                         + clientHeader.clientHash1() + " / " + clientHeader.clientHash2());
                 return Optional.empty();
             }
@@ -141,7 +144,7 @@ public final class PeerRecordSync {
                         localSaeId,
                         "rolled back after target SAE rejected insert"
                 );
-                System.out.println("Target SAE rejected record insert for hashes "
+                LOG.info("Target SAE rejected record insert for hashes "
                         + header.clientHash1() + " / " + header.clientHash2());
                 return false;
             }
@@ -185,7 +188,7 @@ public final class PeerRecordSync {
 
     private void rollbackOrigin(ClientRecord.ClientHeader header, String issuingSaeId, String reason) {
         localRecordStateMap.tryDelete(header.clientHash1(), header.clientHash2(), issuingSaeId)
-                .ifPresent(metadata -> System.out.println(
+                .ifPresent(metadata -> LOG.info(
                         "Deleted local record for hashes "
                                 + header.clientHash1()
                                 + " / "
@@ -200,7 +203,7 @@ public final class PeerRecordSync {
             NodeCommands peer = rmiManager.connectBySaeId(saeId);
             AtomicRecordStateMap.RecordMetadata removed = peer.removeRecord(clientHash1, clientHash2);
             if (removed != null) {
-                System.out.println(
+                LOG.info(
                         "Deleted remote record on SAE "
                                 + saeId
                                 + " for hashes "
@@ -211,7 +214,7 @@ public final class PeerRecordSync {
                 );
             }
         } catch (Exception ex) {
-            System.err.println(
+            LOG.warning(
                     "Best-effort peer record delete failed for SAE " + saeId
                             + " hashes " + clientHash1 + " / " + clientHash2
                             + ": " + ex.getMessage()
