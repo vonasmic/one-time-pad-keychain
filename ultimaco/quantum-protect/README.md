@@ -18,6 +18,6 @@ windows/firmware/1.5.0.0/sim5_windows/ml_sim_win.mtc
 windows/firmware/1.5.0.0/sim5_windows/pqmi_sim_win.mtc
 ```
 
-Java JCE / PQMI sources used by Maven still go in `JAVA_TLS_TEST/vendor/` (also not committed). Copy them from `Crypto_APIs/` in this tree.
+Java JCE / PQMI sources used by Maven still go in `JAVA_APPS/vendor/` (also not committed). Copy them from `Crypto_APIs/` in this tree.
 
-See [JAVA_TLS_TEST/README.md](../../JAVA_TLS_TEST/README.md#hsm-setup) for start and `csadm` init. `./run-all.sh` does not start the Windows simulator.
+See [JAVA_APPS/README.md](../../JAVA_APPS/README.md#hsm-setup) for start and `csadm` init. `./run-all.sh` does not start the Windows simulator.

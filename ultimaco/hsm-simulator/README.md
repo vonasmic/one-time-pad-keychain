@@ -14,4 +14,4 @@ Software/Windows/Administration/csadm.exe
 Software/Windows/Administration/key/ADMIN_SIM.key
 ```
 
-See [JAVA_TLS_TEST/README.md](../../JAVA_TLS_TEST/README.md#hsm-setup) for start and `csadm` init. `./run-all.sh` does not start the Windows simulator.
+See [JAVA_APPS/README.md](../../JAVA_APPS/README.md#hsm-setup) for start and `csadm` init. `./run-all.sh` does not start the Windows simulator.

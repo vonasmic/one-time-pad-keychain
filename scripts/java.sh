@@ -6,7 +6,7 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 
 compile() {
-  log "mvn install (JAVA_TLS_TEST)"
+  log "mvn install (JAVA_APPS)"
   cd "$JAVA_DIR"
   mvn -q install -DskipTests
 }
@@ -34,9 +34,40 @@ ensure_env_files() {
     log "creating env/terminal-1.env from example"
     cp "$JAVA_DIR/env/example/terminal.env.example" "$JAVA_DIR/env/terminal-1.env"
   fi
-  if [[ ! -f "$JAVA_DIR/env/userapp.env" ]]; then
-    log "creating env/userapp.env from example"
-    cp "$JAVA_DIR/env/example/userapp.env.example" "$JAVA_DIR/env/userapp.env"
+  if [[ ! -f "$JAVA_DIR/env/terminal-2.env" ]]; then
+    log "creating env/terminal-2.env for SAE 2"
+    cat >"$JAVA_DIR/env/terminal-2.env" <<'EOF'
+# Terminal 2 — operates SAE 2 (node-2). See src/TerminalBridge/README.md.
+TLS_NODE_ID=Terminal
+NODE_HOSTNAME=127.0.0.1
+NODE_TERMINAL_PORT=11113
+NODE_NATIVE_PORT=5020
+USB_SERIAL_PORT=/tmp/ttyACM-se2
+EOF
+  fi
+  if [[ ! -f "$JAVA_DIR/env/userapp-1.env" ]]; then
+    if [[ -f "$JAVA_DIR/env/userapp.env" ]]; then
+      log "creating env/userapp-1.env from env/userapp.env"
+      cp "$JAVA_DIR/env/userapp.env" "$JAVA_DIR/env/userapp-1.env"
+    else
+      log "creating env/userapp-1.env from example"
+      cp "$JAVA_DIR/env/example/userapp.env.example" "$JAVA_DIR/env/userapp-1.env"
+    fi
+  fi
+  if [[ ! -f "$JAVA_DIR/env/userapp-2.env" ]]; then
+    log "creating env/userapp-2.env for client-2"
+    cat >"$JAVA_DIR/env/userapp-2.env" <<'EOF'
+# UserApp 2 — keychain /tmp/ttyACM-se2. See src/UserApp/README.md.
+USB_SERIAL_PORT=/tmp/ttyACM-se2
+USERAPP_OWNER_P12=user/user.p12
+USERAPP_OWNER_P12_PASSWORD=password
+USERAPP_OWNER_CERT=user/user-cert.pem
+USERAPP_OWNER_KEY=user/user-key.pem
+USERAPP_DEVICE_CERT=client2/client-cert.pem
+USERAPP_CLIENT_CA_P12=ca/client_ca.p12
+USERAPP_CLIENT_CA_P12_PASSWORD=password
+USERAPP_SAE_CA=ca/root-ca.pem
+EOF
   fi
 }
 
@@ -45,6 +76,7 @@ certgen() {
   log "CertGenerator"
   cd "$JAVA_DIR"
   source_env env/hsm.env
+  source_env env/certgen.env
   install_module_deps cert-generator
   run_module cert-generator
 }
@@ -66,16 +98,27 @@ node() {
 }
 
 terminal() {
+  local env_file="${1:-env/terminal-1.env}"
   cd "$JAVA_DIR"
   source_env env/hsm.env
-  source_env env/terminal-1.env
+  source_env "$env_file"
   unset USB_LAB_FILE
   run_module terminal-bridge
 }
 
 userapp() {
+  local env_file="${1:-}"
+  if [[ -z "$env_file" ]]; then
+    if [[ -f "$JAVA_DIR/env/userapp-1.env" ]]; then
+      env_file=env/userapp-1.env
+    elif [[ -f "$JAVA_DIR/env/userapp.env" ]]; then
+      env_file=env/userapp.env
+    else
+      die "missing env/userapp-1.env (or env/userapp.env)"
+    fi
+  fi
   cd "$JAVA_DIR"
-  source_env env/userapp.env
+  source_env "$env_file"
   unset USB_LAB_FILE
   run_module user-app
 }
@@ -84,24 +127,44 @@ lab_file() {
   printf '%s\n' "${USB_LAB_FILE:-/tmp/otp-keychain-lab.json}"
 }
 
+# Lab panes: 1 → client-1 / SAE 1, 2 → client-2 / SAE 2. USER/SAE toggles USB owner
+# for both clients at once (no CL switch).
 lab_terminal() {
+  local which="${1:-1}"
+  case "$which" in
+    1|2) ;;
+    *) die "usage: java.sh lab-terminal 1|2" ;;
+  esac
   cd "$JAVA_DIR"
   source_env env/hsm.env
-  source_env env/terminal-1.env
-  local file
+  source_env "env/terminal-${which}.env"
+  local file client
   file="$(lab_file)"
+  client="client-${which}"
   unset USB_LAB_FILE
-  exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role terminal -- \
+  exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role terminal \
+    --fixed-client "$client" -- \
     mvn -pl :terminal-bridge exec:java
 }
 
 lab_userapp() {
+  local which="${1:-1}"
+  case "$which" in
+    1|2) ;;
+    *) die "usage: java.sh lab-userapp 1|2" ;;
+  esac
   cd "$JAVA_DIR"
-  source_env env/userapp.env
-  local file
+  local env_file="env/userapp-${which}.env"
+  if [[ ! -f "$env_file" && "$which" == "1" && -f env/userapp.env ]]; then
+    env_file=env/userapp.env
+  fi
+  source_env "$env_file"
+  local file client
   file="$(lab_file)"
+  client="client-${which}"
   unset USB_LAB_FILE
-  exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role userapp -- \
+  exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role userapp \
+    --fixed-client "$client" -- \
     mvn -pl :user-app exec:java
 }
 
@@ -119,14 +182,14 @@ case "${1:-}" in
   certgen) certgen ;;
   migrate) migrate ;;
   node) shift; node "${1:-}" ;;
-  terminal) terminal ;;
-  userapp) userapp ;;
-  lab-terminal) lab_terminal ;;
-  lab-userapp) lab_userapp ;;
+  terminal) shift; terminal "${1:-}" ;;
+  userapp) shift; userapp "${1:-}" ;;
+  lab-terminal) shift; lab_terminal "${1:-}" ;;
+  lab-userapp) shift; lab_userapp "${1:-}" ;;
   lab) shift; lab "$@" ;;
   -h|--help|"")
     cat <<EOF
-Usage: $(basename "$0") compile|certgen|migrate|node ENV|terminal|userapp|lab-terminal|lab-userapp|lab [CMD]
+Usage: $(basename "$0") compile|certgen|migrate|node ENV|terminal [ENV]|userapp [ENV]|lab-terminal 1|2|lab-userapp 1|2|lab [CMD]
 EOF
     [[ -n "${1:-}" ]] || exit 1
     ;;

@@ -18,7 +18,7 @@ provision / QKD fill). UserApp is not an SAE.
 
 | Path | Role |
 | --- | --- |
-| [`JAVA_TLS_TEST/`](JAVA_TLS_TEST/README.md) | SaeNode (SAE), UserApp (USER), TerminalBridge, CertGenerator, LabSwitch |
+| [`JAVA_APPS/`](JAVA_APPS/README.md) | SaeNode (SAE), UserApp (USER), TerminalBridge, CertGenerator, LabSwitch |
 | [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) | Current SE firmware (CubeIDE `SE_firmware`) + host `se_host` |
 | [`ultimaco/`](ultimaco/hsm-simulator/README.md) | Drop-in location for Utimaco HSM + Quantum Protect SDKs |
 | [`scripts/`](scripts/) | `run-all.sh`, `java.sh`, `host.sh`, `hsm.sh` |
@@ -27,7 +27,7 @@ USB console syntax: [`stm32u535-trustzone-usb/docs/COMMANDS.md`](stm32u535-trust
 
 ## Lab stack
 
-Start the Windows HSM simulator yourself (`cs_sim.bat` — [JAVA_TLS_TEST HSM setup](JAVA_TLS_TEST/README.md#hsm-setup)). Then from this repo root:
+Start the Windows HSM simulator yourself (`cs_sim.bat` — [JAVA_APPS HSM setup](JAVA_APPS/README.md#hsm-setup)). Then from this repo root:
 
 ```bash
 ./run-all.sh
@@ -45,9 +45,9 @@ The device enumerates as USB CDC ACM. Arm TLS with `PROVISION` (SAE) / `ENCRYPT`
 
 ## Java applications
 
-**USER** = [`UserApp`](JAVA_TLS_TEST/src/UserApp/README.md). **SAE** = [`SaeNode`](JAVA_TLS_TEST/src/SaeNode/README.md) plus [`TerminalBridge`](JAVA_TLS_TEST/src/TerminalBridge/README.md) for the USB relay. They are different processes; only one may open CDC.
+**USER** = [`UserApp`](JAVA_APPS/src/UserApp/README.md). **SAE** = [`SaeNode`](JAVA_APPS/src/SaeNode/README.md) plus [`TerminalBridge`](JAVA_APPS/src/TerminalBridge/README.md) for the USB relay. They are different processes; only one may open CDC.
 
-Working directory for Maven is `JAVA_TLS_TEST` (so `certs/` and `env/` resolve). Wrappers from the repo root:
+Working directory for Maven is `JAVA_APPS` (so `certs/` and `env/` resolve). Wrappers from the repo root:
 
 ```bash
 scripts/java.sh certgen
@@ -60,10 +60,10 @@ Or source `env/hsm.env` plus the process env file and run `mvn exec:java` as doc
 
 ## Requirements
 
-- Java 21, Maven, PostgreSQL
+- Java 21, Maven, SQLite (local file per SAE node)
 - Python 3, cmake, a C compiler, make, tmux, git (lab stack)
 - STM32CubeIDE + STM32CubeProgrammer (silicon)
-- Utimaco SDKs under `ultimaco/` and JCE jars under `JAVA_TLS_TEST/vendor/` (not committed)
+- Utimaco SDKs under `ultimaco/` and JCE jars under `JAVA_APPS/vendor/` (not committed)
 
 ## License
 

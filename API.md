@@ -21,6 +21,6 @@ PIN for provisioned OTP never appears on the ASCII line. Arm a mode and a Unix t
 | `MANAGE <unix>` | Arm TLS mode 4 (**USER**: owner-pinned, no device client cert; KEM INIT / KEYGEN / PEER / CREDS / OWNER REPLACE / PAIRING) |
 | `PEER LIST` | Print NV peers |
 | `CLIENT HASH` | 96 hex digits: `SHA384(device_cert_spki \|\| ecc_pub)` |
-| `TROPIC PING` / `INFO` / `PUB` / `KEM PUB` / `OTP LEFT` | Tropic / OTP console |
+| `TROPIC PING` / `INFO` / `PUB` / `KEM PUB` / `OTP STATUS` | Tropic / OTP console |
 
 `<unix>` is a non-zero decimal Unix UTC timestamp.

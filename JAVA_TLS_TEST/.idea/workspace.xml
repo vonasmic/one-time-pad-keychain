@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="41fda802-a2b5-4ab2-bff9-c477a270f47c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../CODE_STRUCTURE.md" beforeDir="false" afterPath="$PROJECT_DIR$/../CODE_STRUCTURE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cert-generator/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Alice.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Alice.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Bob.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Bob.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Carol.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Carol.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/Terminal.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/ca/client_ca.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/ca/client_ca.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/ca/root-ca.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/ca/root-ca.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/client/client-cert.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/client/client-csr.hex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/client/client-key.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/client2/client-cert.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/client2/client-csr.hex" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/client2/client-key.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/qkd/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/qkd/qkd-server-ca.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/qkd/sae-1-client.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/qkd/sae-2-client.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/user/user-cert.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/user/user-key.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/certs/user/user.p12" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/FLOWCHARTS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/example/.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/example/certgen.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/example/hsm.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/example/terminal.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/example/userapp.env.example" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab-switch/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrate-all.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrate.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sae-node/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/se-wire/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CertGenerator/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CertGenerator/main/java/fel/cvut/certGen/CertGenConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CertGenerator/main/java/fel/cvut/certGen/CertGenerator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CertGenerator/main/java/fel/cvut/certGen/HsmKeyImporter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CertGenerator/test/java/fel/cvut/certGen/CertGeneratorHsmFallbackTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LabSwitch/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LabSwitch/main/java/fel/cvut/lab/LabSwitch.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LabSwitch/main/java/fel/cvut/lab/LabSwitchApp.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LabSwitch/test/java/fel/cvut/lab/LabSwitchTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/db/ClientRecordStateRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/db/DB.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/db/DatabaseConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/db/RecordRetention.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/db/SharedKeyMaterialRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/Address.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/InputHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/Node.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/NodeBootstrap.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/NodeCommands.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/NodeRef.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/PeerRecordSync.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/ProvisionSession.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/TerminalGateway.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/interNodeCommunication/NodeCommandsService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/interNodeCommunication/RmiManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/recordManager/AtomicRecordStateMap.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/recordManager/ClientRecord.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/node/recordManager/SharedKeyMaterialStore.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/ErrorResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KeyContainer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KeyIdEntry.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KeyIdsRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KeyItem.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KeyItems.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KeyRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/KmeStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/Qkd014Client.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/Qkd014ClientException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/Qkd014Demo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/qkd/QkdPadMaterialFetcher.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeBytes.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeCerts.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeConstants.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeKemFill.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeManage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeProvisionAck.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeSessionBinding.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeSessionUplink.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SeUsbDump.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SecureLv.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/se/SecureOtp.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/tls/HsmNodeTls.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/tls/SoftwareLeaf.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/tls/SoftwareTls.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/tls/TlsProviders.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/tls/TlsStores.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/utimaco/HsmAesGcm.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/utimaco/HsmGate.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/utimaco/HsmTlsProbe.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/java/fel/cvut/utimaco/Pqmi.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/resources/db/migration/V1__Initial_create_script.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/main/resources/sae-nodes.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/db/ClientRecordStateTamperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/db/ConcurrentRecordStateTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/db/RecordRetentionTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/db/SharedKeyMaterialTamperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/harness/InProcessRmi.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/harness/JceAesGcm.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/harness/SaeFixtures.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/harness/SaePostgresExtension.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/node/PeerRecordSyncTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/node/ProvisionSessionTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/qkd/Qkd014ClientTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/qkd/QkdPadMaterialFetcherTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/rmi/ConcurrentRmiTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/rmi/RmiConnectionDropTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/se/SeManageTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/se/SeProtocolTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/se/SeUsbDumpTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/se/SecureOtpTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/tls/NodeTlsSoftwareIdentityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/utimaco/HsmFailClosedTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/SaeNode/test/java/fel/cvut/utimaco/HsmLiveNoFallbackTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminal/ClientSelector.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminal/LocalOperatorConsole.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminal/OperatorConsole.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminal/TerminalOutput.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminal/TerminalWireProtocol.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminalapp/TerminalApp.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/terminalapp/UsbTcpBridge.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/usb/SeUsbLink.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/usb/SeUsbTls.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/usb/StreamSocket.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/usb/UsbCdcListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/main/java/fel/cvut/usb/UsbCdcRxMachine.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TerminalBridge/test/java/fel/cvut/usb/UsbCdcRxMachineTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/main/java/fel/cvut/userapp/ChipInit.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/main/java/fel/cvut/userapp/ChipService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/main/java/fel/cvut/userapp/OwnerAuth.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/main/java/fel/cvut/userapp/PeerCertHash.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/main/java/fel/cvut/userapp/UserApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/test/java/fel/cvut/userapp/ChipInitTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/test/java/fel/cvut/userapp/OwnerAuthTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UserApp/test/java/fel/cvut/userapp/PeerCertHashTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/stub-records.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal-bridge/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tls-hsm/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tls-software/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb-cdc/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-app/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RUN_ALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/../RUN_ALL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../scripts/common.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../scripts/common.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../scripts/hsm.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../scripts/hsm.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../scripts/java.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../scripts/java.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../scripts/run-all.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../scripts/run-all.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../stm32u535-trustzone-usb" beforeDir="false" afterPath="$PROJECT_DIR$/../stm32u535-trustzone-usb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ultimaco/hsm-simulator/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../ultimaco/hsm-simulator/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ultimaco/quantum-protect/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../ultimaco/quantum-protect/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../wolfssl" beforeDir="false" afterPath="$PROJECT_DIR$/../wolfssl" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="3DZxUcCR4Z9Xp0M6dploBVeMWeD" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.ALICE.executor": "Run",
+    "Application.Alice.executor": "Run",
+    "Application.App.executor": "Run",
+    "Application.BOB.executor": "Run",
+    "Application.CAROL.executor": "Run",
+    "Application.Carol.executor": "Run",
+    "Application.CertGenerator.executor": "Run",
+    "Application.Node.executor": "Run",
+    "Application.Node1.executor": "Run",
+    "Application.Node2.executor": "Run",
+    "Application.PQCHybridServer.executor": "Run",
+    "Application.PQCJavaSideTls.executor": "Run",
+    "Application.Qkd014Demo.executor": "Run",
+    "Application.Terminal.executor": "Run",
+    "Application.Unnamed.executor": "Run",
+    "Application.UtimacoPqcHarness.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/vonasmic/diplomka/one-time-pad-keychain/JAVA_APPS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Libraries",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
+  }
+}]]></component>
+  <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
+    <layout>
+      <window_info id="Bookmarks" side_tool="true" />
+      <window_info id="Merge Requests" />
+      <window_info id="Commit_Guest" show_stripe_button="false" />
+      <window_info id="Pull Requests" />
+      <window_info id="Learn" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.3188758" />
+      <window_info id="Commit" order="1" weight="0.25" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="TypeScript" />
+      <window_info anchor="bottom" id="Profiler" />
+      <window_info anchor="bottom" id="TODO" />
+      <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Version Control" order="0" />
+      <window_info anchor="bottom" id="Problems" order="1" />
+      <window_info anchor="bottom" id="Problems View" order="2" weight="0.38393903" />
+      <window_info anchor="bottom" id="Terminal" order="3" weight="0.4214537" />
+      <window_info anchor="bottom" id="Build" order="4" weight="0.38393903" />
+      <window_info anchor="bottom" id="Debug" order="5" weight="0.28194606" />
+      <window_info active="true" anchor="bottom" id="Run" order="6" visible="true" weight="0.32940447" />
+      <window_info anchor="bottom" id="Services" order="7" weight="0.38399506" />
+      <window_info anchor="bottom" id="Find" order="8" weight="0.38399506" />
+      <window_info anchor="right" id="Endpoints" />
+      <window_info anchor="right" id="Coverage" side_tool="true" />
+      <window_info anchor="right" content_ui="combo" id="Notifications" order="0" weight="0.25" />
+      <window_info anchor="right" id="AIAssistant" order="1" weight="0.25" />
+      <window_info anchor="right" id="Database" order="2" weight="0.23090778" />
+      <window_info anchor="right" id="Gradle" order="3" weight="0.25" />
+      <window_info anchor="right" id="Maven" order="4" weight="0.25" />
+    </layout>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/java" />
+      <recent name="$PROJECT_DIR$/src/main/java/fel/cvut" />
+      <recent name="$PROJECT_DIR$/.m2" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/env/example" />
+      <recent name="$PROJECT_DIR$/env" />
+      <recent name="$PROJECT_DIR$/src/main/java/fel/cvut" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="fel.cvut" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.CertGenerator">
+    <configuration name="Alice" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.qorum.App" />
+      <module name="JAVA_APP" />
+      <option name="VM_PARAMETERS" value="-Djgroups.bind_addr=127.0.0.1 -Dpqc.keystore.path=certs/Alice-2.p12 -Dpqc.truststore.path=certs/root-ca.p12 -Dpqc.keystore.password=password" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Carol" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.qorum.App" />
+      <module name="JAVA_APP" />
+      <option name="VM_PARAMETERS" value="-Djgroups.bind_addr=127.0.0.1 -Dpqc.keystore.path=certs/Carol.p12 -Dpqc.truststore.path=certs/root-ca.p12 -Dpqc.keystore.password=password" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CertGenerator" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="envFilePaths">
+        <option value="$PROJECT_DIR$/env/hsm.env" />
+        <option value="$PROJECT_DIR$/env/example/certgen.env.example" />
+      </option>
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.certGen.CertGenerator" />
+      <module name="JAVA_APP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fel.cvut.certGen.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Node1" type="Application" factoryName="Application">
+      <option name="envFilePaths">
+        <option value="$PROJECT_DIR$/env/node-1.env" />
+        <option value="$PROJECT_DIR$/env/hsm.env" />
+      </option>
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.node.Node" />
+      <module name="JAVA_APP" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Node2" type="Application" factoryName="Application">
+      <option name="envFilePaths">
+        <option value="$PROJECT_DIR$/env/node-2.env" />
+        <option value="$PROJECT_DIR$/env/hsm.env" />
+      </option>
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.node.Node" />
+      <module name="JAVA_APP" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PQCHybridServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.PQCHybridServer" />
+      <module name="JAVA_APP" />
+      <option name="VM_PARAMETERS" value="-Djava.library.path=$PROJECT_DIR$/src/main/native_tls" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fel.cvut.bouncyCastle.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PQCJavaSideTls" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.PQCJavaSideTls" />
+      <module name="JAVA_APP" />
+      <option name="VM_PARAMETERS" value="-Djava.library.path=$PROJECT_DIR$/src/main/native_tls:$PROJECT_DIR$/../wolfssljni/lib " />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Terminal" type="Application" factoryName="Application">
+      <option name="envFilePaths">
+        <option value="$PROJECT_DIR$/env/example/terminal.env.example" />
+        <option value="$PROJECT_DIR$/env/hsm.env" />
+      </option>
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.terminalapp.TerminalApp" />
+      <module name="JAVA_APP" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UtimacoPqcHarness" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="envFilePaths">
+        <option value="$PROJECT_DIR$/env/hsm.env" />
+      </option>
+      <option name="MAIN_CLASS_NAME" value="fel.cvut.utimaco.UtimacoPqcHarness" />
+      <module name="JAVA_APP" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fel.cvut.utimaco.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.PQCJavaSideTls" />
+      <item itemvalue="Application.Alice" />
+      <item itemvalue="Application.Node1" />
+      <item itemvalue="Application.Terminal" />
+      <item itemvalue="Application.Node2" />
+      <item itemvalue="Application.Carol" />
+      <item itemvalue="Application.UtimacoPqcHarness" />
+      <item itemvalue="Application.CertGenerator" />
+      <item itemvalue="Application.PQCHybridServer" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.CertGenerator" />
+        <item itemvalue="Application.UtimacoPqcHarness" />
+        <item itemvalue="Application.PQCHybridServer" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fdfe4dae3a2d-intellij.indexing.shared.core-IU-243.22562.59" />
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-IU-243.22562.59" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="41fda802-a2b5-4ab2-bff9-c477a270f47c" name="Changes" comment="" />
+      <created>1778503414738</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778503414738</updated>
+      <workItem from="1778503416209" duration="84119000" />
+      <workItem from="1781169600131" duration="30618000" />
+      <workItem from="1781766002826" duration="14665000" />
+      <workItem from="1785229284306" duration="25253000" />
+      <workItem from="1785683500726" duration="18283000" />
+      <workItem from="1786889618224" duration="12892000" />
+      <workItem from="1787223447363" duration="9223000" />
+      <workItem from="1787336050144" duration="2573000" />
+      <workItem from="1788461943930" duration="3138000" />
+      <workItem from="1790006469832" duration="275000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

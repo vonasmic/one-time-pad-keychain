@@ -7,7 +7,7 @@ tags
 **debug**
 **Debug**
 **vendor/**
-JAVA_TLS_TEST/vendor/**
+JAVA_APPS/vendor/**
 
 # Utimaco SDKs (proprietary). Only READMEs are tracked.
 ultimaco/hsm-simulator/**

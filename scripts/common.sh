@@ -2,7 +2,7 @@
 # Sourced by scripts in this directory. ROOT is the repo root.
 SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPTS/.." && pwd)"
-JAVA_DIR="$ROOT/JAVA_TLS_TEST"
+JAVA_DIR="$ROOT/JAVA_APPS"
 SE_DIR="$ROOT/stm32u535-trustzone-usb"
 
 log() { printf '==> %s\n' "$*"; }

@@ -18,7 +18,7 @@ Owner-pinned TLS (no device client cert). One unsigned command per session:
 KEM INIT, KEYGEN, PEER ADD/REMOVE, CREDS, OWNER REPLACE, PAIRING.
 
 Mutating Tropic ops (KEYGEN, KEM INIT, pairing, PIN-gated peer changes) go only
-through MANAGE. USB keeps read-only dumps: PING, INFO, PUB, KEM PUB, OTP LEFT,
+through MANAGE. USB keeps read-only dumps: PING, INFO, PUB, KEM PUB, OTP STATUS,
 PEER LIST, CLIENT HASH/CSR.
 
 USB errors are the single ASCII line `failed`. Dump status is occupancy/protocol
@@ -26,8 +26,9 @@ only (`ok` / `err` / `empty` / `refused`) — Tropic, TLS, and auth failure type
 are not on USB.
 
 Chip enrollment is one UserApp sequence (`ChipInit.enroll`): OWNER SET → MANAGE
-KEYGEN → MANAGE KEM INIT → CLIENT CSR → CREDS DEVICE (LAB signs; PROD installs
-if a cert file exists) → optional PAIRING. `OwnerAuth` is the USB/TLS chip port.
+KEYGEN → MANAGE KEM INIT → CLIENT CSR (LAB signs and INSERT SIGNED CSR; PROD dumps
+CSR only) → optional PAIRING. After an external CA signs, the operator runs
+INSERT SIGNED CSR. `OwnerAuth` is the USB/TLS chip port.
 
 The Java **owner-manage wire codec** (`fel.cvut.se.SeManage`) is the encode/decode
 locality for OWNER SET and MANAGE frames. USB/TLS session stays in UserApp.

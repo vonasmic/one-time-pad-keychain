@@ -25,7 +25,7 @@ else
 fi
 
 timeout 5 "$CSADM" Dev="$HSM_DEV" LogonSign="ADMIN,$ADMIN_KEY" GetState >/dev/null \
-  || die "HSM not reachable at $HSM_DEV. Start the simulator first (JAVA_TLS_TEST/README.md#hsm-setup)."
+  || die "HSM not reachable at $HSM_DEV. Start the simulator first (JAVA_APPS/README.md#hsm-setup)."
 
 users="$("$CSADM" Dev="$HSM_DEV" LogonSign="ADMIN,$ADMIN_KEY" ListUsers 2>/dev/null || true)"
 fw="$("$CSADM" Dev="$HSM_DEV" LogonSign="ADMIN,$ADMIN_KEY" ListFirmware 2>/dev/null || true)"

@@ -35,6 +35,21 @@ start_stack() {
   tmux set-option -w -t "$SESSION:stack" automatic-rename off
   tmux set-option -w -t "$SESSION:stack" pane-border-status top
   tmux set-option -w -t "$SESSION:stack" pane-border-format " #{pane_title} "
+  # Detached create often uses a tiny default size; build rows at a tall
+  # temporary height, then shrink to the calling terminal so everything fits.
+  local term_cols term_lines
+  if read -r term_lines term_cols < <(stty size 2>/dev/null); then
+    :
+  else
+    term_cols=$(tput cols 2>/dev/null || echo 80)
+    term_lines=$(tput lines 2>/dev/null || echo 40)
+  fi
+  # pane-border-status top needs ~1 line per pane; keep a usable floor.
+  (( term_lines >= 24 )) || term_lines=24
+  (( term_cols >= 40 )) || term_cols=40
+
+  tmux set-option -w -t "$SESSION:stack" window-size manual
+  tmux resize-window -t "$SESSION:stack" -x "$term_cols" -y 60
   tmux bind-key -n M-Left select-pane -L
   tmux bind-key -n M-Right select-pane -R
   tmux bind-key -n M-Up select-pane -U
@@ -42,23 +57,37 @@ start_stack() {
   tmux set-hook -t "$SESSION" session-closed \
     "unbind-key -n M-Left ; unbind-key -n M-Right ; unbind-key -n M-Up ; unbind-key -n M-Down ; run-shell 'pkill -TERM -f \"[e]xec.mainClass=fel.cvut.terminalapp.TerminalApp\" || true; pkill -TERM -f \"[e]xec.mainClass=fel.cvut.userapp.UserApplication\" || true'"
 
-  tmux split-window -v -t "$SESSION:stack"
-  tmux split-window -v -t "$SESSION:stack"
+  # Six rows top→bottom: tropics | hosts | SAEs | terminals | userapps | lab.
+  # -f makes each split a full-width band (works with the temporary height).
+  local i
+  for ((i = 1; i < 6; i++)); do
+    tmux split-window -v -f -t "$SESSION:stack"
+  done
   tmux select-layout -t "$SESSION:stack" even-vertical
 
-  local rows=() pane
-  mapfile -t rows < <(tmux list-panes -t "$SESSION:stack" -F '#{pane_id}')
-  for pane in "${rows[@]}"; do
-    tmux split-window -h -t "$pane"
-  done
-
-  local panes=()
-  mapfile -t panes < <(
-    tmux list-panes -t "$SESSION:stack" -F '#{pane_top} #{pane_left} #{pane_id}' \
-      | sort -n -k1,1 -k2,2 \
-      | awk '{print $3}'
+  local rows=()
+  mapfile -t rows < <(
+    tmux list-panes -t "$SESSION:stack" -F '#{pane_top} #{pane_id}' \
+      | sort -n -k1,1 \
+      | awk '{print $2}'
   )
-  [[ ${#panes[@]} -eq 6 ]] || die "expected 6 tmux panes, got ${#panes[@]}"
+  [[ ${#rows[@]} -eq 6 ]] || die "expected 6 tmux rows, got ${#rows[@]}"
+
+  local lefts=() rights=() half
+  half=$(( term_cols / 2 ))
+  for i in 0 1 2 3 4; do
+    lefts[i]="${rows[i]}"
+    rights[i]="$(tmux split-window -h -t "${rows[i]}" -P -F '#{pane_id}')"
+    tmux resize-pane -t "${lefts[i]}" -x "$half"
+  done
+  local lab_pane="${rows[5]}"
+
+  # Shrink to the real terminal; columns stay half-width (rows scale with the window).
+  tmux resize-window -t "$SESSION:stack" -x "$term_cols" -y "$term_lines"
+  half=$(( term_cols / 2 ))
+  for i in 0 1 2 3 4; do
+    tmux resize-pane -t "${lefts[i]}" -x "$half"
+  done
 
   pane() {
     local target="$1" title="$2"
@@ -72,23 +101,21 @@ start_stack() {
     tmux select-pane -t "$target" -T "$title"
   }
 
-  pane "${panes[0]}" "tropic-1" "$SCRIPTS/host.sh" model 28992
-  pane "${panes[2]}" "node-1" "$SCRIPTS/java.sh" node env/node-1.env
-  pane "${panes[4]}" "node-2" "$SCRIPTS/java.sh" node env/node-2.env
-  pane "${panes[1]}" "terminal" "$SCRIPTS/java.sh" lab-terminal
-  pane "${panes[3]}" "userapp" "$SCRIPTS/java.sh" lab-userapp
-  pane "${panes[5]}" "se-host-1" "$SCRIPTS/host.sh" se-host /tmp/ttyACM-se1 28992
-
-  # Second Tropic model + se_host (CL 2). Lab starts at USER so bring-up is free.
-  local tropic2 se2 lab_pane
-  tropic2="$(tmux split-window -v -t "${panes[0]}" -P -F '#{pane_id}')"
-  pane "$tropic2" "tropic-2" "$SCRIPTS/host.sh" model 28993
-  se2="$(tmux split-window -v -t "${panes[5]}" -P -F '#{pane_id}')"
-  pane "$se2" "se-host-2" "$SCRIPTS/host.sh" se-host /tmp/ttyACM-se2 28993 se_host_2
-  lab_pane="$(tmux split-window -v -t "${panes[3]}" -P -F '#{pane_id}')"
+  pane "${lefts[0]}" "tropic-1" "$SCRIPTS/host.sh" model 28992
+  pane "${rights[0]}" "tropic-2" "$SCRIPTS/host.sh" model 28993
+  pane "${lefts[1]}" "se-host-1" "$SCRIPTS/host.sh" se-host /tmp/ttyACM-se1 28992
+  pane "${rights[1]}" "se-host-2" "$SCRIPTS/host.sh" se-host /tmp/ttyACM-se2 28993 se_host_2
+  pane "${lefts[2]}" "node-1" "$SCRIPTS/java.sh" node env/node-1.env
+  pane "${rights[2]}" "node-2" "$SCRIPTS/java.sh" node env/node-2.env
+  pane "${lefts[3]}" "terminal-1" "$SCRIPTS/java.sh" lab-terminal 1
+  pane "${rights[3]}" "terminal-2" "$SCRIPTS/java.sh" lab-terminal 2
+  pane "${lefts[4]}" "userapp-1" "$SCRIPTS/java.sh" lab-userapp 1
+  pane "${rights[4]}" "userapp-2" "$SCRIPTS/java.sh" lab-userapp 2
   pane "$lab_pane" "lab" "$SCRIPTS/java.sh" lab
 
-  tmux select-pane -t "${panes[0]}"
+  # Fit the attaching client so both columns stay visible and even.
+  tmux set-option -w -t "$SESSION:stack" window-size latest
+  tmux select-pane -t "${lefts[0]}"
   if [[ -n "${TMUX:-}" ]]; then
     trap - EXIT INT TERM
     tmux switch-client -t "$SESSION"
@@ -105,7 +132,7 @@ main() {
   need_cmd make
   need_cmd tmux
   need_cmd stdbuf
-  [[ -d "$JAVA_DIR" ]] || die "JAVA_TLS_TEST not found"
+  [[ -d "$JAVA_DIR" ]] || die "JAVA_APPS not found"
   [[ -d "$SE_DIR" ]] || die "stm32u535-trustzone-usb not found"
 
   "$SCRIPTS/hsm.sh"
@@ -128,7 +155,8 @@ Start the HSM simulator first. Then:
   scripts/java.sh certgen  CertGenerator
   scripts/host.sh prepare  embed certs + build se_host
   scripts/java.sh migrate  Flyway node-1 / node-2
-  tmux session '$SESSION'  panes (2 tropic models, 2 nodes, terminal, userapp, lab, 2 se_host)
+  tmux session '$SESSION'  rows: tropics | hosts | SAEs | terminals | userapps | lab
+
   each pane is logged to $LOG_DIR/<pane>.log
 
 Or from the repo root: ./run-all.sh

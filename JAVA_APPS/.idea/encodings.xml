@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/modules/cert-generator/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/lab-switch/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/se-wire/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/CertGenerator/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/LabSwitch/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/SaeNode/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/SaeNode/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/TerminalBridge/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/UserApp/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/terminal-bridge/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/tls-hsm/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/tls-software/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/usb-cdc/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/modules/user-app/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

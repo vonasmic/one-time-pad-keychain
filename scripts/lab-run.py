@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """Lab-only: run TerminalApp or UserApp in this tmux pane with env from the lab JSON.
 
-Production Java never reads the lab file. On owner or client change this process
-SIGTERMs the child JVM and starts it again with USB_SERIAL_PORT / NODE_* rewritten.
-The pane (title, split, id) does not change.
+Production Java never reads the lab file. On owner change this process SIGTERMs the
+child JVM and starts it again with USB_SERIAL_PORT rewritten. The pane (title,
+split, id) does not change.
+
+Fixed panes (--fixed-client client-1 / client-2) pin each process to one keychain.
+There is no CL switch: USER gives USB to both userapps; SAE gives USB to both
+terminals. Terminal panes always keep the operator gateway; userapp panes run
+only while owner is USER.
 
 The child is started in its own session so it is not in the tmux pane's process
 group. This wrapper therefore handles SIGHUP (tmux pane teardown) and kills that
@@ -29,6 +34,7 @@ CLIENT1 = "client-1"
 CLIENT2 = "client-2"
 MODE_USER = "USER"
 MODE_SAE = "SAE"
+USB_OFF = "none"
 
 DEFAULT_NODES = {
     CLIENT1: {
@@ -50,35 +56,9 @@ def token(raw: str) -> str:
     return raw.strip().upper().replace("-", " ").replace("_", " ")
 
 
-def normalize_client(client_in: str) -> str:
-    cl = client_in.strip().lower().replace("_", "-").replace(" ", "-")
-    if cl in {CLIENT2, "client2", "cl-2", "cl2", "sae-2", "sae2", "2"}:
-        return CLIENT2
-    return CLIENT1
-
-
-def normalize(raw: dict[str, Any] | None) -> dict[str, Any] | None:
-    if not raw:
-        return None
-    mode_in = raw.get("mode") or ""
-    client_in = str(raw.get("client") or "")
-    t = token(str(mode_in))
-    if t in {"CLIENT1", "CLIENT 1", "CL1", "CL 1", "C1", "SAE1", "SAE 1"}:
-        mode, client = MODE_SAE, CLIENT1
-    elif t in {"CLIENT2", "CLIENT 2", "CL2", "CL 2", "C2", "SAE2", "SAE 2"}:
-        mode, client = MODE_SAE, CLIENT2
-    elif t in {"SAE", "TERM", "TERMINAL", "T"}:
-        mode, client = MODE_SAE, normalize_client(client_in)
-    else:
-        mode, client = MODE_USER, normalize_client(client_in)
-
-    nodes_in = raw.get("nodes") or {}
-    node = None
-    for key in (client, "sae-1" if client == CLIENT1 else "sae-2"):
-        if key in nodes_in:
-            node = nodes_in[key]
-            break
+def node_for(client: str, nodes_in: dict[str, Any] | None) -> dict[str, Any]:
     defaults = DEFAULT_NODES[client]
+    node = (nodes_in or {}).get(client)
     if not isinstance(node, dict):
         node = {}
     host = str(node.get("host") or defaults["host"]).strip() or defaults["host"]
@@ -86,8 +66,6 @@ def normalize(raw: dict[str, Any] | None) -> dict[str, Any] | None:
     terminal = int(node.get("terminalPort") or defaults["terminalPort"])
     serial = str(node.get("serialPort") or defaults["serialPort"]).strip() or defaults["serialPort"]
     return {
-        "mode": mode,
-        "client": client,
         "host": host,
         "nativePort": native,
         "terminalPort": terminal,
@@ -95,15 +73,40 @@ def normalize(raw: dict[str, Any] | None) -> dict[str, Any] | None:
     }
 
 
-def fingerprint(state: dict[str, Any]) -> tuple[Any, ...]:
+def normalize(raw: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not raw:
+        return None
+    mode_in = raw.get("mode") or ""
+    t = token(str(mode_in))
+    if t in {"SAE", "TERM", "TERMINAL", "T"}:
+        mode = MODE_SAE
+    else:
+        mode = MODE_USER
+    nodes = raw.get("nodes") if isinstance(raw.get("nodes"), dict) else {}
+    return {
+        "mode": mode,
+        "nodes": nodes,
+    }
+
+
+def fingerprint(state: dict[str, Any], role: str, fixed_client: str) -> tuple[Any, ...]:
+    node = node_for(fixed_client, state.get("nodes"))
+    usb = usb_for(state, role, node)
     return (
         state["mode"],
-        state["client"],
-        state["serialPort"],
-        state["host"],
-        state["nativePort"],
-        state["terminalPort"],
+        role,
+        fixed_client,
+        usb,
+        node["host"],
+        node["nativePort"],
+        node["terminalPort"],
     )
+
+
+def usb_for(state: dict[str, Any], role: str, node: dict[str, Any]) -> str:
+    if role == "terminal":
+        return node["serialPort"] if state["mode"] == MODE_SAE else USB_OFF
+    return node["serialPort"] if state["mode"] == MODE_USER else USB_OFF
 
 
 def read_lab(path: Path) -> dict[str, Any] | None:
@@ -119,25 +122,30 @@ def read_lab(path: Path) -> dict[str, Any] | None:
         return None
     if not isinstance(raw, dict):
         return None
-    return normalize(raw)
+    try:
+        return normalize(raw)
+    except (ValueError, TypeError, KeyError):
+        return None
 
 
 def role_owns(role: str, state: dict[str, Any]) -> bool:
     if role == "terminal":
-        return state["mode"] == MODE_SAE
+        # Always keep the operator gateway for concurrent key-get sync.
+        return True
     return state["mode"] == MODE_USER
 
 
-def child_env(state: dict[str, Any], role: str) -> dict[str, str]:
+def child_env(
+    state: dict[str, Any], role: str, fixed_client: str
+) -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if k != "USB_LAB_FILE"}
-    env["USB_SERIAL_PORT"] = state["serialPort"]
-    env["NODE_HOSTNAME"] = state["host"]
-    env["NODE_NATIVE_PORT"] = str(state["nativePort"])
-    env["NODE_TERMINAL_PORT"] = str(state["terminalPort"])
-    if role == "terminal":
-        env["USB_BRIDGE"] = "1"
-    elif role == "userapp":
-        if state["client"] == CLIENT2:
+    node = node_for(fixed_client, state.get("nodes"))
+    env["USB_SERIAL_PORT"] = usb_for(state, role, node)
+    env["NODE_HOSTNAME"] = node["host"]
+    env["NODE_NATIVE_PORT"] = str(node["nativePort"])
+    env["NODE_TERMINAL_PORT"] = str(node["terminalPort"])
+    if role == "userapp":
+        if fixed_client == CLIENT2:
             env["USERAPP_DEVICE_CERT"] = "client2/client-cert.pem"
         else:
             env["USERAPP_DEVICE_CERT"] = "client/client-cert.pem"
@@ -157,7 +165,8 @@ def set_owner(path: Path, owner: str) -> dict[str, Any]:
         except (OSError, json.JSONDecodeError):
             raw = {}
     raw["mode"] = owner
-    raw.setdefault("client", CLIENT1)
+    # Drop legacy "client" field if present.
+    raw.pop("client", None)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
     state = normalize(raw)
@@ -209,17 +218,24 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lab", default=os.environ.get("USB_LAB_FILE", DEFAULT_LAB))
     parser.add_argument("--role", choices=("terminal", "userapp"))
+    parser.add_argument(
+        "--fixed-client",
+        required=False,
+        choices=(CLIENT1, CLIENT2),
+        help="pin this pane to client-1 or client-2 (required for pane wrappers)",
+    )
     parser.add_argument("--set-owner", choices=(MODE_USER, MODE_SAE),
                         help="write owner into the lab file and exit")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     if args.set_owner:
         state = set_owner(Path(args.lab), args.set_owner)
-        print(f"[lab-run] {args.lab} → owner={state['mode']} client={state['client']}",
-              flush=True)
+        print(f"[lab-run] {args.lab} → owner={state['mode']}", flush=True)
         return 0
     if not args.role:
         parser.error("--role is required unless --set-owner is set")
+    if not args.fixed_client:
+        parser.error("--fixed-client is required with --role")
     cmd = args.command
     if cmd and cmd[0] == "--":
         cmd = cmd[1:]
@@ -227,7 +243,11 @@ def main() -> int:
         parser.error("missing command after --")
 
     lab_path = Path(args.lab)
-    want = "SAE" if args.role == "terminal" else "USER"
+    fixed = args.fixed_client
+    if args.role == "terminal":
+        want = f"operator console ({fixed}; USB when SAE)"
+    else:
+        want = f"USER ({fixed})"
     child: subprocess.Popen[Any] | None = None
     running_fp: tuple[Any, ...] | None = None
     last_wait = ""
@@ -242,7 +262,10 @@ def main() -> int:
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGHUP, shutdown)
 
-    print(f"[lab-run] pane wrapper role={args.role} file={lab_path}", flush=True)
+    print(
+        f"[lab-run] pane wrapper role={args.role} fixed={fixed} file={lab_path}",
+        flush=True,
+    )
     while True:
         state = read_lab(lab_path)
         if state is None or not role_owns(args.role, state):
@@ -251,7 +274,7 @@ def main() -> int:
             running_fp = None
             msg = (
                 f"[lab-run] waiting for {want}"
-                + ("" if state is None else f" (now {state['mode']} {state['client']})")
+                + ("" if state is None else f" (now {state['mode']})")
             )
             if msg != last_wait:
                 print(msg, flush=True)
@@ -259,7 +282,7 @@ def main() -> int:
             time.sleep(POLL_S)
             continue
 
-        fp = fingerprint(state)
+        fp = fingerprint(state, args.role, fixed)
         if child is not None and child.poll() is not None:
             print(f"[lab-run] {args.role} exited {child.returncode}; restarting", flush=True)
             child = None
@@ -271,16 +294,17 @@ def main() -> int:
             continue
 
         stop(child)
+        env = child_env(state, args.role, fixed)
         print(
-            f"[lab-run] start {args.role} {state['mode']} {state['client']}"
-            f" serial={state['serialPort']} → {state['host']}"
-            f" native={state['nativePort']} terminal={state['terminalPort']}",
+            f"[lab-run] start {args.role} {state['mode']} fixed={fixed}"
+            + f" serial={env['USB_SERIAL_PORT']} → {env['NODE_HOSTNAME']}"
+            + f" native={env['NODE_NATIVE_PORT']} terminal={env['NODE_TERMINAL_PORT']}",
             flush=True,
         )
         last_wait = ""
         child = subprocess.Popen(
             cmd,
-            env=child_env(state, args.role),
+            env=env,
             start_new_session=True,
             stdin=sys.stdin,
             stdout=sys.stdout,
