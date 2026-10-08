@@ -55,13 +55,23 @@ se_host() {
   exec ./"$bin" --tty "$tty" --tty-sae none --tropic-port "$tropic"
 }
 
+# TSV: name, row, then arguments to this script. run-all.sh selects names.
+list_panes() {
+  printf '%s\n' \
+    $'tropic-1\ttropics\tmodel\t28992' \
+    $'tropic-2\ttropics\tmodel\t28993' \
+    $'se-host-1\thosts\tse-host\t/tmp/ttyACM-se1\t28992' \
+    $'se-host-2\thosts\tse-host\t/tmp/ttyACM-se2\t28993\tse_host_2'
+}
+
 case "${1:-}" in
   prepare) prepare ;;
   model) shift; model "${1:-28992}" ;;
   se-host) shift; se_host "${1:-/tmp/ttyACM-se1}" "${2:-28992}" "${3:-se_host}" ;;
+  list-panes) list_panes ;;
   -h|--help|"")
     cat <<EOF
-Usage: $(basename "$0") prepare|model [PORT]|se-host [TTY] [TROPIC_PORT] [BIN]
+Usage: $(basename "$0") prepare|model [PORT]|se-host [TTY] [TROPIC_PORT] [BIN]|list-panes
 EOF
     [[ -n "${1:-}" ]] || exit 1
     ;;

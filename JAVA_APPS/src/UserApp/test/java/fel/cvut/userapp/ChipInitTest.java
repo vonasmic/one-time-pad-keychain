@@ -9,6 +9,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,8 @@ class ChipInitTest {
     private static final byte[] CSR = filled(SeConstants.MLDSA_PUB_LEN, (byte) 0x22);
     private static final byte[] ECC = filled(SeConstants.ECC_PUB_LEN, (byte) 0x33);
     private static final byte[] CERT = {0x30, 0x03, 0x02, 0x01, 0x00};
+    private static final byte[] PAIRING_PRIV = filled(SeConstants.PAIRING_KEY_LEN, (byte) 0xAB);
+    private static final byte[] PAIRING_PUB = filled(SeConstants.PAIRING_KEY_LEN, (byte) 0xCD);
 
     @Test
     void ownerPasswordRequiresMatchingConfirmation() {
@@ -79,10 +82,23 @@ class ChipInitTest {
     }
 
     @Test
+    void pairingKeyFileRoundTrip(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("client").resolve("pairing-key.hex");
+        ChipInit.writePairingKeyHex(file, 2, PAIRING_PRIV, PAIRING_PUB);
+        assertTrue(Files.isRegularFile(file));
+        assertEquals(PosixFilePermissions.fromString("rw-------"), Files.getPosixFilePermissions(file));
+        SeManage.PairingKey key = ChipInit.readPairingKeyHex(file);
+        assertEquals(2, key.slot());
+        assertArrayEquals(PAIRING_PRIV, key.priv());
+        assertArrayEquals(PAIRING_PUB, key.pub());
+        assertEquals(file, ChipInit.pairingKeyPath(dir.resolve("client").resolve("client-cert.pem")));
+    }
+
+    @Test
     void labRejectsAllZeroClientCsr() throws Exception {
         FakeChip chip = new FakeChip();
         chip.csrPub = new byte[SeConstants.MLDSA_PUB_LEN];
-        ChipInit.EnrollResult r = ChipInit.enroll(chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+        ChipInit.EnrollResult r = ChipInit.enroll(chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertFalse(r.ok());
         assertTrue(r.message().contains("all zeros"));
     }
@@ -92,7 +108,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         FakeCerts certs = new FakeCerts();
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, certs, ChipInit.Profile.LAB, labRequest(null));
+                chip, certs, ChipInit.Profile.LAB, labRequest());
         assertTrue(r.ok());
         assertEquals(List.of(SeManage.CMD_KEYGEN, SeManage.CMD_KEM_INIT, SeManage.CMD_INSERT_SIGNED_CSR),
                 chip.manageCmds);
@@ -109,7 +125,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.eccPub = ECC;
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertTrue(r.ok());
         assertEquals(List.of(SeManage.CMD_KEM_INIT, SeManage.CMD_INSERT_SIGNED_CSR), chip.manageCmds);
     }
@@ -119,7 +135,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.owner = new ChipInit.OwnerSetResult.AlreadyEnrolled();
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertTrue(r.ok());
         assertEquals(List.of(SeManage.CMD_KEYGEN, SeManage.CMD_KEM_INIT, SeManage.CMD_INSERT_SIGNED_CSR),
                 chip.manageCmds);
@@ -131,7 +147,7 @@ class ChipInitTest {
         FakeCerts certs = new FakeCerts();
         certs.existingDevice = null;
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, certs, ChipInit.Profile.PROD, prodRequest("n", null));
+                chip, certs, ChipInit.Profile.PROD, prodRequest("n"));
         assertTrue(r.ok());
         assertEquals(List.of(SeManage.CMD_KEYGEN, SeManage.CMD_KEM_INIT), chip.manageCmds);
         assertNull(certs.lastPem);
@@ -143,36 +159,45 @@ class ChipInitTest {
         FakeCerts certs = new FakeCerts();
         certs.existingDevice = CERT;
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, certs, ChipInit.Profile.PROD, prodRequest("2", null));
+                chip, certs, ChipInit.Profile.PROD, prodRequest("2"));
         assertTrue(r.ok());
         assertEquals(List.of(
                 SeManage.CMD_KEYGEN,
                 SeManage.CMD_KEM_INIT,
                 SeManage.CMD_PAIRING), chip.manageCmds);
         assertNull(certs.lastPem);
+        assertEquals(2, certs.lastPairingSlot);
+        assertArrayEquals(PAIRING_PRIV, certs.lastPairingPriv);
+        assertArrayEquals(PAIRING_PUB, certs.lastPairingPub);
+        assertEquals(Path.of("client", "pairing-key.hex"), certs.lastPairingPath);
+        assertFalse(r.message().contains(SeBytes.toHex(PAIRING_PRIV)));
+        assertTrue(r.message().contains("pairing-key.hex"));
     }
 
     @Test
-    void prodOccupiedEccUsesCurrentPin() throws Exception {
+    void prodBarePairingOkStopsWithoutSaving() throws Exception {
+        FakeChip chip = new FakeChip();
+        chip.pairing = new SeManage.Reply(SeManage.OK, "PAIRING ok");
+        FakeCerts certs = new FakeCerts();
+        ChipInit.EnrollResult r = ChipInit.enroll(
+                chip, certs, ChipInit.Profile.PROD, prodRequest("2"));
+        assertFalse(r.ok());
+        assertEquals("PAIRING", r.stoppedAt());
+        assertTrue(r.message().contains("was not in the reply"));
+        assertNull(certs.lastPairingPriv);
+        assertFalse(r.message().contains(SeBytes.toHex(PAIRING_PRIV)));
+    }
+
+    @Test
+    void prodOccupiedEccReplacesWithoutPin() throws Exception {
         FakeChip chip = new FakeChip();
         chip.eccPub = ECC;
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.PROD, prodRequest("n", "oldpin12"));
+                chip, new FakeCerts(), ChipInit.Profile.PROD, prodRequest("n"));
         assertTrue(r.ok());
         assertEquals(List.of(SeManage.CMD_KEYGEN, SeManage.CMD_KEM_INIT),
                 chip.manageCmds);
-        assertEquals("oldpin12", chip.lastKeygenPin);
-    }
-
-    @Test
-    void prodOccupiedWithoutCurrentPinStops() throws Exception {
-        FakeChip chip = new FakeChip();
-        chip.eccPub = ECC;
-        ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.PROD, prodRequest("n", null));
-        assertFalse(r.ok());
-        assertEquals("KEYGEN", r.stoppedAt());
-        assertTrue(chip.manageCmds.isEmpty());
+        assertNull(chip.lastKeygenPin);
     }
 
     @Test
@@ -180,7 +205,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.keygen = new SeManage.Reply(SeManage.ERR, "KEYGEN failed");
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertFalse(r.ok());
         assertEquals("KEYGEN", r.stoppedAt());
         assertEquals(List.of(SeManage.CMD_KEYGEN), chip.manageCmds);
@@ -191,7 +216,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.kem = new SeManage.Reply(SeManage.SLOT_OCC, "occupied");
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertFalse(r.ok());
         assertEquals("KEM INIT", r.stoppedAt());
         assertEquals(List.of(SeManage.CMD_KEYGEN, SeManage.CMD_KEM_INIT), chip.manageCmds);
@@ -203,7 +228,7 @@ class ChipInitTest {
         chip.kemPub = filled(SeConstants.MLKEM_PK_LEN, (byte) 0x44);
         chip.eccPub = ECC;
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.PROD, prodRequest("n", "oldpin12"));
+                chip, new FakeCerts(), ChipInit.Profile.PROD, prodRequest("n"));
         assertFalse(r.ok());
         assertEquals("INIT", r.stoppedAt());
         assertEquals(ChipInit.MSG_KEM_ALREADY_PROVISIONED, r.message());
@@ -217,7 +242,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.creds = new SeManage.Reply(SeManage.ERR, "INSERT SIGNED CSR failed");
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertFalse(r.ok());
         assertEquals("INSERT SIGNED CSR", r.stoppedAt());
         assertEquals(List.of(SeManage.CMD_KEYGEN, SeManage.CMD_KEM_INIT, SeManage.CMD_INSERT_SIGNED_CSR),
@@ -229,7 +254,7 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.owner = new ChipInit.OwnerSetResult.Failed("auth: bad frame");
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertFalse(r.ok());
         assertEquals("OWNER SET", r.stoppedAt());
         assertTrue(chip.manageCmds.isEmpty());
@@ -241,25 +266,25 @@ class ChipInitTest {
         FakeChip chip = new FakeChip();
         chip.clientHash = null;
         ChipInit.EnrollResult r = ChipInit.enroll(
-                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest(null));
+                chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertTrue(r.ok());
         assertEquals(1, chip.clientHashReads);
         assertTrue(r.message().contains("CLIENT HASH unavailable"));
     }
 
-    private static ChipInit.EnrollRequest labRequest(String currentPin) {
+    private static ChipInit.EnrollRequest labRequest() {
         return new ChipInit.EnrollRequest(
-                PW, "12345678", currentPin, Optional.empty(),
+                PW, "12345678", Optional.empty(),
                 Path.of("client", "client-cert.pem"),
                 Path.of("ca", "client_ca.p12"),
                 "password",
                 "device", SPKI, SAE_CA);
     }
 
-    private static ChipInit.EnrollRequest prodRequest(String slot, String currentPin) {
+    private static ChipInit.EnrollRequest prodRequest(String slot) {
         Optional<Integer> pairing = "n".equalsIgnoreCase(slot) ? Optional.empty() : Optional.of(Integer.parseInt(slot));
         return new ChipInit.EnrollRequest(
-                PW, "12345678", currentPin, pairing,
+                PW, "12345678", pairing,
                 Path.of("client", "client-cert.pem"),
                 Path.of("ca", "client_ca.p12"),
                 null,
@@ -287,7 +312,7 @@ class ChipInitTest {
         SeManage.Reply keygen = new SeManage.Reply(SeManage.OK, "KEYGEN ok");
         SeManage.Reply kem = new SeManage.Reply(SeManage.OK, "KEM INIT ok");
         SeManage.Reply creds = new SeManage.Reply(SeManage.OK, "INSERT SIGNED CSR ok");
-        SeManage.Reply pairing = new SeManage.Reply(SeManage.OK, "PAIRING ok");
+        SeManage.Reply pairing;
 
         @Override
         public ChipInit.OwnerSetResult ownerSet(byte[] password, byte[] spki, byte[] saeCa) {
@@ -319,7 +344,12 @@ class ChipInitTest {
                 return creds;
             }
             if (cmd == SeManage.CMD_PAIRING) {
-                return pairing;
+                if (pairing != null) {
+                    return pairing;
+                }
+                int slot = (body != null && body.length == 1) ? (body[0] & 0xFF) : 1;
+                return new SeManage.Reply(SeManage.OK,
+                        SeManage.formatPairingOkMsg(new SeManage.PairingKey(slot, PAIRING_PRIV, PAIRING_PUB)));
             }
             return new SeManage.Reply(SeManage.BAD_CMD, "bad command");
         }
@@ -341,6 +371,10 @@ class ChipInitTest {
         byte[] existingDevice = CERT;
         byte[] lastCsr;
         byte[] lastPem;
+        Path lastPairingPath;
+        Integer lastPairingSlot;
+        byte[] lastPairingPriv;
+        byte[] lastPairingPub;
 
         @Override
         public byte[] signLab(Path clientCaP12, String clientCaP12Password, byte[] csrPub, String deviceCn) {
@@ -360,6 +394,14 @@ class ChipInitTest {
         @Override
         public void writeCsrHex(Path path, byte[] pub) {
             lastCsr = pub;
+        }
+
+        @Override
+        public void writePairingKeyHex(Path path, int slot, byte[] priv, byte[] pub) {
+            lastPairingPath = path;
+            lastPairingSlot = slot;
+            lastPairingPriv = priv;
+            lastPairingPub = pub;
         }
 
         @Override

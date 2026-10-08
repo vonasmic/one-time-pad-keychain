@@ -1,0 +1,16 @@
+# One simulated keychain (client-1) and one real CDC device (client-2).
+# tropic-2 and se-host-2 are not selected, so nothing creates /tmp/ttyACM-se2.
+# terminal-2 and userapp-2 still run; lab-run points them at auto.
+# auto scans for the keychain CDC (0483:5710), so the node need not be ttyACM0.
+# Set an explicit path (serial client-2 /dev/ttyACM1) to pin one device.
+# Whichever of those two owns USB (SAE vs USER) waits until the board enumerates.
+
+serial client-1 /tmp/ttyACM-se1
+serial client-2 auto
+
+tropic-1
+se-host-1
+node-1 node-2
+terminal-1 terminal-2
+userapp-1 userapp-2
+lab

@@ -148,6 +148,36 @@ class SeManageTest {
     }
 
     @Test
+    void pairingOkMsgAndLoadBodyRoundTrip() throws Exception {
+        byte[] priv = filled(SeConstants.PAIRING_KEY_LEN, (byte) 0xAB);
+        byte[] pub = filled(SeConstants.PAIRING_KEY_LEN, (byte) 0xCD);
+        SeManage.PairingKey key = new SeManage.PairingKey(2, priv, pub);
+        String msg = SeManage.formatPairingOkMsg(key);
+        assertEquals(142, msg.length());
+        SeManage.PairingKey parsed = SeManage.parsePairingOkMsg(msg);
+        assertEquals(2, parsed.slot());
+        assertArrayEquals(priv, parsed.priv());
+        assertArrayEquals(pub, parsed.pub());
+        assertThrows(IllegalArgumentException.class, () -> SeManage.parsePairingOkMsg("PAIRING ok"));
+        assertThrows(IllegalArgumentException.class, () -> SeManage.parsePairingOkMsg(null));
+
+        byte[] body = SeManage.encodePairingLoadBody(key);
+        assertEquals(65, body.length);
+        assertEquals(2, body[0] & 0xFF);
+        SeManage.PairingKey loaded = SeManage.decodePairingLoadBody(body);
+        assertEquals(2, loaded.slot());
+        assertArrayEquals(priv, loaded.priv());
+        assertArrayEquals(pub, loaded.pub());
+        byte[] req = SeManage.encodeRequest(SeManage.CMD_PAIRING_LOAD, new byte[0], body);
+        SeManage.Request decoded = SeManage.decodeRequest(req);
+        assertEquals(SeManage.CMD_PAIRING_LOAD, decoded.cmd());
+        assertEquals(0, decoded.pin().length);
+        assertArrayEquals(body, decoded.body());
+        assertEquals(msg, SeManage.decodeReply(SeManage.encodeReply(new SeManage.Reply(SeManage.OK, msg))).msg());
+        assertThrows(IllegalArgumentException.class, () -> SeManage.encodePairingLoadBody(0, priv, pub));
+    }
+
+    @Test
     void pinAndPasswordAsciiRules() {
         assertTrue(SeManage.pinOk("12345678"));
         assertFalse(SeManage.pinOk("1234567"));

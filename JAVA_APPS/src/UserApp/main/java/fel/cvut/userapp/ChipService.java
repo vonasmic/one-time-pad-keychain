@@ -48,16 +48,23 @@ final class ChipService {
                 SeManage.encodeDeviceCertBody(certDer));
     }
 
+    SeManage.Reply pairingLoad(SeManage.PairingKey key) throws Exception {
+        Objects.requireNonNull(key, "key");
+        return OwnerAuth.manage(
+                usb, ctx, SeManage.CMD_PAIRING_LOAD, null,
+                SeManage.encodePairingLoadBody(key));
+    }
+
     String peerList() throws Exception {
         return usb.transact("PEER LIST");
     }
 
-    SeManage.Reply peerAdd(String pin, String name, byte[] hash) throws Exception {
-        return OwnerAuth.manage(usb, ctx, SeManage.CMD_PEER_ADD, pin, SeManage.encodePeerAddBody(name, hash));
+    SeManage.Reply peerAdd(String name, byte[] hash) throws Exception {
+        return OwnerAuth.manage(usb, ctx, SeManage.CMD_PEER_ADD, null, SeManage.encodePeerAddBody(name, hash));
     }
 
-    SeManage.Reply peerRemove(String pin, String name) throws Exception {
-        return OwnerAuth.manage(usb, ctx, SeManage.CMD_PEER_REMOVE, pin, SeManage.encodePeerRemoveBody(name));
+    SeManage.Reply peerRemove(String name) throws Exception {
+        return OwnerAuth.manage(usb, ctx, SeManage.CMD_PEER_REMOVE, null, SeManage.encodePeerRemoveBody(name));
     }
 
     ChipInit.OwnerSetResult ownerSet(byte[] password, byte[] spki, byte[] saeCa) throws Exception {

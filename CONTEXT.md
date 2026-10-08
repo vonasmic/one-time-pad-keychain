@@ -17,7 +17,7 @@ reset password + owner SPKI + optional SAE CA). Later identity changes go over
 Owner-pinned TLS (no device client cert). One unsigned command per session:
 KEM INIT, KEYGEN, PEER ADD/REMOVE, CREDS, OWNER REPLACE, PAIRING.
 
-Mutating Tropic ops (KEYGEN, KEM INIT, pairing, PIN-gated peer changes) go only
+Mutating Tropic ops (KEYGEN, KEM INIT, pairing, peer changes) go only
 through MANAGE. USB keeps read-only dumps: PING, INFO, PUB, KEM PUB, OTP STATUS,
 PEER LIST, CLIENT HASH/CSR.
 

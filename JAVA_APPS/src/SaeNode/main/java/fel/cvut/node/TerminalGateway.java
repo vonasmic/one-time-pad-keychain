@@ -11,7 +11,9 @@ import javax.net.ssl.SSLSocket;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
@@ -24,14 +26,21 @@ import java.util.logging.Logger;
  * with {@link SoftwareTls.TlsProfile#PURE_PQC} on the node's own {@code tlsContext} — so the terminal
  * app authenticates the same way any other node would, instead of a separate ad hoc TLS setup.
  *
- * <p>Only one terminal session is served at a time. While that session is open, further
- * TCP connects are rejected so a second client cannot kick the first off the gateway.
- * Requests are serialized with {@link #requestLock} since {@link Node} may be handling several
+ * <p>Only one terminal session is served at a time. While that session is still open, further
+ * TCP connects are closed before the TLS handshake so a second client cannot kick the first
+ * off the gateway and cannot force an HSM identity signature. A session whose peer has already
+ * gone away (lab owner switch restarts the terminal JVM; the gateway does not notice until it
+ * reads) is dropped and the new connection is adopted.
+ *
+ * <p>Requests are serialized with {@link #requestLock} since {@link Node} may be handling several
  * concurrent client connections that each need operator input.
  */
 final class TerminalGateway implements OperatorConsole, AutoCloseable {
 
     private static final Logger LOG = Logger.getLogger(TerminalGateway.class.getName());
+
+    /** Idle read used only to tell a live terminal from one that already closed. */
+    private static final int PEER_PROBE_MS = 100;
 
     private final int port;
     private final ReentrantLock requestLock = new ReentrantLock();
@@ -59,31 +68,105 @@ final class TerminalGateway implements OperatorConsole, AutoCloseable {
             if (localServer == null) {
                 return;
             }
+            SSLSocket socket;
             try {
-                SSLSocket socket = (SSLSocket) localServer.accept();
-                socket.startHandshake();
-                adoptSession(socket);
+                socket = (SSLSocket) localServer.accept();
             } catch (IOException ex) {
                 if (running) {
                     LOG.warning("Terminal gateway accept loop failed: " + ex.getMessage());
                 }
                 return;
             }
+            try {
+                if (heldByLivePeer()) {
+                    LOG.info("Terminal app already connected — rejecting "
+                            + socket.getRemoteSocketAddress());
+                    socket.close();
+                    continue;
+                }
+                socket.startHandshake();
+                adoptSession(socket);
+            } catch (IOException ex) {
+                LOG.warning("Terminal gateway connection failed: " + ex.getMessage());
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                    /* client already gone */
+                }
+            }
         }
+    }
+
+    /**
+     * {@code SSLSocket#isConnected()} stays true after the terminal process exits, until this
+     * side reads. Probe under {@link #requestLock} so the check cannot consume a response
+     * {@link #exchange} is waiting for.
+     */
+    private boolean heldByLivePeer() {
+        requestLock.lock();
+        try {
+            synchronized (sessionLock) {
+                if (!sessionLive()) {
+                    return false;
+                }
+                if (peerClosed()) {
+                    LOG.info("Terminal session ended — accepting a new connection");
+                    closeSessionQuietly();
+                    return false;
+                }
+                return true;
+            }
+        } finally {
+            requestLock.unlock();
+        }
+    }
+
+    private boolean peerClosed() {
+        SSLSocket current = session;
+        BufferedReader in = sessionIn;
+        if (current == null || in == null) {
+            return true;
+        }
+        int previousTimeout;
+        try {
+            previousTimeout = current.getSoTimeout();
+            current.setSoTimeout(PEER_PROBE_MS);
+        } catch (IOException e) {
+            return true;
+        }
+        try {
+            in.mark(8192);
+            int ch = in.read();
+            if (ch < 0) {
+                return true;
+            }
+            in.reset();
+            return false;
+        } catch (SocketTimeoutException e) {
+            return false;
+        } catch (IOException e) {
+            return !isTimeout(e);
+        } finally {
+            try {
+                current.setSoTimeout(previousTimeout);
+            } catch (IOException ignored) {
+                /* socket already unusable; caller drops it when peerClosed is true */
+            }
+        }
+    }
+
+    private static boolean isTimeout(IOException e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof SocketTimeoutException) {
+                return true;
+            }
+        }
+        String msg = e.getMessage();
+        return msg != null && msg.toLowerCase(Locale.ROOT).contains("timed out");
     }
 
     private void adoptSession(SSLSocket socket) throws IOException {
         synchronized (sessionLock) {
-            if (sessionLive()) {
-                LOG.info("Terminal app already connected — rejecting "
-                        + socket.getRemoteSocketAddress());
-                try {
-                    socket.close();
-                } catch (IOException ignored) {
-                    /* spare connect from a leftover process */
-                }
-                return;
-            }
             closeSessionQuietly();
             session = socket;
             sessionIn = TerminalWireProtocol.reader(socket.getInputStream());

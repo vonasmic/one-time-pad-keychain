@@ -50,9 +50,12 @@ Foreground (calling terminal), in order:
 5. Tropic model venv and `host/tropic_model/_deps` if missing, then `cmake` + `make se_host` (runtime `OWNER`/`CREDS` enrollment; no compile-in creds).
 6. Flyway migrate for `env/node-1.env` and `env/node-2.env`.
 
-Then tmux session `otp-keychain` window `stack` — **six rows** top→bottom (pairs
-are left = 1, right = 2; lab is full width). Each pane’s name is on its top border.
-Pane output is also written to `scripts/logs/<pane>.log` (overwritten each run):
+Then tmux session `otp-keychain` window `stack`. `scripts/host.sh list-panes` and
+`scripts/java.sh list-panes` define every pane. `./run-all.sh` only chooses which
+of those names to open (see [Configurations](#configurations)). The default
+selection is **six rows** top→bottom (pairs are left = 1, right = 2; a row with
+one selected pane is full width, including `lab`). Each pane’s name is on its top
+border. Pane output is also written to `scripts/logs/<pane>.log` (overwritten each run):
 
 | Row | Left | Right |
 | --- | --- | --- |
@@ -80,7 +83,18 @@ Typical loop:
 2. **Provision:** type **`SAE`**. Both terminal panes enable USB and relay `PROVISION` to SAE 1 and SAE 2.
 3. **Encrypt/decrypt / sync key-get:** type **`USER`**, operate both UserApps. Answer SELECT/CONFIRM in **terminal-1** and **terminal-2** when both SAEs ask at once.
 
-On silicon / production run `scripts/java.sh terminal env/terminal-N.env` and `userapp env/userapp-N.env` directly (one `/dev/ttyACM0`, no lab file).
+On silicon / production run `scripts/java.sh terminal env/terminal-N.env` and `userapp env/userapp-N.env` directly (no lab file). Leave `USB_SERIAL_PORT` unset, or set it to `auto`, and the app scans for the keychain CDC device. For a mixed lab (simulator plus one real board) use `./run-all-with-hw.sh` below.
+
+## Configurations
+
+```bash
+./run-all.sh              # scripts/configs/run-all
+./run-all-with-hw.sh      # scripts/configs/with-hw
+```
+
+A configuration is a list of pane names plus optional `serial` lines. It does not define how a pane starts — that stays in `host.sh` / `java.sh` (`list-panes` also sets the row). Panes that share a row are placed left to right in the order the config names them. `serial client-1|client-2 PATH` is written into the lab file before tmux starts, and `lab-run.py` copies it into `USB_SERIAL_PORT`.
+
+`./run-all-with-hw.sh` does not open `tropic-2` or `se-host-2` (those rows are one full-width pane). client-1 stays on `/tmp/ttyACM-se1`. client-2 is `auto`, so **terminal-2** and **userapp-2** scan for the keychain CDC device (USB `0483:5710`, whatever `ttyACM*` node the kernel assigned) — UserApp while owner is `USER`, TerminalBridge while owner is `SAE`. SAE, terminal, and userapp rows stay split. Pin one node with `serial client-2 /dev/ttyACM1` in `scripts/configs/with-hw` when more than one board is plugged in.
 
 ## Prerequisites
 
@@ -88,7 +102,7 @@ On silicon / production run `scripts/java.sh terminal env/terminal-N.env` and `u
 - Utimaco SDKs under `ultimaco/` (not committed) and JCE jars under `JAVA_APPS/vendor/` (not committed)
 - SQLite with one database file per node
 
-UserApp waits for USB CDC (`USB_SERIAL_PORT`). In the lab stack each userapp pane
-is pinned to `/tmp/ttyACM-se1` or `/tmp/ttyACM-se2`.
+UserApp waits for USB CDC (`USB_SERIAL_PORT`). In the default lab stack each userapp pane
+is pinned to `/tmp/ttyACM-se1` or `/tmp/ttyACM-se2`. `./run-all-with-hw.sh` sets client-2 to `auto`.
 
 Manual simulator commands: [JAVA_APPS README — HSM setup](JAVA_APPS/README.md#hsm-setup).

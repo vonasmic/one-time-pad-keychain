@@ -93,10 +93,12 @@ final class OwnerAuth implements ChipInit.ChipPort {
     }
 
     static ChipInit.OwnerSetResult classifyOwnerSetDone(String reply) {
-        return switch (asciiWord(reply)) {
+        String word = asciiWord(reply);
+        return switch (word) {
             case "ok" -> new ChipInit.OwnerSetResult.Ok();
             case "refused" -> new ChipInit.OwnerSetResult.AlreadyEnrolled();
-            default -> new ChipInit.OwnerSetResult.Failed("failed");
+            case "" -> new ChipInit.OwnerSetResult.Failed("failed");
+            default -> new ChipInit.OwnerSetResult.Failed(word);
         };
     }
 

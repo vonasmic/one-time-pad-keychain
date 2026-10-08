@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,7 +29,8 @@ import java.util.function.Function;
  * Chip enrollment as one sequence. LAB signs the on-chip ML-DSA CSR with the
  * local client CA, installs via INSERT SIGNED CSR, and never pairs. PROD writes
  * the CSR only (no install); the operator runs INSERT SIGNED CSR after an
- * external CA signs. PROD may burn factory SH0 over MANAGE + PIN. USB is
+ * external CA signs. PROD may burn factory SH0 over MANAGE and write
+ * pairing-key.hex for PAIRING LOAD after a reflash. USB is
  * {@link ChipPort}; cert files are {@link Certs}.
  */
 final class ChipInit {
@@ -109,13 +113,14 @@ final class ChipInit {
 
         void writeCsrHex(Path path, byte[] pub) throws IOException;
 
+        void writePairingKeyHex(Path path, int slot, byte[] priv, byte[] pub) throws IOException;
+
         boolean isRegularFile(Path path);
     }
 
     record EnrollRequest(
             byte[] resetPassword,
             String pin,
-            String currentPin,
             Optional<Integer> pairingSlot,
             Path deviceCert,
             Path clientCaP12,
@@ -203,16 +208,6 @@ final class ChipInit {
             return;
         }
 
-        String currentPin = null;
-        if (profile.replaceOccupiedEcc() && chip.tropicPub().isPresent()) {
-            System.out.println("ECC slot 0 is occupied. Enter the current Tropic PIN "
-                    + "(encrypt/decrypt; 8 attempts max) to replace it over MANAGE TLS.");
-            currentPin = readPin.apply(sc);
-            if (currentPin == null) {
-                return;
-            }
-        }
-
         EnrollResult result = enroll(
                 chip,
                 FILE_CERTS,
@@ -220,7 +215,6 @@ final class ChipInit {
                 new EnrollRequest(
                         resetPw.getBytes(StandardCharsets.US_ASCII),
                         pin,
-                        currentPin,
                         slot,
                         deviceCert,
                         clientCaP12,
@@ -265,10 +259,7 @@ final class ChipInit {
         Optional<byte[]> eccPub = chip.tropicPub();
         if (eccPub.isPresent()) {
             if (profile.replaceOccupiedEcc()) {
-                if (req.currentPin() == null || req.currentPin().isEmpty()) {
-                    return EnrollResult.stop("KEYGEN", "ECC occupied; current PIN required");
-                }
-                SeManage.Reply replaced = chip.manage(SeManage.CMD_KEYGEN, req.currentPin(), null);
+                SeManage.Reply replaced = chip.manage(SeManage.CMD_KEYGEN, null, null);
                 if (!replaced.ok()) {
                     return EnrollResult.stop("KEYGEN", replaced.describe());
                 }
@@ -277,7 +268,7 @@ final class ChipInit {
                 System.out.println("KEYGEN skipped (ECC occupied)");
             }
         } else {
-            SeManage.Reply generated = chip.manage(SeManage.CMD_KEYGEN, req.pin(), null);
+            SeManage.Reply generated = chip.manage(SeManage.CMD_KEYGEN, null, null);
             if (!generated.ok()) {
                 return EnrollResult.stop("KEYGEN", generated.describe());
             }
@@ -290,18 +281,12 @@ final class ChipInit {
         }
         System.out.println(kem.describe());
 
-        byte[] csrPub = chip.clientCsrPub();
-        if (csrPub == null) {
-            return EnrollResult.stop("CLIENT CSR", "could not parse device public key");
+        byte[] csrPub;
+        try {
+            csrPub = exportClientCsr(chip, certs, req.deviceCert());
+        } catch (IOException e) {
+            return EnrollResult.stop("CLIENT CSR", e.getMessage());
         }
-        if (isAllZero(csrPub)) {
-            return EnrollResult.stop("CLIENT CSR",
-                    "device public key is all zeros (reflash firmware with CLIENT CSR export fix)");
-        }
-        Path clientDir = req.deviceCert().getParent() == null ? req.deviceCert() : req.deviceCert().getParent();
-        Path csrPath = clientDir.resolve("client-csr.hex");
-        certs.writeCsrHex(csrPath, csrPub);
-        System.out.println("CLIENT CSR ok (" + csrPub.length + " bytes)");
 
         if (profile.signLocally()) {
             if (req.clientCaP12() == null || !certs.isRegularFile(req.clientCaP12())) {
@@ -330,14 +315,22 @@ final class ChipInit {
         }
 
         SeManage.Reply pairing = chip.manage(
-                SeManage.CMD_PAIRING, req.pin(),
+                SeManage.CMD_PAIRING, null,
                 SeManage.encodePairingBody(req.pairingSlot().orElseThrow()));
         if (!pairing.ok()) {
             return EnrollResult.stop("PAIRING", pairing.describe());
         }
-        System.out.println(pairing.describe());
+        SeManage.PairingKey key;
+        try {
+            key = SeManage.parsePairingOkMsg(pairing.msg());
+        } catch (IllegalArgumentException e) {
+            return EnrollResult.stop("PAIRING", "pairing private key was not in the reply");
+        }
+        Path pairingPath = pairingKeyPath(req.deviceCert());
+        certs.writePairingKeyHex(pairingPath, key.slot(), key.priv(), key.pub());
+        System.out.println("PAIRING ok (key saved to " + pairingPath + ")");
         return finishWithClientHash(chip,
-                "INIT PROD finished (pairing private key was not saved or printed).");
+                "INIT PROD finished (pairing key saved to " + pairingPath + ").");
     }
 
     private static EnrollResult finishWithClientHash(ChipPort chip, String done) throws Exception {
@@ -346,6 +339,22 @@ final class ChipInit {
             return EnrollResult.ok(done + "\nCLIENT HASH unavailable (needs device cert + Tropic ECC).");
         }
         return EnrollResult.ok(done + "\nCLIENT HASH (96 hex):\n" + SeBytes.toHex(hash.get()));
+    }
+
+    /** CLIENT CSR dump used by INIT and {@code CSR EXPORT}. Does not sign or install. */
+    static byte[] exportClientCsr(ChipPort chip, Certs certs, Path deviceCert) throws Exception {
+        byte[] csrPub = chip.clientCsrPub();
+        if (csrPub == null) {
+            throw new IOException("could not parse device public key");
+        }
+        if (isAllZero(csrPub)) {
+            throw new IOException(
+                    "device public key is all zeros (reflash firmware with CLIENT CSR export fix)");
+        }
+        Path clientDir = deviceCert.getParent() == null ? deviceCert : deviceCert.getParent();
+        certs.writeCsrHex(clientDir.resolve("client-csr.hex"), csrPub);
+        System.out.println("CLIENT CSR ok (" + csrPub.length + " bytes)");
+        return csrPub;
     }
 
     static EnrollResult insertSignedCsr(ChipPort chip, byte[] certDer) throws Exception {
@@ -387,7 +396,6 @@ final class ChipInit {
                     WARNING: Tropic PIN is for encrypt/decrypt (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
                     WARNING: owner password is for device renew and is not attempt-locked — use a strong password.
                     WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
-                    WARNING: KEM INIT stores the ML-KEM public key in NV.
                     """);
             return;
         }
@@ -397,7 +405,9 @@ final class ChipInit {
                 WARNING: ENCRYPT/DECRYPT/PROVISION stay down until a client-CA-signed cert
                          is installed with INSERT SIGNED CSR (not during this wizard).
                 WARNING: pairing (if you choose 1-3) burns factory SH0 and is irreversible
-                         on silicon. The pairing private key is never printed or saved.
+                         on silicon. The pairing private key is written to pairing-key.hex
+                         (not printed). PAIRING LOAD restores L3 after an MCU erase; pads
+                         and device identity stay lost.
                 """);
         System.out.println("""
                 --- Chip INIT PROD ---
@@ -405,21 +415,23 @@ final class ChipInit {
                   1. Enroll this UserApp certificate as owner (OWNER SET) if the slot is empty
                      (unsigned USB blob: owner password + owner SPKI + SAE CA).
                      Owner password is for device renew; it is not attempt-locked, so use a strong one.
-                  2. Generate (or Tropic-PIN-replace over MANAGE TLS) Tropic ECC P-256 slot 0
+                  2. Generate or replace Tropic ECC P-256 slot 0 over MANAGE TLS
                   3. Set the Tropic PIN (encrypt/decrypt; 8 attempts max) over MANAGE TLS
                      (unsigned; owner-pinned, not mTLS)
                   4. Dump CLIENT CSR into the client folder (no local CA sign, no install)
                   5. Optionally write a new X25519 pairing key (slot 1-3, invalidates
-                     factory SH0) over MANAGE + Tropic PIN, or skip with n
+                     factory SH0) over MANAGE, or skip with n. The private
+                     key is saved to pairing-key.hex next to the device cert (not printed).
                   6. Print CLIENT HASH (96 hex) for copy (needs device cert + Tropic ECC;
                      run INSERT SIGNED CSR after the authority signs the CSR)
 
                 WARNING: Tropic PIN is for encrypt/decrypt (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
                 WARNING: owner password is for device renew and is not attempt-locked — use a strong password.
                 WARNING: PAIRING (1-3) is irreversible on real silicon (factory SH0 is burned).
+                WARNING: after PAIRING, an MCU erase needs OWNER SET then PAIRING LOAD to reopen L3.
+                WARNING: PAIRING LOAD restores L3 only; pads and the enrolled identity stay lost.
                 WARNING: replacing an occupied ECC slot destroys the previous identity key.
                 WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
-                WARNING: KEM INIT stores the ML-KEM public key in NV.
                 """);
     }
 
@@ -509,6 +521,10 @@ final class ChipInit {
         return initToken(raw, "INIT PROD", "INITPROD");
     }
 
+    static boolean isCsrExport(String raw) {
+        return initToken(raw, "CSR EXPORT", "CSREXPORT");
+    }
+
     private static boolean initToken(String raw, String spaced, String packed) {
         if (raw == null) {
             return false;
@@ -529,12 +545,55 @@ final class ChipInit {
         return true;
     }
 
+    static Path pairingKeyPath(Path deviceCert) {
+        Path parent = deviceCert.getParent();
+        return (parent == null ? deviceCert : parent).resolve("pairing-key.hex");
+    }
+
     static void writeCsrHex(Path path, byte[] pub) throws IOException {
         Path parent = path.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
         Files.writeString(path, SeBytes.toHex(pub) + "\n");
+    }
+
+    static void writePairingKeyHex(Path path, int slot, byte[] priv, byte[] pub) throws IOException {
+        SeManage.PairingKey key = new SeManage.PairingKey(slot, priv, pub);
+        Path parent = path.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        String body = key.slot() + "\n" + SeBytes.toHex(key.priv()) + "\n" + SeBytes.toHex(key.pub()) + "\n";
+        Files.writeString(path, body);
+        try {
+            Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-------"));
+        } catch (UnsupportedOperationException ignored) {
+        }
+    }
+
+    static SeManage.PairingKey readPairingKeyHex(Path path) throws IOException {
+        List<String> lines = new ArrayList<>();
+        for (String line : Files.readAllLines(path)) {
+            String stripped = line.strip();
+            if (!stripped.isEmpty()) {
+                lines.add(stripped);
+            }
+        }
+        if (lines.size() != 3) {
+            throw new IOException("pairing-key.hex must have slot, priv hex, and pub hex");
+        }
+        int slot;
+        try {
+            slot = Integer.parseInt(lines.get(0));
+        } catch (NumberFormatException e) {
+            throw new IOException("pairing-key.hex slot", e);
+        }
+        try {
+            return new SeManage.PairingKey(slot, SeBytes.fromHex(lines.get(1)), SeBytes.fromHex(lines.get(2)));
+        } catch (IllegalArgumentException e) {
+            throw new IOException("pairing-key.hex", e);
+        }
     }
 
     private static final class FileCerts implements Certs {
@@ -567,6 +626,11 @@ final class ChipInit {
         @Override
         public void writeCsrHex(Path path, byte[] pub) throws IOException {
             ChipInit.writeCsrHex(path, pub);
+        }
+
+        @Override
+        public void writePairingKeyHex(Path path, int slot, byte[] priv, byte[] pub) throws IOException {
+            ChipInit.writePairingKeyHex(path, slot, priv, pub);
         }
 
         @Override

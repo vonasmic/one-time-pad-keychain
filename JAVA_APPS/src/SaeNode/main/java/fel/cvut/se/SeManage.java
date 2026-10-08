@@ -30,6 +30,8 @@ public final class SeManage {
     public static final int CMD_INSERT_SIGNED_CSR = 6;
     public static final int CMD_OWNER_REPLACE = 7;
     public static final int CMD_PAIRING = 8;
+    /** Restore host pairing priv+pub into MCU NV after a reflash (no Tropic write). */
+    public static final int CMD_PAIRING_LOAD = 9;
 
     public static final int OK = 0;
     public static final int ERR = 1;
@@ -66,6 +68,21 @@ public final class SeManage {
         public Request {
             pin = pin == null ? new byte[0] : SeBytes.copy(pin);
             body = body == null ? new byte[0] : SeBytes.copy(body);
+        }
+    }
+
+    public record PairingKey(int slot, byte[] priv, byte[] pub) {
+        public PairingKey {
+            if (slot < 1 || slot > 3) {
+                throw new IllegalArgumentException("PAIRING slot must be 1–3");
+            }
+            Objects.requireNonNull(priv, "priv");
+            Objects.requireNonNull(pub, "pub");
+            if (priv.length != SeConstants.PAIRING_KEY_LEN || pub.length != SeConstants.PAIRING_KEY_LEN) {
+                throw new IllegalArgumentException("PAIRING key length");
+            }
+            priv = SeBytes.copy(priv);
+            pub = SeBytes.copy(pub);
         }
     }
 
@@ -385,6 +402,64 @@ public final class SeManage {
             throw new IllegalArgumentException("PAIRING slot must be 1–3");
         }
         return new byte[] {(byte) slot};
+    }
+
+    /** {@code PAIRING ok <slot> <64 hex priv> <64 hex pub>}. */
+    public static String formatPairingOkMsg(PairingKey key) {
+        Objects.requireNonNull(key, "key");
+        return "PAIRING ok " + key.slot() + " " + SeBytes.toHex(key.priv()) + " " + SeBytes.toHex(key.pub());
+    }
+
+    public static PairingKey parsePairingOkMsg(String msg) {
+        if (msg == null) {
+            throw new IllegalArgumentException("PAIRING reply");
+        }
+        String[] parts = msg.trim().split("\\s+");
+        if (parts.length != 5 || !"PAIRING".equals(parts[0]) || !"ok".equals(parts[1])) {
+            throw new IllegalArgumentException("PAIRING reply");
+        }
+        int slot;
+        try {
+            slot = Integer.parseInt(parts[2]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("PAIRING reply");
+        }
+        byte[] priv;
+        byte[] pub;
+        try {
+            priv = SeBytes.fromHex(parts[3]);
+            pub = SeBytes.fromHex(parts[4]);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("PAIRING reply", e);
+        }
+        if (priv.length != SeConstants.PAIRING_KEY_LEN || pub.length != SeConstants.PAIRING_KEY_LEN) {
+            throw new IllegalArgumentException("PAIRING reply");
+        }
+        return new PairingKey(slot, priv, pub);
+    }
+
+    public static byte[] encodePairingLoadBody(int slot, byte[] priv, byte[] pub) {
+        return encodePairingLoadBody(new PairingKey(slot, priv, pub));
+    }
+
+    public static byte[] encodePairingLoadBody(PairingKey key) {
+        Objects.requireNonNull(key, "key");
+        byte[] out = new byte[1 + (SeConstants.PAIRING_KEY_LEN * 2)];
+        out[0] = (byte) key.slot();
+        System.arraycopy(key.priv(), 0, out, 1, SeConstants.PAIRING_KEY_LEN);
+        System.arraycopy(key.pub(), 0, out, 1 + SeConstants.PAIRING_KEY_LEN, SeConstants.PAIRING_KEY_LEN);
+        return out;
+    }
+
+    public static PairingKey decodePairingLoadBody(byte[] body) {
+        Objects.requireNonNull(body, "body");
+        if (body.length != 1 + (SeConstants.PAIRING_KEY_LEN * 2)) {
+            throw new IllegalArgumentException("PAIRING LOAD body");
+        }
+        int slot = body[0] & 0xFF;
+        byte[] priv = slice(body, 1, SeConstants.PAIRING_KEY_LEN);
+        byte[] pub = slice(body, 1 + SeConstants.PAIRING_KEY_LEN, SeConstants.PAIRING_KEY_LEN);
+        return new PairingKey(slot, priv, pub);
     }
 
     private static void requireSpki(byte[] spki) {

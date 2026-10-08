@@ -57,7 +57,9 @@ public final class SeConstants {
     /** MANAGE body cap ({@code SE_MANAGE_BODY_MAX}): u16le + device cert DER. */
     public static final int MANAGE_BODY_MAX = 2 + CREDS_DER_MAX;
     /** MANAGE reply ASCII detail ({@code SE_MANAGE_MSG_MAX}). */
-    public static final int MANAGE_MSG_MAX = 80;
+    public static final int MANAGE_MSG_MAX = 160;
+    /** Host X25519 pairing key half ({@code SE_NV_PAIRING_KEY_LEN}). */
+    public static final int PAIRING_KEY_LEN = 32;
     /** Raw ML-DSA-44 public key (CLIENT CSR / owner SPKI). */
     public static final int MLDSA_PUB_LEN = 1312;
 

@@ -21,7 +21,7 @@ import java.util.Scanner;
  * USB console: raw chip commands, OTP encrypt/decrypt, peer hash/add, and chip INIT LAB/PROD.
  * TLS identity is the software ML-DSA PKCS#12 (or PEM fallback) in {@code certs/user/} (no HSM).
  *
- * <p>USB path is {@code USB_SERIAL_PORT}.
+ * <p>USB path is {@code USB_SERIAL_PORT} ({@code auto} scans for the keychain CDC device).
  */
 public final class UserApplication {
 
@@ -64,7 +64,7 @@ public final class UserApplication {
 
             usb.require();
             while (true) {
-                System.out.print("APP [ENCRYPT/DECRYPT/OTP STATUS/PEER/INIT LAB/INIT PROD/INSERT SIGNED CSR/OWNER/REPLACE/quit] or chip line: ");
+                System.out.print("APP [ENCRYPT/DECRYPT/OTP STATUS/PEER/INIT LAB/INIT PROD/CSR EXPORT/INSERT SIGNED CSR/PAIRING LOAD/OWNER/REPLACE/quit] or chip line: ");
                 System.out.flush();
                 if (!sc.hasNextLine()) {
                     return;
@@ -123,8 +123,20 @@ public final class UserApplication {
             printResult(chip.otpStatus());
             return null;
         }
+        if (ChipInit.isCsrExport(raw)) {
+            try {
+                ChipInit.exportClientCsr(new OwnerAuth(usb.require(), ctx), ChipInit.FILE_CERTS, deviceCertPath);
+            } catch (IOException e) {
+                System.err.println("CSR EXPORT failed: " + e.getMessage());
+            }
+            return null;
+        }
         if (isInsertSignedCsr(raw)) {
             runInsertSignedCsr(chip, deviceCertPath);
+            return null;
+        }
+        if (isPairingLoad(raw)) {
+            runPairingLoad(chip, deviceCertPath);
             return null;
         }
         if (ChipInit.isInitLab(raw)) {
@@ -271,6 +283,22 @@ public final class UserApplication {
         System.out.println("OK INSERT SIGNED CSR" + (r.msg().isBlank() ? "" : ": " + r.msg()));
     }
 
+    private static void runPairingLoad(ChipService chip, Path deviceCert) throws Exception {
+        Path path = ChipInit.pairingKeyPath(deviceCert);
+        if (path == null || !Files.isRegularFile(path)) {
+            System.err.println("PAIRING LOAD needs pairing-key.hex next to USERAPP_DEVICE_CERT ("
+                    + path + "). After a reflash: OWNER SET, then PAIRING LOAD.");
+            return;
+        }
+        SeManage.PairingKey key = ChipInit.readPairingKeyHex(path);
+        SeManage.Reply r = chip.pairingLoad(key);
+        if (!r.ok()) {
+            System.err.println("PAIRING LOAD failed: " + r.describe());
+            return;
+        }
+        System.out.println("OK PAIRING LOAD" + (r.msg().isBlank() ? "" : ": " + r.msg()));
+    }
+
     private static void printResult(String reply) {
         if (reply == null || reply.isBlank()) {
             System.out.println("(no reply)");
@@ -285,6 +313,14 @@ public final class UserApplication {
         }
         String cmd = raw.strip().replaceAll("\\s+", " ");
         return cmd.equals("INSERT SIGNED CSR") || cmd.equals("INSERTSIGNEDCSR");
+    }
+
+    private static boolean isPairingLoad(String raw) {
+        if (raw == null) {
+            return false;
+        }
+        String cmd = raw.strip().replaceAll("\\s+", " ");
+        return cmd.equals("PAIRING LOAD") || cmd.equals("PAIRINGLOAD");
     }
 
     private static boolean isQuit(String raw) {

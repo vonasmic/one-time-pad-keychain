@@ -1,0 +1,14 @@
+# Default lab: two simulated keychains.
+# Pane names come from host.sh / java.sh list-panes (those lines set the row).
+# Within a row, names here are left then right. One selected name is full width.
+# serial lines are written into the lab file before the panes start.
+
+serial client-1 /tmp/ttyACM-se1
+serial client-2 /tmp/ttyACM-se2
+
+tropic-1 tropic-2
+se-host-1 se-host-2
+node-1 node-2
+terminal-1 terminal-2
+userapp-1 userapp-2
+lab

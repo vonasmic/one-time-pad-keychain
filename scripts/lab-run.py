@@ -10,6 +10,11 @@ There is no CL switch: USER gives USB to both userapps; SAE gives USB to both
 terminals. Terminal panes always keep the operator gateway; userapp panes run
 only while owner is USER.
 
+--set-owner can also pin a client's serialPort (--serial client-2=auto).
+lab-run then puts that path in USB_SERIAL_PORT. An explicit path is opened when
+the node exists. auto / scan makes the Java CDC open search for the keychain
+(USB 0483:5710), so the board need not be /dev/ttyACM0.
+
 The child is started in its own session so it is not in the tmux pane's process
 group. This wrapper therefore handles SIGHUP (tmux pane teardown) and kills that
 process group; otherwise the JVM outlives the pane and holds the node's terminal
@@ -152,7 +157,33 @@ def child_env(
     return env
 
 
-def set_owner(path: Path, owner: str) -> dict[str, Any]:
+def apply_serials(raw: dict[str, Any], serials: list[tuple[str, str]]) -> None:
+    if not serials:
+        return
+    nodes = raw.get("nodes")
+    if not isinstance(nodes, dict):
+        nodes = {}
+    else:
+        nodes = dict(nodes)
+    for client, port in serials:
+        if client not in {CLIENT1, CLIENT2}:
+            raise ValueError("serial client must be client-1 or client-2")
+        port = port.strip()
+        if not port:
+            raise ValueError("serial path is empty")
+        node = nodes.get(client)
+        if not isinstance(node, dict):
+            node = {}
+        else:
+            node = dict(node)
+        node["serialPort"] = port
+        nodes[client] = node
+    raw["nodes"] = nodes
+
+
+def set_owner(
+    path: Path, owner: str, serials: list[tuple[str, str]] | None = None
+) -> dict[str, Any]:
     owner = owner.strip().upper()
     if owner not in {MODE_USER, MODE_SAE}:
         raise ValueError("owner must be USER or SAE")
@@ -167,6 +198,7 @@ def set_owner(path: Path, owner: str) -> dict[str, Any]:
     raw["mode"] = owner
     # Drop legacy "client" field if present.
     raw.pop("client", None)
+    apply_serials(raw, list(serials or []))
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
     state = normalize(raw)
@@ -214,6 +246,17 @@ def stop(proc: subprocess.Popen[Any] | None) -> None:
             pass
 
 
+def serial_arg(value: str) -> tuple[str, str]:
+    client, sep, port = value.partition("=")
+    client = client.strip()
+    port = port.strip()
+    if sep != "=" or client not in {CLIENT1, CLIENT2} or not port:
+        raise argparse.ArgumentTypeError(
+            "expected client-1=/path or client-2=/path"
+        )
+    return client, port
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lab", default=os.environ.get("USB_LAB_FILE", DEFAULT_LAB))
@@ -226,11 +269,23 @@ def main() -> int:
     )
     parser.add_argument("--set-owner", choices=(MODE_USER, MODE_SAE),
                         help="write owner into the lab file and exit")
+    parser.add_argument(
+        "--serial",
+        action="append",
+        type=serial_arg,
+        default=[],
+        metavar="CLIENT=PATH",
+        help="with --set-owner, set that client's serialPort (repeatable)",
+    )
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    if args.serial and not args.set_owner:
+        parser.error("--serial requires --set-owner")
     if args.set_owner:
-        state = set_owner(Path(args.lab), args.set_owner)
+        state = set_owner(Path(args.lab), args.set_owner, args.serial)
         print(f"[lab-run] {args.lab} → owner={state['mode']}", flush=True)
+        for client, port in args.serial:
+            print(f"[lab-run] {client} serial={port}", flush=True)
         return 0
     if not args.role:
         parser.error("--role is required unless --set-owner is set")

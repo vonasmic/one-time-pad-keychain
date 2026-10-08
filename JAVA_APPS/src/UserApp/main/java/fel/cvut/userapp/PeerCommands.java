@@ -51,11 +51,7 @@ final class PeerCommands {
         if (name == null) {
             return;
         }
-        String pin = ConsoleIo.readPin(sc);
-        if (pin == null) {
-            return;
-        }
-        SeManage.Reply r = chip.peerRemove(pin, name);
+        SeManage.Reply r = chip.peerRemove(name);
         if (!r.ok()) {
             System.err.println("PEER REMOVE failed: " + r.msg());
             return;
@@ -79,11 +75,7 @@ final class PeerCommands {
             System.err.println(ex.getMessage());
             return;
         }
-        String pin = ConsoleIo.readPin(sc);
-        if (pin == null) {
-            return;
-        }
-        SeManage.Reply r = chip.peerAdd(pin, name, SeBytes.fromHex(hash));
+        SeManage.Reply r = chip.peerAdd(name, SeBytes.fromHex(hash));
         if (!r.ok()) {
             System.err.println("PEER ADD failed: " + r.msg());
             return;

@@ -22,12 +22,14 @@ line is sent straight to the chip console (same as TerminalBridge transact).
 | --- | --- |
 | `ENCRYPT` / `E` | Arm TLS encrypt, send PIN + message, print pad reply hex |
 | `DECRYPT` / `D` | Arm TLS decrypt, send PIN + encrypt reply |
-| `STATUS` / `OTP STATUS` | USB `TROPIC OTP STATUS` — ASCII remaining/capacity, no PIN |
-| `PEER ADD` | nickname + 96-hex peer hash + PIN → unsigned MANAGE TLS |
-| `PEER LIST` / `PEER REMOVE` | LIST is USB; REMOVE is unsigned MANAGE TLS with PIN |
+| `STATUS` / `OTP STATUS` | USB `TROPIC OTP STATUS` — ASCII remaining/capacity |
+| `PEER ADD` | nickname + 96-hex peer hash → unsigned MANAGE TLS |
+| `PEER LIST` / `PEER REMOVE` | LIST is USB; REMOVE is unsigned MANAGE TLS |
 | `INIT LAB` | Lab enrollment: OWNER SET, MANAGE KEYGEN (empty ECC only), KEM INIT, CLIENT CSR, local client-CA sign, INSERT SIGNED CSR. Never pairs |
+| `CSR EXPORT` | Dump only the on-chip ML-DSA public key (`CLIENT CSR`) into `client-csr.hex` next to the device cert. Does not sign or install |
 | `INSERT SIGNED CSR` | Install signed device leaf from `USERAPP_DEVICE_CERT` (MANAGE cmd 6, cert DER only) |
-| `INIT PROD` | Production enrollment: same identity path **without** local CA sign or cert install; optional MANAGE PAIRING. Warns before running |
+| `INIT PROD` | Production enrollment: same identity path **without** local CA sign or cert install; optional MANAGE PAIRING (saves `pairing-key.hex`) |
+| `PAIRING LOAD` | After a reflash: restore host pairing key from `pairing-key.hex` (MANAGE cmd 9). Run `OWNER SET` first. Restores L3 only |
 | `OWNER` | Enroll this UserApp cert (`OWNER SET` unsigned blob + reset password + SAE CA) |
 | `REPLACE` | `OWNER REPLACE` over unsigned MANAGE TLS (reset password, not M&D) |
 
@@ -43,7 +45,7 @@ until idle and printed (ASCII / hex). Errors are `failed`.
 
 - `CLIENT HASH` / `CLIENT CSR` / `TROPIC PUB` / `TROPIC OTP STATUS` / `PEER LIST` are ASCII console replies.
 - `PROVISION`, `ENCRYPT`, `DECRYPT`, and `MANAGE` are **refused** on passthrough: they switch the pipe
-  to opaque TLS. Use APP ENCRYPT/DECRYPT/PEER/INIT LAB/INIT PROD, or TerminalBridge for provision.
+  to opaque TLS. Use APP ENCRYPT/DECRYPT/PEER/INIT LAB/INIT PROD/CSR EXPORT/PAIRING LOAD, or TerminalBridge for provision.
 
 ### INIT LAB / INIT PROD
 
@@ -53,15 +55,13 @@ PIN is **8–16 printable ASCII** (typed twice). Then `YES`.
 Shared sequence:
 
 1. `OWNER SET` then unsigned password + owner SPKI + SAE CA (skipped if already enrolled). Device SK is generated on-chip.
-2. MANAGE `KEYGEN` (LAB leaves an occupied ECC slot alone, occupancy from `TROPIC PUB`; PROD may PIN-replace)
+2. MANAGE `KEYGEN` (LAB leaves an occupied ECC slot alone, occupancy from `TROPIC PUB`; PROD replaces it)
 3. `MANAGE` KEM INIT with unsigned PIN
 4. `CLIENT CSR` → write `client-csr.hex` next to the device cert
 
 **LAB** then signs that CSR with `certs/ca/client_ca.p12` and installs the cert (`MANAGE INSERT SIGNED CSR`, cert only). Pairing is not run; factory SH0 stays.
 
-**PROD** does **not** use the lab client CA and does **not** install a cert. It prints a production warning and writes `client-csr.hex`. After an external CA signs it into `USERAPP_DEVICE_CERT`, run **INSERT SIGNED CSR**. Pairing slot **1–3** or **n**: MANAGE + PIN burns SH0; the pairing private key is never printed or saved.
-
-KEM INIT stores the ML-KEM public key in NV.
+**PROD** does **not** use the lab client CA and does **not** install a cert. It prints a production warning and writes `client-csr.hex`. After an external CA signs it into `USERAPP_DEVICE_CERT`, run **INSERT SIGNED CSR**. Pairing slot **1–3** or **n**: MANAGE burns SH0; UserApp writes `pairing-key.hex` next to the device cert and does not print the private key. After an MCU erase, **OWNER SET** then **PAIRING LOAD** restores L3 only; pads and the enrolled identity stay lost.
 
 ## Lab USB
 
@@ -85,7 +85,7 @@ leftover demux.
   - `certs/user/user.p12` (preferred) or `user-cert.pem` + `user-key.pem`
   - trust: `certs/ca/client_ca.pem` (`SoftwareTls.clientCaPem()`)
   - lab device sign: `certs/ca/client_ca.p12`
-- USB CDC ACM device (default `/dev/ttyACM0`); the app waits until it is present
+- USB CDC ACM device (default `auto`: scan for USB `0483:5710`, or the only `/dev/ttyACM*`); an explicit `USB_SERIAL_PORT` is opened as given
 - No HSM and no `env/hsm.env`
 
 ## How to run
@@ -107,7 +107,7 @@ Template: [`env/example/userapp.env.example`](../../env/example/userapp.env.exam
 
 | Variable | Required | Default | Meaning |
 | --- | --- | --- | --- |
-| `USB_SERIAL_PORT` | no | `/dev/ttyACM0` | CDC ACM path |
+| `USB_SERIAL_PORT` | no | `auto` | CDC path, or `auto` / `scan` to find the keychain (`0483:5710`) |
 | `USB_BAUD_RATE` | no | `115200` | Serial baud rate |
 | `PQC_CERTS_DIR` | no | `certs` | Root of the cert tree |
 | `USERAPP_OWNER_CERT` | no | `user/user-cert.pem` | Owner ML-DSA leaf if PKCS#12 is absent |

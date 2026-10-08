@@ -110,7 +110,11 @@ public final class TerminalApp {
         bridgeThread.setDaemon(true);
         bridgeThread.start();
         System.out.println("USB redirect enabled: " + serialPort + " -> " + nodeHost + ":" + nativePort
-                + " (TerminalApp sends PROVISION, then dumb-forwards; waiting for device if not present)");
+                + " (TerminalApp sends PROVISION, then dumb-forwards; "
+                + (SeUsbLink.isAutoPort(serialPort)
+                        ? "scanning for the keychain CDC device"
+                        : "waiting for device if not present")
+                + ")");
     }
 
     /** Lab sets {@code USB_SERIAL_PORT=none} while UserApp owns the cable. */

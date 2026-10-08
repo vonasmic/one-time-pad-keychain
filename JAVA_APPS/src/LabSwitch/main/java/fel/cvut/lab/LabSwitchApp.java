@@ -68,10 +68,10 @@ public final class LabSwitchApp {
                         + " native=" + n.nativePort()
                         + " terminal=" + n.terminalPort()));
         if (state.holdsTerminal()) {
-            System.out.println("[lab] SAE owns USB on both PTYs"
+            System.out.println("[lab] SAE owns USB on both clients"
                     + " (terminal-1/2 PROVISION; userapp-1/2 idle)");
         } else {
-            System.out.println("[lab] USER owns USB on both PTYs"
+            System.out.println("[lab] USER owns USB on both clients"
                     + " (userapp-1/2 ENCRYPT/DECRYPT / bring-up;"
                     + " terminal-1/2 stay on gateways without USB)");
         }

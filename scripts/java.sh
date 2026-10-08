@@ -177,6 +177,18 @@ lab() {
   run_module lab-switch
 }
 
+# TSV: name, row, then arguments to this script. run-all.sh selects names.
+list_panes() {
+  printf '%s\n' \
+    $'node-1\tsaes\tnode\tenv/node-1.env' \
+    $'node-2\tsaes\tnode\tenv/node-2.env' \
+    $'terminal-1\tterminals\tlab-terminal\t1' \
+    $'terminal-2\tterminals\tlab-terminal\t2' \
+    $'userapp-1\tuserapps\tlab-userapp\t1' \
+    $'userapp-2\tuserapps\tlab-userapp\t2' \
+    $'lab\tlab\tlab'
+}
+
 case "${1:-}" in
   compile) compile ;;
   certgen) certgen ;;
@@ -187,9 +199,10 @@ case "${1:-}" in
   lab-terminal) shift; lab_terminal "${1:-}" ;;
   lab-userapp) shift; lab_userapp "${1:-}" ;;
   lab) shift; lab "$@" ;;
+  list-panes) list_panes ;;
   -h|--help|"")
     cat <<EOF
-Usage: $(basename "$0") compile|certgen|migrate|node ENV|terminal [ENV]|userapp [ENV]|lab-terminal 1|2|lab-userapp 1|2|lab [CMD]
+Usage: $(basename "$0") compile|certgen|migrate|node ENV|terminal [ENV]|userapp [ENV]|lab-terminal 1|2|lab-userapp 1|2|lab [CMD]|list-panes
 EOF
     [[ -n "${1:-}" ]] || exit 1
     ;;

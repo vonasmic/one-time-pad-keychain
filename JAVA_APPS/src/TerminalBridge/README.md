@@ -38,7 +38,7 @@ when owner is SAE — both terminals get USB together.
 - Terminal identity provisioned by [CertGenerator](../CertGenerator/README.md)
   (`CERTGEN_NODES` includes `Terminal`, or whatever `TLS_NODE_ID` you use)
 - A [SaeNode](../SaeNode/README.md) already listening on `NODE_TERMINAL_PORT`
-- A CDC ACM device (default `/dev/ttyACM0`) and `NODE_NATIVE_PORT` for the USB↔TCP pipe
+- A CDC ACM device (default `auto`, which scans for the keychain) and `NODE_NATIVE_PORT` for the USB↔TCP pipe
 
 ## How to run
 
@@ -68,7 +68,7 @@ Template: [`env/example/terminal.env.example`](../../env/example/terminal.env.ex
 | `NODE_HOSTNAME` | **yes** | — | Hostname of the node to operate |
 | `NODE_TERMINAL_PORT` | **yes** | — | That node's terminal gateway port |
 | `NODE_NATIVE_PORT` | **yes** | — | Node TLS command server (USB↔TCP pump destination) |
-| `USB_SERIAL_PORT` | no | `/dev/ttyACM0` | CDC ACM path; `none` / `off` / `disabled` skips the USB bridge |
+| `USB_SERIAL_PORT` | no | `auto` | CDC path, or `auto` / `scan` to find the keychain (`0483:5710`); `none` / `off` / `disabled` skips the USB bridge |
 | `USB_BAUD_RATE` | no | `115200` | Serial baud rate |
 
 HSM connection (`HSM_DEVICE`, `HSM_USER`, `HSM_PIN`, …) comes from `env/hsm.env`, same

@@ -25,12 +25,19 @@ import java.util.Objects;
  * {@code close_notify}. The chip stays in TLS until that alert (and its own)
  * complete, then {@link #resetConsole} drains back to ASCII.
  *
- * <p>Serial path is {@code USB_SERIAL_PORT}. SAE host/ports are the process
- * {@code NODE_HOSTNAME} / {@code NODE_NATIVE_PORT} / {@code NODE_TERMINAL_PORT}.
+ * <p>Serial path is {@code USB_SERIAL_PORT}. {@code auto} (the default) scans for the
+ * keychain CDC device instead of a fixed {@code /dev/ttyACM*} node. An explicit path
+ * is opened as given. SAE host/ports are the process {@code NODE_HOSTNAME} /
+ * {@code NODE_NATIVE_PORT} / {@code NODE_TERMINAL_PORT}.
  */
 public final class SeUsbLink implements AutoCloseable {
 
-    public static final String DEFAULT_PORT = "/dev/ttyACM0";
+    /** Scan for the board. {@code scan} is the same token. */
+    public static final String DEFAULT_PORT = "auto";
+
+    public static boolean isAutoPort(String name) {
+        return CdcPortScan.isAuto(name);
+    }
     public static final int DEFAULT_BAUD = 115200;
     /**
      * Firmware {@code TLS_CMD_MAX}: short ASCII command plus unix time.
@@ -70,9 +77,10 @@ public final class SeUsbLink implements AutoCloseable {
 
     public static SeUsbLink open(String serialPortName, int baudRate) throws InterruptedException {
         Objects.requireNonNull(serialPortName, "serialPortName");
-        SerialPort serial = openWhenPresent(serialPortName, baudRate);
-        System.out.println("[usb] Opened " + serialPortName + " @ " + baudRate);
-        return new SeUsbLink(serialPortName, serial);
+        String resolved = CdcPortScan.isAuto(serialPortName) ? waitForScannedPort() : serialPortName;
+        SerialPort serial = openWhenPresent(resolved, baudRate);
+        System.out.println("[usb] Opened " + resolved + " @ " + baudRate);
+        return new SeUsbLink(resolved, serial);
     }
 
     public synchronized void sendCommand(String command) throws IOException {
@@ -372,6 +380,25 @@ public final class SeUsbLink implements AutoCloseable {
             }
         }
         throw new InterruptedException("Interrupted while waiting for " + serialPortName);
+    }
+
+    private static String waitForScannedPort() throws InterruptedException {
+        String lastLog = null;
+        while (!Thread.currentThread().isInterrupted()) {
+            var seen = CdcPortScan.list();
+            String chosen = CdcPortScan.choose(seen);
+            if (chosen != null && Files.exists(Path.of(chosen))) {
+                System.out.println("[usb] Using " + chosen);
+                return chosen;
+            }
+            String log = CdcPortScan.waitMessage(seen);
+            if (!log.equals(lastLog)) {
+                System.out.println(log);
+                lastLog = log;
+            }
+            Thread.sleep(POLL_INTERVAL_MS);
+        }
+        throw new InterruptedException("Interrupted while scanning for a CDC device");
     }
 
     private final class TlsInputStream extends InputStream {
