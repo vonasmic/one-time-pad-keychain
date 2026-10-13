@@ -4,9 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CdcPortScanTest {
 
@@ -14,8 +12,8 @@ class CdcPortScanTest {
     void autoTokens() {
         assertTrue(CdcPortScan.isAuto("auto"));
         assertTrue(CdcPortScan.isAuto("SCAN"));
-        assertTrue(!CdcPortScan.isAuto("/dev/ttyACM1"));
-        assertTrue(!CdcPortScan.isAuto(null));
+        assertFalse(CdcPortScan.isAuto("/dev/ttyACM1"));
+        assertFalse(CdcPortScan.isAuto(null));
     }
 
     @Test
@@ -39,14 +37,6 @@ class CdcPortScanTest {
                 new CdcPortScan.Seen("/dev/ttyACM1", -1, -1));
         assertNull(CdcPortScan.choose(ports));
         assertTrue(CdcPortScan.waitMessage(ports).contains("ttyACM0"));
-    }
-
-    @Test
-    void waitsWhenTwoKeychainsArePlugged() {
-        var ports = List.of(
-                new CdcPortScan.Seen("/dev/ttyACM0", CdcPortScan.STM_VID, CdcPortScan.KEYCHAIN_PID),
-                new CdcPortScan.Seen("/dev/ttyACM3", CdcPortScan.STM_VID, CdcPortScan.KEYCHAIN_PID));
-        assertNull(CdcPortScan.choose(ports));
     }
 
     @Test

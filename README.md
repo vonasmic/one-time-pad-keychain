@@ -2,8 +2,9 @@
 
 QKD-backed one-time-pad keychain: a TrustZone STM32U535 device stores pads on TROPIC01.
 The device is a TLS client and connects to **two** Java applications over USB CDC:
-**USER** (UserApp: encrypt / decrypt / manage) and **SAE** (SaeNode via TerminalBridge:
-provision / QKD fill). UserApp is not an SAE.
+**USER** (UserApp: encrypt / decrypt / manage) and **SAE** (SaeNode:
+provision / QKD fill). UserApp is not an SAE. CDC bytes are framed (`0x00` command,
+`0x01` Secure payload); see [COMMUNICATION.md](stm32u535-trustzone-usb/docs/COMMUNICATION.md).
 
 ## Contents
 
@@ -18,7 +19,7 @@ provision / QKD fill). UserApp is not an SAE.
 
 | Path | Role |
 | --- | --- |
-| [`JAVA_APPS/`](JAVA_APPS/README.md) | SaeNode (SAE), UserApp (USER), TerminalBridge, CertGenerator, LabSwitch |
+| [`JAVA_APPS/`](JAVA_APPS/README.md) | SaeNode (SAE), UserApp (USER), CertGenerator, LabSwitch |
 | [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) | Current SE firmware (CubeIDE `SE_firmware`) + host `se_host` |
 | [`ultimaco/`](ultimaco/hsm-simulator/README.md) | Drop-in location for Utimaco HSM + Quantum Protect SDKs |
 | [`scripts/`](scripts/) | `run-all.sh`, `java.sh`, `host.sh`, `hsm.sh` |
@@ -33,7 +34,7 @@ Start the Windows HSM simulator yourself (`cs_sim.bat` — [JAVA_APPS HSM setup]
 ./run-all.sh
 ```
 
-That builds `se_host`, migrates the node databases, and opens a tmux session with two Tropic models, two SAE nodes, TerminalBridge, UserApp, LabSwitch, and two simulated keychains. Details: [`RUN_ALL.md`](RUN_ALL.md).
+That builds `se_host`, migrates the node databases, and opens a tmux session with two Tropic models, two SAE nodes, UserApp, LabSwitch, and two simulated keychains. Details: [`RUN_ALL.md`](RUN_ALL.md).
 
 ## Firmware
 
@@ -45,14 +46,13 @@ The device enumerates as USB CDC ACM. Arm TLS with `PROVISION` (SAE) / `ENCRYPT`
 
 ## Java applications
 
-**USER** = [`UserApp`](JAVA_APPS/src/UserApp/README.md). **SAE** = [`SaeNode`](JAVA_APPS/src/SaeNode/README.md) plus [`TerminalBridge`](JAVA_APPS/src/TerminalBridge/README.md) for the USB relay. They are different processes; only one may open CDC.
+**USER** = [`UserApp`](JAVA_APPS/src/UserApp/README.md). **SAE** = [`SaeNode`](JAVA_APPS/src/SaeNode/README.md). They are different processes; only one may open CDC. Operator SELECT / CONFIRM / NOTIFY is SaeNode stdin.
 
 Working directory for Maven is `JAVA_APPS` (so `certs/` and `env/` resolve). Wrappers from the repo root:
 
 ```bash
 scripts/java.sh certgen
 scripts/java.sh node env/node-1.env
-scripts/java.sh terminal
 scripts/java.sh userapp
 ```
 

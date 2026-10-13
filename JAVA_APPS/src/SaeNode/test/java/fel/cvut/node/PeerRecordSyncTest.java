@@ -73,6 +73,8 @@ class PeerRecordSyncTest {
                 AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE,
                 peerMap.get(HASH_2, HASH_1).orElseThrow().recordAvailability()
         );
+        assertEquals(SaeFixtures.padPlain(), originMap.get(HASH_1, HASH_2).orElseThrow().padPlainLen());
+        assertEquals(SaeFixtures.padPlain(), peerMap.get(HASH_2, HASH_1).orElseThrow().padPlainLen());
     }
 
     @Test

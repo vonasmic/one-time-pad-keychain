@@ -43,9 +43,11 @@
                 <configuration>
                     <includes>
                         <include>fel/cvut/se/**</include>
+                        <include>fel/cvut/terminal/**</include>
                     </includes>
                     <testIncludes>
                         <testInclude>fel/cvut/se/**</testInclude>
+                        <testInclude>fel/cvut/terminal/**</testInclude>
                     </testIncludes>
                 </configuration>
             </plugin>

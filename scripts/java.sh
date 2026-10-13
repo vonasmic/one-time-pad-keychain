@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Java SAE apps: certgen, migrate, node, terminal, userapp.
-# lab-terminal / lab-userapp wrap those apps for the run-all tmux panes.
+# Java SAE apps: certgen, migrate, node, userapp.
+# lab-node / lab-userapp wrap those apps for the run-all tmux panes.
 set -euo pipefail
 # shellcheck source=common.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
@@ -30,21 +30,6 @@ ensure_env_files() {
   [[ -f "$JAVA_DIR/env/hsm.env" ]] || die "missing $JAVA_DIR/env/hsm.env"
   [[ -f "$JAVA_DIR/env/node-1.env" ]] || die "missing $JAVA_DIR/env/node-1.env"
   [[ -f "$JAVA_DIR/env/node-2.env" ]] || die "missing $JAVA_DIR/env/node-2.env"
-  if [[ ! -f "$JAVA_DIR/env/terminal-1.env" ]]; then
-    log "creating env/terminal-1.env from example"
-    cp "$JAVA_DIR/env/example/terminal.env.example" "$JAVA_DIR/env/terminal-1.env"
-  fi
-  if [[ ! -f "$JAVA_DIR/env/terminal-2.env" ]]; then
-    log "creating env/terminal-2.env for SAE 2"
-    cat >"$JAVA_DIR/env/terminal-2.env" <<'EOF'
-# Terminal 2 — operates SAE 2 (node-2). See src/TerminalBridge/README.md.
-TLS_NODE_ID=Terminal
-NODE_HOSTNAME=127.0.0.1
-NODE_TERMINAL_PORT=11113
-NODE_NATIVE_PORT=5020
-USB_SERIAL_PORT=/tmp/ttyACM-se2
-EOF
-  fi
   if [[ ! -f "$JAVA_DIR/env/userapp-1.env" ]]; then
     if [[ -f "$JAVA_DIR/env/userapp.env" ]]; then
       log "creating env/userapp-1.env from env/userapp.env"
@@ -94,16 +79,9 @@ node() {
   cd "$JAVA_DIR"
   source_env env/hsm.env
   source_env "$env_file"
-  run_module sae-node
-}
-
-terminal() {
-  local env_file="${1:-env/terminal-1.env}"
-  cd "$JAVA_DIR"
-  source_env env/hsm.env
-  source_env "$env_file"
   unset USB_LAB_FILE
-  run_module terminal-bridge
+  unset USB_LAB_CLIENT
+  run_module sae-node
 }
 
 userapp() {
@@ -128,23 +106,25 @@ lab_file() {
 }
 
 # Lab panes: 1 → client-1 / SAE 1, 2 → client-2 / SAE 2. USER/SAE toggles USB owner
-# for both clients at once (no CL switch).
-lab_terminal() {
+# for both clients at once (no CL switch). lab-run kills and restarts the node
+# JVM so the serial port is freed; the node process does not read the lab file.
+lab_node() {
   local which="${1:-1}"
   case "$which" in
     1|2) ;;
-    *) die "usage: java.sh lab-terminal 1|2" ;;
+    *) die "usage: java.sh lab-node 1|2" ;;
   esac
   cd "$JAVA_DIR"
   source_env env/hsm.env
-  source_env "env/terminal-${which}.env"
+  source_env "env/node-${which}.env"
   local file client
   file="$(lab_file)"
   client="client-${which}"
   unset USB_LAB_FILE
-  exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role terminal \
+  unset USB_LAB_CLIENT
+  exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role node \
     --fixed-client "$client" -- \
-    mvn -pl :terminal-bridge exec:java
+    mvn -q -pl :sae-node exec:java
 }
 
 lab_userapp() {
@@ -180,10 +160,8 @@ lab() {
 # TSV: name, row, then arguments to this script. run-all.sh selects names.
 list_panes() {
   printf '%s\n' \
-    $'node-1\tsaes\tnode\tenv/node-1.env' \
-    $'node-2\tsaes\tnode\tenv/node-2.env' \
-    $'terminal-1\tterminals\tlab-terminal\t1' \
-    $'terminal-2\tterminals\tlab-terminal\t2' \
+    $'node-1\tsaes\tlab-node\t1' \
+    $'node-2\tsaes\tlab-node\t2' \
     $'userapp-1\tuserapps\tlab-userapp\t1' \
     $'userapp-2\tuserapps\tlab-userapp\t2' \
     $'lab\tlab\tlab'
@@ -194,15 +172,14 @@ case "${1:-}" in
   certgen) certgen ;;
   migrate) migrate ;;
   node) shift; node "${1:-}" ;;
-  terminal) shift; terminal "${1:-}" ;;
   userapp) shift; userapp "${1:-}" ;;
-  lab-terminal) shift; lab_terminal "${1:-}" ;;
+  lab-node) shift; lab_node "${1:-}" ;;
   lab-userapp) shift; lab_userapp "${1:-}" ;;
   lab) shift; lab "$@" ;;
   list-panes) list_panes ;;
   -h|--help|"")
     cat <<EOF
-Usage: $(basename "$0") compile|certgen|migrate|node ENV|terminal [ENV]|userapp [ENV]|lab-terminal 1|2|lab-userapp 1|2|lab [CMD]|list-panes
+Usage: $(basename "$0") compile|certgen|migrate|node ENV|userapp [ENV]|lab-node 1|2|lab-userapp 1|2|lab [CMD]|list-panes
 EOF
     [[ -n "${1:-}" ]] || exit 1
     ;;

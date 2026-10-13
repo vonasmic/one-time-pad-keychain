@@ -122,9 +122,11 @@ class SeManageTest {
     @Test
     void peerAndReplaceAndCertBodiesRoundTripInsideRequest() throws Exception {
         byte[] hash = filled(SeConstants.PEER_HASH_LEN, (byte) 0x11);
-        byte[] add = SeManage.encodePeerAddBody("Alice", hash);
-        assertEquals(1 + 5 + 48, add.length);
+        byte[] add = SeManage.encodePeerAddBody("Alice", hash, 446);
+        assertEquals(1 + 5 + 48 + 2, add.length);
         assertEquals(5, add[0] & 0xFF);
+        assertEquals(446, (add[54] & 0xFF) | ((add[55] & 0xFF) << 8));
+        assertThrows(IllegalArgumentException.class, () -> SeManage.encodePeerAddBody("Alice", hash, 0));
 
         byte[] remove = SeManage.encodePeerRemoveBody("Alice");
         assertArrayEquals(new byte[] {5, 'A', 'l', 'i', 'c', 'e'}, remove);

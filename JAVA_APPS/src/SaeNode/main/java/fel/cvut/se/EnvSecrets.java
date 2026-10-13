@@ -1,5 +1,7 @@
 package fel.cvut.se;
 
+import fel.cvut.terminal.AppLogging;
+
 import java.io.Console;
 import java.io.IOException;
 import java.util.Map;
@@ -58,8 +60,8 @@ public final class EnvSecrets {
             }
             return new String(pw);
         }
-        System.out.print(name + ": ");
-        System.out.flush();
+        AppLogging.terminalOut().print(name + ": ");
+        AppLogging.terminalOut().flush();
         try {
             StringBuilder sb = new StringBuilder();
             while (true) {

@@ -24,6 +24,10 @@
             <artifactId>tls-hsm</artifactId>
         </dependency>
         <dependency>
+            <groupId>fel.cvut</groupId>
+            <artifactId>usb-cdc</artifactId>
+        </dependency>
+        <dependency>
             <groupId>de.utimaco</groupId>
             <artifactId>cryptoservercxi</artifactId>
             <version>local</version>
@@ -36,10 +40,6 @@
             <version>local</version>
             <scope>system</scope>
             <systemPath>${maven.multiModuleProjectDirectory}/vendor/securityserver-jce.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>fel.cvut</groupId>
-            <artifactId>terminal-bridge</artifactId>
         </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
@@ -104,6 +104,7 @@
                 <configuration>
                     <excludes>
                         <exclude>fel/cvut/se/**</exclude>
+                        <exclude>fel/cvut/terminal/**</exclude>
                         <exclude>fel/cvut/tls/SoftwareTls.java</exclude>
                         <exclude>fel/cvut/tls/SoftwareLeaf.java</exclude>
                         <exclude>fel/cvut/tls/TlsStores.java</exclude>
@@ -113,6 +114,7 @@
                     </excludes>
                     <testExcludes>
                         <testExclude>fel/cvut/se/**</testExclude>
+                        <testExclude>fel/cvut/terminal/**</testExclude>
                         <testExclude>fel/cvut/tls/NodeTlsSoftwareIdentityTest.java</testExclude>
                         <testExclude>fel/cvut/utimaco/HsmLiveNoFallbackTest.java</testExclude>
                     </testExcludes>

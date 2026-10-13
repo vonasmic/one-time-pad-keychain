@@ -1,16 +1,15 @@
 # JAVA_APPS
 
-Java applications using **Bouncy Castle JSSE** for the TLS protocol engine, **Utimaco SecurityServer JCE** for classical crypto (SAE / CertGenerator / TerminalBridge), and **PQMI** for HSM ML-DSA identity signing. **UserApp does not use the HSM.**
+Java applications using **Bouncy Castle JSSE** for the TLS protocol engine, **Utimaco SecurityServer JCE** for classical crypto (SAE / CertGenerator), and **PQMI** for HSM ML-DSA identity signing. **UserApp does not use the HSM.**
 
-The device connects to **two** of these processes over USB CDC: **USER** (UserApp) and **SAE** (SaeNode, usually via TerminalBridge). UserApp is not an SAE.
+The device connects to **two** of these processes over USB CDC: **USER** (UserApp) and **SAE** (SaeNode). UserApp is not an SAE. CDC is framed (`fel.cvut.usb.UsbFrame` in `usb-cdc`): type `0x00` is a console command, type `0x01` is a Secure payload (TLS or the OWNER SET blob). Each app terminates TLS on that stream.
 
-Applications live under `src/`. Maven modules: `se-wire`, `usb-cdc`, `tls-software`, `tls-hsm`, `cert-generator`, `user-app`, `sae-node`, `terminal-bridge`, `lab-switch`. Run every `mvn -pl :<module> -am exec:java` from `JAVA_APPS` so `certs/` and `env/` resolve. UserApp depends on `tls-software` only (no HSM / RMI / DB).
+Applications live under `src/`. Maven modules: `se-wire`, `usb-cdc`, `tls-software`, `tls-hsm`, `cert-generator`, `user-app`, `lab-switch`, `sae-node`. Run every `mvn -pl :<module> -am exec:java` from `JAVA_APPS` so `certs/` and `env/` resolve. UserApp depends on `tls-software` only (no HSM / RMI / DB).
 
 | Application | Entry point | README |
 | --- | --- | --- |
 | [CertGenerator](src/CertGenerator/README.md) | `fel.cvut.certGen.CertGenerator` | PKI / HSM provision |
-| [SaeNode](src/SaeNode/README.md) | `fel.cvut.node.Node` | **SAE**: QKD, DB, RMI, provision TLS server |
-| [TerminalBridge](src/TerminalBridge/README.md) | `fel.cvut.terminalapp.TerminalApp` | SAE operator console + USB relay for `PROVISION` |
+| [SaeNode](src/SaeNode/README.md) | `fel.cvut.node.Node` | **SAE**: QKD, DB, RMI, USB `PROVISION`, operator stdin |
 | [UserApp](src/UserApp/README.md) | `fel.cvut.userapp.UserApplication` | **USER**: USB OTP encrypt / decrypt / manage (not SAE) |
 | [LabSwitch](src/LabSwitch/README.md) | `fel.cvut.lab.LabSwitchApp` | Lab USB owner USER/SAE (`./run-all.sh`; dual panes) |
 
@@ -24,8 +23,8 @@ Applications live under `src/`. Maven modules: `se-wire`, `usb-cdc`, `tls-softwa
 ## TLS
 
 - Profiles: `SoftwareTls.TlsProfile.PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44 only) and `CLASSICAL` (same PQC preferred, then TLS 1.2 + x25519 / classical signatures)
-- Inter-node RMI and the terminal gateway use `PURE_PQC` with SAE `root-ca` trust
-- The SAE inbound command server (`NODE_NATIVE_PORT`) uses `PURE_PQC` with the same HSM node identity; client auth trusts `client_ca` (**device** certs for `PROVISION`). UserApp is a separate TLS server over CDC and is not this socket.
+- Inter-node RMI uses `PURE_PQC` with SAE `root-ca` trust
+- Device `PROVISION` uses `PURE_PQC` on USB CDC with the same HSM node identity; client auth trusts `client_ca` (**device** certs). UserApp is a separate TLS server over CDC for `ENCRYPT` / `DECRYPT` / `MANAGE`.
 - QKD KME mTLS uses `CLASSICAL` with CryptoServer HSM keys (`CertGenerator` imports `certs/qkd/*-client.p12` → `QKD_HSM_KEY_ALIAS`); truststore is public KME CA only
 - Node identity: `CertGenerator` (`env/certgen.env`) → listed node PEMs + HSM keys, client CA, and QuKayDee PKCS#12 import
 
@@ -61,11 +60,14 @@ switch statement.
 
 `Node` owns a `Pqmi` config handle and `SSLContext`; `TlsProviders.install` keeps one logged-in CryptoServer JCE provider for the JVM. Both paths use `HsmGate` so CXI and JCE never overlap on the HSM.
 
-How to run the operator console and USB↔TCP pump:
-[`src/TerminalBridge/README.md`](src/TerminalBridge/README.md).
+How to run a node (operator stdin + USB provision):
+[`src/SaeNode/README.md`](src/SaeNode/README.md).
 
 How to run the USB OTP encrypt/decrypt console (no HSM):
 [`src/UserApp/README.md`](src/UserApp/README.md).
+
+Shared CDC helpers:
+[`src/TerminalBridge/README.md`](src/TerminalBridge/README.md).
 
 Node identity is `certs/{Node}.pem` plus the HSM key (`{HSM_MLDSA_GROUP}/{Node}`).
 
@@ -208,7 +210,7 @@ not visible in shell history, process listings, or committed config.
 
 | Secret | Used by |
 | --- | --- |
-| `HSM_PIN` | SaeNode, CertGenerator, TerminalBridge (via `Pqmi`) |
+| `HSM_PIN` | SaeNode, CertGenerator (via `Pqmi`) |
 | `PKCS12_PASSWORD` | CertGenerator (CA / QuKayDee PKCS#12) |
 | `QKD_TRUSTSTORE_PASSWORD` (or `QKD_KEYSTORE_PASSWORD`) | SaeNode, Qkd014Demo |
 | `USERAPP_OWNER_P12_PASSWORD` | UserApp |

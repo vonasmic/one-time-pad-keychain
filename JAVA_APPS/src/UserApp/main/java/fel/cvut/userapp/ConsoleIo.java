@@ -16,7 +16,7 @@ final class ConsoleIo {
 
     static String readPin(Scanner sc) {
         while (true) {
-            System.out.print(ChipInit.TROPIC_PIN_PROMPT);
+            ConsoleStyle.prompt(ChipInit.TROPIC_PIN_PROMPT);
             if (!sc.hasNextLine()) {
                 return null;
             }
@@ -24,25 +24,25 @@ final class ConsoleIo {
             if (SeManage.pinOk(pin)) {
                 return pin;
             }
-            System.err.println("Tropic PIN must be 8 to 16 printable ASCII characters.");
+            ConsoleStyle.err("Tropic PIN must be 8 to 16 printable ASCII characters.");
         }
     }
 
     static String readRequired(Scanner sc, String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.prompt(prompt);
         if (!sc.hasNextLine()) {
             return null;
         }
         String value = sc.nextLine().strip();
         if (value.isEmpty()) {
-            System.err.println("Value must not be empty.");
+            ConsoleStyle.err("Value must not be empty.");
             return null;
         }
         return value;
     }
 
     static String readLine(Scanner sc, String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.prompt(prompt);
         if (!sc.hasNextLine()) {
             return null;
         }
@@ -50,14 +50,14 @@ final class ConsoleIo {
     }
 
     static byte[] readEncryptReplyHex(Scanner sc, byte[] lastEncryptReply) {
-        System.out.print("Encrypt reply hex (empty = last): ");
+        ConsoleStyle.prompt("Encrypt reply hex (empty = last): ");
         if (!sc.hasNextLine()) {
             return null;
         }
         String line = sc.nextLine().trim();
         if (line.isEmpty()) {
             if (lastEncryptReply == null || lastEncryptReply.length == 0) {
-                System.err.println("No previous encrypt reply. Paste the hex from ENCRYPT.");
+                ConsoleStyle.err("No previous encrypt reply. Paste the hex from ENCRYPT.");
                 return null;
             }
             return lastEncryptReply;
@@ -67,7 +67,7 @@ final class ConsoleIo {
             SecureOtp.decodeEncryptReply(raw);
             return raw;
         } catch (Exception e) {
-            System.err.println("Invalid encrypt reply: " + e.getMessage());
+            ConsoleStyle.err("Invalid encrypt reply: " + e.getMessage());
             return null;
         }
     }

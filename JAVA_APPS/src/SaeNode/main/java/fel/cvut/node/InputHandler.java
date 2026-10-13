@@ -49,11 +49,14 @@ public class InputHandler {
         Objects.requireNonNull(uplink, "uplink must not be null");
         Objects.requireNonNull(operatorConsole, "operatorConsole must not be null");
         ClientSelector.Selection selection = selectTarget(uplink, saeNodes, operatorConsole);
+        SeSessionUplink.PeerEntry peer = uplink.peerByHashHex(selection.clientId());
+        int negotiated = Math.min(uplink.plainMax(), peer.padPlain());
         ClientRecord record = new ClientRecord(
                 uplink.clientHashHex(),
                 selection.clientId(),
                 List.of(),
-                selection.saeId()
+                selection.saeId(),
+                negotiated
         );
         return new OperatorSelection(record, uplink);
     }

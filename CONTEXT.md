@@ -4,7 +4,7 @@ QKD-backed one-time-pad **keychain**: a TrustZone STM32U535 **device** stores pa
 The device is a TLS client. Two host processes own USB CDC, one at a time:
 
 - **USER** — UserApp: encrypt / decrypt / manage. Not an SAE.
-- **SAE** — SaeNode, usually via TerminalBridge: provision / QKD fill.
+- **SAE** — SaeNode: provision / QKD fill (USB CDC + stdin operator prompts).
 
 ## Owner
 
@@ -19,7 +19,7 @@ KEM INIT, KEYGEN, PEER ADD/REMOVE, CREDS, OWNER REPLACE, PAIRING.
 
 Mutating Tropic ops (KEYGEN, KEM INIT, pairing, peer changes) go only
 through MANAGE. USB keeps read-only dumps: PING, INFO, PUB, KEM PUB, OTP STATUS,
-PEER LIST, CLIENT HASH/CSR.
+PEER LIST, CLIENT HASH/CSR, TROPIC PAD LEN.
 
 USB errors are the single ASCII line `failed`. Dump status is occupancy/protocol
 only (`ok` / `err` / `empty` / `refused`) — Tropic, TLS, and auth failure types

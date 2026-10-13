@@ -11,10 +11,8 @@ import fel.cvut.node.recordManager.SharedKeyMaterialStore;
 import fel.cvut.qkd.Qkd014Client;
 import fel.cvut.utimaco.HsmAesGcm;
 
-import javax.net.ssl.SSLSocket;
 import javax.sql.DataSource;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * Composition root that owns shared singletons and builds the {@link Node} object graph.
@@ -38,21 +36,15 @@ public final class NodeBootstrap {
     /**
      * Wires collaborators and returns a ready-to-start {@link Node}.
      *
-     * @param selfRef             local node reference
-     * @param tlsNodeId           TLS identity used for RMI PQC context loading
-     * @param commandServerPort   TLS command server listening port ({@code NODE_NATIVE_PORT})
-     * @param terminalGatewayPort TLS terminal gateway port for the standalone terminal app ({@code NODE_TERMINAL_PORT})
-     * @param qkdClient           QKD client for KME API access
-     * @param commandHandler      per-connection handler for command sockets
+     * @param selfRef   local node reference
+     * @param tlsNodeId TLS identity used for RMI PQC context loading
+     * @param qkdClient QKD client for KME API access
      * @return configured node instance (not yet started)
      */
     public Node create(
             NodeRef selfRef,
             String tlsNodeId,
-            int commandServerPort,
-            int terminalGatewayPort,
-            Qkd014Client qkdClient,
-            Consumer<SSLSocket> commandHandler
+            Qkd014Client qkdClient
     ) {
         Objects.requireNonNull(selfRef, "selfRef must not be null");
         Objects.requireNonNull(selfRef.getAddress(), "selfRef.address must not be null");
@@ -73,16 +65,14 @@ public final class NodeBootstrap {
                 clientRecordStateRepository,
                 recordRetention.retention()
         );
-        NodeCommands nodeCommands = new NodeCommandsService(selfRef, stateMap, qkdClient, store);
         RmiManager rmiManager = new RmiManager(selfRef.getAddress());
+        NodeCommands nodeCommands = new NodeCommandsService(
+                selfRef, stateMap, qkdClient, store, OriginShareAccess.viaRmi(rmiManager));
 
         return new Node(
                 selfRef,
                 tlsNodeId,
-                commandServerPort,
-                terminalGatewayPort,
                 qkdClient,
-                commandHandler,
                 stateMap,
                 store,
                 nodeCommands,

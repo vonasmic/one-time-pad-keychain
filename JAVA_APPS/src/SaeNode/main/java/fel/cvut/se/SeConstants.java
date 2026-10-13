@@ -6,11 +6,15 @@ package fel.cvut.se;
  */
 public final class SeConstants {
 
-    public static final int LV_DOWNLINK_VERSION = 2;
-    public static final int LV_UPLINK_VERSION = 4;
+    public static final int LV_DOWNLINK_VERSION = 3;
+    public static final int LV_UPLINK_VERSION = 5;
     public static final int LV_UPLINK_FIXED_ITEMS = 7;
-    /** Downlink v2 item 1: which pad half this device uses for decrypt. */
+    /** Hash, nickname, Tropic plaintext pad length. */
+    public static final int LV_UPLINK_PEER_ITEMS = 3;
+    /** Downlink v3 item 1: which pad half this device uses for decrypt. */
     public static final int DECRYPT_HALF_LEN = 1;
+    /** Downlink v3 item 2: SAE-chosen plaintext bytes per pad. */
+    public static final int PAD_PLAIN_LEN = 2;
     public static final byte DECRYPT_HALF_ORIGIN = 0;
     public static final byte DECRYPT_HALF_PEER = 1;
 
@@ -43,7 +47,8 @@ public final class SeConstants {
     public static final int RMEM_SLOT_MAX = 475;
 
     /** Max sum of downlink key payload bytes (framing not counted). Matches firmware. */
-    public static final int QKD_MAX_BYTES = MLKEM_CT_LEN + PAD_COUNT * RMEM_SLOT_MAX;
+    public static final int QKD_MAX_BYTES =
+            MLKEM_CT_LEN + DECRYPT_HALF_LEN + PAD_PLAIN_LEN + PAD_COUNT * RMEM_SLOT_MAX;
 
     public static final int PIN_SIZE_MIN = 8;
     public static final int PIN_SIZE_MAX = 16;

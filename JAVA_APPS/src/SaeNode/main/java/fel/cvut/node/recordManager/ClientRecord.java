@@ -6,13 +6,23 @@ import java.util.Objects;
 
 public class ClientRecord implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final ClientHeader clientHeader;
     private final ClientData clientData;
 
     public ClientRecord(String clientHash1, String clientHash2, List<String> payload, String secondSaeId) {
-        this(new ClientHeader(clientHash1, clientHash2, secondSaeId), new ClientData(payload));
+        this(clientHash1, clientHash2, payload, secondSaeId, 0);
+    }
+
+    public ClientRecord(
+            String clientHash1,
+            String clientHash2,
+            List<String> payload,
+            String secondSaeId,
+            int padPlainLen
+    ) {
+        this(new ClientHeader(clientHash1, clientHash2, secondSaeId, padPlainLen), new ClientData(payload));
     }
 
     public ClientRecord(ClientHeader clientHeader, ClientData clientData) {
@@ -50,7 +60,12 @@ public class ClientRecord implements Serializable {
 
     public ClientRecord withSecondSaeId(String secondSaeId) {
         return new ClientRecord(
-                new ClientHeader(clientHeader.clientHash1(), clientHeader.clientHash2(), secondSaeId),
+                new ClientHeader(
+                        clientHeader.clientHash1(),
+                        clientHeader.clientHash2(),
+                        secondSaeId,
+                        clientHeader.padPlainLen()
+                ),
                 clientData
         );
     }
@@ -58,7 +73,12 @@ public class ClientRecord implements Serializable {
     /** Swap hash order for the peer SAE: origin stores (A, B), peer stores (B, A). */
     public ClientRecord withReversedHashes() {
         return new ClientRecord(
-                new ClientHeader(clientHeader.clientHash2(), clientHeader.clientHash1(), clientHeader.saeId()),
+                new ClientHeader(
+                        clientHeader.clientHash2(),
+                        clientHeader.clientHash1(),
+                        clientHeader.saeId(),
+                        clientHeader.padPlainLen()
+                ),
                 clientData
         );
     }
@@ -69,17 +89,22 @@ public class ClientRecord implements Serializable {
                 + "clientHash1='" + clientHeader.clientHash1() + '\''
                 + ", clientHash2='" + clientHeader.clientHash2() + '\''
                 + ", secondSaeId='" + clientHeader.saeId() + '\''
+                + ", padPlainLen=" + clientHeader.padPlainLen()
                 + ", payloadSize=" + clientData.payload().size()
                 + '}';
     }
 
-    public record ClientHeader(String clientHash1, String clientHash2, String saeId) implements Serializable {
-        private static final long serialVersionUID = 1L;
+    public record ClientHeader(String clientHash1, String clientHash2, String saeId, int padPlainLen)
+            implements Serializable {
+        private static final long serialVersionUID = 2L;
 
         public ClientHeader {
             validateNonBlank(clientHash1, "clientHash1");
             validateNonBlank(clientHash2, "clientHash2");
             validateNonBlank(saeId, "saeId");
+            if (padPlainLen < 0 || padPlainLen > 0xFFFF) {
+                throw new IllegalArgumentException("padPlainLen out of range: " + padPlainLen);
+            }
         }
     }
 

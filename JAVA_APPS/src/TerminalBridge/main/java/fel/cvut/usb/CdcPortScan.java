@@ -59,15 +59,12 @@ final class CdcPortScan {
      */
     static String choose(List<Seen> ports) {
         List<String> ids = matching(ports);
-        if (ids.size() == 1) {
-            return ids.get(0);
-        }
-        if (ids.size() > 1) {
-            return null;
+        if (!ids.isEmpty()) {
+            return ids.getFirst();
         }
         List<String> acm = acmPaths(ports);
         if (acm.size() == 1) {
-            return acm.get(0);
+            return acm.getFirst();
         }
         return null;
     }

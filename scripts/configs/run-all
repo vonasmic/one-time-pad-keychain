@@ -9,6 +9,5 @@ serial client-2 /tmp/ttyACM-se2
 tropic-1 tropic-2
 se-host-1 se-host-2
 node-1 node-2
-terminal-1 terminal-2
 userapp-1 userapp-2
 lab

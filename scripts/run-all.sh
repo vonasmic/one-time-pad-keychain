@@ -9,11 +9,10 @@ SESSION="${OTP_TMUX_SESSION:-otp-keychain}"
 LOG_DIR="${OTP_TMUX_LOG_DIR:-$SCRIPTS/logs}"
 CONFIG_DIR="$SCRIPTS/configs"
 
-# lab-run.py puts Maven in a new session so pane SIGHUP does not reach the JVM.
-# Reap those leftovers when the tmux session goes away (and before a new start).
+# SaeNode's HSM library ignores SIGHUP, so tmux pane teardown leaves the JVM
+# up and the RMI port bound. SIGTERM still runs shutdown. Other panes honor hangup.
 reap_lab_jvms() {
-  pkill -TERM -f '[e]xec.mainClass=fel.cvut.terminalapp.TerminalApp' 2>/dev/null || true
-  pkill -TERM -f '[e]xec.mainClass=fel.cvut.userapp.UserApplication' 2>/dev/null || true
+  pkill -TERM -f '[L]auncher .* -pl :sae-node exec:java' 2>/dev/null || true
 }
 
 kill_session() {
@@ -29,7 +28,7 @@ Start the HSM simulator first. CONFIG is a file in scripts/configs/
 (default: run-all). The file lists pane names; it does not define commands.
 
   scripts/host.sh list-panes   tropic / se_host panes
-  scripts/java.sh list-panes   SAE, terminal, userapp, lab panes
+  scripts/java.sh list-panes   SAE, userapp, lab panes
   scripts/hsm.sh               csadm setup if needed
   scripts/java.sh compile      mvn install (local reactor jars)
   scripts/java.sh certgen      CertGenerator
@@ -53,7 +52,7 @@ EOF
   ./run-all-with-hw.sh
 
 run-all-with-hw.sh keeps client-1 on the simulator and points client-2 at
-auto (no second tropic model or se_host). terminal-2 / userapp-2 scan for the
+auto (no second tropic model or se_host). node-2 / userapp-2 scan for the
 keychain CDC device (0483:5710) when they own USB. Pin a node with
 serial client-2 /dev/ttyACM1 in the config if several boards are plugged in.
 
@@ -219,7 +218,7 @@ start_stack() {
   tmux bind-key -n M-Up select-pane -U
   tmux bind-key -n M-Down select-pane -D
   tmux set-hook -t "$SESSION" session-closed \
-    "unbind-key -n M-Left ; unbind-key -n M-Right ; unbind-key -n M-Up ; unbind-key -n M-Down ; run-shell 'pkill -TERM -f \"[e]xec.mainClass=fel.cvut.terminalapp.TerminalApp\" || true; pkill -TERM -f \"[e]xec.mainClass=fel.cvut.userapp.UserApplication\" || true'"
+    "unbind-key -n M-Left ; unbind-key -n M-Right ; unbind-key -n M-Up ; unbind-key -n M-Down ; run-shell 'pkill -TERM -f \"[L]auncher .* -pl :sae-node exec:java\" || true'"
 
   local n=${#ACTIVE_ROWS[@]}
   local i

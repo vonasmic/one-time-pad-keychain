@@ -1,5 +1,6 @@
 package fel.cvut.userapp;
 
+import fel.cvut.terminal.AppLogging;
 import fel.cvut.se.EnvSecrets;
 import fel.cvut.se.SeBytes;
 import fel.cvut.se.SeManage;
@@ -26,6 +27,8 @@ import java.util.Scanner;
 public final class UserApplication {
 
     public static void main(String[] args) throws Exception {
+        AppLogging.bindTerminal();
+        AppLogging.install();
         String serialPort = envOrDefault("USB_SERIAL_PORT", SeUsbLink.DEFAULT_PORT);
         int baudRate = Integer.parseInt(envOrDefault("USB_BAUD_RATE", Integer.toString(SeUsbLink.DEFAULT_BAUD)));
 
@@ -64,8 +67,7 @@ public final class UserApplication {
 
             usb.require();
             while (true) {
-                System.out.print("APP [ENCRYPT/DECRYPT/OTP STATUS/PEER/INIT LAB/INIT PROD/CSR EXPORT/INSERT SIGNED CSR/PAIRING LOAD/OWNER/REPLACE/quit] or chip line: ");
-                System.out.flush();
+                printCommandMenu();
                 if (!sc.hasNextLine()) {
                     return;
                 }
@@ -86,7 +88,7 @@ public final class UserApplication {
                         lastEncryptReply = encryptReply;
                     }
                 } catch (Exception e) {
-                    System.err.println("Command failed: " + e.getMessage());
+                    ConsoleStyle.err("Command failed: " + e.getMessage());
                 }
             }
         }
@@ -120,14 +122,14 @@ public final class UserApplication {
             return null;
         }
         if (raw.equals("STATUS") || raw.equals("OTP STATUS") || raw.equals("OTPSTATUS")) {
-            printResult(chip.otpStatus());
+            ConsoleStyle.reply(chip.otpStatus());
             return null;
         }
         if (ChipInit.isCsrExport(raw)) {
             try {
                 ChipInit.exportClientCsr(new OwnerAuth(usb.require(), ctx), ChipInit.FILE_CERTS, deviceCertPath);
             } catch (IOException e) {
-                System.err.println("CSR EXPORT failed: " + e.getMessage());
+                ConsoleStyle.err("CSR EXPORT failed: " + e.getMessage());
             }
             return null;
         }
@@ -152,9 +154,9 @@ public final class UserApplication {
             return null;
         }
         if (raw.equals("INIT") || raw.equals("INIT SAFE") || raw.equals("INITSAFE")) {
-            System.err.println("Use INIT LAB or INIT PROD.");
-            System.err.println("INIT LAB signs the on-chip CSR with the local client CA and never pairs.");
-            System.err.println("INIT PROD does not sign locally and may burn factory SH0 — confirm before using it.");
+            ConsoleStyle.err("Use INIT LAB or INIT PROD.");
+            ConsoleStyle.note("INIT LAB signs the on-chip CSR with the local client CA and never pairs.");
+            ConsoleStyle.warn("INIT PROD does not sign locally and may burn factory SH0 — confirm before using it.");
             return null;
         }
         if (raw.equals("OWNER")) {
@@ -165,8 +167,16 @@ public final class UserApplication {
             runOwnerReplace(sc, chip, ownerSpki);
             return null;
         }
+        if (raw.equals("CLIENT INFO") || raw.startsWith("CLIENT INFO ") || raw.equals("CLIENTINFO")) {
+            PeerCommands.clientInfo(sc, chip, stripped);
+            return null;
+        }
         if (raw.equals("PEER") || raw.startsWith("PEER ")) {
             PeerCommands.run(sc, chip, stripped);
+            return null;
+        }
+        if (raw.equals("HELP") || raw.equals("?")) {
+            printCommandHelp();
             return null;
         }
         runRawCommand(chip, stripped);
@@ -175,12 +185,12 @@ public final class UserApplication {
 
     private static void runRawCommand(ChipService chip, String line) throws Exception {
         if (isTlsArming(line)) {
-            System.err.println("TLS-arming commands (PROVISION/ENCRYPT/DECRYPT/MANAGE) switch "
-                    + "the pipe to opaque TLS. Use APP ENCRYPT/DECRYPT/PEER/INIT, or TerminalBridge "
-                    + "for provision.");
+            ConsoleStyle.err("That chip line arms TLS and is not sent as a console command.");
+            ConsoleStyle.note("Use ENCRYPT, DECRYPT, PEER ADD, PEER REMOVE, INIT LAB, or INIT PROD.");
+            ConsoleStyle.note("Provision is SaeNode.");
             return;
         }
-        printResult(chip.transact(line));
+        ConsoleStyle.reply(chip.transact(line));
     }
 
     private static byte[] runEncryptFlow(Scanner sc, ChipService chip) throws Exception {
@@ -193,15 +203,16 @@ public final class UserApplication {
             return null;
         }
         if (message.isEmpty()) {
-            System.err.println("Message must not be empty.");
+            ConsoleStyle.err("Message must not be empty.");
             return null;
         }
         try {
             byte[] raw = chip.encrypt(pin, message);
-            System.out.println("OK encrypt reply (hex):\n" + SeBytes.toHex(raw));
+            ConsoleStyle.ok("OK encrypt reply (hex):");
+            ConsoleStyle.data(SeBytes.toHex(raw));
             return raw;
         } catch (SecureOtp.OtpException e) {
-            System.err.println(e.getMessage());
+            ConsoleStyle.err(e.getMessage());
             return null;
         }
     }
@@ -218,9 +229,10 @@ public final class UserApplication {
         }
         try {
             byte[] plaintext = chip.decrypt(pin, decryptReplyRaw);
-            System.out.println("OK plaintext:\n" + new String(plaintext, StandardCharsets.UTF_8));
+            ConsoleStyle.ok("OK plaintext:");
+            AppLogging.terminalOut().println(new String(plaintext, StandardCharsets.UTF_8));
         } catch (SecureOtp.OtpException e) {
-            System.err.println(e.getMessage());
+            ConsoleStyle.err(e.getMessage());
         }
     }
 
@@ -235,11 +247,11 @@ public final class UserApplication {
         byte[] saeCaDer = PeerCertHash.loadCert(saeCa).getEncoded();
         switch (chip.ownerSet(pwBytes, ownerSpki, saeCaDer)) {
             case ChipInit.OwnerSetResult.AlreadyEnrolled ignored ->
-                    System.err.println("OWNER SET refused (already enrolled). Use REPLACE.");
+                    ConsoleStyle.err("OWNER refused (already enrolled). Use REPLACE.");
             case ChipInit.OwnerSetResult.Failed failed ->
-                    System.err.println("OWNER SET failed: " + failed.detail());
+                    ConsoleStyle.err("OWNER failed: " + failed.detail());
             case ChipInit.OwnerSetResult.Ok ignored ->
-                    System.out.println("OK OWNER SET");
+                    ConsoleStyle.ok("OK OWNER");
         }
     }
 
@@ -258,53 +270,109 @@ public final class UserApplication {
                 oldPw.getBytes(StandardCharsets.US_ASCII), newBytes, ownerSpki);
         if (!r.ok()) {
             if (r.status() == SeManage.PW_FAIL) {
-                System.err.println("OWNER REPLACE failed: current owner password is wrong "
-                        + "(each lab device keeps its own password from the INIT/OWNER that enrolled it).");
+                ConsoleStyle.err("REPLACE failed: current owner password is wrong "
+                        + "(each lab device keeps its own password from the INIT LAB, INIT PROD, or OWNER that enrolled it).");
             } else {
-                System.err.println("OWNER REPLACE failed: " + r.msg());
+                ConsoleStyle.err("REPLACE failed: " + r.msg());
             }
             return;
         }
-        System.out.println("OK OWNER REPLACE");
+        ConsoleStyle.ok("OK REPLACE");
     }
 
     private static void runInsertSignedCsr(ChipService chip, Path deviceCert) throws Exception {
         if (deviceCert == null || !Files.isRegularFile(deviceCert)) {
-            System.err.println("INSERT SIGNED CSR needs a signed device cert at USERAPP_DEVICE_CERT ("
+            ConsoleStyle.err("INSERT SIGNED CSR needs a signed device cert at USERAPP_DEVICE_CERT ("
                     + deviceCert + ").");
             return;
         }
         byte[] certDer = PeerCertHash.loadCert(deviceCert).getEncoded();
         SeManage.Reply r = chip.insertSignedCsr(certDer);
         if (!r.ok()) {
-            System.err.println("INSERT SIGNED CSR failed: " + r.describe());
+            ConsoleStyle.err("INSERT SIGNED CSR failed: " + r.describe());
             return;
         }
-        System.out.println("OK INSERT SIGNED CSR" + (r.msg().isBlank() ? "" : ": " + r.msg()));
+        ConsoleStyle.ok("OK INSERT SIGNED CSR" + (r.msg().isBlank() ? "" : ": " + r.msg()));
     }
 
     private static void runPairingLoad(ChipService chip, Path deviceCert) throws Exception {
         Path path = ChipInit.pairingKeyPath(deviceCert);
         if (path == null || !Files.isRegularFile(path)) {
-            System.err.println("PAIRING LOAD needs pairing-key.hex next to USERAPP_DEVICE_CERT ("
-                    + path + "). After a reflash: OWNER SET, then PAIRING LOAD.");
+            ConsoleStyle.err("PAIRING LOAD needs pairing-key.hex next to USERAPP_DEVICE_CERT ("
+                    + path + "). After a reflash: OWNER, then PAIRING LOAD.");
             return;
         }
         SeManage.PairingKey key = ChipInit.readPairingKeyHex(path);
         SeManage.Reply r = chip.pairingLoad(key);
         if (!r.ok()) {
-            System.err.println("PAIRING LOAD failed: " + r.describe());
+            ConsoleStyle.err("PAIRING LOAD failed: " + r.describe());
             return;
         }
-        System.out.println("OK PAIRING LOAD" + (r.msg().isBlank() ? "" : ": " + r.msg()));
+        ConsoleStyle.ok("OK PAIRING LOAD" + (r.msg().isBlank() ? "" : ": " + r.msg()));
     }
 
-    private static void printResult(String reply) {
-        if (reply == null || reply.isBlank()) {
-            System.out.println("(no reply)");
-            return;
-        }
-        System.out.println(reply);
+    /** Short command list, reprinted under the previous result. */
+    private static void printCommandMenu() {
+        AppLogging.terminalOut().println();
+        ConsoleStyle.rule();
+        ConsoleStyle.menuTitle("COMMANDS");
+        ConsoleStyle.menuRow("INIT", "LAB | PROD");
+        ConsoleStyle.menuRow("STANDALONE", "CSR EXPORT | INSERT SIGNED CSR");
+        ConsoleStyle.menuRow("", "PAIRING LOAD | OWNER | REPLACE");
+        ConsoleStyle.menuRow("USAGE", "ENCRYPT | DECRYPT | STATUS");
+        ConsoleStyle.menuRow("PEERS", "PEER ADD | REMOVE | LIST | CARD");
+        ConsoleStyle.menuRow("TROPIC", "PING | INFO | PUB | KEM PUB");
+        ConsoleStyle.menuRow("", "OTP STATUS");
+        ConsoleStyle.menuRow("CHIP", "CLIENT INFO | CLIENT CSR | HELP");
+        ConsoleStyle.menuRow("QUIT", "quit | q | exit");
+        ConsoleStyle.rule();
+        ConsoleStyle.prompt("APP> ");
+    }
+
+    /** Versioned command reference. {@code HELP} prints this instead of the chip listing. */
+    private static void printCommandHelp() {
+        AppLogging.terminalOut().println();
+        ConsoleStyle.menuTitle("command interface v" + ConsoleStyle.COMMAND_INTERFACE_VERSION);
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("INIT");
+        ConsoleStyle.helpItem("INIT LAB", "full enroll; local CA signs and installs the cert; never pairs");
+        ConsoleStyle.helpItem("INIT PROD", "no local sign; optional pairing (may burn factory SH0)");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("STANDALONE");
+        ConsoleStyle.helpItem("CSR EXPORT", "write client-csr.hex only; does not sign or install");
+        ConsoleStyle.helpItem("INSERT SIGNED CSR", "install the signed device cert");
+        ConsoleStyle.helpItem("PAIRING LOAD", "restore pairing-key.hex after a reflash (run OWNER first)");
+        ConsoleStyle.helpItem("OWNER", "enroll this app as owner");
+        ConsoleStyle.helpItem("REPLACE", "change the owner password");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("USAGE");
+        ConsoleStyle.helpItem("ENCRYPT (E)", "Tropic PIN + message; print the encrypt reply hex");
+        ConsoleStyle.helpItem("DECRYPT (D)", "Tropic PIN + reply hex; empty reuses the last encrypt");
+        ConsoleStyle.helpItem("STATUS", "remaining OTP capacity");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("PEERS");
+        ConsoleStyle.helpItem("PEER ADD", "nickname, 96-hex hash, Tropic pad length");
+        ConsoleStyle.helpItem("PEER REMOVE", "drop a peer by nickname");
+        ConsoleStyle.helpItem("PEER LIST", "show enrolled peers");
+        ConsoleStyle.helpItem("PEER CARD", "paste block for the other UserApp");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("TROPIC");
+        ConsoleStyle.helpItem("TROPIC PING", "check that the Tropic chip answers");
+        ConsoleStyle.helpItem("TROPIC INFO", "chip identity");
+        ConsoleStyle.helpItem("TROPIC PUB", "ECC public key");
+        ConsoleStyle.helpItem("TROPIC KEM PUB", "ML-KEM public key");
+        ConsoleStyle.helpItem("TROPIC OTP STATUS", "remaining pad bytes (same as STATUS)");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("CHIP");
+        ConsoleStyle.helpItem("CLIENT INFO", "Name, Hash, Tropic pad (not a paste block)");
+        ConsoleStyle.helpItem("CLIENT CSR", "raw on-chip ML-DSA public key");
+        ConsoleStyle.helpItem("HELP", "this text (? is the same)");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.section("QUIT");
+        ConsoleStyle.helpItem("quit, q, exit", "leave");
+        AppLogging.terminalOut().println();
+        ConsoleStyle.note("Other lines are sent to the chip.");
+        ConsoleStyle.note("PROVISION, ENCRYPT, DECRYPT, and MANAGE are refused here; they arm TLS.");
     }
 
     private static boolean isInsertSignedCsr(String raw) {

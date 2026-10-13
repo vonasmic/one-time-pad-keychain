@@ -17,9 +17,8 @@
         <module>modules/usb-cdc</module>
         <module>modules/cert-generator</module>
         <module>modules/user-app</module>
-        <module>modules/terminal-bridge</module>
-        <module>modules/sae-node</module>
         <module>modules/lab-switch</module>
+        <module>modules/sae-node</module>
     </modules>
 
     <properties>
@@ -54,7 +53,7 @@
             </dependency>
             <dependency>
                 <groupId>fel.cvut</groupId>
-                <artifactId>terminal-bridge</artifactId>
+                <artifactId>lab-switch</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -139,7 +138,6 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.2</version>
                     <configuration>
-                        <excludedGroups>hsm</excludedGroups>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                     </configuration>
                 </plugin>

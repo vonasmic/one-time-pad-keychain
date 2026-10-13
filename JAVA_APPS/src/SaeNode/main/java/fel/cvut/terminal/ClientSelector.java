@@ -29,9 +29,9 @@ public final class ClientSelector {
     private static int promptChoice(
             String title, List<LabeledOption> options, Function<LabeledOption, String> labeler, String prompt
     ) {
-        System.out.println(title);
+        AppLogging.terminalOut().println(title);
         for (int index = 0; index < options.size(); index++) {
-            System.out.println((index + 1) + ") " + labeler.apply(options.get(index)));
+            AppLogging.terminalOut().println((index + 1) + ") " + labeler.apply(options.get(index)));
         }
         return readSelection(options.size(), prompt);
     }
@@ -47,20 +47,20 @@ public final class ClientSelector {
 
     private static int readSelection(int limit, String prompt) {
         while (true) {
-            System.out.print(prompt);
+            AppLogging.terminalOut().print(prompt);
             String rawValue = TerminalOutput.STDIN.nextLine();
             int value;
             try {
                 value = Integer.parseInt(rawValue.trim());
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid input. Enter a number between 1 and " + limit + ".");
+                AppLogging.terminalOut().println("Invalid input. Enter a number between 1 and " + limit + ".");
                 continue;
             }
 
             if (value >= 1 && value <= limit) {
                 return value;
             }
-            System.out.println("Selection out of range. Enter a number between 1 and " + limit + ".");
+            AppLogging.terminalOut().println("Selection out of range. Enter a number between 1 and " + limit + ".");
         }
     }
 

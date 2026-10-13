@@ -10,6 +10,7 @@ import fel.cvut.se.SeSessionUplink;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +62,13 @@ public final class ProvisionSession {
 
     public interface RemoteRecords {
         void forceDelete(String saeId, String clientHash1, String clientHash2)
+                throws RemoteException, NotBoundException;
+
+        /**
+         * Origin-orientation metadata on {@code saeId}. Hash arguments are this node's
+         * stored pair; the implementation reverses them for the remote lookup.
+         */
+        AtomicRecordStateMap.RecordMetadata get(String saeId, String clientHash1, String clientHash2)
                 throws RemoteException, NotBoundException;
     }
 
@@ -134,7 +142,10 @@ public final class ProvisionSession {
             Optional<List<String>> keyMaterial = exchange.completeNewExchange(clientRecord, uplink);
             if (keyMaterial.isPresent()) {
                 return new Outcome.Generated(encodeDownlink(
-                        uplink, keyMaterial.get(), SeConstants.DECRYPT_HALF_ORIGIN));
+                        uplink,
+                        keyMaterial.get(),
+                        SeConstants.DECRYPT_HALF_ORIGIN,
+                        clientHeader.padPlainLen()));
             }
             return new Outcome.InProgress(
                     "Target SAE rejected the insert. Wait for any provision in progress there to finish and then retry");
@@ -185,6 +196,12 @@ public final class ProvisionSession {
             return deleteShareAndRestart(clientHeader, metadata);
         }
         if (Objects.equals(metadata.issuingSaeId(), localSaeId)) {
+            if (metadata.recordAvailability()
+                    == AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE) {
+                // Origin fill never reached RECORD_PROVISIONED. Drop the leftover
+                // share and start a new exchange without asking the operator.
+                return deleteShareAndRestart(clientHeader, metadata);
+            }
             if (!operator.confirm(existingSharePrompt(metadata, "Delete them and generate new keys?"))) {
                 return keepExistingShare();
             }
@@ -198,6 +215,52 @@ public final class ProvisionSession {
             AtomicRecordStateMap.RecordMetadata metadata,
             SeSessionUplink uplink
     ) throws IOException, RemoteException, NotBoundException {
+        if (uplink.plainMax() < metadata.padPlainLen()) {
+            String message = smallerChipMessage(metadata.padPlainLen(), uplink.plainMax());
+            operator.notify(message);
+            return new Outcome.InProgress(message);
+        }
+        String clientHash1 = clientHeader.clientHash1();
+        String clientHash2 = clientHeader.clientHash2();
+        AtomicRecordStateMap.RecordMetadata origin;
+        try {
+            origin = remote.get(metadata.issuingSaeId(), clientHash1, clientHash2);
+        } catch (RemoteException | NotBoundException ex) {
+            operator.notify(OriginShareCheck.UNREACHABLE_MESSAGE);
+            return new Outcome.InProgress(OriginShareCheck.UNREACHABLE_MESSAGE);
+        }
+        OriginShareCheck.Decision decision = OriginShareCheck.decide(origin, Instant.now());
+        return switch (decision) {
+            case PROVISIONED -> sendStoredShare(clientHeader, metadata, uplink);
+            case IN_PROGRESS -> {
+                operator.notify(OriginShareCheck.IN_PROGRESS_MESSAGE);
+                yield new Outcome.InProgress(OriginShareCheck.IN_PROGRESS_MESSAGE);
+            }
+            case DELETE_BOTH -> {
+                records.forceDeleteLocal(clientHash1, clientHash2, "origin share is missing or stale");
+                try {
+                    remote.forceDelete(metadata.issuingSaeId(), clientHash1, clientHash2);
+                } catch (RemoteException | NotBoundException ex) {
+                    operator.notify(OriginShareCheck.DELETED_MESSAGE);
+                    yield new Outcome.InProgress(OriginShareCheck.DELETED_MESSAGE);
+                }
+                operator.notify(OriginShareCheck.DELETED_MESSAGE);
+                yield new Outcome.InProgress(OriginShareCheck.DELETED_MESSAGE);
+            }
+            case DELETE_LOCAL -> {
+                records.forceDeleteLocal(
+                        clientHash1, clientHash2, "origin already reserved a new synchronization");
+                operator.notify(OriginShareCheck.DELETED_MESSAGE);
+                yield new Outcome.InProgress(OriginShareCheck.DELETED_MESSAGE);
+            }
+        };
+    }
+
+    private Outcome sendStoredShare(
+            ClientRecord.ClientHeader clientHeader,
+            AtomicRecordStateMap.RecordMetadata metadata,
+            SeSessionUplink uplink
+    ) throws IOException, RemoteException, NotBoundException {
         String clientHash1 = clientHeader.clientHash1();
         String clientHash2 = clientHeader.clientHash2();
         remote.forceDelete(metadata.issuingSaeId(), clientHash1, clientHash2);
@@ -207,8 +270,9 @@ public final class ProvisionSession {
             return new Outcome.InProgress("Shared keys were found but the stored payload is missing. Retry.");
         }
         records.removePayload(clientHash1, clientHash2);
-        operator.notify("Shared keys found. Downloading them to the device.");
-        return new Outcome.Existing(encodeDownlink(uplink, keyMaterial.get(), SeConstants.DECRYPT_HALF_PEER));
+        operator.notify("Shared keys found. Loading them onto the device.");
+        return new Outcome.Existing(encodeDownlink(
+                uplink, keyMaterial.get(), SeConstants.DECRYPT_HALF_PEER, metadata.padPlainLen()));
     }
 
     private static Outcome keepExistingShare() {
@@ -228,8 +292,16 @@ public final class ProvisionSession {
         return null;
     }
 
-    private byte[] encodeDownlink(SeSessionUplink uplink, List<String> keyMaterial, byte decryptHalf) {
-        return kemFill.buildDownlink(uplink, keyMaterial, decryptHalf);
+    private byte[] encodeDownlink(
+            SeSessionUplink uplink, List<String> keyMaterial, byte decryptHalf, int padPlain
+    ) {
+        return kemFill.buildDownlink(uplink, keyMaterial, decryptHalf, padPlain);
+    }
+
+    private static String smallerChipMessage(int stored, int chip) {
+        return "The shared pads are " + stored + " bytes and this Tropic holds " + chip
+                + ". Update the other client's peer pad length and provision again, "
+                + "or delete the share and start from this smaller device.";
     }
 
     private static String existingSharePrompt(AtomicRecordStateMap.RecordMetadata metadata, String question) {

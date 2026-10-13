@@ -1,9 +1,11 @@
 package fel.cvut.userapp;
 
+import fel.cvut.se.SeConstants;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class OwnerAuthTest {
 
@@ -21,5 +23,16 @@ class OwnerAuthTest {
         assertEquals("failed id", ((ChipInit.OwnerSetResult.Failed) id).detail());
         assertInstanceOf(ChipInit.OwnerSetResult.Failed.class,
                 OwnerAuth.classifyOwnerSetDone(null));
+    }
+
+    @Test
+    void clientCsrIgnoresTruncatedHex() {
+        assertNull(OwnerAuth.csrPubOrNull("failed"));
+        assertNull(OwnerAuth.csrPubOrNull("abc"));
+        byte[] oneFrame = OwnerAuth.csrPubOrNull("aa".repeat(512));
+        assertEquals(512, oneFrame.length);
+        String full = "ab".repeat(SeConstants.MLDSA_PUB_LEN);
+        byte[] pub = OwnerAuth.csrPubOrNull(full.substring(0, 96) + "\n" + full.substring(96));
+        assertEquals(SeConstants.MLDSA_PUB_LEN, pub.length);
     }
 }

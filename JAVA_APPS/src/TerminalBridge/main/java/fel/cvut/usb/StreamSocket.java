@@ -1,4 +1,4 @@
-package fel.cvut.userapp;
+package fel.cvut.usb;
 
 import java.io.IOException;
 import java.io.InputStream;

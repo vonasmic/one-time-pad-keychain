@@ -102,7 +102,7 @@ class PeerCertHashTest {
 
     @Test
     void alicePemMatchesEmbedFwCredsRawSpkiLengthWhenPresent() throws Exception {
-        Path alice = Path.of("certs/Alice.pem");
+        Path alice = alicePem();
         assumeTrue(Files.isRegularFile(alice), "certs/Alice.pem not in working directory");
         X509Certificate cert = PeerCertHash.loadCert(alice);
         byte[] bits = PeerCertHash.rawSpkiBits(cert);
@@ -111,6 +111,18 @@ class PeerCertHashTest {
         assertNotEquals(
                 SeBytes.toHex(SeBytes.sha384(cert.getPublicKey().getEncoded())),
                 PeerCertHash.hashHex(alice));
+    }
+
+    private static Path alicePem() {
+        Path dir = Path.of("").toAbsolutePath();
+        for (int i = 0; i < 6 && dir != null; i++) {
+            Path candidate = dir.resolve("certs/Alice.pem");
+            if (Files.isRegularFile(candidate)) {
+                return candidate;
+            }
+            dir = dir.getParent();
+        }
+        return Path.of("certs/Alice.pem");
     }
 
     private static Path writePem(Path pem, X509Certificate cert) throws Exception {

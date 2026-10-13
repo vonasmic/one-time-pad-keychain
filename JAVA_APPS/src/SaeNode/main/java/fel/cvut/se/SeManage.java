@@ -338,18 +338,20 @@ public final class SeManage {
         return readReply(new ByteArrayInputStream(raw));
     }
 
-    public static byte[] encodePeerAddBody(String name, byte[] hash48) {
+    public static byte[] encodePeerAddBody(String name, byte[] hash48, int padPlain) {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(hash48, "hash");
         byte[] nb = name.getBytes(StandardCharsets.US_ASCII);
         if (nb.length < 1 || nb.length > SeConstants.PEER_NAME_MAX
-                || hash48.length != SeConstants.PEER_HASH_LEN) {
+                || hash48.length != SeConstants.PEER_HASH_LEN
+                || padPlain < 1 || padPlain > 0xFFFF) {
             throw new IllegalArgumentException("PEER ADD body");
         }
-        ByteArrayOutputStream extra = new ByteArrayOutputStream(1 + nb.length + hash48.length);
+        ByteArrayOutputStream extra = new ByteArrayOutputStream(1 + nb.length + hash48.length + 2);
         extra.write(nb.length);
         extra.writeBytes(nb);
         extra.writeBytes(hash48);
+        extra.writeBytes(SeBytes.u16Le(padPlain));
         return extra.toByteArray();
     }
 

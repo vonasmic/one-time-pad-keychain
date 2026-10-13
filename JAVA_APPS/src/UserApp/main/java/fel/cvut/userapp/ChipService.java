@@ -3,6 +3,7 @@ package fel.cvut.userapp;
 import fel.cvut.se.SeManage;
 import fel.cvut.se.SecureOtp;
 import fel.cvut.usb.SeUsbLink;
+import fel.cvut.usb.SeUsbTls;
 
 import javax.net.ssl.SSLContext;
 import java.nio.charset.StandardCharsets;
@@ -59,8 +60,18 @@ final class ChipService {
         return usb.transact("PEER LIST");
     }
 
-    SeManage.Reply peerAdd(String name, byte[] hash) throws Exception {
-        return OwnerAuth.manage(usb, ctx, SeManage.CMD_PEER_ADD, null, SeManage.encodePeerAddBody(name, hash));
+    String clientHashHex() throws Exception {
+        return usb.transact("CLIENT HASH");
+    }
+
+    String tropicPadLen() throws Exception {
+        return usb.transact("TROPIC PAD LEN");
+    }
+
+    SeManage.Reply peerAdd(String name, byte[] hash, int padPlain) throws Exception {
+        return OwnerAuth.manage(
+                usb, ctx, SeManage.CMD_PEER_ADD, null,
+                SeManage.encodePeerAddBody(name, hash, padPlain));
     }
 
     SeManage.Reply peerRemove(String name) throws Exception {

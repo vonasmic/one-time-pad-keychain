@@ -67,9 +67,6 @@ class LabSwitchTest {
                 lab.read().node(LabSwitch.ID_CLIENT1).serialPort());
         assertEquals(LabSwitch.DEFAULT_SERIAL_CLIENT2,
                 lab.read().node(LabSwitch.ID_CLIENT2).serialPort());
-        assertEquals(11111, lab.read().node(LabSwitch.ID_CLIENT1).nativePort());
-        assertEquals(5020, lab.read().node(LabSwitch.ID_CLIENT2).nativePort());
-
         LabSwitch.State sae = lab.setMode("SAE");
         assertTrue(sae.holdsTerminal());
         assertEquals(LabSwitch.MODE_SAE, sae.mode());

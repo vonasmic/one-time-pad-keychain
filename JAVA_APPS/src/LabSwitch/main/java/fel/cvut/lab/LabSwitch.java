@@ -22,8 +22,8 @@ import java.util.function.UnaryOperator;
  * Lab-only shared switch file: USB owner is {@code USER} or {@code SAE}.
  *
  * <p>Both keychains run in parallel. {@code scripts/lab-run.py} pins
- * {@code userapp-1}/{@code terminal-1} to client-1 and {@code userapp-2}/{@code terminal-2}
- * to client-2. Owner toggles which app type may open USB on both PTYs at once.
+ * {@code userapp-1} to client-1 and {@code userapp-2} to client-2, and restarts
+ * UserApp or SaeNode when the owner changes so the serial port is released.
  * Production Java does not import this package.
  *
  * <p>Production never sets {@code USB_LAB_FILE}. Delete this package to drop the helper.
@@ -135,12 +135,8 @@ public final class LabSwitch {
     private static State defaults(State raw) {
         Map<String, Node> incoming = raw == null || raw.nodes() == null ? Map.of() : raw.nodes();
         Map<String, Node> nodes = new LinkedHashMap<>();
-        nodes.put(ID_CLIENT1, completeNode(
-                incoming.get(ID_CLIENT1),
-                "127.0.0.1", 11111, 11112, DEFAULT_SERIAL_CLIENT1));
-        nodes.put(ID_CLIENT2, completeNode(
-                incoming.get(ID_CLIENT2),
-                "127.0.0.1", 5020, 11113, DEFAULT_SERIAL_CLIENT2));
+        nodes.put(ID_CLIENT1, completeNode(incoming.get(ID_CLIENT1), DEFAULT_SERIAL_CLIENT1));
+        nodes.put(ID_CLIENT2, completeNode(incoming.get(ID_CLIENT2), DEFAULT_SERIAL_CLIENT2));
         if (raw == null) {
             return new State(MODE_USER, nodes);
         }
@@ -152,17 +148,12 @@ public final class LabSwitch {
         return new State(mode, nodes);
     }
 
-    private static Node completeNode(
-            Node raw, String host, int nativePort, int terminalPort, String serial
-    ) {
+    private static Node completeNode(Node raw, String serial) {
         if (raw == null) {
-            return new Node(host, nativePort, terminalPort, serial);
+            return new Node(serial);
         }
-        String h = raw.host() == null || raw.host().isBlank() ? host : raw.host().trim();
-        int n = raw.nativePort() == 0 ? nativePort : raw.nativePort();
-        int t = raw.terminalPort() == 0 ? terminalPort : raw.terminalPort();
         String s = raw.serialPort() == null || raw.serialPort().isBlank() ? serial : raw.serialPort().trim();
-        return new Node(h, n, t, s);
+        return new Node(s);
     }
 
     private static String parseOwner(String command) {
@@ -180,7 +171,7 @@ public final class LabSwitch {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Node(String host, int nativePort, int terminalPort, String serialPort) {
+    public record Node(String serialPort) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

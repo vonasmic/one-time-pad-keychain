@@ -12,7 +12,6 @@
     <file url="file://$PROJECT_DIR$/src/UserApp/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/modules/terminal-bridge/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/modules/tls-hsm/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/modules/tls-software/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/modules/usb-cdc/src/main/resources" charset="UTF-8" />

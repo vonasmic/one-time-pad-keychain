@@ -1,93 +1,92 @@
-# SAE / USER / SE / Terminal Flowcharts
+# SAE / USER / SE Flowcharts
 
-High-level flowcharts. **SAE** (SaeNode + TerminalBridge) is provision / QKD fill.
+High-level flowcharts. **SAE** (SaeNode) is provision / QKD fill.
 **USER** (UserApp) is encrypt / decrypt / manage. UserApp is not an SAE. These
-reflect the actual system behavior but omit internal implementation details.
+show the intended design, not method-level control flow.
 
 ---
 
 ## 1. Main end-to-end provision flow (device ↔ SAE)
 
+Origin device gets a new share. Both SAEs become **Available**, then the origin
+device is filled; **RECORD_PROVISIONED** is only after that ack. The terminal
+success line is printed only after that mark returns. A later peer
+device is section 6d — not this chart.
+
 ```mermaid
 flowchart TD
-    subgraph clientSE [Client SE]
+    subgraph clientSE [Origin client SE]
         Start([Start])
         Connect[Connect to origin SAE]
         SendKeys[Send own public key and possible peer keys]
         ReceiveKeys[Receive secret keys]
+        Ack[Ack]
         End([End])
     end
 
     subgraph originSAE [Origin SAE]
-        WaitConn[Wait for client connection]
-        UserChoice[Get user selection via terminal]
-        CheckDB{Record state in database?}
-        NewExchange[Fetch keys from QKD and sync with peer SAE]
-        ExistingKeys[Handle existing or shared record]
-        ReturnKeys[Return keys to client]
-        NoKeys[End without returning keys]
+        WaitConn[Wait for client]
+        UserChoice[Operator selects peer]
+        NewExchange[Reserve pair, fetch QKD, sync peer]
+        BothAvailable[Both SAEs Available]
+        SendOrigin[Send keys to origin device]
+        MarkProvisioned[Origin RECORD_PROVISIONED]
+        SuccessLine[Terminal success line]
+        NoKeys[End without keys]
     end
 
     subgraph targetSAE [Peer SAE]
-        SyncKeys[Receive sync request from origin SAE]
-        FetchPeerKeys[Fetch matching keys from QKD]
-        StoreKeys[Store key material locally]
-        UpdateDB[Update database state]
+        SyncKeys[Accept sync]
+        StoreKeys[Fetch QKD and store material]
+        PeerAvailable[Peer Available]
     end
 
     subgraph external [External]
         QKD[QKD 014]
-        DB[(Database)]
+        DB[(Record state)]
     end
 
-    Start --> Connect --> SendKeys
-    SendKeys --> WaitConn
-    WaitConn --> UserChoice
-    UserChoice --> CheckDB
-
-    CheckDB -->|No record or can start new| NewExchange
-    CheckDB -->|Record already exists| ExistingKeys
-    CheckDB -->|Cannot proceed| NoKeys
-
+    Start --> Connect --> SendKeys --> WaitConn --> UserChoice --> NewExchange
     NewExchange -.-> QKD
-    NewExchange --> SyncKeys
-    SyncKeys --> FetchPeerKeys
-    FetchPeerKeys -.-> QKD
-    FetchPeerKeys --> StoreKeys --> UpdateDB
-    UpdateDB -.-> DB
     NewExchange -.-> DB
-    NewExchange -->|Success| ReturnKeys
-    NewExchange -->|Failure| NoKeys
-
-    ExistingKeys -->|Keys returned| ReturnKeys
-    ExistingKeys -->|No action| NoKeys
-
-    ReturnKeys --> ReceiveKeys --> End
-    NoKeys --> End
+    NewExchange --> SyncKeys --> StoreKeys
+    StoreKeys -.-> QKD
+    StoreKeys --> PeerAvailable -.-> DB
+    PeerAvailable --> BothAvailable
+    BothAvailable --> SendOrigin --> ReceiveKeys --> Ack --> MarkProvisioned
+    MarkProvisioned -.-> DB
+    MarkProvisioned --> SuccessLine --> End
+    NewExchange -->|Failure| NoKeys --> End
+    SendOrigin -->|No ack| NoKeys
 ```
 
 ---
 
 ## 2. SE ↔ SAE communication (`PROVISION` only)
 
-Device TLS client to the SAE command server (usually via TerminalBridge USB relay).
+Device TLS client to SaeNode over USB CDC.
 This is **not** encrypt / decrypt — those sessions are device ↔ USER.
 
 ```mermaid
 sequenceDiagram
     participant SE as Client SE
-    participant SAE as Origin SAE
+    participant SAE as SAE
 
     SE->>SAE: Connect over TLS (PROVISION)
     SAE-->>SE: Secure channel established
-
     SE->>SAE: Send public key and list of possible peer keys
-    Note over SAE: Operator selects target peer and SAE via TerminalBridge
+    Note over SAE: Operator selects target peer on stdin
 
-    alt New key exchange
+    alt New share for the origin device
+        Note over SAE: Both SAEs become Available
         SAE-->>SE: Return secret keys
-    else Existing shared keys
-        SAE-->>SE: Return previously stored keys
+        SE-->>SAE: Ack
+        Note over SAE: Origin RECORD_PROVISIONED
+    else Stored share for the peer device
+        Note over SAE: Only if origin is already Provisioned
+        SAE-->>SE: Return stored secret keys
+    else Origin not yet Provisioned
+        SAE-->>SE: Close without keys
     else Cannot proceed
         SAE-->>SE: Close without keys
     end
@@ -128,111 +127,133 @@ sequenceDiagram
 
 ---
 
-## 4. Terminal ↔ SAE communication
+## 4. Operator stdin on SaeNode
 
-The terminal now runs as its own process — `fel.cvut.terminalapp.TerminalApp` — connecting to the SAE's dedicated terminal gateway port over TLS (same `NodeTls`/`PURE_PQC` bootstrap nodes use for RMI). This is the SAE operator console, **not** UserApp. The SAE builds selection lists from the client payload and its configured peer SAEs, then sends them to whichever terminal app is currently connected.
+Operator SELECT / CONFIRM / NOTIFY runs in the SaeNode process (stdin), **not**
+UserApp and not a separate TLS gateway. The SAE builds selection lists from the
+client payload and its configured peer SAEs, then prompts on the same console.
 
 ```mermaid
 flowchart TD
     subgraph sae [Origin SAE]
         ReceivePayload[Receive client key data]
         BuildLists[Prepare SAE list and client list]
-        WaitChoice[Wait for user selection]
-        ApplyChoice[Apply selected peer SAE and client]
-        ReusePrompt{Keys already shared?}
-        AskDelete[Ask whether to delete and start over]
-        DeleteRecords[Delete old records]
-        Continue[Continue key exchange]
-    end
-
-    subgraph terminal [Terminal]
         ShowSaeList[Show peer SAE options]
         PickSae[User picks SAE]
         ShowClientList[Show client options]
         PickClient[User picks client]
+        ApplyChoice[Apply selected peer SAE and client]
+        ReusePrompt{Origin already Provisioned?}
+        AskDelete[Ask whether to delete and start over]
         ConfirmDelete[User confirms deletion y/n]
+        DeleteRecords[Delete old records]
+        SilentRetry[Available leftover: delete and start new, no prompt]
+        Continue[Continue key exchange]
     end
 
     ReceivePayload --> BuildLists --> ShowSaeList
     ShowSaeList --> PickSae --> ShowClientList
-    ShowClientList --> PickClient --> WaitChoice
-    WaitChoice --> ApplyChoice --> ReusePrompt
+    ShowClientList --> PickClient --> ApplyChoice --> ReusePrompt
 
-    ReusePrompt -->|No| Continue
-    ReusePrompt -->|Yes| AskDelete --> ConfirmDelete
+    ReusePrompt -->|No record| Continue
+    ReusePrompt -->|Available leftover| SilentRetry --> Continue
+    ReusePrompt -->|Provisioned| AskDelete --> ConfirmDelete
     ConfirmDelete -->|Yes| DeleteRecords --> Continue
     ConfirmDelete -->|No| StopFlow[Stop without new keys]
 ```
 
 ---
 
-## 5. SAE database persistence decisions
+## 5. Record states
 
-The database tracks **record state** (not the key material itself). Key material is stored on the peer SAE.
-Origin publishes the **reversed** hash pair to the peer SAE (`(peerHash, myHash)`); each node looks up only the pair it stored.
+Each SAE keeps **record state** for a client pair (not the key bytes). Key
+material lives on the **peer**. **Provisioned** is origin-only: the origin
+device has acknowledged the downlink.
 
-### 5a. Can a new record be started?
+```mermaid
+flowchart LR
+    None([No record]) --> Sync[Synchronization]
+    Sync --> Fetch[Fetching]
+    Fetch --> Avail[Available]
+    Avail --> Prov[Provisioned]
+```
+
+| State | Meaning |
+| --- | --- |
+| Synchronization | Pair reserved; exchange not locked yet |
+| Fetching | Both sides locked; QKD fill in progress |
+| Available | Share committed but origin fill did not finish. Leftover; not success |
+| Provisioned | Origin device acked. Peer device may now take the stored half |
+
+The peer row stops at **Available**. It never becomes **Provisioned**.
+
+---
+
+## 6. SAE database persistence decisions
+
+Origin publishes the **reversed** hash pair to the peer SAE (`(peerHash, myHash)`);
+each node looks up only the pair it stored.
+
+### 6a. Can a new share start?
 
 ```mermaid
 flowchart TD
-    Begin([Check database for client hash pair])
+    Begin([Look up client pair])
     Exists{Record exists?}
+    Exists -->|No| AllowNew[Start new share]
+    Exists -->|Yes| Kind{Kind?}
 
-    Exists -->|No| AllowNew[Allow new record]
-    Exists -->|Yes| State{Current state?}
-
-    State -->|Complete and same peer| AlreadyExists[Record already exists]
-    State -->|Complete but different peer| SharedElsewhere[Shared with different SAE]
-    State -->|In progress and expired| AllowNew
-    State -->|In progress and owned by this SAE| AllowNew
-    State -->|In progress by another SAE| Blocked[Cannot start now]
-    State -->|In progress, different peer| SharedElsewhere
+    Kind -->|In progress and expired| AllowNew
+    Kind -->|In progress and live| Wait[Cannot start now]
+    Kind -->|Available leftover| AllowNew
+    Kind -->|Provisioned| Filled[Origin device already filled]
+    Kind -->|Different peer| SharedElsewhere[Shared with another SAE]
 ```
 
-### 5b. What happens after the check?
+### 6b. Origin device: new share
 
 ```mermaid
 flowchart TD
-    Start([After database check])
-    Result{Result?}
-
-    Start --> Result
-
-    Result -->|New record allowed| FetchQKD[Fetch keys from QKD]
-    FetchQKD --> SyncPeer[Sync with peer SAE]
-    SyncPeer --> PeerOK{Peer sync OK?}
-    PeerOK -->|Yes| MarkComplete[Mark record complete in database]
-    MarkComplete --> ReturnKeys[Return keys to client]
-    PeerOK -->|No| Rollback[Remove incomplete record]
+    Start([New share allowed])
+    Exchange[Fetch QKD and sync with peer]
+    Exchange -->|Fail| Rollback[Drop incomplete records]
     Rollback --> NoKeys[No keys returned]
-
-    Result -->|Record already exists| Issuer{Is this SAE the issuer?}
-    Issuer -->|Yes| AskUser[Ask user to delete and retry]
-    AskUser -->|Yes| DeleteAll[Delete local and peer records]
-    DeleteAll --> Start
-    AskUser -->|No| NoKeys
-
-    Issuer -->|No| LoadStored[Load stored keys from peer SAE]
-    LoadStored --> Found{Keys found?}
-    Found -->|Yes| ReturnKeys
-    Found -->|No| NoKeys
-
-    Result -->|Cannot proceed| NoKeys
+    Exchange -->|OK| BothAvail[Both SAEs Available]
+    BothAvail --> Send[Send keys to origin device]
+    Send -->|Ack| Prov[Origin RECORD_PROVISIONED]
+    Send -->|No ack| LeftAvail[Leave Available]
+    Prov --> Done([Terminal success line])
+    LeftAvail --> NextVisit[Next origin visit deletes leftover and starts new]
 ```
 
-### 5c. Peer SAE side
+### 6c. Peer SAE during the exchange
 
 ```mermaid
 flowchart TD
-    Start([Receive sync from origin SAE])
-    CanStore{Can store new record?}
-    CanStore -->|No| Reject[Reject sync]
-    CanStore -->|Yes| GetKeys[Fetch keys from QKD]
-    GetKeys --> SaveKeys[Save key material]
-    SaveKeys --> MarkComplete[Mark record complete in database]
-    MarkComplete --> Done([Confirm to origin SAE])
-    GetKeys -->|Error| Cleanup[Remove incomplete record]
+    Start([Receive sync from origin])
+    CanStore{Can store?}
+    CanStore -->|No| Reject[Reject]
+    CanStore -->|Yes| GetKeys[Fetch QKD]
+    GetKeys -->|Error| Cleanup[Drop incomplete record]
     Cleanup --> Reject
+    GetKeys -->|OK| Save[Save key material]
+    Save --> Avail[Peer Available]
+    Avail --> Done([Confirm to origin])
+```
+
+### 6d. Later: peer device
+
+A second device is filled from the **stored** peer material only after the
+origin device is **Provisioned**. Available on both SAEs is not enough.
+
+```mermaid
+flowchart TD
+    Start([Peer has Available material])
+    Origin{Origin record?}
+    Origin -->|Provisioned| Send[Send stored keys to peer device]
+    Origin -->|Not yet Provisioned| Hold[Do not send]
+    Origin -->|Gone or abandoned| Clean[Drop the leftover share]
+    Origin -->|Unreachable| Hold
 ```
 
 ---
@@ -244,14 +265,12 @@ flowchart LR
     SE[Client SE]
     UserApp[USER / UserApp]
     OriginSAE[Origin SAE]
-    Terminal[TerminalBridge]
     PeerSAE[Peer SAE]
     QKD[QKD 014]
     DB[(Database)]
 
     SE <-->|ENCRYPT / DECRYPT / MANAGE TLS| UserApp
-    SE <-->|PROVISION TLS| OriginSAE
-    OriginSAE <-->|Operator SELECT / CONFIRM| Terminal
+    SE <-->|PROVISION TLS on CDC| OriginSAE
     OriginSAE <-->|Inter-SAE sync| PeerSAE
     OriginSAE --> QKD
     PeerSAE --> QKD

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Typed SE TLS session uplink (LV version 4), after binding verification.
+ * Typed SE TLS session uplink (LV version 5), after binding verification.
  */
 public record SeSessionUplink(
         byte[] clientHash,
@@ -21,11 +21,14 @@ public record SeSessionUplink(
         byte[] mlkemPublicKey,
         List<PeerEntry> peers
 ) {
-    public record PeerEntry(byte[] hash, String nickname) {
+    public record PeerEntry(byte[] hash, String nickname, int padPlain) {
         public PeerEntry {
             Objects.requireNonNull(hash, "hash must not be null");
             if (hash.length != SeConstants.PEER_HASH_LEN) {
                 throw new IllegalArgumentException("peer hash must be " + SeConstants.PEER_HASH_LEN + " bytes");
+            }
+            if (padPlain < 1 || padPlain > 0xFFFF) {
+                throw new IllegalArgumentException("padPlain out of range: " + padPlain);
             }
             nickname = nickname == null ? "" : nickname;
         }
@@ -68,14 +71,38 @@ public record SeSessionUplink(
     }
 
     /**
-     * Max pad slots under {@link SeConstants#QKD_MAX_BYTES}. Ingest counts {@code kem_ct}
-     * and the 1-byte {@code decrypt_half} item toward that cap.
+     * Max pad slots under {@link SeConstants#QKD_MAX_BYTES} at this chip's
+     * plaintext size.
      */
     public int maxPadsForBudget() {
+        return maxPadsForBudget(plainMax());
+    }
+
+    /**
+     * Max pad slots under {@link SeConstants#QKD_MAX_BYTES} when each sealed
+     * image is {@code RMEM_OVERHEAD + padPlain} bytes.
+     */
+    public int maxPadsForBudget(int padPlain) {
+        int imageSize = SeConstants.RMEM_OVERHEAD + padPlain;
+        if (imageSize <= SeConstants.RMEM_OVERHEAD) {
+            return 0;
+        }
         int budgetPads = (SeConstants.QKD_MAX_BYTES
                 - SeConstants.MLKEM_CT_LEN
-                - SeConstants.DECRYPT_HALF_LEN) / slotSize;
+                - SeConstants.DECRYPT_HALF_LEN
+                - SeConstants.PAD_PLAIN_LEN) / imageSize;
         return Math.max(0, Math.min(padCount, budgetPads));
+    }
+
+    public PeerEntry peerByHashHex(String hashHex) {
+        Objects.requireNonNull(hashHex, "hashHex must not be null");
+        String want = hashHex.strip();
+        for (PeerEntry peer : peers) {
+            if (peer.hashHex().equalsIgnoreCase(want)) {
+                return peer;
+            }
+        }
+        throw new IllegalArgumentException("no uplink peer with hash " + want);
     }
 
     public static SeSessionUplink readAndVerify(SSLSocket socket, byte[] exporter) throws IOException {
@@ -102,9 +129,9 @@ public record SeSessionUplink(
         if (items.size() < SeConstants.LV_UPLINK_FIXED_ITEMS) {
             throw new IOException("Uplink too few items: " + items.size());
         }
-        int peerPairCount = items.size() - SeConstants.LV_UPLINK_FIXED_ITEMS;
-        if ((peerPairCount & 1) != 0) {
-            throw new IOException("Uplink peer items must come in hash/name pairs");
+        int peerItemCount = items.size() - SeConstants.LV_UPLINK_FIXED_ITEMS;
+        if (peerItemCount % SeConstants.LV_UPLINK_PEER_ITEMS != 0) {
+            throw new IOException("Uplink peer items must come in hash/name/pad_plain triples");
         }
 
         byte[] sessionSig = SeBytes.requireLen(items.get(0), SeConstants.SESSION_SIG_LEN, "session signature");
@@ -117,11 +144,15 @@ public record SeSessionUplink(
 
         SeSessionBinding.verify(peerTlsSpki, exporter, eccPub, clientHash, sessionSig);
 
-        List<PeerEntry> peers = new ArrayList<>(peerPairCount / 2);
-        for (int i = SeConstants.LV_UPLINK_FIXED_ITEMS; i < items.size(); i += 2) {
+        List<PeerEntry> peers = new ArrayList<>(peerItemCount / SeConstants.LV_UPLINK_PEER_ITEMS);
+        for (int i = SeConstants.LV_UPLINK_FIXED_ITEMS; i < items.size(); i += SeConstants.LV_UPLINK_PEER_ITEMS) {
             byte[] hash = SeBytes.requireLen(items.get(i), SeConstants.PEER_HASH_LEN, "peer hash");
             String name = new String(items.get(i + 1), StandardCharsets.UTF_8);
-            peers.add(new PeerEntry(hash, name));
+            int padPlain = SeBytes.readU16Le(items.get(i + 2), "peer pad_plain");
+            if (padPlain < 1) {
+                throw new IOException("peer pad_plain must be positive");
+            }
+            peers.add(new PeerEntry(hash, name, padPlain));
         }
         return new SeSessionUplink(clientHash, slotSize, padCount, fillId, mlkemPublicKey, peers);
     }

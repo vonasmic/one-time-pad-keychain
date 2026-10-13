@@ -19,12 +19,14 @@ import java.util.Optional;
  *
  * <p>Lifecycle for a new share: {@link RecordAvailability#RECORD_SYNCHRONIZATION}
  * (may be taken over by higher issuing SAE) → {@link RecordAvailability#RECORD_FETCHING_STARTED}
- * (locked to the issuing SAE; only stale reclaim) → {@link RecordAvailability#RECORD_AVAILABLE}.
+ * (locked to the issuing SAE; only stale reclaim) → {@link RecordAvailability#RECORD_AVAILABLE}
+ * (both databases committed; origin device has not acked) → origin-only
+ * {@link RecordAvailability#RECORD_PROVISIONED} after the origin device ack.
  */
 public class AtomicRecordStateMap {
 
-    /** Stale reclaim window for synchronization and fetching reservations. */
-    static final long RESERVATION_TIMEOUT_MINUTES = 2;
+    /** Stale reclaim window for synchronization, fetching, and unacked {@code RECORD_AVAILABLE}. */
+    public static final long RESERVATION_TIMEOUT_MINUTES = 2;
 
     private final DataSource dataSource;
     private final ClientRecordStateRepository repository;
@@ -82,7 +84,6 @@ public class AtomicRecordStateMap {
         validateSaeId(saeId);
         validateSaeId(issuingSaeId);
         Instant now = Instant.now();
-        Instant oldestAllowedReservation = now.minus(RESERVATION_TIMEOUT_MINUTES, ChronoUnit.MINUTES);
 
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
@@ -93,12 +94,17 @@ public class AtomicRecordStateMap {
                         existing.orElse(null),
                         saeId,
                         issuingSaeId,
-                        oldestAllowedReservation
+                        now
                 );
 
                 if (outcome == SynchronizeOutcome.INSERTED) {
-                    RecordMetadata metadata =
-                            new RecordMetadata(now, RecordAvailability.RECORD_SYNCHRONIZATION, saeId, issuingSaeId);
+                    RecordMetadata metadata = new RecordMetadata(
+                            now,
+                            RecordAvailability.RECORD_SYNCHRONIZATION,
+                            saeId,
+                            issuingSaeId,
+                            clientHeader.padPlainLen()
+                    );
                     repository.replace(connection, clientHash1, clientHash2, metadata);
                 }
 
@@ -149,7 +155,8 @@ public class AtomicRecordStateMap {
                                 now,
                                 RecordAvailability.RECORD_FETCHING_STARTED,
                                 current.saeId(),
-                                issuingSaeId
+                                issuingSaeId,
+                                current.padPlainLen()
                         )
                 );
                 connection.commit();
@@ -167,13 +174,15 @@ public class AtomicRecordStateMap {
 
     /**
      * Finishes an exchange by promoting {@link RecordAvailability#RECORD_FETCHING_STARTED}
-     * to {@link RecordAvailability#RECORD_AVAILABLE}.
+     * to {@link RecordAvailability#RECORD_AVAILABLE} and refreshing {@code date_of_creation}
+     * so the origin-device upload has its own reservation window.
      */
     public boolean finishRecordInsert(String clientHash1, String clientHash2) {
+        Instant now = Instant.now();
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
-                boolean changed = repository.finishIfFetching(connection, clientHash1, clientHash2);
+                boolean changed = repository.finishIfFetching(connection, clientHash1, clientHash2, now);
                 connection.commit();
                 return changed;
             } catch (SQLException ex) {
@@ -184,6 +193,28 @@ public class AtomicRecordStateMap {
             }
         } catch (SQLException ex) {
             throw new IllegalStateException("Failed to finish record insert.", ex);
+        }
+    }
+
+    /**
+     * Promotes origin {@link RecordAvailability#RECORD_AVAILABLE} to
+     * {@link RecordAvailability#RECORD_PROVISIONED} after the device ack.
+     */
+    public boolean markProvisioned(String clientHash1, String clientHash2) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                boolean changed = repository.markProvisionedIfAvailable(connection, clientHash1, clientHash2);
+                connection.commit();
+                return changed;
+            } catch (SQLException ex) {
+                rollback(connection, ex);
+                throw new IllegalStateException("Failed to mark record provisioned.", ex);
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Failed to mark record provisioned.", ex);
         }
     }
 
@@ -234,24 +265,31 @@ public class AtomicRecordStateMap {
         return dateOfCreation.isBefore(Instant.now().minus(retention));
     }
 
+    public static boolean isReservationStale(Instant dateOfCreation, Instant now) {
+        Objects.requireNonNull(dateOfCreation, "dateOfCreation must not be null");
+        Objects.requireNonNull(now, "now must not be null");
+        return dateOfCreation.isBefore(now.minus(RESERVATION_TIMEOUT_MINUTES, ChronoUnit.MINUTES));
+    }
+
     private SynchronizeOutcome evaluateSynchronizeEligibility(
             RecordMetadata current,
             String saeId,
             String issuingSaeId,
-            Instant oldestAllowedReservation
+            Instant now
     ) {
         if (current == null || isExpired(current.dateOfCreation())) {
             return SynchronizeOutcome.INSERTED;
         }
 
-        if (current.recordAvailability() == RecordAvailability.RECORD_AVAILABLE) {
+        if (current.recordAvailability() == RecordAvailability.RECORD_AVAILABLE
+                || current.recordAvailability() == RecordAvailability.RECORD_PROVISIONED) {
             if (Objects.equals(current.saeId(), saeId)) {
                 return SynchronizeOutcome.RECORD_AVAILABLE;
             }
             return SynchronizeOutcome.RECORD_SHARED_WITH_DIFFERENT_SAE;
         }
 
-        boolean staleReservation = current.dateOfCreation().isBefore(oldestAllowedReservation);
+        boolean staleReservation = isReservationStale(current.dateOfCreation(), now);
 
         if (current.recordAvailability() == RecordAvailability.RECORD_FETCHING_STARTED) {
             // Fetch lock: only stale reclaim; no higher-SAE / same-issuer overwrite.
@@ -277,7 +315,8 @@ public class AtomicRecordStateMap {
     public enum RecordAvailability {
         RECORD_SYNCHRONIZATION,
         RECORD_FETCHING_STARTED,
-        RECORD_AVAILABLE
+        RECORD_AVAILABLE,
+        RECORD_PROVISIONED
     }
 
     public enum SynchronizeOutcome {
@@ -291,15 +330,19 @@ public class AtomicRecordStateMap {
             Instant dateOfCreation,
             RecordAvailability recordAvailability,
             String saeId,
-            String issuingSaeId
+            String issuingSaeId,
+            int padPlainLen
     ) implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
 
         public RecordMetadata {
             Objects.requireNonNull(dateOfCreation, "dateOfCreation must not be null");
             Objects.requireNonNull(recordAvailability, "recordAvailability must not be null");
             validateSaeId(saeId);
             validateSaeId(issuingSaeId);
+            if (padPlainLen < 0 || padPlainLen > 0xFFFF) {
+                throw new IllegalArgumentException("padPlainLen out of range: " + padPlainLen);
+            }
         }
     }
 

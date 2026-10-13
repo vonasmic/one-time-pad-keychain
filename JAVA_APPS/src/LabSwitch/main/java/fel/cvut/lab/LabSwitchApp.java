@@ -8,12 +8,12 @@ import java.util.Scanner;
  *
  * <pre>{@code
  *   USER — both UserApp panes own USB (ENCRYPT / DECRYPT / bring-up)
- *   SAE  — both TerminalBridge panes own USB (PROVISION); gateways stay up either way
+ *   SAE  — both SaeNode panes own USB (PROVISION); lab-run restarts each node
  * }</pre>
  *
  * <p>Starts at {@code USER} so {@code se_host} bring-up can finish before any SAE connect.
- * Keychains run in parallel ({@code userapp-1}/{@code terminal-1} and
- * {@code userapp-2}/{@code terminal-2}); there is no CL 1 / CL 2 switch.
+ * Keychains run in parallel ({@code userapp-1}/{@code node-1} and
+ * {@code userapp-2}/{@code node-2}); there is no CL 1 / CL 2 switch.
  */
 public final class LabSwitchApp {
 
@@ -62,18 +62,13 @@ public final class LabSwitchApp {
     private static void printState(LabSwitch lab, LabSwitch.State state) {
         System.out.println("[lab] " + lab.path() + " → owner=" + state.mode());
         state.nodes().forEach((id, n) -> System.out.println(
-                "[lab] " + id
-                        + " serial=" + n.serialPort()
-                        + " → " + n.host()
-                        + " native=" + n.nativePort()
-                        + " terminal=" + n.terminalPort()));
+                "[lab] " + id + " serial=" + n.serialPort()));
         if (state.holdsTerminal()) {
             System.out.println("[lab] SAE owns USB on both clients"
-                    + " (terminal-1/2 PROVISION; userapp-1/2 idle)");
+                    + " (node-1/2 restart with the serial port; userapp-1/2 stop)");
         } else {
             System.out.println("[lab] USER owns USB on both clients"
-                    + " (userapp-1/2 ENCRYPT/DECRYPT / bring-up;"
-                    + " terminal-1/2 stay on gateways without USB)");
+                    + " (userapp-1/2 start; node-1/2 restart with USB off)");
         }
     }
 

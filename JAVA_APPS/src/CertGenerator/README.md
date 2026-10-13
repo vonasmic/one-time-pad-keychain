@@ -86,7 +86,7 @@ CAs live in `certs/ca/`, so `certs/*.pem` is only node leaves. Root CA and clien
 | --- | --- | --- | --- |
 | `CERTGEN_ROOT_CA` | no | `root-ca` | SAE trust-anchor basename → `certs/ca/{name}.p12` + `.pem`. |
 | `CERTGEN_CLIENT_CA` | no | `client_ca` | Client-auth CA basename → `certs/ca/{name}.p12` + `.pem`. |
-| `CERTGEN_NODES` | **yes** | — | Node leaf CNs / HSM key names / `certs/{Name}.pem`. Example: `Alice,Bob,Carol,Terminal`. |
+| `CERTGEN_NODES` | **yes** | — | Node leaf CNs / HSM key names / `certs/{Name}.pem`. Example: `Alice,Bob,Carol`. A leftover `Terminal` identity is unused by the operator console. |
 | `CERTGEN_ENV` | no | `env/certgen.env` | Path to the certgen env file (process environment only, not inside the file). |
 | `PKCS12_PASSWORD` | no* | (stdin) | Password for CA / QuKayDee PKCS#12 create/load/import (*prompted if unset; **do not set in production env**) |
 
@@ -134,7 +134,7 @@ certs/
   ca/
     root-ca.p12        root-ca.pem
     client_ca.p12      client_ca.pem
-  Alice.pem            Bob.pem  Carol.pem  Terminal.pem
+  Alice.pem            Bob.pem  Carol.pem
   client/              client2/   user/    # UserApp / external CA; not this run
   qkd/*-client.p12     # imported if present; not deleted
 ```

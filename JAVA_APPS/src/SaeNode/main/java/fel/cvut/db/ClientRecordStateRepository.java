@@ -15,13 +15,13 @@ import java.util.Optional;
 public final class ClientRecordStateRepository {
 
     private static final String SELECT_FOR_UPDATE = """
-            SELECT date_of_creation, record_availability, sae_id, issuing_sae_id
+            SELECT date_of_creation, record_availability, sae_id, issuing_sae_id, pad_plain_len
             FROM client_record_state
             WHERE client_hash1 = ? AND client_hash2 = ?
             """;
 
     private static final String SELECT_FOR_READ = """
-            SELECT date_of_creation, record_availability, sae_id, issuing_sae_id
+            SELECT date_of_creation, record_availability, sae_id, issuing_sae_id, pad_plain_len
             FROM client_record_state
             WHERE client_hash1 = ? AND client_hash2 = ?
             """;
@@ -29,32 +29,41 @@ public final class ClientRecordStateRepository {
     private static final String DELETE_BY_HASHES = """
             DELETE FROM client_record_state
             WHERE client_hash1 = ? AND client_hash2 = ?
-            RETURNING date_of_creation, record_availability, sae_id, issuing_sae_id
+            RETURNING date_of_creation, record_availability, sae_id, issuing_sae_id, pad_plain_len
             """;
 
     private static final String DELETE_IF_ISSUING_SAE_MATCHES = """
             DELETE FROM client_record_state
             WHERE client_hash1 = ? AND client_hash2 = ? AND issuing_sae_id = ?
-            RETURNING date_of_creation, record_availability, sae_id, issuing_sae_id
+            RETURNING date_of_creation, record_availability, sae_id, issuing_sae_id, pad_plain_len
             """;
 
     private static final String UPSERT = """
             INSERT INTO client_record_state (
                 client_hash1, client_hash2, date_of_creation,
-                record_availability, sae_id, issuing_sae_id
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                record_availability, sae_id, issuing_sae_id, pad_plain_len
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (client_hash1, client_hash2) DO UPDATE SET
                 date_of_creation = EXCLUDED.date_of_creation,
                 record_availability = EXCLUDED.record_availability,
                 sae_id = EXCLUDED.sae_id,
-                issuing_sae_id = EXCLUDED.issuing_sae_id
+                issuing_sae_id = EXCLUDED.issuing_sae_id,
+                pad_plain_len = EXCLUDED.pad_plain_len
             """;
 
-    private static final String UPDATE_AVAILABILITY = """
+    private static final String FINISH_IF_FETCHING = """
+            UPDATE client_record_state
+            SET record_availability = ?,
+                date_of_creation = ?
+            WHERE client_hash1 = ? AND client_hash2 = ?
+              AND record_availability = 'RECORD_FETCHING_STARTED'
+            """;
+
+    private static final String MARK_PROVISIONED = """
             UPDATE client_record_state
             SET record_availability = ?
             WHERE client_hash1 = ? AND client_hash2 = ?
-              AND record_availability = 'RECORD_FETCHING_STARTED'
+              AND record_availability = 'RECORD_AVAILABLE'
             """;
 
     private static final String DELETE_OLDER_THAN = """
@@ -114,6 +123,7 @@ public final class ClientRecordStateRepository {
             statement.setString(4, metadata.recordAvailability().name());
             statement.setString(5, metadata.saeId());
             statement.setString(6, metadata.issuingSaeId());
+            statement.setInt(7, metadata.padPlainLen());
             statement.executeUpdate();
         }
     }
@@ -121,10 +131,25 @@ public final class ClientRecordStateRepository {
     public boolean finishIfFetching(
             Connection connection,
             String clientHash1,
+            String clientHash2,
+            Instant now
+    ) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(FINISH_IF_FETCHING)) {
+            statement.setString(1, AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE.name());
+            statement.setString(2, now.toString());
+            statement.setString(3, clientHash1);
+            statement.setString(4, clientHash2);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    public boolean markProvisionedIfAvailable(
+            Connection connection,
+            String clientHash1,
             String clientHash2
     ) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_AVAILABILITY)) {
-            statement.setString(1, AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE.name());
+        try (PreparedStatement statement = connection.prepareStatement(MARK_PROVISIONED)) {
+            statement.setString(1, AtomicRecordStateMap.RecordAvailability.RECORD_PROVISIONED.name());
             statement.setString(2, clientHash1);
             statement.setString(3, clientHash2);
             return statement.executeUpdate() > 0;
@@ -180,6 +205,8 @@ public final class ClientRecordStateRepository {
                 AtomicRecordStateMap.RecordAvailability.valueOf(resultSet.getString("record_availability"));
         String saeId = resultSet.getString("sae_id");
         String issuingSaeId = resultSet.getString("issuing_sae_id");
-        return new AtomicRecordStateMap.RecordMetadata(dateOfCreation, availability, saeId, issuingSaeId);
+        int padPlainLen = resultSet.getInt("pad_plain_len");
+        return new AtomicRecordStateMap.RecordMetadata(
+                dateOfCreation, availability, saeId, issuingSaeId, padPlainLen);
     }
 }

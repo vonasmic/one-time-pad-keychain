@@ -1,6 +1,8 @@
 package fel.cvut.userapp;
 
+import fel.cvut.terminal.AppLogging;
 import fel.cvut.se.SeBytes;
+import fel.cvut.se.SeConstants;
 import fel.cvut.se.SeManage;
 import fel.cvut.tls.SoftwareLeaf;
 import fel.cvut.usb.SeUsbLink;
@@ -153,10 +155,10 @@ final class ChipInit {
     static final Certs FILE_CERTS = new FileCerts();
 
     static final String MSG_KEM_ALREADY_PROVISIONED =
-            "ML-KEM is already provisioned (slot 510 / TROPIC KEM PUB). "
-                    + "INIT cannot change the Tropic PIN or re-run KEM INIT. "
-                    + "Use REPLACE to change the owner password (device renew); "
-                    + "use MANAGE KEYGEN, PEER, and INSERT SIGNED CSR for other enrollment changes.";
+            "ML-KEM is already provisioned (TROPIC KEM PUB shows the KEM slot). "
+                    + "INIT LAB and INIT PROD cannot change the Tropic PIN. "
+                    + "Use REPLACE to change the owner password. "
+                    + "Use PEER ADD, PEER REMOVE, or INSERT SIGNED CSR for other enrollment changes.";
 
     static final String OWNER_PASSWORD_PROMPT =
             "Owner password for device renew (not attempt-locked — use a strong password; 8-64 printable ASCII): ";
@@ -179,7 +181,7 @@ final class ChipInit {
         OwnerAuth chip = new OwnerAuth(usb, ctx);
         EnrollResult preflight = refuseIfKemProvisioned(chip);
         if (!preflight.ok()) {
-            System.err.println("INIT refused: " + preflight.message());
+            ConsoleStyle.err("INIT " + profile + " refused: " + preflight.message());
             return;
         }
 
@@ -199,12 +201,12 @@ final class ChipInit {
             }
         }
 
-        System.out.print("Type YES to continue (anything else cancels): ");
+        ConsoleStyle.prompt("Type YES to continue (anything else cancels): ");
         if (!sc.hasNextLine()) {
             return;
         }
         if (!"YES".equals(sc.nextLine().trim())) {
-            System.err.println("INIT cancelled.");
+            ConsoleStyle.warn("INIT " + profile + " cancelled.");
             return;
         }
 
@@ -223,9 +225,14 @@ final class ChipInit {
                         ownerSpki,
                         derCert(saeCa)));
         if (!result.ok()) {
-            System.err.println("INIT stopped at " + result.stoppedAt() + ": " + result.message());
+            if ("INIT".equals(result.stoppedAt())) {
+                ConsoleStyle.err("INIT " + profile + " refused: " + result.message());
+            } else {
+                ConsoleStyle.err("INIT " + profile + " stopped during "
+                        + stepLabel(result.stoppedAt()) + ": " + result.message());
+            }
         } else if (result.message() != null && !result.message().isBlank()) {
-            System.out.println(result.message());
+            ConsoleStyle.okBlock(result.message());
         }
     }
 
@@ -249,10 +256,10 @@ final class ChipInit {
                 return EnrollResult.stop("OWNER SET", failed.detail());
             }
             case OwnerSetResult.AlreadyEnrolled ignored -> {
-                System.out.println("OWNER SET: already enrolled");
+                ConsoleStyle.warn("Owner already enrolled");
             }
             case OwnerSetResult.Ok ignored -> {
-                System.out.println("OWNER SET ok");
+                ConsoleStyle.ok("Owner enrolled");
             }
         }
 
@@ -263,23 +270,23 @@ final class ChipInit {
                 if (!replaced.ok()) {
                     return EnrollResult.stop("KEYGEN", replaced.describe());
                 }
-                System.out.println(replaced.describe());
+                ConsoleStyle.ok("Tropic ECC key replaced");
             } else {
-                System.out.println("KEYGEN skipped (ECC occupied)");
+                ConsoleStyle.warn("Tropic ECC key left unchanged (slot occupied)");
             }
         } else {
             SeManage.Reply generated = chip.manage(SeManage.CMD_KEYGEN, null, null);
             if (!generated.ok()) {
                 return EnrollResult.stop("KEYGEN", generated.describe());
             }
-            System.out.println(generated.describe());
+            ConsoleStyle.ok("Tropic ECC key generated");
         }
 
         SeManage.Reply kem = chip.manage(SeManage.CMD_KEM_INIT, req.pin(), null);
         if (!kem.ok()) {
             return EnrollResult.stop("KEM INIT", kem.describe());
         }
-        System.out.println(kem.describe());
+        ConsoleStyle.ok("Tropic PIN set");
 
         byte[] csrPub;
         try {
@@ -306,7 +313,7 @@ final class ChipInit {
                 return installed;
             }
         } else {
-            System.out.println("INIT PROD: CSR written; run INSERT SIGNED CSR after the authority signs it.");
+            ConsoleStyle.warn("INIT PROD: CSR written; run INSERT SIGNED CSR after the authority signs it.");
         }
 
         if (!profile.allowPairing() || req.pairingSlot().isEmpty()) {
@@ -328,7 +335,7 @@ final class ChipInit {
         }
         Path pairingPath = pairingKeyPath(req.deviceCert());
         certs.writePairingKeyHex(pairingPath, key.slot(), key.priv(), key.pub());
-        System.out.println("PAIRING ok (key saved to " + pairingPath + ")");
+        ConsoleStyle.ok("Pairing key saved to " + pairingPath);
         return finishWithClientHash(chip,
                 "INIT PROD finished (pairing key saved to " + pairingPath + ").");
     }
@@ -336,9 +343,9 @@ final class ChipInit {
     private static EnrollResult finishWithClientHash(ChipPort chip, String done) throws Exception {
         Optional<byte[]> hash = chip.clientHash();
         if (hash.isEmpty()) {
-            return EnrollResult.ok(done + "\nCLIENT HASH unavailable (needs device cert + Tropic ECC).");
+            return EnrollResult.ok(done + "\nClient hash unavailable (needs a device cert and a Tropic ECC key).");
         }
-        return EnrollResult.ok(done + "\nCLIENT HASH (96 hex):\n" + SeBytes.toHex(hash.get()));
+        return EnrollResult.ok(done + "\nClient hash (96 hex):\n" + SeBytes.toHex(hash.get()));
     }
 
     /** CLIENT CSR dump used by INIT and {@code CSR EXPORT}. Does not sign or install. */
@@ -347,13 +354,17 @@ final class ChipInit {
         if (csrPub == null) {
             throw new IOException("could not parse device public key");
         }
+        if (csrPub.length != SeConstants.MLDSA_PUB_LEN) {
+            throw new IOException("CLIENT CSR truncated (" + csrPub.length + " of "
+                    + SeConstants.MLDSA_PUB_LEN + " bytes)");
+        }
         if (isAllZero(csrPub)) {
             throw new IOException(
                     "device public key is all zeros (reflash firmware with CLIENT CSR export fix)");
         }
         Path clientDir = deviceCert.getParent() == null ? deviceCert : deviceCert.getParent();
         certs.writeCsrHex(clientDir.resolve("client-csr.hex"), csrPub);
-        System.out.println("CLIENT CSR ok (" + csrPub.length + " bytes)");
+        ConsoleStyle.ok("Client CSR written (" + csrPub.length + " bytes)");
         return csrPub;
     }
 
@@ -363,7 +374,7 @@ final class ChipInit {
         if (!inserted.ok()) {
             return EnrollResult.stop("INSERT SIGNED CSR", inserted.describe());
         }
-        System.out.println(inserted.describe());
+        ConsoleStyle.ok("INSERT SIGNED CSR ok");
         return EnrollResult.ok(inserted.msg());
     }
 
@@ -374,64 +385,75 @@ final class ChipInit {
         return EnrollResult.ok("");
     }
 
+    /** User-facing name for an internal enroll step. Stop tokens stay stable for tests. */
+    private static String stepLabel(String stoppedAt) {
+        return switch (stoppedAt) {
+            case "OWNER SET" -> "owner enrollment";
+            case "KEYGEN" -> "Tropic ECC key";
+            case "KEM INIT" -> "Tropic PIN";
+            case "CLIENT CSR" -> "CSR export";
+            case "INSERT SIGNED CSR" -> "INSERT SIGNED CSR";
+            case "PAIRING" -> "pairing key";
+            default -> stoppedAt;
+        };
+    }
+
     private static void printWizard(Profile profile) {
-        System.out.println("Profile: " + profile);
+        ConsoleStyle.section("Profile: " + profile);
         if (profile == Profile.LAB) {
-            System.out.println("""
-                    --- Chip INIT LAB ---
+            AppLogging.terminalOut().println("""
+                    --- INIT LAB ---
                     This will:
-                      1. Enroll this UserApp certificate as owner (OWNER SET) if the slot is empty
-                         (unsigned USB blob: owner password + owner SPKI + SAE CA).
-                         Owner password is for device renew; it is not attempt-locked, so use a strong one.
-                      2. Generate Tropic ECC P-256 slot 0 over MANAGE TLS only if empty
-                         (occupied slot is left alone; occupancy from TROPIC PUB)
-                      3. Set the Tropic PIN (encrypt/decrypt; 8 attempts max) over MANAGE TLS if slot 510 is empty
-                      4. Dump CLIENT CSR (on-chip ML-DSA pub) into the client folder and sign it
-                         with the local client CA, then INSERT SIGNED CSR (cert only)
-                      5. Print CLIENT HASH (96 hex) for copy
+                      1. Enroll this UserApp certificate as owner if the slot is empty
+                         (owner password + this app's key + SAE CA).
+                         The owner password is for REPLACE; it is not attempt-locked, so use a strong one.
+                      2. Generate the Tropic ECC key only if the slot is empty
+                         (an occupied slot is left alone; check with TROPIC PUB)
+                      3. Set the Tropic PIN used by ENCRYPT and DECRYPT (8 attempts max) if the KEM slot is empty
+                      4. Write the on-chip CSR into the client folder, sign it with the local client CA,
+                         and install it (same result as INSERT SIGNED CSR)
+                      5. Print the client hash (same as CLIENT HASH)
 
-                    Pairing is not run; factory SH0 stays. TLS encrypt waits until the signed cert
-                    is on the device (this wizard installs it).
+                    Pairing is not run; factory SH0 stays. ENCRYPT and DECRYPT wait until the signed
+                    cert is on the device (this wizard installs it).
 
-                    WARNING: Tropic PIN is for encrypt/decrypt (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
-                    WARNING: owner password is for device renew and is not attempt-locked — use a strong password.
-                    WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
+                    WARNING: the Tropic PIN is for ENCRYPT and DECRYPT (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
+                    WARNING: the owner password is for REPLACE and is not attempt-locked — use a strong password.
+                    WARNING: an occupied KEM slot is not overwritten (INIT LAB will stop).
                     """);
             return;
         }
-        System.err.println("""
+        ConsoleStyle.warn("""
                 WARNING: INIT PROD is the production enrollment path.
                 WARNING: it will not sign the device CSR with the lab client CA.
-                WARNING: ENCRYPT/DECRYPT/PROVISION stay down until a client-CA-signed cert
+                WARNING: ENCRYPT, DECRYPT, and provisioning stay down until a signed cert
                          is installed with INSERT SIGNED CSR (not during this wizard).
-                WARNING: pairing (if you choose 1-3) burns factory SH0 and is irreversible
+                WARNING: choosing pairing slot 1-3 burns factory SH0 and is irreversible
                          on silicon. The pairing private key is written to pairing-key.hex
-                         (not printed). PAIRING LOAD restores L3 after an MCU erase; pads
-                         and device identity stay lost.
+                         (not printed). After an MCU erase, OWNER then PAIRING LOAD restores
+                         L3; pads and device identity stay lost.
                 """);
-        System.out.println("""
-                --- Chip INIT PROD ---
+        AppLogging.terminalOut().println("""
+                --- INIT PROD ---
                 This will:
-                  1. Enroll this UserApp certificate as owner (OWNER SET) if the slot is empty
-                     (unsigned USB blob: owner password + owner SPKI + SAE CA).
-                     Owner password is for device renew; it is not attempt-locked, so use a strong one.
-                  2. Generate or replace Tropic ECC P-256 slot 0 over MANAGE TLS
-                  3. Set the Tropic PIN (encrypt/decrypt; 8 attempts max) over MANAGE TLS
-                     (unsigned; owner-pinned, not mTLS)
-                  4. Dump CLIENT CSR into the client folder (no local CA sign, no install)
-                  5. Optionally write a new X25519 pairing key (slot 1-3, invalidates
-                     factory SH0) over MANAGE, or skip with n. The private
-                     key is saved to pairing-key.hex next to the device cert (not printed).
-                  6. Print CLIENT HASH (96 hex) for copy (needs device cert + Tropic ECC;
-                     run INSERT SIGNED CSR after the authority signs the CSR)
+                  1. Enroll this UserApp certificate as owner if the slot is empty
+                     (owner password + this app's key + SAE CA).
+                     The owner password is for REPLACE; it is not attempt-locked, so use a strong one.
+                  2. Generate or replace the Tropic ECC key
+                  3. Set the Tropic PIN used by ENCRYPT and DECRYPT (8 attempts max)
+                  4. Write the on-chip CSR into the client folder (no local CA sign, no install)
+                  5. Optionally write a new pairing key in slot 1-3 (burns factory SH0), or skip with n.
+                     The private key is saved to pairing-key.hex next to the device cert (not printed).
+                  6. Print the client hash (same as CLIENT HASH) when a device cert and Tropic ECC exist.
+                     After an authority signs the CSR, run INSERT SIGNED CSR.
 
-                WARNING: Tropic PIN is for encrypt/decrypt (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
-                WARNING: owner password is for device renew and is not attempt-locked — use a strong password.
-                WARNING: PAIRING (1-3) is irreversible on real silicon (factory SH0 is burned).
-                WARNING: after PAIRING, an MCU erase needs OWNER SET then PAIRING LOAD to reopen L3.
+                WARNING: the Tropic PIN is for ENCRYPT and DECRYPT (8 attempts max). Losing it loses the ML-KEM seed / pad unwrap.
+                WARNING: the owner password is for REPLACE and is not attempt-locked — use a strong password.
+                WARNING: pairing slot 1-3 is irreversible on real silicon (factory SH0 is burned).
+                WARNING: after pairing, an MCU erase needs OWNER, then PAIRING LOAD, to reopen L3.
                 WARNING: PAIRING LOAD restores L3 only; pads and the enrolled identity stay lost.
                 WARNING: replacing an occupied ECC slot destroys the previous identity key.
-                WARNING: occupied KEM slot 510 is not overwritten (INIT will stop).
+                WARNING: an occupied KEM slot is not overwritten (INIT PROD will stop).
                 """);
     }
 
@@ -444,22 +466,22 @@ final class ChipInit {
     }
 
     static String readOwnerPassword(Scanner sc, String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.prompt(prompt);
         if (!sc.hasNextLine()) {
             return null;
         }
         String pw = sc.nextLine();
         byte[] bytes = pw.getBytes(StandardCharsets.US_ASCII);
         if (!SeManage.passwordOk(bytes)) {
-            System.err.println("Owner password must be 8–64 printable ASCII characters.");
+            ConsoleStyle.err("Owner password must be 8–64 printable ASCII characters.");
             return null;
         }
-        System.out.print(OWNER_PASSWORD_CONFIRM_PROMPT);
+        ConsoleStyle.prompt(OWNER_PASSWORD_CONFIRM_PROMPT);
         if (!sc.hasNextLine()) {
             return null;
         }
         if (!pw.equals(sc.nextLine())) {
-            System.err.println("Owner password confirmation did not match.");
+            ConsoleStyle.err("Owner password confirmation did not match.");
             return null;
         }
         return pw;
@@ -470,13 +492,13 @@ final class ChipInit {
         if (pin == null) {
             return null;
         }
-        System.out.print(TROPIC_PIN_CONFIRM_PROMPT);
+        ConsoleStyle.prompt(TROPIC_PIN_CONFIRM_PROMPT);
         if (!sc.hasNextLine()) {
             return null;
         }
         String again = sc.nextLine();
         if (!SeManage.pinOk(again) || !pin.equals(again)) {
-            System.err.println("Tropic PIN confirmation did not match.");
+            ConsoleStyle.err("Tropic PIN confirmation did not match.");
             return null;
         }
         return pin;
@@ -484,7 +506,7 @@ final class ChipInit {
 
     private static Optional<Integer> readPairingSlot(Scanner sc) {
         while (true) {
-            System.out.print("Pairing slot to replace SH0 [1-3], or n to skip: ");
+            ConsoleStyle.prompt("Pairing slot to replace SH0 [1-3], or n to skip: ");
             if (!sc.hasNextLine()) {
                 return null;
             }
@@ -492,7 +514,7 @@ final class ChipInit {
             if (choice != null) {
                 return choice;
             }
-            System.err.println("Enter 1, 2, 3, or n to leave the pairing key unchanged.");
+            ConsoleStyle.err("Enter 1, 2, 3, or n to leave the pairing key unchanged.");
         }
     }
 

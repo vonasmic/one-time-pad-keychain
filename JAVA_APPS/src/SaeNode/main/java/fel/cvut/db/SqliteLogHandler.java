@@ -1,5 +1,7 @@
 package fel.cvut.db;
 
+import fel.cvut.terminal.AppLogging;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -110,7 +112,8 @@ final class SqliteLogHandler extends Handler {
             try {
                 connection.close();
             } catch (SQLException ex) {
-                System.err.println("SQLite log connection close failed: " + ex.getMessage());
+                AppLogging.terminalErr().println(
+                        "SQLite log connection close failed: " + ex.getMessage());
             }
         }
     }
@@ -127,7 +130,7 @@ final class SqliteLogHandler extends Handler {
 
     private void reportFailure(SQLException ex) {
         if (failureReported.compareAndSet(false, true)) {
-            System.err.println("SQLite log write failed: " + ex.getMessage());
+            AppLogging.terminalErr().println("SQLite log write failed: " + ex.getMessage());
         }
     }
 }

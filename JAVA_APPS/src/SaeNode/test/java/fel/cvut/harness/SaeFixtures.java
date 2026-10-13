@@ -35,6 +35,7 @@ public final class SaeFixtures {
     public static final String PEER_SAE = "sae-2";
     public static final String HASH_1 = "a".repeat(64);
     public static final String HASH_2 = "b".repeat(64);
+    public static final int UPLINK_SLOT = 64;
 
     private SaeFixtures() {
     }
@@ -81,22 +82,30 @@ public final class SaeFixtures {
         );
     }
 
+    public static int padPlain() {
+        return UPLINK_SLOT - SeConstants.RMEM_OVERHEAD;
+    }
+
     public static ClientRecord record(String hash1, String hash2, String targetSaeId, List<String> payload) {
-        return new ClientRecord(hash1, hash2, payload, targetSaeId);
+        return new ClientRecord(hash1, hash2, payload, targetSaeId, padPlain());
     }
 
     public static ClientRecord.ClientHeader header(String hash1, String hash2, String targetSaeId) {
-        return new ClientRecord.ClientHeader(hash1, hash2, targetSaeId);
+        return new ClientRecord.ClientHeader(hash1, hash2, targetSaeId, padPlain());
+    }
+
+    public static SeSessionUplink.PeerEntry peer(String nickname) {
+        return new SeSessionUplink.PeerEntry(new byte[SeConstants.PEER_HASH_LEN], nickname, padPlain());
     }
 
     public static SeSessionUplink uplink() {
         return new SeSessionUplink(
                 new byte[SeConstants.CLIENT_HASH_LEN],
-                64,
+                UPLINK_SLOT,
                 1,
                 new byte[SeConstants.FILL_ID_LEN],
                 new byte[SeConstants.MLKEM_PK_LEN],
-                List.of(new SeSessionUplink.PeerEntry(new byte[SeConstants.PEER_HASH_LEN], "peer"))
+                List.of(peer("peer"))
         );
     }
 

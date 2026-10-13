@@ -1,0 +1,56 @@
+\chapter{Provision}
+\label{chap:provision}
+
+% Export diagrams/provision_flow.drawio → diagrams/provision_flow.pdf.
+% Float drží celou stranu na diagram; text kapitoly má zůstat na jedné straně.
+\begin{figure}[p]
+  \centering
+  \IfFileExists{../diagrams/provision_flow.pdf}{%
+    \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]%
+      {../diagrams/provision_flow.pdf}%
+  }{%
+    \fbox{%
+      \parbox[c][0.82\textheight][c]{0.94\textwidth}{\centering}%
+    }%
+  }
+  \caption{Rozhodovací strom příkazu \texttt{PROVISION}
+    (\texttt{diagrams/provision\_flow}).}
+  \label{fig:provision-flow}
+\end{figure}
+
+\noindent
+Příkaz \texttt{PROVISION} naplní čip jednorázovými pady z QKD.
+Obrázek~\ref{fig:provision-flow} je strom SaeNode: enrol a autenticita uplinku,
+výběr peer SAE a peer zařízení, pak nová výměna, doručení uloženého share,
+nebo konec bez klíčů.
+
+Nová výměna rezervuje pár (\texttt{RECORD\_SYNCHRONIZATION}), zamkne fetch
+(\texttt{RECORD\_FETCHING\_STARTED}) a po stažení padů zapíše na obou SAE
+\texttt{RECORD\_AVAILABLE}. Origin pošle downlink. \texttt{RECORD\_PROVISIONED}
+vznikne až po ACK čipu a jen na origin řádku. Terminál hlásí dokončení až po
+návratu tohoto zápisu. Peer čip dostane materiál později, jen z originu ve stavu
+\texttt{PROVISIONED}, a oba řádky se před odesláním smažou.
+
+\section{Formální ověření}
+
+PlusCal v \texttt{specs/sae-provision/SaeProvision.tla} sleduje tuto ságu
+včetně pádu procesu mezi kroky, vypršení dvouminutové rezervace, výpadku
+spojení na origin a jednoho pozdějšího pokusu (nový fill, nebo doručení na peer).
+TLS, PIN a bajty padů v modelu nejsou. Důkaz je prohledání stavů TLC podle
+\texttt{SaeProvision.cfg}. Ve všech dosažitelných stavech platí:
+
+\begin{itemize}
+  \setlength{\itemsep}{0.15em}
+  \item Oba committnuté share mají shodné příznaky materiálu.
+  \item \texttt{PROVISIONED} je jen origin řádek a jen po ACK origin čipu.
+  \item Klíče na peer čipu znamenají klíče na origin čipu a už smazané řádky.
+  \item Hláška úspěchu odpovídá konzistentnímu share, nebo jeho pozdějšímu
+        spotřebování.
+  \item Po čtení dosažitelného originu za oknem rezervace je osiřelý
+        \texttt{AVAILABLE} pryč, nebo origin ještě drží čerstvou rezervaci.
+\end{itemize}
+
+\noindent
+Stejné invarianty drží dva krajní běhy. Nedosažitelný origin se nemaže ani
+neplní, takže \texttt{AVAILABLE} může zůstat. Pád po smazání řádků a před
+zápisem na peer čip nechá klíče jen na originu, a stejný share se nepošle dvakrát.

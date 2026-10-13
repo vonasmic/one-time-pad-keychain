@@ -1,9 +1,9 @@
 # SaeNode
 
-**SAE** node process: inter-node RMI, ETSI 014 QKD client, TLS command server for
-device **PROVISION**, terminal gateway, local SQLite record state, and HSM-backed
-crypto. This is **not** UserApp. Encrypt / decrypt / manage stay on the **USER**
-process ([UserApp](../UserApp/README.md)).
+**SAE** node process: inter-node RMI, ETSI 014 QKD client, USB CDC for device
+**PROVISION**, operator stdin (SELECT / CONFIRM / NOTIFY), local SQLite record
+state, and HSM-backed crypto. This is **not** UserApp. Encrypt / decrypt / manage
+stay on the **USER** process ([UserApp](../UserApp/README.md)).
 
 Entry point: `fel.cvut.node.Node`.
 
@@ -12,11 +12,11 @@ Working directory must be `JAVA_APPS` (so `certs/` and `env/` resolve).
 ## What it does
 
 - Authenticates with an HSM ML-DSA identity (`certs/{TLS_NODE_ID}.pem` + PQMI key)
-- Serves **PURE_PQC** TLS to peer nodes (RMI) and to [TerminalBridge](../TerminalBridge/README.md)
-- Serves **PURE_PQC** TLS on `NODE_NATIVE_PORT` with `client_ca` trust (device mTLS for **PROVISION** / TerminalBridge USB relay).
+- Serves **PURE_PQC** TLS to peer nodes (RMI)
+- Opens USB CDC and serves **PURE_PQC** TLS with `client_ca` trust (device mTLS for **PROVISION**)
 - Talks to the QuKayDee KME over **CLASSICAL** mTLS.
 - Stores client record state and HSM-encrypted QKD key material in **one SQLite file per node**
-- Forwards operator SELECT / CONFIRM / NOTIFY to the terminal app via `TerminalGateway`
+- Prompts SELECT / CONFIRM / NOTIFY on this process's stdin
 
 The node never creates HSM keys. After an HSM reinit, run [CertGenerator](../CertGenerator/README.md) first.
 
@@ -71,9 +71,9 @@ Peer list: [`main/resources/sae-nodes.json`](main/resources/sae-nodes.json).
 | --- | --- | --- | --- |
 | `SAE_ID` | **yes** | — | Local SAE id; must match an entry in `sae-nodes.json` |
 | `NODE_RMI_PORT` | **yes** | — | RMI registry port; must match `sae-nodes.json` for this SAE |
-| `NODE_NATIVE_PORT` | **yes** | — | TLS command server (device / TerminalBridge USB relay) |
-| `NODE_TERMINAL_PORT` | **yes** | — | TLS terminal gateway (TerminalBridge) |
 | `NODE_HOSTNAME` | no | `127.0.0.1` | RMI bind / advertised hostname |
+| `USB_SERIAL_PORT` | no | `auto` | CDC path, or `auto` / `scan`; `none` / `off` / `disabled` skips USB |
+| `USB_BAUD_RATE` | no | `115200` | Serial baud rate |
 | `TLS_NODE_ID` | **yes** | — | HSM key + leaf `certs/{TLS_NODE_ID}.pem` |
 | `QKD_BASE_URL` | **yes** | — | KME ETSI 014 base URL |
 | `QKD_HSM_KEY_ALIAS` | **yes** | — | CryptoServer alias imported by CertGenerator |
@@ -81,6 +81,7 @@ Peer list: [`main/resources/sae-nodes.json`](main/resources/sae-nodes.json).
 | `QKD_TRUSTSTORE_PASSWORD` | no* | (stdin) | PKCS#12 password (*or `QKD_KEYSTORE_PASSWORD`; prompted if neither set; **do not set in production env**) |
 | `DB_URL` | **yes** | — | SQLite JDBC URL, one file per node (`jdbc:sqlite:data/qkd-sae-N.db`) |
 | `RECORD_RETENTION_DAYS` | no | `14` | Refuse / purge rows older than this many days |
+| `APP_LOG` | no | `TERMINAL` | `FULL` sends logs and library prints to stderr. `TERMINAL` prints only operator prompts. SQLite still records logs |
 | `PQC_CERTS_DIR` | no | `certs` | Certificate directory |
 
 ## Config — HSM (`env/hsm.env`, must be sourced)
@@ -101,19 +102,30 @@ Template: [`env/example/hsm.env.example`](../../env/example/hsm.env.example).
 
 ## Database
 
-SQLite stores `client_record_state`, HSM-encrypted QKD key material
-(`shared_key_material`), and `application_log`. Use **one file per node**. The
+SQLite stores `client_record_state` (including negotiated `pad_plain_len`),
+HSM-encrypted QKD key material (`shared_key_material`), and `application_log`.
+Use **one file per node**. The
 file is created with POSIX mode `0600` when missing. WAL + `BEGIN IMMEDIATE`
 transactions serialize writers from this process only.
 
 `application_log` receives `fel.cvut` messages at INFO and above, and WARNING
-and above from every other logger (including Bouncy Castle and HikariCP). The
-same filter is applied to the console. SLF4J is bridged through
+and above from every other logger (including Bouncy Castle and HikariCP).
+That store is written for both `APP_LOG` values. SLF4J is bridged through
 `java.util.logging`.
+
+`APP_LOG=FULL` points ordinary stdout at stderr, which is where Java already
+writes logs, so debug and Bouncy Castle stay off the prompt stream.
+`APP_LOG=TERMINAL` (the default, production) drops that stream and prints only
+SELECT / CONFIRM / NOTIFY.
 
 New-share states: `RECORD_SYNCHRONIZATION` (may be taken over by a higher issuing
 SAE) → `RECORD_FETCHING_STARTED` after both SAEs synchronize and origin locks
-fetch (no higher-SAE takeover; 2-minute stale reclaim) → `RECORD_AVAILABLE`.
+fetch (no higher-SAE takeover; 2-minute stale reclaim) → `RECORD_AVAILABLE` →
+origin-only `RECORD_PROVISIONED` after the origin device ack. The terminal
+success line is printed only after that mark returns, so it means the share
+is consistent. A leftover
+`RECORD_AVAILABLE` on the origin means that fill failed: the next origin
+provision deletes it and starts a new share without prompting.
 
 On start the node runs a timed thread that deletes rows older than
 `RECORD_RETENTION_DAYS` (default 14) immediately and then every 24 hours.
@@ -139,7 +151,8 @@ mvn -pl :sae-node flyway:migrate
 ```text
 src/SaeNode/
   README.md
-  main/java/fel/cvut/node/      Node, bootstrap, TerminalGateway, PeerRecordSync
+  main/java/fel/cvut/node/      Node, bootstrap, PeerRecordSync
+  main/java/fel/cvut/terminal/  AppLogging (shared via se-wire), SAE operator console
     interNodeCommunication/     RMI commands
     recordManager/              Client records
   main/java/fel/cvut/db/        JDBC + repositories + RecordRetention
@@ -151,16 +164,15 @@ src/SaeNode/
   test/java/                    DB, RMI, HSM, SE, peer-sync tests
 ```
 
-Operator protocol types (`OperatorConsole`, `TerminalWireProtocol`) live in
-[TerminalBridge](../TerminalBridge/README.md). TLS/HSM helpers here are also used by
-CertGenerator and TerminalBridge.
+USB CDC helpers live in [usb-cdc](../TerminalBridge/README.md). TLS/HSM helpers here
+are also used by CertGenerator.
 
 ## TLS profiles
 
 | Use | Profile | Trust |
 | --- | --- | --- |
-| Inter-node RMI, terminal gateway | `PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44) | `certs/ca/root-ca.pem` |
-| Command server (`NODE_NATIVE_PORT`) | `PURE_PQC` | `certs/ca/client_ca.pem` (device certs, `PROVISION`) |
+| Inter-node RMI | `PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44) | `certs/ca/root-ca.pem` |
+| Device `PROVISION` on USB CDC | `PURE_PQC` | `certs/ca/client_ca.pem` (device certs) |
 | QKD KME mTLS | `CLASSICAL` (prefer TLS 1.3 + MLKEM768 + mldsa44; allow TLS 1.2 + x25519 / classical signatures) | `QKD_TRUSTSTORE_PATH` |
 
 Provider routing is documented in the [JAVA_APPS README](../../README.md#tls).

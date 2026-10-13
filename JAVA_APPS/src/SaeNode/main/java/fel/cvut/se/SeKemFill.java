@@ -40,24 +40,35 @@ public final class SeKemFill {
 
     /**
      * Encapsulates against {@link SeSessionUplink#mlkemPublicKey()}, seals pads, and returns
-     * LV downlink version 2 bytes ({@code kem_ct}, {@code decrypt_half}, then sealed pad images).
+     * LV downlink version 3 bytes ({@code kem_ct}, {@code decrypt_half}, {@code pad_plain},
+     * then sealed pad images).
      *
      * @param decryptHalf {@link SeConstants#DECRYPT_HALF_ORIGIN} or {@link SeConstants#DECRYPT_HALF_PEER}
+     * @param padPlain    SAE-chosen plaintext bytes per pad, at most {@link SeSessionUplink#plainMax()}
      */
     public byte[] buildDownlink(SeSessionUplink uplink, List<String> base64Keys, byte decryptHalf) {
+        return buildDownlink(uplink, base64Keys, decryptHalf, uplink.plainMax());
+    }
+
+    public byte[] buildDownlink(
+            SeSessionUplink uplink, List<String> base64Keys, byte decryptHalf, int padPlain
+    ) {
         Objects.requireNonNull(uplink, "uplink must not be null");
         if (decryptHalf != SeConstants.DECRYPT_HALF_ORIGIN
                 && decryptHalf != SeConstants.DECRYPT_HALF_PEER) {
             throw new IllegalArgumentException("decryptHalf must be 0 or 1: " + decryptHalf);
         }
+        if (padPlain < 1 || padPlain > uplink.plainMax()) {
+            throw new IllegalArgumentException(
+                    "padPlain " + padPlain + " is outside 1.." + uplink.plainMax());
+        }
         byte[] plaintext = SeBytes.decodeAndConcatBase64(base64Keys);
-        int plainMax = uplink.plainMax();
-        int n = Math.min(uplink.maxPadsForBudget(), plaintext.length / plainMax);
+        int n = Math.min(uplink.maxPadsForBudget(padPlain), plaintext.length / padPlain);
         if (n <= 0) {
             throw new IllegalArgumentException(
                     "Not enough QKD material or downlink budget for any pad "
-                            + "(bytes=" + plaintext.length + ", plainMax=" + plainMax
-                            + ", maxPads=" + uplink.maxPadsForBudget() + ")");
+                            + "(bytes=" + plaintext.length + ", padPlain=" + padPlain
+                            + ", maxPads=" + uplink.maxPadsForBudget(padPlain) + ")");
         }
 
         int half = uplink.padCount() / 2;
@@ -77,12 +88,13 @@ public final class SeKemFill {
         }
         byte[] ss = Arrays.copyOf(rawSs, SeConstants.MLKEM_SS_LEN);
 
-        List<byte[]> items = new ArrayList<>(2 + half + second);
+        List<byte[]> items = new ArrayList<>(3 + half + second);
         items.add(kemCt);
         items.add(new byte[] {decryptHalf});
+        items.add(SeBytes.u16Le(padPlain));
         int src = 0;
         for (int logical = 0; logical < first; logical++) {
-            items.add(sealPad(ss, uplink.fillId(), logical, plaintext, src * plainMax, plainMax));
+            items.add(sealPad(ss, uplink.fillId(), logical, plaintext, src * padPlain, padPlain));
             src++;
         }
         for (int logical = first; logical < half; logical++) {
@@ -90,7 +102,7 @@ public final class SeKemFill {
         }
         for (int i = 0; i < second; i++) {
             int logical = half + i;
-            items.add(sealPad(ss, uplink.fillId(), logical, plaintext, src * plainMax, plainMax));
+            items.add(sealPad(ss, uplink.fillId(), logical, plaintext, src * padPlain, padPlain));
             src++;
         }
         return SecureLv.encode(SeConstants.LV_DOWNLINK_VERSION, items);

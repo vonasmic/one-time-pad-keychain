@@ -1,21 +1,19 @@
 package fel.cvut.db;
 
+import fel.cvut.terminal.AppLogging;
+
 import java.sql.SQLException;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
- * Routes java.util.logging into the node SQLite file and the console.
+ * Routes java.util.logging into the node SQLite file.
  *
- * <p>{@code fel.cvut} is kept at {@link Level#INFO} so application messages are stored.
- * The root logger, including Bouncy Castle, stays at {@link Level#WARNING}.
+ * <p>Console printing is {@link AppLogging}: {@code APP_LOG=FULL} leaves logs on stderr,
+ * {@code APP_LOG=TERMINAL} drops them. SQLite still stores {@code fel.cvut} at INFO
+ * and above, and WARNING and above from every other logger, in both modes.
  */
 public final class SqliteLogging {
-
-    static final String APPLICATION_LOGGER = "fel.cvut";
-    private static final String BOUNCY_CASTLE_LOGGER = "org.bouncycastle";
 
     private static final Object LOCK = new Object();
     private static SqliteLogHandler sqliteHandler;
@@ -24,45 +22,30 @@ public final class SqliteLogging {
     private SqliteLogging() {}
 
     /**
-     * Installs the console and SQLite handlers. Safe to call once per JVM; later calls do nothing.
+     * Installs the SQLite handler. Safe to call once per JVM; later calls do nothing.
      * The SQLite file is created with mode {@code 0600} when it does not exist yet.
+     * Also installs {@link AppLogging} console policy ({@code APP_LOG}).
      */
     public static void install(String jdbcUrl) {
+        AppLogging.install();
         boolean registerHook = false;
         synchronized (LOCK) {
             if (sqliteHandler != null) {
                 return;
             }
             DB.prepareSqliteFile(jdbcUrl);
-            if (System.getProperty("java.util.logging.SimpleFormatter.format") == null) {
-                System.setProperty(
-                        "java.util.logging.SimpleFormatter.format",
-                        "%1$tF %1$tT %4$-7s %3$s %5$s%6$s%n"
-                );
-            }
-            LogManager.getLogManager().reset();
-
-            Logger root = Logger.getLogger("");
-            root.setLevel(Level.WARNING);
-
-            ConsoleHandler console = new ConsoleHandler();
-            console.setLevel(Level.ALL);
-            root.addHandler(console);
-
-            Logger.getLogger(APPLICATION_LOGGER).setLevel(Level.INFO);
-            Logger.getLogger(BOUNCY_CASTLE_LOGGER).setLevel(Level.WARNING);
-
             try {
                 SqliteLogHandler handler = new SqliteLogHandler(jdbcUrl);
                 handler.setLevel(Level.ALL);
-                root.addHandler(handler);
+                handler.setFilter(AppLogging::storedInSqlite);
+                Logger.getLogger("").addHandler(handler);
                 sqliteHandler = handler;
                 if (!hookRegistered) {
                     hookRegistered = true;
                     registerHook = true;
                 }
             } catch (SQLException ex) {
-                System.err.println("SQLite log handler disabled: " + ex.getMessage());
+                AppLogging.terminalErr().println("SQLite log handler disabled: " + ex.getMessage());
             }
         }
         if (registerHook) {

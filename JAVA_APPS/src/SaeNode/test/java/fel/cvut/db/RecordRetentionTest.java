@@ -164,7 +164,7 @@ class RecordRetentionTest {
     ) throws Exception {
         try (Connection connection = SQLITE.origin().getConnection()) {
             states.replace(connection, hash1, hash2, new AtomicRecordStateMap.RecordMetadata(
-                    created, availability, ORIGIN_SAE, ORIGIN_SAE));
+                    created, availability, ORIGIN_SAE, ORIGIN_SAE, SaeFixtures.padPlain()));
         }
     }
 

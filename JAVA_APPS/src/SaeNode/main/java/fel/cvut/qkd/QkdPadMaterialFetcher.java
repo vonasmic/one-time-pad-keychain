@@ -73,8 +73,18 @@ public final class QkdPadMaterialFetcher {
     }
 
     public FetchedKeys fetch(String slaveSaeId, SeSessionUplink uplink) throws Qkd014ClientException {
-        int plainMax = uplink.plainMax();
-        int targetPads = uplink.maxPadsForBudget();
+        return fetch(slaveSaeId, uplink, uplink.plainMax());
+    }
+
+    public FetchedKeys fetch(String slaveSaeId, SeSessionUplink uplink, int padPlain)
+            throws Qkd014ClientException {
+        Objects.requireNonNull(uplink, "uplink must not be null");
+        if (padPlain < 1 || padPlain > uplink.plainMax()) {
+            throw new IllegalArgumentException(
+                    "padPlain " + padPlain + " is outside 1.." + uplink.plainMax());
+        }
+        int plainMax = padPlain;
+        int targetPads = uplink.maxPadsForBudget(padPlain);
         if (targetPads <= 0) {
             throw new IllegalStateException("Uplink geometry yields zero pad slots");
         }

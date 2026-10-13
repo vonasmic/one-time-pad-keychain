@@ -3,7 +3,7 @@
 **USER** application: USB console for the home-PC user. This is **not** an SAE.
 The device connects to this process for OTP **encrypt / decrypt** and **MANAGE**
 (INIT / OWNER / PEER / CREDS). Provision is a separate **SAE** path: the SAE
-node plus [TerminalBridge](../TerminalBridge/README.md). This process does
+node ([SaeNode](../SaeNode/README.md)). This process does
 **not** use the HSM: the owner ML-DSA key is loaded from `certs/user/user.p12` (or
 PEM fallback) into Bouncy Castle JSSE. The user key is never embedded in firmware.
 
@@ -13,8 +13,38 @@ Working directory must be `JAVA_APPS` (so `certs/` resolves).
 
 ## Prompt
 
-`quit` / `q` / `exit` leaves. Recognized **APP** commands run Java wrappers; any other
-line is sent straight to the chip console (same as TerminalBridge transact).
+The menu is a short block reprinted under the previous result. `HELP` (or `?`)
+prints command interface **v2** with one line per command. `quit` / `q` / `exit`
+leaves. Recognized **APP** commands run Java wrappers; any other line is sent
+as a type `0x00` command frame (`SeUsbLink.transact`).
+
+```text
+OK encrypt reply (hex):
+01000000fd000800137a904788883450
+
+────────────────────────────────────────────
+COMMANDS
+INIT        LAB | PROD
+STANDALONE  CSR EXPORT | INSERT SIGNED CSR
+            PAIRING LOAD | OWNER | REPLACE
+USAGE       ENCRYPT | DECRYPT | STATUS
+PEERS       PEER ADD | REMOVE | LIST | CARD
+TROPIC      PING | INFO | PUB | KEM PUB
+            OTP STATUS
+CHIP        CLIENT INFO | CLIENT CSR | HELP
+QUIT        quit | q | exit
+────────────────────────────────────────────
+APP>
+```
+
+On a terminal, success is green, errors red, warnings yellow, and hex cyan.
+Group labels are blue. Color is off when stdout is not a terminal, `TERM=dumb`,
+or `NO_COLOR` / `USERAPP_NO_COLOR` is set. `FORCE_COLOR` (anything other than
+`0` or `false`) turns it back on. Bold and dim stay when `NO_COLOR` is set.
+
+`APP_LOG=FULL` sends logs and library prints to stderr. The command menu stays
+on stdout. `APP_LOG=TERMINAL` (the default, production) prints only that menu
+and command results.
 
 ### APP commands
 
@@ -23,8 +53,10 @@ line is sent straight to the chip console (same as TerminalBridge transact).
 | `ENCRYPT` / `E` | Arm TLS encrypt, send PIN + message, print pad reply hex |
 | `DECRYPT` / `D` | Arm TLS decrypt, send PIN + encrypt reply |
 | `STATUS` / `OTP STATUS` | USB `TROPIC OTP STATUS` — ASCII remaining/capacity |
-| `PEER ADD` | nickname + 96-hex peer hash → unsigned MANAGE TLS |
-| `PEER LIST` / `PEER REMOVE` | LIST is USB; REMOVE is unsigned MANAGE TLS |
+| `PEER ADD` | nickname + 96-hex peer hash + Tropic pad length → unsigned MANAGE TLS |
+| `PEER CARD` | prompt for the nickname the other side stores; print a four-line paste block (`PEER ADD`, name, hash, pad) |
+| `CLIENT INFO` | same nickname; labeled `Name` / `Hash` / `Tropic pad` lines |
+| `PEER LIST` / `PEER REMOVE` | LIST is USB (`name hash pad_plain`); REMOVE is unsigned MANAGE TLS |
 | `INIT LAB` | Lab enrollment: OWNER SET, MANAGE KEYGEN (empty ECC only), KEM INIT, CLIENT CSR, local client-CA sign, INSERT SIGNED CSR. Never pairs |
 | `CSR EXPORT` | Dump only the on-chip ML-DSA public key (`CLIENT CSR`) into `client-csr.hex` next to the device cert. Does not sign or install |
 | `INSERT SIGNED CSR` | Install signed device leaf from `USERAPP_DEVICE_CERT` (MANAGE cmd 6, cert DER only) |
@@ -32,20 +64,21 @@ line is sent straight to the chip console (same as TerminalBridge transact).
 | `PAIRING LOAD` | After a reflash: restore host pairing key from `pairing-key.hex` (MANAGE cmd 9). Run `OWNER SET` first. Restores L3 only |
 | `OWNER` | Enroll this UserApp cert (`OWNER SET` unsigned blob + reset password + SAE CA) |
 | `REPLACE` | `OWNER REPLACE` over unsigned MANAGE TLS (reset password, not M&D) |
+| `HELP` / `?` | Print command interface v2. Not sent to the chip |
 
 USB command for OTP is `{MODE} {unix}`. After TLS this process is a loopback
 TLS server over CDC. PIN for ENCRYPT/DECRYPT is **only inside TLS**.
 
-`PEER ADD` takes a 96-hex SHA-384 of the peer SPKI (same width firmware stores). The UserApp certificate **is** the device owner key.
+`PEER ADD` takes a 96-hex SHA-384 of the peer SPKI and the peer's Tropic plaintext pad length (USB `TROPIC PAD LEN` on that device). A four-line paste from `PEER CARD` fills nickname, hash, then pad length. The UserApp certificate **is** the device owner key. `CLIENT HASH` remains a chip passthrough for enrollment.
 
 ### Chip lines (passthrough)
 
-Any line that is not an APP command is written to the chip. The reply is drained
-until idle and printed (ASCII / hex). Errors are `failed`.
+Any line that is not an APP command is sent as a type `0x00` command frame. The
+reply is drained until idle and printed (ASCII / hex). Errors are `failed`.
 
-- `CLIENT HASH` / `CLIENT CSR` / `TROPIC PUB` / `TROPIC OTP STATUS` / `PEER LIST` are ASCII console replies.
-- `PROVISION`, `ENCRYPT`, `DECRYPT`, and `MANAGE` are **refused** on passthrough: they switch the pipe
-  to opaque TLS. Use APP ENCRYPT/DECRYPT/PEER/INIT LAB/INIT PROD/CSR EXPORT/PAIRING LOAD, or TerminalBridge for provision.
+- `CLIENT HASH` / `CLIENT CSR` / `TROPIC PUB` / `TROPIC OTP STATUS` / `TROPIC PAD LEN` / `PEER LIST` are type `0x00` replies.
+- `HELP` / `?` stay in this process (command interface v2). They are not the chip `HELP` listing.
+- `PROVISION`, `ENCRYPT`, `DECRYPT`, and `MANAGE` are **refused** on passthrough: they arm type `0x01` TLS. Use `ENCRYPT`, `DECRYPT`, `PEER ADD`, `PEER REMOVE`, `INIT LAB`, or `INIT PROD`. Provision is SaeNode.
 
 ### INIT LAB / INIT PROD
 
@@ -70,8 +103,8 @@ On silicon / a home PC this process opens `USB_SERIAL_PORT` and holds it.
 In `./run-all.sh`, **userapp-1** and **userapp-2** panes run
 `scripts/java.sh lab-userapp 1|2`. Each is pinned to one keychain PTY and device
 cert. The wrapper starts those processes only while [LabSwitch](../LabSwitch/README.md)
-owner is `USER` (both at once). Owner `SAE` idles both panes so TerminalBridge can
-open USB. This class does not read the lab file.
+owner is `USER` (both at once). Owner `SAE` stops both userapps and restarts
+SaeNode with the serial port. This class does not read the lab file.
 
 After a successful arm command the next CDC bytes are TLS (ClientHello). A refused
 arm is ASCII `failed`; start the TLS stack immediately after the arm line — no host
@@ -118,6 +151,7 @@ Template: [`env/example/userapp.env.example`](../../env/example/userapp.env.exam
 | `USERAPP_CLIENT_CA_P12` | no | `ca/client_ca.p12` | Lab client CA used by INIT LAB to sign `CLIENT CSR` |
 | `USERAPP_CLIENT_CA_P12_PASSWORD` | no* | (stdin) | Client CA PKCS#12 password (*prompted at startup if unset; **do not set in production env**) |
 | `USERAPP_SAE_CA` | no | `ca/root-ca.pem` | SAE root CA written into the chip on OWNER / INIT |
+| `APP_LOG` | no | `TERMINAL` | `FULL` sends logs to stderr. `TERMINAL` prints only the command console |
 
 No HSM variables. This process never calls `Pqmi`. Secrets use `EnvSecrets.envOrScan` — see
 [JAVA_APPS README — Secrets](../../README.md#secrets).
@@ -127,11 +161,13 @@ No HSM variables. This process never calls `Pqmi`. Secrets use `EnvSecrets.envOr
 ```text
 src/UserApp/
   README.md
-  main/java/fel/cvut/userapp/        UserApplication, ChipService, OwnerAuth, SeUsbTls, StreamSocket, …
-  test/java/fel/cvut/userapp/        ChipInitTest, OwnerAuthTest, PeerCertHashTest
+  main/java/fel/cvut/userapp/        UserApplication, ChipService, OwnerAuth, …
+  test/java/fel/cvut/userapp/        ChipInitTest, OwnerAuthTest, PeerCertHashTest, PeerCommandsTest
 ```
 
-USB link (including `transact` / `readConsole`) lives in [TerminalBridge](../TerminalBridge/README.md).
+USB framing (`UsbFrame`, `SeUsbLink.transact` / `readConsole`) lives in
+`usb-cdc` ([README](../TerminalBridge/README.md), `fel.cvut.usb`).
+Type `0x00` is the console; type `0x01` is TLS or the OWNER SET blob.
 OTP framing (`SecureOtp`, `SeBytes`) and software TLS (`SoftwareTls.createContextFromPem` /
 `SoftwareTls.createContextFromPkcs12`) live in [SaeNode](../SaeNode/README.md) / `tls-software`.
 Chip verbs: [COMMANDS.md](../../../stm32u535-trustzone-usb/docs/COMMANDS.md).

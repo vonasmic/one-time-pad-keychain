@@ -91,7 +91,7 @@ public final class PeerRecordSync {
             }
 
             QkdPadMaterialFetcher.FetchedKeys fetched =
-                    padMaterialFetcher.fetch(clientHeader.saeId(), uplink);
+                    padMaterialFetcher.fetch(clientHeader.saeId(), uplink, clientHeader.padPlainLen());
             ClientRecord completedRecord = clientRecord.withPayload(fetched.keyIds());
             if (orchestrateTargetInsertThenFinalizeOrigin(targetNode, completedRecord, localSaeId)) {
                 return Optional.of(fetched.keyMaterial());

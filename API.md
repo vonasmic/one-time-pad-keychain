@@ -15,12 +15,13 @@ PIN for provisioned OTP never appears on the ASCII line. Arm a mode and a Unix t
 | --- | --- |
 | `HELP` | Print usage lines |
 | `OWNER SET` | First-wins unsigned blob (password + owner SPKI + optional SAE CA) |
-| `PROVISION <unix>` | Arm TLS mode 1 (**SAE**: mTLS provision, uplink v4, downlink v2) |
+| `PROVISION <unix>` | Arm TLS mode 1 (**SAE**: mTLS provision, uplink v5, downlink v3) |
 | `ENCRYPT <unix>` | Arm TLS mode 2 (**USER**: owner-pinned mTLS encrypt) |
 | `DECRYPT <unix>` | Arm TLS mode 3 (**USER**: owner-pinned mTLS decrypt) |
 | `MANAGE <unix>` | Arm TLS mode 4 (**USER**: owner-pinned, no device client cert; KEM INIT / KEYGEN / PEER / CREDS / OWNER REPLACE / PAIRING) |
-| `PEER LIST` | Print NV peers |
+| `PEER LIST` | Print NV peers (`name hash pad_plain`) |
 | `CLIENT HASH` | 96 hex digits: `SHA384(device_cert_spki \|\| ecc_pub)` |
+| `TROPIC PAD LEN` | Decimal plaintext OTP bytes per pad (slot size minus 29) |
 | `TROPIC PING` / `INFO` / `PUB` / `KEM PUB` / `OTP STATUS` | Tropic / OTP console |
 
 `<unix>` is a non-zero decimal Unix UTC timestamp.

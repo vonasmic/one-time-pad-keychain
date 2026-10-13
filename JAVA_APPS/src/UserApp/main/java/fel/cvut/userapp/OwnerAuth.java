@@ -1,8 +1,10 @@
 package fel.cvut.userapp;
 
 import fel.cvut.se.SeBytes;
+import fel.cvut.se.SeConstants;
 import fel.cvut.se.SeManage;
 import fel.cvut.usb.SeUsbLink;
+import fel.cvut.usb.SeUsbTls;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -11,8 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * USB / TLS adapter over {@link SeManage}. Console commands get plain ASCII
- * (status word or hex); MANAGE gets TLS {@code u8 status | msg}. No demux layer.
+ * USB / TLS adapter over {@link SeManage}. Console commands (including OWNER SET
+ * begin and apply status) are type {@code 0x00}; the OWNER SET blob and MANAGE TLS
+ * are type {@code 0x01}.
  */
 final class OwnerAuth implements ChipInit.ChipPort {
 
@@ -42,6 +45,7 @@ final class OwnerAuth implements ChipInit.ChipPort {
             return new ChipInit.OwnerSetResult.Failed("failed");
         }
         usb.writeRaw(SeManage.encodeOwnerSet(password, spki, saeCa));
+        /* Apply status is se_usb_debug_puts: type 0x00, not a Secure span. */
         String done = usb.readConsole(SeUsbLink.CONSOLE_IDLE_MS, SeUsbLink.CONSOLE_SLOW_MAX_MS);
         return classifyOwnerSetDone(done);
     }
@@ -79,11 +83,60 @@ final class OwnerAuth implements ChipInit.ChipPort {
 
     @Override
     public byte[] clientCsrPub() throws Exception {
-        String reply = usb.transact("CLIENT CSR", SeUsbLink.CONSOLE_IDLE_MS, SeUsbLink.CONSOLE_SLOW_MAX_MS);
-        try {
-            return SeBytes.fromHex(reply);
-        } catch (RuntimeException e) {
+        usb.sendCommand("CLIENT CSR");
+        StringBuilder acc = new StringBuilder();
+        long deadline = System.currentTimeMillis() + SeUsbLink.CONSOLE_SLOW_MAX_MS;
+        boolean first = true;
+        while (true) {
+            long left = deadline - System.currentTimeMillis();
+            if (left <= 0L) {
+                break;
+            }
+            long idle = first ? SeUsbLink.CONSOLE_IDLE_MS : SeUsbLink.CONSOLE_HEX_IDLE_MS;
+            long max = first ? left : Math.min(left, SeUsbLink.CONSOLE_HEX_IDLE_MS);
+            first = false;
+            String chunk = usb.readConsole(idle, max);
+            if (chunk == null || chunk.isBlank()) {
+                break;
+            }
+            if (!acc.isEmpty()) {
+                acc.append('\n');
+            }
+            acc.append(chunk);
+            String word = asciiWord(acc.toString());
+            if ("failed".equals(word) || "empty".equals(word)) {
+                throw new IOException("failed");
+            }
+            byte[] pub = csrPubOrNull(acc.toString());
+            if (pub != null && pub.length == SeConstants.MLDSA_PUB_LEN) {
+                return pub;
+            }
+        }
+        byte[] pub = csrPubOrNull(acc.toString());
+        if (pub == null) {
             throw new IOException("failed");
+        }
+        if (pub.length != SeConstants.MLDSA_PUB_LEN) {
+            throw new IOException("CLIENT CSR truncated (" + pub.length + " of "
+                    + SeConstants.MLDSA_PUB_LEN + " bytes)");
+        }
+        return pub;
+    }
+
+    /** Public key bytes, or null when the console reply is empty, failed, or not hex. */
+    static byte[] csrPubOrNull(String reply) {
+        if (reply == null || reply.isBlank()) {
+            return null;
+        }
+        String word = asciiWord(reply);
+        if (word.isEmpty() || "failed".equals(word) || "empty".equals(word)) {
+            return null;
+        }
+        try {
+            byte[] pub = SeBytes.fromHex(reply);
+            return pub.length == 0 ? null : pub;
+        } catch (RuntimeException e) {
+            return null;
         }
     }
 

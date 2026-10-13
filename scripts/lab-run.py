@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Lab-only: run TerminalApp or UserApp in this tmux pane with env from the lab JSON.
+"""Lab-only: run UserApp or SaeNode in this tmux pane with env from the lab JSON.
 
 Production Java never reads the lab file. On owner change this process SIGTERMs the
-child JVM and starts it again with USB_SERIAL_PORT rewritten. The pane (title,
-split, id) does not change.
+child JVM and starts it again with USB_SERIAL_PORT rewritten. That restart frees
+the serial port. The pane (title, split, id) does not change.
 
 Fixed panes (--fixed-client client-1 / client-2) pin each process to one keychain.
 There is no CL switch: USER gives USB to both userapps; SAE gives USB to both
-terminals. Terminal panes always keep the operator gateway; userapp panes run
-only while owner is USER.
+SaeNodes. Node panes are restarted on the flip (USB path while owner is SAE,
+``none`` while owner is USER) so RMI can come back without the node reading the
+lab file. UserApp panes run only while owner is USER.
 
 --set-owner can also pin a client's serialPort (--serial client-2=auto).
 lab-run then puts that path in USB_SERIAL_PORT. An explicit path is opened when
@@ -17,8 +18,7 @@ the node exists. auto / scan makes the Java CDC open search for the keychain
 
 The child is started in its own session so it is not in the tmux pane's process
 group. This wrapper therefore handles SIGHUP (tmux pane teardown) and kills that
-process group; otherwise the JVM outlives the pane and holds the node's terminal
-gateway.
+process group; otherwise the JVM outlives the pane and holds the CDC device.
 """
 from __future__ import annotations
 
@@ -41,19 +41,9 @@ MODE_USER = "USER"
 MODE_SAE = "SAE"
 USB_OFF = "none"
 
-DEFAULT_NODES = {
-    CLIENT1: {
-        "host": "127.0.0.1",
-        "nativePort": 11111,
-        "terminalPort": 11112,
-        "serialPort": "/tmp/ttyACM-se1",
-    },
-    CLIENT2: {
-        "host": "127.0.0.1",
-        "nativePort": 5020,
-        "terminalPort": 11113,
-        "serialPort": "/tmp/ttyACM-se2",
-    },
+DEFAULT_SERIAL = {
+    CLIENT1: "/tmp/ttyACM-se1",
+    CLIENT2: "/tmp/ttyACM-se2",
 }
 
 
@@ -61,21 +51,13 @@ def token(raw: str) -> str:
     return raw.strip().upper().replace("-", " ").replace("_", " ")
 
 
-def node_for(client: str, nodes_in: dict[str, Any] | None) -> dict[str, Any]:
-    defaults = DEFAULT_NODES[client]
+def serial_for(client: str, nodes_in: dict[str, Any] | None) -> str:
+    default = DEFAULT_SERIAL[client]
     node = (nodes_in or {}).get(client)
     if not isinstance(node, dict):
-        node = {}
-    host = str(node.get("host") or defaults["host"]).strip() or defaults["host"]
-    native = int(node.get("nativePort") or defaults["nativePort"])
-    terminal = int(node.get("terminalPort") or defaults["terminalPort"])
-    serial = str(node.get("serialPort") or defaults["serialPort"]).strip() or defaults["serialPort"]
-    return {
-        "host": host,
-        "nativePort": native,
-        "terminalPort": terminal,
-        "serialPort": serial,
-    }
+        return default
+    serial = str(node.get("serialPort") or default).strip()
+    return serial or default
 
 
 def normalize(raw: dict[str, Any] | None) -> dict[str, Any] | None:
@@ -95,23 +77,19 @@ def normalize(raw: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 def fingerprint(state: dict[str, Any], role: str, fixed_client: str) -> tuple[Any, ...]:
-    node = node_for(fixed_client, state.get("nodes"))
-    usb = usb_for(state, role, node)
-    return (
-        state["mode"],
-        role,
-        fixed_client,
-        usb,
-        node["host"],
-        node["nativePort"],
-        node["terminalPort"],
-    )
+    return (state["mode"], role, fixed_client, usb_for(state, role, fixed_client))
 
 
-def usb_for(state: dict[str, Any], role: str, node: dict[str, Any]) -> str:
-    if role == "terminal":
-        return node["serialPort"] if state["mode"] == MODE_SAE else USB_OFF
-    return node["serialPort"] if state["mode"] == MODE_USER else USB_OFF
+def usb_for(state: dict[str, Any], role: str, fixed_client: str) -> str:
+    serial = serial_for(fixed_client, state.get("nodes"))
+    owns = state["mode"] == MODE_SAE if role == "node" else state["mode"] == MODE_USER
+    return serial if owns else USB_OFF
+
+
+def role_owns(role: str, state: dict[str, Any]) -> bool:
+    if role == "node":
+        return True
+    return state["mode"] == MODE_USER
 
 
 def read_lab(path: Path) -> dict[str, Any] | None:
@@ -133,27 +111,19 @@ def read_lab(path: Path) -> dict[str, Any] | None:
         return None
 
 
-def role_owns(role: str, state: dict[str, Any]) -> bool:
-    if role == "terminal":
-        # Always keep the operator gateway for concurrent key-get sync.
-        return True
-    return state["mode"] == MODE_USER
-
-
-def child_env(
-    state: dict[str, Any], role: str, fixed_client: str
-) -> dict[str, str]:
-    env = {k: v for k, v in os.environ.items() if k != "USB_LAB_FILE"}
-    node = node_for(fixed_client, state.get("nodes"))
-    env["USB_SERIAL_PORT"] = usb_for(state, role, node)
-    env["NODE_HOSTNAME"] = node["host"]
-    env["NODE_NATIVE_PORT"] = str(node["nativePort"])
-    env["NODE_TERMINAL_PORT"] = str(node["terminalPort"])
-    if role == "userapp":
-        if fixed_client == CLIENT2:
-            env["USERAPP_DEVICE_CERT"] = "client2/client-cert.pem"
-        else:
-            env["USERAPP_DEVICE_CERT"] = "client/client-cert.pem"
+def child_env(state: dict[str, Any], role: str, fixed_client: str) -> dict[str, str]:
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if k not in {"USB_LAB_FILE", "USB_LAB_CLIENT"}
+    }
+    env["USB_SERIAL_PORT"] = usb_for(state, role, fixed_client)
+    if role != "userapp":
+        return env
+    if fixed_client == CLIENT2:
+        env["USERAPP_DEVICE_CERT"] = "client2/client-cert.pem"
+    else:
+        env["USERAPP_DEVICE_CERT"] = "client/client-cert.pem"
     return env
 
 
@@ -196,7 +166,6 @@ def set_owner(
         except (OSError, json.JSONDecodeError):
             raw = {}
     raw["mode"] = owner
-    # Drop legacy "client" field if present.
     raw.pop("client", None)
     apply_serials(raw, list(serials or []))
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -227,8 +196,6 @@ def stop(proc: subprocess.Popen[Any] | None) -> None:
     if proc is None or proc.poll() is not None:
         return
     pid = proc.pid
-    # Child is its own session (start_new_session=True). Kill that group so Maven
-    # and the JVM die together; pgrep -P misses an exec'd java that replaced mvn.
     try:
         os.killpg(pid, signal.SIGTERM)
     except (ProcessLookupError, PermissionError, OSError):
@@ -260,7 +227,7 @@ def serial_arg(value: str) -> tuple[str, str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lab", default=os.environ.get("USB_LAB_FILE", DEFAULT_LAB))
-    parser.add_argument("--role", choices=("terminal", "userapp"))
+    parser.add_argument("--role", choices=("userapp", "node"))
     parser.add_argument(
         "--fixed-client",
         required=False,
@@ -299,8 +266,8 @@ def main() -> int:
 
     lab_path = Path(args.lab)
     fixed = args.fixed_client
-    if args.role == "terminal":
-        want = f"operator console ({fixed}; USB when SAE)"
+    if args.role == "node":
+        want = f"SAE node ({fixed}; USB when SAE)"
     else:
         want = f"USER ({fixed})"
     child: subprocess.Popen[Any] | None = None
@@ -311,8 +278,6 @@ def main() -> int:
         stop(child)
         sys.exit(0)
 
-    # tmux pane teardown sends SIGHUP, not SIGTERM. Default SIGHUP kills this
-    # wrapper without touching the child session, which then outlives the pane.
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGHUP, shutdown)
@@ -352,8 +317,7 @@ def main() -> int:
         env = child_env(state, args.role, fixed)
         print(
             f"[lab-run] start {args.role} {state['mode']} fixed={fixed}"
-            + f" serial={env['USB_SERIAL_PORT']} → {env['NODE_HOSTNAME']}"
-            + f" native={env['NODE_NATIVE_PORT']} terminal={env['NODE_TERMINAL_PORT']}",
+            + f" serial={env['USB_SERIAL_PORT']}",
             flush=True,
         )
         last_wait = ""

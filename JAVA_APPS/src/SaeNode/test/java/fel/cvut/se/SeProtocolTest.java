@@ -91,16 +91,16 @@ class SeProtocolTest {
         SeSessionUplink uplink = new SeSessionUplink(
                 new byte[SeConstants.CLIENT_HASH_LEN], 475, 507, new byte[SeConstants.FILL_ID_LEN],
                 new byte[SeConstants.MLKEM_PK_LEN],
-                List.of(new SeSessionUplink.PeerEntry(new byte[SeConstants.PEER_HASH_LEN], "Alice")));
+                List.of(peer("Alice", 475)));
         int n = uplink.maxPadsForBudget();
-        assertTrue(n < 507);
-        int framing = SeConstants.MLKEM_CT_LEN + SeConstants.DECRYPT_HALF_LEN;
-        assertTrue(framing + n * 475 <= SeConstants.QKD_MAX_BYTES);
+        int framing = SeConstants.MLKEM_CT_LEN + SeConstants.DECRYPT_HALF_LEN + SeConstants.PAD_PLAIN_LEN;
+        assertEquals(507, n);
+        assertEquals(SeConstants.QKD_MAX_BYTES, framing + n * 475);
         assertTrue(framing + (n + 1) * 475 > SeConstants.QKD_MAX_BYTES);
     }
 
     @Test
-    void sealedFillDownlinkIsV2WithKemCtDecryptHalfAndPadImages() throws Exception {
+    void sealedFillDownlinkIsV3WithKemCtDecryptHalfPadPlainAndPadImages() throws Exception {
         SecureRandom random = new SecureRandom();
         MLKEMKeyPairGenerator kpg = new MLKEMKeyPairGenerator();
         kpg.init(new MLKEMKeyGenerationParameters(random, MLKEMParameters.ml_kem_768));
@@ -122,18 +122,19 @@ class SeProtocolTest {
                 uplink, b64, SeConstants.DECRYPT_HALF_ORIGIN);
         SecureLv.Envelope env = SecureLv.decode(downlink);
         assertEquals(SeConstants.LV_DOWNLINK_VERSION, env.version());
-        assertEquals(2 + padCount, env.items().size());
+        assertEquals(3 + padCount, env.items().size());
         assertEquals(SeConstants.MLKEM_CT_LEN, env.items().get(0).length);
         assertArrayEquals(new byte[] {SeConstants.DECRYPT_HALF_ORIGIN}, env.items().get(1));
+        assertEquals(plainMax, SeBytes.readU16Le(env.items().get(2), "pad_plain"));
         for (int i = 0; i < padCount; i++) {
-            assertEquals(slotSize, env.items().get(2 + i).length);
+            assertEquals(slotSize, env.items().get(3 + i).length);
         }
 
         MLKEMExtractor extractor = new MLKEMExtractor((MLKEMPrivateKeyParameters) kp.getPrivate());
         byte[] ss = extractor.extractSecret(env.items().get(0));
         byte[] ss32 = Arrays.copyOf(ss, SeConstants.MLKEM_SS_LEN);
         byte[] key = SeKemFill.slotKey(ss32, fillId, 0);
-        byte[] opened = aeadOpen(key, 0, env.items().get(2));
+        byte[] opened = aeadOpen(key, 0, env.items().get(3));
         assertArrayEquals(Arrays.copyOfRange(padBytes, 0, plainMax), opened);
     }
 
@@ -163,7 +164,7 @@ class SeProtocolTest {
         SeSessionUplink uplink = new SeSessionUplink(
                 new byte[SeConstants.CLIENT_HASH_LEN], 64, 1, new byte[SeConstants.FILL_ID_LEN],
                 new byte[SeConstants.MLKEM_PK_LEN],
-                List.of(new SeSessionUplink.PeerEntry(new byte[SeConstants.PEER_HASH_LEN], "Alice")));
+                List.of(peer("Alice", 64)));
         assertThrows(IllegalArgumentException.class, () ->
                 new SeKemFill().buildDownlink(uplink, List.of("YQ=="), (byte) 2));
     }
@@ -184,12 +185,13 @@ class SeProtocolTest {
 
         SecureLv.Envelope env = SecureLv.decode(new SeKemFill(random).buildDownlink(
                 uplink, b64, SeConstants.DECRYPT_HALF_ORIGIN));
-        assertEquals(7, env.items().size());
-        assertEquals(slotSize, env.items().get(2).length);
+        assertEquals(8, env.items().size());
+        assertEquals(plainMax, SeBytes.readU16Le(env.items().get(2), "pad_plain"));
         assertEquals(slotSize, env.items().get(3).length);
-        assertEquals(0, env.items().get(4).length);
-        assertEquals(slotSize, env.items().get(5).length);
+        assertEquals(slotSize, env.items().get(4).length);
+        assertEquals(0, env.items().get(5).length);
         assertEquals(slotSize, env.items().get(6).length);
+        assertEquals(slotSize, env.items().get(7).length);
     }
 
     @Test
@@ -203,24 +205,87 @@ class SeProtocolTest {
         assertEquals(475 - SeConstants.RMEM_OVERHEAD, uplink.plainMax());
         assertEquals(SeConstants.MLKEM_PK_LEN, uplink.mlkemPublicKey().length);
         assertEquals(1, uplink.peers().size());
+        assertEquals(475 - SeConstants.RMEM_OVERHEAD, uplink.peers().get(0).padPlain());
     }
 
     @Test
     void provisionAckParsesSeOkLine() throws Exception {
         SeProvisionAck.read(new ByteArrayInputStream("SE_OK\n".getBytes(StandardCharsets.US_ASCII)));
-        assertEquals("Sent 236.2 KB", SeProvisionAck.downloadMessage(241913L));
+        assertEquals(
+                "Loading to device: [##########] 100% (236 of 236 KB)",
+                SeProvisionAck.downloadComplete(SeConstants.QKD_MAX_BYTES));
     }
 
     @Test
     void provisionAckRejectsByteCount() {
         assertThrows(IOException.class, () -> SeProvisionAck.read(
-                new ByteArrayInputStream("SE_OK 241913\n".getBytes(StandardCharsets.US_ASCII))));
+                new ByteArrayInputStream(("SE_OK " + SeConstants.QKD_MAX_BYTES + "\n")
+                        .getBytes(StandardCharsets.US_ASCII))));
     }
 
     @Test
     void provisionAckRejectsUnexpectedLine() {
         assertThrows(IOException.class, () -> SeProvisionAck.read(
                 new ByteArrayInputStream("SE_ERR\n".getBytes(StandardCharsets.US_ASCII))));
+    }
+
+    @Test
+    void provisionAckAcceptsWipeFinished() throws Exception {
+        SeProvisionAck.awaitWipeFinished(new ByteArrayInputStream(
+                "TROPIC_WIPE_FINISHED\n".getBytes(StandardCharsets.US_ASCII)));
+    }
+
+    @Test
+    void provisionAckRejectsUnexpectedWipeLine() {
+        assertThrows(IOException.class, () -> SeProvisionAck.awaitWipeFinished(
+                new ByteArrayInputStream("SE_OK\n".getBytes(StandardCharsets.US_ASCII))));
+    }
+
+    @Test
+    void writeTrackingPairsTenKbChunksWithKbLines() throws Exception {
+        byte[] payload = new byte[SeProvisionAck.PROGRESS_BYTES * 2 + 100];
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        java.util.List<Integer> kb = new java.util.ArrayList<>();
+        ByteArrayInputStream in = new ByteArrayInputStream("10\n20\nSE_OK\n".getBytes(StandardCharsets.US_ASCII));
+        SeProvisionAck.writeTracking(out, in, payload, kb::add);
+        SeProvisionAck.read(in);
+        assertEquals(List.of(10, 20), kb);
+        assertEquals(payload.length, out.size());
+    }
+
+    @Test
+    void writeTrackingShortTailGoesStraightToSeOk() throws Exception {
+        byte[] payload = new byte[100];
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        java.util.List<Integer> kb = new java.util.ArrayList<>();
+        ByteArrayInputStream in = new ByteArrayInputStream("SE_OK\n".getBytes(StandardCharsets.US_ASCII));
+        SeProvisionAck.writeTracking(out, in, payload, kb::add);
+        SeProvisionAck.read(in);
+        assertTrue(kb.isEmpty());
+        assertEquals(payload.length, out.size());
+    }
+
+    @Test
+    void writeTrackingRejectsUnexpectedLine() {
+        byte[] payload = new byte[SeProvisionAck.PROGRESS_BYTES];
+        assertThrows(IOException.class, () -> SeProvisionAck.writeTracking(
+                new java.io.ByteArrayOutputStream(),
+                new ByteArrayInputStream("hello\n".getBytes(StandardCharsets.US_ASCII)),
+                payload,
+                kb -> { }));
+    }
+
+    @Test
+    void downloadProgressCapsPercentUntilComplete() {
+        assertEquals(
+                "Loading to device: [########--] 80% (189 of 236 KB)",
+                SeProvisionAck.downloadProgress(189, SeConstants.QKD_MAX_BYTES));
+        assertEquals(
+                "Loading to device: [#########-] 99% (236 of 236 KB)",
+                SeProvisionAck.downloadProgress(236, SeConstants.QKD_MAX_BYTES));
+        assertEquals(
+                "Loading to device: [##########] 100% (236 of 236 KB)",
+                SeProvisionAck.downloadComplete(SeConstants.QKD_MAX_BYTES));
     }
 
     @Test
@@ -266,9 +331,37 @@ class SeProtocolTest {
         items.add(mlkemPublicKey);
         items.add(new byte[SeConstants.PEER_HASH_LEN]);
         items.add("Alice".getBytes(StandardCharsets.UTF_8));
+        items.add(SeBytes.u16Le(slotSize - SeConstants.RMEM_OVERHEAD));
 
         byte[] wire = SecureLv.encode(SeConstants.LV_UPLINK_VERSION, items);
         return SeSessionUplink.readAndVerify(new ByteArrayInputStream(wire), exporter, peerSpki);
+    }
+
+    private static SeSessionUplink.PeerEntry peer(String nickname, int slotSize) {
+        return new SeSessionUplink.PeerEntry(
+                new byte[SeConstants.PEER_HASH_LEN],
+                nickname,
+                slotSize - SeConstants.RMEM_OVERHEAD);
+    }
+
+    @Test
+    void sealedFillDownlinkUsesNegotiatedPadPlain() throws Exception {
+        SecureRandom random = new SecureRandom();
+        MLKEMKeyPairGenerator kpg = new MLKEMKeyPairGenerator();
+        kpg.init(new MLKEMKeyGenerationParameters(random, MLKEMParameters.ml_kem_768));
+        AsymmetricCipherKeyPair kp = kpg.generateKeyPair();
+        byte[] pk = ((MLKEMPublicKeyParameters) kp.getPublic()).getEncoded();
+        int slotSize = 64;
+        int negotiated = 16;
+        byte[] fillId = new byte[32];
+        random.nextBytes(fillId);
+        SeSessionUplink uplink = buildVerifiedUplink(slotSize, 1, fillId, pk, random);
+        List<String> b64 = List.of(Base64.getEncoder().encodeToString(new byte[negotiated]));
+
+        SecureLv.Envelope env = SecureLv.decode(new SeKemFill(random).buildDownlink(
+                uplink, b64, SeConstants.DECRYPT_HALF_ORIGIN, negotiated));
+        assertEquals(negotiated, SeBytes.readU16Le(env.items().get(2), "pad_plain"));
+        assertEquals(SeConstants.RMEM_OVERHEAD + negotiated, env.items().get(3).length);
     }
 
     private static byte[] aeadOpen(byte[] key, int logical, byte[] image) throws Exception {

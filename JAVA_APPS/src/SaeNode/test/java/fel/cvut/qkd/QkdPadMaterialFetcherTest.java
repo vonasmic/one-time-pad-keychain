@@ -208,6 +208,22 @@ class QkdPadMaterialFetcherTest {
     }
 
     @Test
+    void fetchUsesNegotiatedPadPlain() throws Exception {
+        SeSessionUplink uplink = padUplink(3);
+        int negotiated = 10;
+        int targetBytes = uplink.maxPadsForBudget(negotiated) * negotiated;
+        Qkd014Client qkd = mock(Qkd014Client.class);
+        when(qkd.getStatus("sae-2")).thenReturn(status(100, POOL_BITS, 1953, MAX_KEY_BITS));
+        when(qkd.getKey(eq("sae-2"), any(), eq(PACKED_BITS))).thenAnswer(invocation ->
+                keys(invocation.getArgument(1), PACKED_BYTES));
+
+        QkdPadMaterialFetcher.FetchedKeys fetched = fetcher(qkd).fetch("sae-2", uplink, negotiated);
+
+        assertTrue(SeBytes.decodedBase64ByteLength(fetched.keyMaterial()) >= targetBytes);
+        assertTrue(targetBytes < uplink.maxPadsForBudget() * uplink.plainMax());
+    }
+
+    @Test
     void fixtureUplinkHasRoomForAtLeastOnePad() {
         SeSessionUplink uplink = fel.cvut.harness.SaeFixtures.uplink();
         assertTrue(uplink.maxPadsForBudget() >= 1);
@@ -251,7 +267,10 @@ class QkdPadMaterialFetcherTest {
                 padCount,
                 new byte[SeConstants.FILL_ID_LEN],
                 new byte[SeConstants.MLKEM_PK_LEN],
-                List.of(new SeSessionUplink.PeerEntry(new byte[SeConstants.PEER_HASH_LEN], "peer"))
+                List.of(new SeSessionUplink.PeerEntry(
+                        new byte[SeConstants.PEER_HASH_LEN],
+                        "peer",
+                        SeConstants.RMEM_SLOT_MAX - SeConstants.RMEM_OVERHEAD))
         );
     }
 }

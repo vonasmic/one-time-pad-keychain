@@ -116,7 +116,7 @@ class ChipInitTest {
         assertArrayEquals(CERT, certs.lastPem);
         assertEquals(1, chip.ownerSets);
         assertEquals(1, chip.clientHashReads);
-        assertTrue(r.message().contains("CLIENT HASH (96 hex):"));
+        assertTrue(r.message().contains("Client hash (96 hex):"));
         assertTrue(r.message().contains(SeBytes.toHex(chip.clientHash)));
     }
 
@@ -269,7 +269,7 @@ class ChipInitTest {
                 chip, new FakeCerts(), ChipInit.Profile.LAB, labRequest());
         assertTrue(r.ok());
         assertEquals(1, chip.clientHashReads);
-        assertTrue(r.message().contains("CLIENT HASH unavailable"));
+        assertTrue(r.message().contains("Client hash unavailable"));
     }
 
     private static ChipInit.EnrollRequest labRequest() {
