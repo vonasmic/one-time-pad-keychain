@@ -2,6 +2,7 @@ package fel.cvut.integration.node;
 
 import fel.cvut.node.*;
 import fel.cvut.harness.JceAesGcm;
+import fel.cvut.harness.AsCaller;
 import fel.cvut.harness.SaeFixtures;
 import fel.cvut.harness.SaeSqliteExtension;
 import fel.cvut.node.interNodeCommunication.NodeCommandsService;
@@ -49,6 +50,7 @@ class KeystreamOnceTest {
     private SharedKeyMaterialStore peerStore;
     private Qkd014Client qkd;
     private RmiManager rmi;
+    private RmiManager otherRmi;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -64,7 +66,9 @@ class KeystreamOnceTest {
                 peerStore
         );
         rmi = mock(RmiManager.class);
-        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peerService);
+        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(AsCaller.bind(ORIGIN_SAE, peerService));
+        otherRmi = mock(RmiManager.class);
+        when(otherRmi.connectBySaeId(PEER_SAE)).thenReturn(AsCaller.bind(OTHER_SAE, peerService));
     }
 
     @Test
@@ -86,7 +90,8 @@ class KeystreamOnceTest {
         byte[] ciphertext = peerCiphertext();
         assertEquals(
                 AtomicRecordStateMap.SynchronizeOutcome.NOT_INSERTED,
-                peerService.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
+                AsCaller.call(ORIGIN_SAE, () ->
+                        peerService.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE)));
         assertEquals(
                 AtomicRecordStateMap.RecordAvailability.RECORD_SHARED,
                 originMap.get(HASH_1, HASH_2).orElseThrow().recordAvailability()
@@ -107,7 +112,7 @@ class KeystreamOnceTest {
                 AtomicRecordStateMap.SynchronizeOutcome.INSERTED,
                 otherMap.synchronize(SaeFixtures.header(HASH_1, HASH_2, PEER_SAE), OTHER_SAE)
         );
-        ProvisionSession.Exchange.Result second = new PeerRecordSync(SaeFixtures.otherRef(), otherMap, rmi, qkd)
+        ProvisionSession.Exchange.Result second = new PeerRecordSync(SaeFixtures.otherRef(), otherMap, otherRmi, qkd)
                 .completeNewExchange(SaeFixtures.record(HASH_1, HASH_2, PEER_SAE, List.of()), SaeFixtures.uplink());
         assertInstanceOf(ProvisionSession.Exchange.Result.SharedWithDifferentSae.class, second);
         assertEquals(
@@ -146,7 +151,7 @@ class KeystreamOnceTest {
         return new PeerRecordSync(
                 issuer.equals(ORIGIN_SAE) ? SaeFixtures.originRef() : SaeFixtures.otherRef(),
                 origin,
-                rmi,
+                issuer.equals(ORIGIN_SAE) ? rmi : otherRmi,
                 qkd
         ).completeNewExchange(SaeFixtures.record(HASH_1, HASH_2, PEER_SAE, List.of()), SaeFixtures.uplink()).keys();
     }

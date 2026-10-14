@@ -72,7 +72,7 @@ class ApplicationLogNoSecretsTest {
                 JceAesGcm.mockHsm()
         );
         RmiManager rmi = mock(RmiManager.class);
-        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peerService);
+        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(fel.cvut.harness.AsCaller.bind(ORIGIN_SAE, peerService));
         assertEquals(
                 AtomicRecordStateMap.SynchronizeOutcome.INSERTED,
                 originMap.synchronize(SaeFixtures.header(HASH_1, HASH_2, PEER_SAE), ORIGIN_SAE)

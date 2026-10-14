@@ -98,6 +98,7 @@
                     </includes>
                     <testIncludes>
                         <testInclude>fel/cvut/integration/utimaco/HsmLiveNoFallbackTest.java</testInclude>
+                        <testInclude>fel/cvut/integration/utimaco/HsmSimulatorTest.java</testInclude>
                     </testIncludes>
                 </configuration>
             </plugin>

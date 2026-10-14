@@ -116,7 +116,9 @@
                         <testExclude>fel/cvut/unit/se/**</testExclude>
                         <testExclude>fel/cvut/unit/terminal/**</testExclude>
                         <testExclude>fel/cvut/integration/tls/NodeTlsSoftwareIdentityTest.java</testExclude>
+                        <testExclude>fel/cvut/integration/tls/SoftwareTlsTwoNodeTest.java</testExclude>
                         <testExclude>fel/cvut/integration/utimaco/HsmLiveNoFallbackTest.java</testExclude>
+                        <testExclude>fel/cvut/integration/utimaco/HsmSimulatorTest.java</testExclude>
                     </testExcludes>
                 </configuration>
             </plugin>

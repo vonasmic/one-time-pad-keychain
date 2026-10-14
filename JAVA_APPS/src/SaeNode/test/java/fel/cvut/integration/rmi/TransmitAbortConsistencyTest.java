@@ -1,5 +1,6 @@
 package fel.cvut.integration.rmi;
 
+import fel.cvut.harness.AsCaller;
 import fel.cvut.harness.InProcessRmi;
 import fel.cvut.harness.JceAesGcm;
 import fel.cvut.harness.SaeFixtures;
@@ -65,10 +66,13 @@ class TransmitAbortConsistencyTest {
     @Test
     void dropDuringInsertThenSecondSaeRetriesWithoutOrphan() throws Exception {
         DroppingInsert dropping = new DroppingInsert(peerService);
-        try (InProcessRmi export = InProcessRmi.export(dropping)) {
+        NodeCommands peerAsOrigin = AsCaller.bind(ORIGIN_SAE, peerService);
+        try (InProcessRmi export = InProcessRmi.export(AsCaller.bind(ORIGIN_SAE, dropping))) {
             RmiManager rmi = mock(RmiManager.class);
             when(rmi.connectBySaeId(anyString())).thenAnswer(invocation ->
-                    dropping.drop.get() ? peerService : export.stub());
+                    dropping.drop.get() ? peerAsOrigin : export.stub());
+            RmiManager otherRmi = mock(RmiManager.class);
+            when(otherRmi.connectBySaeId(anyString())).thenReturn(AsCaller.bind(OTHER_SAE, peerService));
             reserve(originMap, ORIGIN_SAE);
             ExecutorService executor = Executors.newSingleThreadExecutor();
             try {
@@ -84,7 +88,7 @@ class TransmitAbortConsistencyTest {
             }
             assertNoOrphanAvailable();
             reserve(otherMap, OTHER_SAE);
-            Optional<List<String>> retry = sync(otherMap, rmi)
+            Optional<List<String>> retry = sync(otherMap, otherRmi)
                     .completeNewExchange(originRecord(OTHER_SAE), SaeFixtures.uplink())
                     .keys();
             assertTrue(retry.isPresent());
@@ -104,27 +108,28 @@ class TransmitAbortConsistencyTest {
 
     @Test
     void lostReplyThenImmediateRetryIsReinsertableAndConsistent() throws Exception {
+        NodeCommands peerAsOrigin = AsCaller.bind(ORIGIN_SAE, peerService);
         NodeCommands lostReply = mock(NodeCommands.class);
         when(lostReply.synchronize(org.mockito.ArgumentMatchers.any(), anyString())).thenAnswer(invocation ->
-                peerService.synchronize(invocation.getArgument(0), invocation.getArgument(1)));
+                peerAsOrigin.synchronize(invocation.getArgument(0), invocation.getArgument(1)));
         when(lostReply.lockFetch(anyString(), anyString(), anyString())).thenAnswer(invocation ->
-                peerService.lockFetch(
+                peerAsOrigin.lockFetch(
                         invocation.getArgument(0),
                         invocation.getArgument(1),
                         invocation.getArgument(2)));
         when(lostReply.insert(org.mockito.ArgumentMatchers.any(), anyString())).thenAnswer(invocation -> {
-            peerService.insert(invocation.getArgument(0), invocation.getArgument(1));
+            peerAsOrigin.insert(invocation.getArgument(0), invocation.getArgument(1));
             throw new RemoteException("lost reply");
         });
         when(lostReply.removeRecord(anyString(), anyString())).thenAnswer(invocation ->
-                peerService.removeRecord(invocation.getArgument(0), invocation.getArgument(1)));
+                peerAsOrigin.removeRecord(invocation.getArgument(0), invocation.getArgument(1)));
         RmiManager rmi = mock(RmiManager.class);
         when(rmi.connectBySaeId(PEER_SAE)).thenReturn(lostReply);
         reserve(originMap, ORIGIN_SAE);
         assertThrows(RemoteException.class, () ->
                 sync(originMap, rmi).completeNewExchange(originRecord(ORIGIN_SAE), SaeFixtures.uplink()));
         assertNoOrphanAvailable();
-        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peerService);
+        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(AsCaller.bind(OTHER_SAE, peerService));
         reserve(otherMap, OTHER_SAE);
         assertTrue(sync(otherMap, rmi).completeNewExchange(originRecord(OTHER_SAE), SaeFixtures.uplink()).keys().isPresent());
         assertEquals(

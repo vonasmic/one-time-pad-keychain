@@ -1,15 +1,12 @@
 package fel.cvut.se;
 
-import fel.cvut.terminal.AppLogging;
-
 import java.io.Console;
-import java.io.IOException;
 import java.util.Map;
 
 /**
  * Secrets an attacker must not read from defaults: take the env var when set,
- * otherwise an optional env-file value, otherwise prompt on stdin (masked when a
- * console is attached).
+ * otherwise an optional env-file value, otherwise a masked prompt on the interactive
+ * console. Without a console the call fails; stdin is never read.
  */
 public final class EnvSecrets {
 
@@ -20,7 +17,7 @@ public final class EnvSecrets {
      * First non-blank value among {@code names} in the process environment,
      * else prompt using {@code names[0]}.
      *
-     * @throws IllegalStateException if unset and stdin has no line
+     * @throws IllegalStateException if unset and no console is attached (or the prompt is cancelled)
      */
     public static String envOrScan(String... names) {
         return envOrScan(null, names);
@@ -52,33 +49,36 @@ public final class EnvSecrets {
     }
 
     private static String scan(String name) {
-        Console console = System.console();
-        if (console != null) {
-            char[] pw = console.readPassword("%s: ", name);
-            if (pw == null) {
-                throw new IllegalStateException(name + " required");
-            }
-            return new String(pw);
+        Console console = interactiveConsole();
+        if (console == null) {
+            // F-13: never read a secret from a non-console stdin (it would echo and can be piped/logged).
+            throw new IllegalStateException(name + " is not set and no interactive console is attached;"
+                    + " export " + name + " (or put it in the env file) or run from a terminal");
         }
-        AppLogging.terminalOut().print(name + ": ");
-        AppLogging.terminalOut().flush();
+        char[] pw = console.readPassword("%s: ", name);
+        if (pw == null) {
+            throw new IllegalStateException(name + " required");
+        }
+        return new String(pw);
+    }
+
+    /**
+     * The console only when it is a real terminal. JDK 22+ returns a {@link Console} even for
+     * redirected streams; {@code Console.isTerminal()} (looked up reflectively, absent on 21)
+     * tells the two apart.
+     */
+    static Console interactiveConsole() {
+        Console console = System.console();
+        if (console == null) {
+            return null;
+        }
         try {
-            StringBuilder sb = new StringBuilder();
-            while (true) {
-                int ch = System.in.read();
-                if (ch < 0) {
-                    throw new IllegalStateException(name + " required");
-                }
-                if (ch == '\n') {
-                    break;
-                }
-                if (ch != '\r') {
-                    sb.append((char) ch);
-                }
-            }
-            return sb.toString();
-        } catch (IOException e) {
-            throw new IllegalStateException(name + " required", e);
+            Object terminal = Console.class.getMethod("isTerminal").invoke(console);
+            return Boolean.TRUE.equals(terminal) ? console : null;
+        } catch (NoSuchMethodException e) {
+            return console;
+        } catch (ReflectiveOperationException e) {
+            return null;
         }
     }
 }

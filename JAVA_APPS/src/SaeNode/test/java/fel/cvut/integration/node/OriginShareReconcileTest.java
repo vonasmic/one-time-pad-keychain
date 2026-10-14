@@ -1,9 +1,11 @@
 package fel.cvut.integration.node;
 
 import fel.cvut.db.SharedKeyMaterialRepository;
+import fel.cvut.harness.AsCaller;
 import fel.cvut.harness.JceAesGcm;
 import fel.cvut.harness.SaeFixtures;
 import fel.cvut.harness.SaeSqliteExtension;
+import fel.cvut.node.NodeCommands;
 import fel.cvut.node.interNodeCommunication.NodeCommandsService;
 import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
@@ -37,6 +39,8 @@ class OriginShareReconcileTest {
     private AtomicRecordStateMap originMap;
     private AtomicRecordStateMap peerMap;
     private NodeCommandsService peerService;
+    /** Peer service as called by the origin SAE (authenticated caller ORIGIN_SAE). */
+    private NodeCommands peerAsOrigin;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +52,7 @@ class OriginShareReconcileTest {
                 SaeFixtures.mockQkd(),
                 SaeFixtures.keyStore(SQLITE.peer(), JceAesGcm.mockHsm())
         );
+        peerAsOrigin = AsCaller.bind(ORIGIN_SAE, peerService);
     }
 
     @Test
@@ -57,7 +62,7 @@ class OriginShareReconcileTest {
 
         assertEquals(
                 AtomicRecordStateMap.SynchronizeOutcome.NOT_INSERTED,
-                peerService.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
+                peerAsOrigin.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
         assertEquals(
                 AtomicRecordStateMap.RecordAvailability.RECORD_SHARED,
                 originMap.get(HASH_1, HASH_2).orElseThrow().recordAvailability()
@@ -73,11 +78,11 @@ class OriginShareReconcileTest {
         reserveAndFinish(originMap, HASH_1, HASH_2, PEER_SAE, ORIGIN_SAE);
         assertTrue(originMap.markOriginProvisioned(HASH_1, HASH_2));
         reserveAndFinish(peerMap, HASH_2, HASH_1, ORIGIN_SAE, ORIGIN_SAE);
-        assertTrue(peerService.markOriginProvisioned(HASH_2, HASH_1));
+        assertTrue(peerAsOrigin.markOriginProvisioned(HASH_2, HASH_1));
 
         assertEquals(
                 AtomicRecordStateMap.SynchronizeOutcome.ORIGIN_PROVISIONED,
-                peerService.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
+                peerAsOrigin.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
         assertEquals(
                 AtomicRecordStateMap.RecordAvailability.ORIGIN_PROVISIONED,
                 originMap.get(HASH_1, HASH_2).orElseThrow().recordAvailability()
@@ -99,7 +104,7 @@ class OriginShareReconcileTest {
 
         assertEquals(
                 AtomicRecordStateMap.SynchronizeOutcome.INSERTED,
-                peerService.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
+                peerAsOrigin.synchronize(SaeFixtures.header(HASH_2, HASH_1, ORIGIN_SAE), ORIGIN_SAE));
         assertEquals(
                 AtomicRecordStateMap.RecordAvailability.RECORD_SYNCHRONIZATION,
                 peerMap.get(HASH_2, HASH_1).orElseThrow().recordAvailability()
@@ -112,14 +117,14 @@ class OriginShareReconcileTest {
         reserveAndFinish(originMap, HASH_1, HASH_2, PEER_SAE, ORIGIN_SAE);
         reserveAndFinish(peerMap, HASH_2, HASH_1, ORIGIN_SAE, ORIGIN_SAE);
         RmiManager rmi = mock(RmiManager.class);
-        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peerService);
+        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peerAsOrigin);
         NodeCommandsService originService = new NodeCommandsService(
                 SaeFixtures.originRef(),
                 originMap,
                 SaeFixtures.mockQkd(),
                 SaeFixtures.keyStore(SQLITE.origin(), JceAesGcm.mockHsm()),
                 rmi);
-        originService.deleteShare(HASH_1, HASH_2);
+        AsCaller.run(ORIGIN_SAE, () -> originService.deleteShare(HASH_1, HASH_2));
         assertTrue(originMap.get(HASH_1, HASH_2).isEmpty());
         assertTrue(peerMap.get(HASH_2, HASH_1).isEmpty());
     }

@@ -39,7 +39,7 @@
 \end{itemize}
 The methods come first: scope, deployment assumptions, attacker models, the scoring scheme (CVSS v3.1, CVSS v4.0, STRIDE), and the steps that were actually executed. The findings follow. We checked the architecture against what the STM32U535 hardware actually provides. We confirmed or refuted the claims in the README, \code{SECURITY.md}, and the thesis text against the source.
 
-The firmware core holds up under static review: the TrustZone split, the owner-pinned USER sessions, the advance-then-erase OTP consume, and the PIN with MAC-and-Destroy. The most important open issues sit on the SAE side: the inter-SAE RMI surface is reachable from an untrusted network and has no per-caller authorization. On the SE, the trust-anchor mutation (\code{CREDS SAE}) is protected only by the owner key.
+The firmware core holds up under static review: the TrustZone split, the owner-pinned USER sessions, the advance-then-erase OTP consume, and the PIN with MAC-and-Destroy and a constant-time tag check. The inter-SAE RMI layer authenticates callers by SPKI pin, authorizes mutations per record, binds one address, and filters deserialization. Its remaining gaps are narrow: the re-provision handover lets a pinned non-party delete completed shares (\fid{F-03}), and the handshake is reachable on the bind address (\fid{F-04}). The highest-rated issue is on the SE: the trust-anchor mutation (\code{CREDS SAE}) is protected only by the owner key (\fid{F-01}).
 \end{abstract}
 
 \tableofcontents
@@ -49,31 +49,41 @@ The firmware core holds up under static review: the TrustZone split, the owner-p
 
 \paragraph{Overall posture.} The SE keeps its main promise. Reading pad material out of the chip needs both the enrolled owner key (the TLS peer SPKI pin) and the PIN (TROPIC01 MAC-and-Destroy). A compromised NonSecure image, an arbitrary USB host, or a SAE does not have both. The weaker points are elsewhere:
 \begin{enumerate}
-\item The \textbf{inter-SAE RMI service} is designed for a network that the deployment treats as untrusted and world-wide. The listener binds all interfaces. Any certificate under the SAE root CA can call every method, and the caller's SAE identity is taken from method arguments rather than from the TLS peer (\fid{F-01}, \fid{F-02}, \fid{F-06}).
-\item On the SE, \textbf{\code{CREDS SAE}} lets anyone who holds the owner key replace the SAE CA that \code{PROVISION} trusts. That person can then act as a SAE towards this device and inject pads they know. It does \emph{not} give them \code{ENCRYPT}/\code{DECRYPT}, which still needs the PIN (\fid{F-03}).
-\item There are several smaller inconsistencies between the documentation and the code (\fid{F-14}). The PIN-budget error is already fixed in the source docs.
+\item On the SE, \textbf{\code{CREDS SAE}} lets anyone who holds the owner key replace the SAE CA that \code{PROVISION} trusts. That person can then act as a SAE towards this device and inject pads they know. It does \emph{not} give them \code{ENCRYPT}/\code{DECRYPT}, which still needs the PIN (\fid{F-01}).
+\item The \textbf{SAE--KME hop} uses CLASSICAL TLS while it carries pad plaintext. This matters under the post-quantum model~B (\fid{F-02}).
+\item The \textbf{inter-SAE RMI service} faces a network that the deployment treats as untrusted and world-wide. Its controls hold (Section~\ref{sec:controls}):
+  \begin{itemize}
+  \item the caller is the SPKI-pinned TLS peer, never a call argument;
+  \item mutations are allowed only for parties of the record;
+  \item the listener binds one configured address;
+  \item arguments pass an allow-list serialization filter;
+  \item the node does not start without a pin list.
+  \end{itemize}
+  The remaining RMI findings are Low or Info: the handover exception for completed shares (\fid{F-03}), unauthenticated handshake reachability (\fid{F-04}), unfiltered client-side return values (\fid{F-06}), and metadata readable by any pinned peer (\fid{F-10}).
+\item \code{CertGenerator} and its CAs are lab-only tooling (\fid{F-13}); Section~\ref{sec:mit-ca} gives the production CA requirements. A few documents contradict the code (\fid{F-14}).
 \item Side-channel and fault exposure is analysed per primitive in \S\ref{sec:sca}. The PIN budget withstands MCU glitches because TROPIC01 enforces it. The main physical residuals are unmasked ML-DSA-44 signing (device impersonation) and an RDP~2 bypass leading to page-22 readout.
+\item The results rest on nine trust assumptions that cannot be verified from the source (\S\ref{sec:trust}): the hardware vendors, the third-party libraries, the HSM, the KME, the CAs, the SAE host and its administrator, an authentic peer-card exchange, the home PC and the user, and the toolchain and manufacturing. The peer card is the least obvious of them: it is an unsigned SHA-384 client hash that is checked only for format, so users must compare it over an independent channel (TA-7).
 \item The attacker capability matrix (\S\ref{sec:matrix}) shows that pad confidentiality depends on the SAE hosts and the KME link, while pad use on the device needs both the owner key and the PIN.
 \end{enumerate}
 
 \begin{longtable}{L{1.0cm}L{6.4cm}L{1.9cm}L{1.3cm}L{1.3cm}L{1.6cm}}
-\caption{Findings overview. CVSS scores were computed from the vectors in Section~\ref{sec:findings} with the FIRST equations (Python \texttt{cvss} package). Severity is the analyst's rating in the deployment context of Section~\ref{sec:context}.}\label{tab:summary}\\
+\caption{Findings overview. CVSS scores were computed from the vectors in Section~\ref{sec:findings} with the FIRST equations (Python \texttt{cvss} package). Severity is the analyst's rating in the deployment context of Section~\ref{sec:context}. Implemented controls that hold are listed in Section~\ref{sec:controls}.}\label{tab:summary}\\
 \toprule ID & Title & Severity & CVSS 3.1 & CVSS 4.0 & STRIDE\\ \midrule\endfirsthead
 \toprule ID & Title & Severity & CVSS 3.1 & CVSS 4.0 & STRIDE\\ \midrule\endhead
-F-01 & RMI methods trust caller-supplied SAE identity; no per-caller authorization & \sev{High} & 6.7 & 7.1 & S, T, D\\
-F-02 & RMI registry and object port bind all interfaces; no peer pinning & \sev{Medium} & 5.3 & 6.9 & E, D\\
-F-03 & \code{CREDS SAE} replaces the PROVISION trust anchor with the owner key only & \sev{High} (accepted design) & 5.7 & 6.9 & S, T, E\\
-F-04 & \code{OWNER SET} retry path installs the SAE CA without owner authentication & \sev{Low} & 5.7 & 5.3 & S, T\\
-F-05 & SE does not validate the peer chain on ENCRYPT/DECRYPT/MANAGE (pin only; no expiry or revocation) & \sev{Low} & 2.7 & 1.0 & S\\
-F-06 & RMI deserializes peer objects without an \code{ObjectInputFilter} & \sev{Medium} & 6.6 & 7.5 & T, E\\
-F-07 & \code{PAIRING LOAD} restores L3 identity with weaker checks than \code{PAIRING} & \sev{Low} & 2.7 & 1.0 & E\\
-F-08 & Factory SH0 (published SDK key) is the L3 key until \code{PAIRING} & \sev{Info} & 3.5 & 1.0 & S, I\\
-F-09 & Plaintext device secrets in flash page 22; HDP not used & \sev{Info} (residual at RDP 2) & 5.7 & 5.3 & I\\
-F-10 & Unauthenticated USB console discloses state (enrollment, pad budget, peers) & \sev{Low} & 2.4 & 2.4 & I\\
-F-11 & SAE--KME hop uses CLASSICAL TLS while carrying pad plaintext & \sev{Medium} (model B) & 6.1 & 6.0 & I\\
-F-12 & PKI hygiene: no EKU or KeyUsage on leaves; both CA keys and one password on one host & \sev{Low} & 3.3 & 2.1 & S, E\\
-F-13 & Secret prompt falls back to an echoing \code{System.in} without a console & \sev{Low} & 2.2 & 1.0 & I\\
-F-14 & Documentation contradicts code (PIN tries, bind address, CA comment, ``hybrid'' TLS) & \sev{Info} & -- & -- & --\\
+F-01 & \code{CREDS SAE} replaces the PROVISION trust anchor with the owner key only & \sev{High} (accepted design) & 5.7 & 6.9 & S, T, E\\
+F-02 & SAE--KME hop uses CLASSICAL TLS while carrying pad plaintext & \sev{Medium} (model B) & 6.1 & 6.0 & I\\
+F-03 & RMI \code{deleteShare} lets a pinned non-party delete completed shares (handover path) & \sev{Low} & 4.7 & 5.1 & T, D\\
+F-04 & RMI TLS handshake reachable by unauthenticated hosts on the bind address; no rate limit in code & \sev{Low} & 5.3 & 6.9 & D\\
+F-05 & \code{OWNER SET} retry path installs the SAE CA without owner authentication & \sev{Low} & 5.7 & 5.3 & S, T\\
+F-06 & RMI return values are deserialized on the client without a filter & \sev{Low} & 4.1 & 2.1 & T, E\\
+F-07 & SE does not validate the peer chain on ENCRYPT/DECRYPT/MANAGE (pin only; no expiry or revocation) & \sev{Low} & 2.7 & 1.0 & S\\
+F-08 & \code{PAIRING LOAD} restores L3 identity with weaker checks than \code{PAIRING} & \sev{Low} & 2.7 & 1.0 & E\\
+F-09 & Unauthenticated USB console discloses state (enrollment, pad budget, peers) & \sev{Low} & 2.4 & 2.4 & I\\
+F-10 & RMI \code{getRecordMetadata} answers any pinned peer for any pair & \sev{Info} & 2.7 & 5.1 & I\\
+F-11 & Factory SH0 (published SDK key) is the L3 key until \code{PAIRING} & \sev{Info} & 3.5 & 1.0 & S, I\\
+F-12 & Plaintext device secrets in flash page 22; HDP not used & \sev{Info} (residual at RDP 2) & 5.7 & 5.3 & I\\
+F-13 & PKI hygiene of the lab CA tooling (\code{CertGenerator}) & \sev{Info} (lab-only) & 3.3 & 2.1 & S, E\\
+F-14 & Documentation contradicts code (bind address, CA comment, ``hybrid'' TLS, stale tree note) & \sev{Info} & -- & -- & --\\
 \bottomrule
 \end{longtable}
 
@@ -84,7 +94,7 @@ F-14 & Documentation contradicts code (PIN tries, bind address, CA comment, ``hy
 \item In \code{ENCRYPT}, \code{DECRYPT}, and \code{MANAGE} it loads \emph{no} CA. The verify callback accepts any chain. The only identity check is a byte-exact, constant-time comparison of the peer leaf SPKI with the enrolled owner key (Section~\ref{sec:ca}).
 \item The SAE Node already builds \emph{two separate} \code{SSLContext}s with disjoint truststores. The RMI context trusts only \code{root-ca}. The USB device-server context trusts only \code{client_ca}.
 \item \code{CertGenerator} creates the two CAs as independent self-signed roots and refuses to give them the same name.
-\item A device or client certificate therefore cannot authenticate to RMI today. What is missing is RMI peer pinning: any leaf under \code{root-ca} is accepted as any SAE.
+\item A device or client certificate therefore cannot authenticate to RMI. On top of the \code{root-ca} chain check, RMI pins each peer leaf by SPKI hash (\code{RMI_KNOWN_PEERS}), so a leaf under \code{root-ca} that is not pinned is rejected (Section~\ref{sec:controls}).
 \end{itemize}
 \section{Scope, sources, and deployment context}\label{sec:context}
 
@@ -98,8 +108,7 @@ Vendored trees (wolfSSL, libtropic, HAL/CMSIS, Utimaco jars) were reviewed only 
 
 \subsection{Sources}
 \begin{itemize}
-\item Source tree: a fresh mirror of the WSL working copy, taken on 14~October~2026 around 18:05 (Prague). It reflects the removal of the RMI \code{relay} method. A search for \code{relay} over \code{JAVA_APPS/src} returns only an unrelated comment in \code{SeUsbLink.java}. The relay finding from Phase~1 is therefore dropped.
-\item Phase-1 evidence notes. Every item reused here was re-checked against the new mirror.
+\item Source tree: a fresh mirror of the WSL working copy, taken on 14~October~2026 around 18:05 (Prague).
 \item The thesis text (Czech PDF, extracted to text). It was used for its hardware and threat-model claims.
 \item In-tree documentation, treated as \emph{claims}: \code{docs/SECURITY.md}, \code{ACCESS_POINTS.md}, \code{HARDWARE.md}, \code{HOW_TO_RUN.md}, \code{TROPIC.md}, \code{JAVA_APPS/README.md}, and \code{SaeNode/README.md}.
 \end{itemize}
@@ -110,12 +119,12 @@ Real \code{env/*.env} files, PKCS\#12 files, PEM keys, and \code{pairing-key.hex
 \item The SAE runs on a dedicated server with a real Utimaco HSM. It does not use the simulator.
 \item SAEs are distributed world-wide. The network between them is \textbf{not trusted}.
 \item Production SEs are set to \textbf{RDP level~2} (\code{0xCC}). Hide protection (HDP) is not used. There is \textbf{no firmware update path}, so the firmware is immutable in the field. This is recorded as a residual.
-\item The user notices a failed \code{INIT} or enrollment. This lowers the likelihood of \fid{F-04}.
+\item The user notices a failed \code{INIT} or enrollment. This lowers the likelihood of \fid{F-05}.
 \item Lab artefacts are not present in production: \code{RDP=0xAA}, \code{BOOT_LOCK=0}, \code{INIT LAB} holding \code{client_ca.p12}, the simulator PIN, and the \code{127.0.0.1} peer table.
 \item The PIN length is 8--16 characters. The code confirms this: \code{SE_TROPIC_PIN_SIZE_MIN 8u} and \code{SE_TROPIC_PIN_SIZE_MAX 16u} in \code{se_tropic_pin.h}, enforced in \code{secure_otp.c}, \code{se_tropic_pin.c}, and \code{se_tropic_mlkem.c}.
 \item Certificate revocation is a manual action at the CA.
 \item \code{ENCRYPT}/\code{DECRYPT} happen only on the home PC, never at the SAE terminal.
-\item \code{CREDS SAE} stays owner-only by product decision. The consequences are spelled out in \fid{F-03}.
+\item \code{CREDS SAE} stays owner-only by product decision. The consequences are spelled out in \fid{F-01}.
 \end{enumerate}
 
 \subsection{What was not done}
@@ -152,7 +161,7 @@ Each step below was executed. Its result is stated.
 \begin{enumerate}[label=\textbf{S\arabic*.},leftmargin=2.2em]
 \item \textbf{Re-synchronise the source.} A tar of the WSL repository was made with build outputs, vendored trees, keys, and env files excluded. It was extracted to the analysis machine.
 \begin{itemize}
-\item[\emph{Result:}] \texttt{relay} is gone from \texttt{NodeCommands}, \texttt{NodeCommandsService}, and the tests. \texttt{docs/security-analysis/PROMPT.md} asks for a Czech document at another path; the owner's instruction overrides that: English, \texttt{docs/security\_analysis.tex}.
+\item[\emph{Result:}] \texttt{docs/security-analysis/PROMPT.md} asks for a Czech document at another path; the owner's instruction overrides that: English, \texttt{docs/security\_analysis.tex}.
 \end{itemize}
 \item \textbf{Hardware fact check.} The thesis and in-tree docs were compared with STM32U535 capabilities and with the CubeMX IOC and \code{user_settings.h}. The ST product data used: Cortex-M33 with TrustZone; 256~KB flash in 8~KB pages; 274~KB SRAM; TRNG and HASH present; no AES, SAES, PKA, or OTFDEC; USB FS device with dedicated packet memory.
 \begin{itemize}
@@ -174,11 +183,11 @@ Each step below was executed. Its result is stated.
 \end{itemize}
 \item \textbf{Enrollment versus later mutation.} We compared the first write and every later write of: the owner SPKI, the reset-password hash, the SAE CA, the device certificate, the ML-DSA key, the pairing key, the peers, and the PIN and ML-KEM seed (\code{se_auth.c}, \code{se_owner.c}, \code{se_manage.c}, \code{se_creds.c}).
 \begin{itemize}
-\item[\emph{Result:}] \fid{F-03} and \fid{F-04}. \texttt{INSERT SIGNED CSR} holds (\texttt{se\_device\_id\_cert\_matches}). \texttt{OWNER REPLACE} holds; it requires the reset password.
+\item[\emph{Result:}] \fid{F-01} and \fid{F-05}. \texttt{INSERT SIGNED CSR} holds (\texttt{se\_device\_id\_cert\_matches}). \texttt{OWNER REPLACE} holds; it requires the reset password.
 \end{itemize}
 \item \textbf{TLS identity per mode on the SE.} We read \code{tls_start}, \code{tls_load_provision_ca}, \code{tls_accept_peer_leaf}, \code{tls_app_*_enter}, and \code{se_tls_user_pin_peer}.
 \begin{itemize}
-\item[\emph{Result:}] Section~\ref{sec:ca} and \fid{F-05}. Only ML-KEM-768 is offered, set on the \texttt{WOLFSSL} object to avoid the copy-before-set pitfall. The cipher is \texttt{TLS13-AES256-GCM-SHA384}. The minimum version is TLS~1.3.
+\item[\emph{Result:}] Section~\ref{sec:ca} and \fid{F-07}. Only ML-KEM-768 is offered, set on the \texttt{WOLFSSL} object to avoid the copy-before-set pitfall. The cipher is \texttt{TLS13-AES256-GCM-SHA384}. The minimum version is TLS~1.3.
 \end{itemize}
 \item \textbf{OTP integrity.} We traced \code{se_tropic_OTP_xor_consume}, the decrypt skip, \code{fill_id}, and the mcounters.
 \begin{itemize}
@@ -186,7 +195,7 @@ Each step below was executed. Its result is stated.
 \end{itemize}
 \item \textbf{PIN, secret lifetime, RNG.}
 \begin{itemize}
-\item[\emph{Result:}] The PIN is 8--16 characters. The budget is \textbf{7} tries (\texttt{SE\_TROPIC\_PIN\_ROUNDS 7u}, 14 M\&D slots). The owner confirmed 7 as the intended value. The docs said 8 and have been corrected (\fid{F-14}).
+\item[\emph{Result:}] The PIN is 8--16 characters. The budget is \textbf{7} tries (\texttt{SE\_TROPIC\_PIN\_ROUNDS 7u}, 14 M\&D slots). The owner confirmed 7 as the intended value, and the in-tree docs agree.
 \item[\emph{Result:}] Buffers are wiped with \texttt{wc\_ForceZero} on close and abort. Hash\_DRBG is seeded from the TRNG (\texttt{se\_stm32\_rand\_seed}) and fails closed. The pairing private key leaves only inside the MANAGE TLS reply.
 \end{itemize}
 \item \textbf{SAE provisioning.} We read \code{SeSessionBinding.verify} (client hash $=$ H(TLS SPKI $\|$ ECC pub), signature over the TLS exporter), \code{SeConstants} (uplink v5, downlink v3), \code{OriginShareCheck}, and \code{ProvisionSession}.
@@ -197,13 +206,13 @@ Each step below was executed. Its result is stated.
 \begin{itemize}
 \item[\emph{Result:}] Section~\ref{sec:ca}: two contexts with disjoint trust.
 \end{itemize}
-\item \textbf{RMI surface.} We read \code{NodeCommands} (8 methods), \code{NodeCommandsService}, \code{RmiManager}, and \code{SoftwareTls.createServerSocket}. We searched for caller identity and serialization filters.
+\item \textbf{RMI surface.} We read \code{NodeCommands} (8 methods), \code{NodeCommandsService}, \code{RmiManager}, and \code{SoftwareTls.createServerSocket}. We also read \code{RmiPeerPinning}, \code{KnownPeers}, \code{RmiCallerContext}, and \code{RmiSerialFilter}, and checked caller identity, per-record authorization, the bind address, and the serialization filter.
 \begin{itemize}
-\item[\emph{Result:}] \fid{F-01}, \fid{F-02}, \fid{F-06}.
+\item[\emph{Result:}] Section~\ref{sec:controls} (C-1 to C-4); \fid{F-03}, \fid{F-04}, \fid{F-06}, \fid{F-10}.
 \end{itemize}
 \item \textbf{QKD and SAE host secrets.} We read \code{Node.loadQkdClient} (\code{CLASSICAL}), \code{SharedKeyMaterialStore} (HSM AES-GCM), \code{DB} (POSIX \code{0600}), and \code{EnvSecrets}.
 \begin{itemize}
-\item[\emph{Result:}] \fid{F-11}, \fid{F-13}.
+\item[\emph{Result:}] \fid{F-02}; the secret prompt holds (C-5).
 \end{itemize}
 \item \textbf{USER.} We inventoried files and searched for sockets: \code{ServerSocket}, \code{LocateRegistry}, \code{HttpServer}, \code{DatagramSocket}, \code{URL}, \code{HttpClient}.
 \begin{itemize}
@@ -264,10 +273,10 @@ PIN, \code{final_key} & Typed on the home PC; transient in Secure RAM; M\&D stat
 ML-KEM seed & R-MEM 510 & \code{KEM INIT} (owner and PIN) & PIN\\
 \code{secure_dwk}, ML-DSA SK, pairing SK & Flash page 22 & Secure only & TrustZone, RDP 2\\
 Owner SPKI & Page 22 & First \code{OWNER SET}; then \code{OWNER REPLACE} (reset password) & Unsigned bootstrap, then MANAGE\\
-SAE CA certificate & Page 21 & \code{OWNER SET}; \code{CREDS SAE} (owner key) & MANAGE owner pin (\fid{F-03})\\
+SAE CA certificate & Page 21 & \code{OWNER SET}; \code{CREDS SAE} (owner key) & MANAGE owner pin (\fid{F-01})\\
 Device certificate & Page 21 & \code{INSERT SIGNED CSR} (must match the device key) & MANAGE\\
 Pad material at SAE & SQLite \code{shared_key_material} (HSM AES-GCM); process RAM & SAE process & HSM, host OS\\
-Record state & SQLite \code{client_record_state} & Local operator; RMI peers & RMI mTLS (\fid{F-01})\\
+Record state & SQLite \code{client_record_state} & Local operator; RMI peers & RMI mTLS, SPKI pins, per-record authorization (C-1, C-2; \fid{F-03})\\
 Node identity key & Utimaco HSM (ML-DSA) & SAE process after HSM login & HSM\\
 CA private keys & \code{certs/ca/root-ca.p12}, \code{client_ca.p12} on the CertGenerator host & CA operator & Host, PKCS\#12 password\\
 Owner key & \code{certs/user/user.p12} on the home PC (password protected) & User & PC, PKCS\#12 password\\
@@ -306,30 +315,97 @@ The SE never validates a client certificate against a CA, because it is never th
 
 \paragraph{Conclusion.} The truststores are \textbf{separate, not merged}. A device or client certificate (\code{client_ca}) cannot authenticate to RMI, and a node certificate (\code{root-ca}) cannot act as a device in \code{PROVISION}. Three gaps remain:
 \begin{enumerate}[label=(\alph*)]
-\item RMI has no peer pinning. Any \code{root-ca} leaf is accepted, and the caller's SAE identity is never derived from it (\fid{F-01}, \fid{F-02}).
+\item RMI pins its peers on top of the chain check. An inbound leaf must match an SPKI pin in \code{RMI_KNOWN_PEERS}, which yields the caller's SAE ID. An outbound server leaf must match the pin of the SAE configured for that endpoint (C-1).
 \item The same \code{root-ca} anchors both RMI and the SE's \code{PROVISION} check, so one CA key opens both doors.
-\item Leaves carry no EKU or KeyUsage, so role separation rests only on the issuer (\fid{F-12}).
+\item Lab leaves (\code{CertGenerator}) carry no EKU or KeyUsage, so in the lab role separation rests on the issuer and, for RMI, on the pins (\fid{F-13}). Production certificates come from a production CA (Section~\ref{sec:mit-ca}).
 \end{enumerate}
 The recommended target state is in Section~\ref{sec:mit-ca}.
+\section{Trust assumptions}\label{sec:trust}
+The analysis relies on the following assumptions, which it cannot verify. For each one it states what is trusted without verification, why the trust cannot be checked here, what follows if it is violated, and which matrix rows (\S\ref{sec:matrix}) and findings it relates to. They are in addition to the deployment assumptions in \S\ref{sec:context}.
+\begin{description}[style=nextline,leftmargin=1.2em]
+\item[TA-1 Hardware vendors]
+\begin{itemize}
+\item \textbf{Trusted.} On the STM32U535: RDP level~2 really disables SWD and readout and freezes the option bytes; TrustZone (SAU, IDAU, GTZC, MPCBB) separates Secure from NonSecure as documented; and the TRNG produces full-entropy seeds. On TROPIC01: MAC-and-Destroy enforces the PIN budget; R-MEM slots are readable only through an authenticated L3 session; and the tamper and glitch countermeasures work as claimed.
+\item \textbf{Why unverifiable.} These are silicon properties. No board was run, and no fault, probing, or decapsulation work was done (\S\ref{sec:context}). The TROPIC01 countermeasures are vendor claims.
+\item \textbf{If violated.} An RDP~2 bypass exposes page~22 in plaintext (\fid{F-12}) and turns ``SE only'' into ``SE + owner key'': the device key, pairing key, and owner pin become readable. A broken TrustZone lets a malicious NonSecure image act as Secure. An M\&D bypass removes the PIN as a second factor (rows ``SE + owner key'' and ``SE only''; \S\ref{sec:sca}). A weak TRNG weakens the device TLS and ML-DSA keys. Pad randomness does not depend on it (TA-4).
+\end{itemize}
+\item[TA-2 Third-party libraries]
+\begin{itemize}
+\item \textbf{Trusted.} The library versions taken from the build files:
+  \begin{itemize}
+  \item Firmware: wolfSSL/wolfCrypt 5.9.4 (\code{Middlewares/Third_Party}), libtropic v4.1.0 (submodule tag), STM32Cube FW\_U5 V1.9.0 (IOC) with STM32U5 HAL driver 1.6.3, and the ST USBX CDC~ACM device stack from that package.
+  \item SAE and UserApp (\code{JAVA_APPS/pom.xml}, Java release~21): Bouncy Castle 1.84 (\code{bcprov}, \code{bctls} for the \code{PURE_PQC} TLS, \code{bcpkix}, \code{bcutil}); the JDK's RMI and JEP~290 filtering; \code{sqlite-jdbc} 3.49.1.0 with HikariCP 7.0.2; Jackson 2.21.3, which parses \code{sae-nodes.json} and \code{RMI_KNOWN_PEERS}; and jSerialComm 2.11.0 for UserApp USB.
+  \item Build-time and test-only: Flyway 12.8.1 (\code{flyway-maven-plugin} schema migrations; \code{flyway-core} only in test scope).
+  \item The Utimaco client: \code{cryptoservercxi.jar} and \code{securityserver-jce.jar}, vendored as system-scope jars with no version recorded in the build.
+  \end{itemize}
+\item \textbf{Why unverifiable.} These trees were reviewed only at the integration boundary and were not audited line by line (\S\ref{sec:context}). The Utimaco jars are closed source.
+\item \textbf{If violated.} A defect in wolfSSL or libtropic runs in the Secure world of an SE that cannot be updated. Every row whose ``Cannot'' column rests on TLS or L3 then collapses. A Bouncy Castle TLS defect breaks C-1 and the \code{PROVISION} channel (rows ``Network MITM'' and ``Malicious peer SAE''). A JDK RMI or deserialization defect bypasses C-4 (\fid{F-06}). A defect in the Utimaco client can expose the wrap key (TA-3).
+\end{itemize}
+\item[TA-3 Utimaco HSM]
+\begin{itemize}
+\item \textbf{Trusted.} The wrap key that protects stored records is non-exportable. Only the SAE server administrator administers the HSM.
+\item \textbf{Why unverifiable.} No production HSM was examined. Key attributes and the HSM's user and role setup are outside the repository.
+\item \textbf{If violated.} An exported wrap key, or a second administrator, turns row ``One SAE: root, no HSM access'' into ``One SAE: root, with HSM access'': the attacker can read all stored pads for the pairs that SAE serves.
+\end{itemize}
+\item[TA-4 KME / QKD]
+\begin{itemize}
+\item \textbf{Trusted.} The KME delivers key material that is secret and truly random, and it delivers the same keys to both SAEs of a pair. The SAE--KME link is CLASSICAL TLS (\fid{F-02}).
+\item \textbf{Why unverifiable.} The QKD system and the KME are external. Only their ETSI~014 client is in scope. One-time-pad secrecy rests entirely on this material.
+\item \textbf{If violated.} Biased, predictable, or disclosed material breaks pad confidentiality for every pair served by that KME (row ``QKD/KMS link''; \fid{F-02} under model~B). If the two SAEs receive different material, the pads of a pair do not match and decryption fails. This is an availability failure, not a confidentiality one.
+\end{itemize}
+\item[TA-5 Certificate authorities]
+\begin{itemize}
+\item \textbf{Trusted.} The SAE root CA (\code{root-ca}) and the client CA (\code{client_ca}) sign only legitimate SAEs and devices. Revocation is manual, and it happens soon after a loss.
+\item \textbf{Why unverifiable.} The production CA is not in the repository. \code{CertGenerator} is lab-only (\fid{F-13}). Issuance and revocation are procedures, not code (\S\ref{sec:mit-ca}).
+\item \textbf{If violated.} A rogue \code{root-ca} leaf is still refused over RMI unless its SPKI is also pinned (C-1). However, any SE that trusts that CA through \code{PROVISION} accepts it as a SAE (rows ``SAE root CA compromised'' and ``SE + owner key''; \fid{F-01}, \fid{F-05}). A rogue \code{client_ca} leaf passes the SAE device check (row ``Client CA compromised''). Slow revocation extends each of these windows (M-7; \S\ref{sec:residual}).
+\end{itemize}
+\item[TA-6 SAE server and kiosk]
+\begin{itemize}
+\item \textbf{Trusted.} The SAE server and its terminal are physically protected. The administrator with root access is trusted, and so is the operating system.
+\item \textbf{Why unverifiable.} Host hardening and staffing are outside the code. The SAE sees pad plaintext in RAM by design (\S\ref{sec:residual}).
+\item \textbf{If violated.} Root on a SAE equals the pads: row ``One SAE: root, with HSM access'', or ``no HSM access'' when TA-3 holds. A root attacker can also rewrite \code{RMI_KNOWN_PEERS} and so choose that node's peers (C-1).
+\end{itemize}
+\item[TA-7 Authentic peer-card exchange]
+\begin{itemize}
+\item \textbf{Trusted.} The SE never moves between peers. Two users exchange only a \emph{peer card}, and the assumption is that the card is not substituted in transit and that it is verified, for example by comparing the fingerprint over an independent channel.
+\item \textbf{What the card is.} \code{PEER CARD} (UserApp \code{PeerCommands.card}, lines 77--90) prints a four-line paste block: \code{PEER ADD}, the nickname, the 96-hex \emph{client hash}, and the Tropic plaintext pad length. The client hash is read from the device with \code{CLIENT HASH}, and the pad length with \code{TROPIC PAD LEN} (lines 140--156). The client hash is SHA-384(SPKI of the device certificate $\|$ TROPIC01 ECC public key) (\code{se_tropic_session.c} 26--56). The card carries no certificate and no signature.
+\item \textbf{How it is imported.} \code{PEER ADD} (\code{PeerCommands.add}, lines 105--138) checks only the format: a 1--16 character nickname, exactly 96 hex digits, and a pad length greater than zero. It then sends the entry over owner-authenticated MANAGE. The firmware (\code{se_manage.c} \code{do_peer_add}, 210--231) checks only the lengths and that the pad length is non-zero, then stores the entry. Each \code{PROVISION} uplink lists the stored peers (\code{se_tropic_session.c} 188--211). The SAE creates the record for (own client hash, selected peer hash), with pad length min(own maximum, peer pad length) (\code{InputHandler} 52--59). Neither the SE nor the SAE can tie a hash to a person.
+\item \textbf{Why unverifiable.} The exchange happens out of band, between users. The only check available is a human comparison of the 96-hex value, for example against the other side's \code{CLIENT INFO}.
+\item \textbf{If violated.} If an attacker who holds any enrolled device substitutes their own client hash, the victim's pads for ``Bob'' are shared with the attacker's device, and the attacker reads every message sent to ``Bob''. A substituted pad length only shortens messages or makes provisioning fail. The impact equals a man-in-the-middle at enrollment. No matrix row covers it, because the attacker needs neither the victim's SE nor the owner key.
+\end{itemize}
+\item[TA-8 Home PC and user]
+\begin{itemize}
+\item \textbf{Trusted.} The home PC is not compromised while \code{ENCRYPT} or \code{DECRYPT} runs. The user keeps the PIN and the owner-key PKCS\#12 password secret.
+\item \textbf{Why unverifiable.} It depends on the user's platform and behaviour.
+\item \textbf{If violated.} Rows ``Home PC compromised'', ``Stolen owner key only'', ``SE + PIN'', and ``SE + owner key + PIN'' apply. Malware can read plaintext and keylog the PIN while the SE is attached. A stolen owner key opens \code{CREDS SAE} (\fid{F-01}) and \code{PAIRING LOAD} (\fid{F-08}).
+\end{itemize}
+\item[TA-9 Toolchain and manufacturing]
+\begin{itemize}
+\item \textbf{Trusted.} The compiler, the linker, the build host, and the initial flashing are trusted. So is the factory step that sets RDP~2, enrols the device, and runs \code{PAIRING}. The firmware cannot be updated, so the image flashed at manufacturing is the image for the device's whole life.
+\item \textbf{Why unverifiable.} No reproducible-build or attestation mechanism exists to compare a field unit against the reviewed source.
+\item \textbf{If violated.} A modified image, or a unit left at RDP~0 or with the factory SH0 key (\fid{F-11}, M-11), defeats every SE row of the matrix. Because there is no update path, it stays for the device's whole life.
+\end{itemize}
+\end{description}
+
 \section{Threat model}
 
 \subsection{STRIDE per boundary}
 \begin{longtable}{L{2.0cm}L{13.6cm}}
 \toprule Boundary & Threats considered and outcome\\ \midrule\endhead
-TB1 USB & S: a rogue host enrols first (closed after enrollment, except the \fid{F-04} retry window). T: malformed frames (bounded). I: console oracles (\fid{F-10}). D: ring and queue exhaustion; decrypt skip-ahead burning pads (owner session only). E: a BadUSB host can arm modes but cannot pass the owner pin.\\
+TB1 USB & S: a rogue host enrols first (closed after enrollment, except the \fid{F-05} retry window). T: malformed frames (bounded). I: console oracles (\fid{F-09}). D: ring and queue exhaustion; decrypt skip-ahead burning pads (owner session only). E: a BadUSB host can arm modes but cannot pass the owner pin.\\
 TB2 NSC & T/E: a malicious NonSecure image can arm the wrong mode, choose the time within the floor, proxy bytes, or drop sessions. I: no veneer returns secrets (holds).\\
-TB3 SPI & S/I: pre-pairing SH0 (\fid{F-08}). Under model~B, L3 X25519 can be broken on a probed bus, but R-MEM blobs remain AEAD under MCU keys and the PIN.\\
-TB4 PROVISION & S: a forged SAE needs a leaf under the page-21 CA (\fid{F-03} moves that CA). T: replaying an uplink or downlink is blocked by exporter binding and \code{fill_id}. I: pads travel inside ML-KEM TLS.\\
-TB5 USER & S: needs the owner key. I: the PIN travels only inside owner-pinned TLS. E: \code{MANAGE} without the PIN can change trust anchors (\fid{F-03}, \fid{F-07}).\\
-TB6 RMI & S/T/D: any \code{root-ca} leaf can spoof \code{issuingSaeId} and delete or mark records (\fid{F-01}). E: deserialization (\fid{F-06}). Exposure on all interfaces (\fid{F-02}). R: deletions are logged by hash only, without the caller's identity.\\
-TB7 KME & I under model~B (\fid{F-11}).\\
-TB8 HSM & S/I: the HSM PIN prompt (\fid{F-13}). The HSM itself is out of scope.\\
+TB3 SPI & S/I: pre-pairing SH0 (\fid{F-11}). Under model~B, L3 X25519 can be broken on a probed bus, but R-MEM blobs remain AEAD under MCU keys and the PIN.\\
+TB4 PROVISION & S: a forged SAE needs a leaf under the page-21 CA (\fid{F-01} moves that CA). T: replaying an uplink or downlink is blocked by exporter binding and \code{fill_id}. I: pads travel inside ML-KEM TLS.\\
+TB5 USER & S: needs the owner key. I: the PIN travels only inside owner-pinned TLS. E: \code{MANAGE} without the PIN can change trust anchors (\fid{F-01}, \fid{F-08}).\\
+TB6 RMI & S: only pinned peers connect, and the claimed issuer must equal the authenticated caller (C-1, C-2). T/D: a pinned peer can act on records it is a party to, and can delete completed shares through the handover path (\fid{F-03}). E: arguments are allow-list filtered (C-4); return values are not (\fid{F-06}). D: handshake reachability on the bind address (\fid{F-04}). I: metadata of any pair (\fid{F-10}). R: the handover deletion is logged with the caller's ID; other deletions are logged by hash and party.\\
+TB7 KME & I under model~B (\fid{F-02}).\\
+TB8 HSM & S/I: the HSM PIN is read only from the environment, the env file, or a masked terminal prompt (C-5). The HSM itself is out of scope.\\
 \bottomrule
 \end{longtable}
 
 \subsection{Physical, fault-injection, side-channel, and cold-boot threats (SE)}
 \begin{itemize}
-\item \textbf{Debug and readout.} At RDP~2, SWD and the system bootloader are permanently disabled and the option bytes are frozen. Reading page~22 then requires an invasive attack: decapsulation and microprobing, or a published RDP downgrade or fault for this silicon family. The thesis cites such attacks. Page~22 holds plaintext device secrets (\fid{F-09}). Pads additionally need TROPIC01, \code{fill_id}, and the PIN.
+\item \textbf{Debug and readout.} At RDP~2, SWD and the system bootloader are permanently disabled and the option bytes are frozen. Reading page~22 then requires an invasive attack: decapsulation and microprobing, or a published RDP downgrade or fault for this silicon family. The thesis cites such attacks. Page~22 holds plaintext device secrets (\fid{F-12}). Pads additionally need TROPIC01, \code{fill_id}, and the PIN.
 \item \textbf{Fault injection (voltage, clock, or EM glitch).} The software decisions a glitch could target are:
   \begin{itemize}
   \item the owner-pin result in \code{tls_app_*_enter} (a single branch on the return of \code{se_tls_user_pin_peer});
@@ -354,12 +430,12 @@ This subsection expands the summary above. It is based on the build configuratio
 
 \paragraph{ML-KEM-768 (TLS key exchange).} The SE is the TLS client, so it performs key generation and \emph{decapsulation} with a fresh ephemeral key per handshake. Single-trace attacks on the NTT or on message encoding, as published for unprotected Kyber, need a profiled template and work per session. They recover that session's shared secret, but there is no long-term ML-KEM key to steal. The ML-KEM-768 used inside \code{PROVISION} (\code{kem_ct} in the downlink) is likewise ephemeral. Implicit rejection in wolfSSL removes the timing oracle of the FO transform. \textbf{Exposure: low} (per-session only).
 
-\paragraph{SHA-2/3 and HMAC (PIN KDF, HKDF).} \code{pin_hmac_sha384} processes the PIN-derived \code{kdf_in} and the MCU pepper. These computations run only during a PIN attempt, which is budget-limited, so the attacker gets at most 7 traces per enrollment, and trace collection itself burns attempts. A template attack within 7 traces on HMAC-SHA-384 is at the research frontier. The pepper (page~22) is the higher-value target, and it is more simply obtained by readout (\fid{F-09}).
+\paragraph{SHA-2/3 and HMAC (PIN KDF, HKDF).} \code{pin_hmac_sha384} processes the PIN-derived \code{kdf_in} and the MCU pepper. These computations run only during a PIN attempt, which is budget-limited, so the attacker gets at most 7 traces per enrollment, and trace collection itself burns attempts. A template attack within 7 traces on HMAC-SHA-384 is at the research frontier. The pepper (page~22) is the higher-value target, and it is more simply obtained by readout (\fid{F-12}).
 
 \paragraph{Timing.}
 \begin{itemize}
 \item The owner SPKI comparison is constant-time (\code{se_tls_user.c}).
-\item The PIN tag check uses \code{memcmp(nvm.t, t_, ...)} (\code{se_tropic_pin.c} line~316), which is \emph{not} constant-time. It is not exploitable, because $t$ is a 48-byte HMAC over the M\&D output $s$. A wrong PIN yields an unrelated $s$, so no partial match can be steered, and every attempt already consumed its slots. The mitigation is cosmetic: \code{ConstantCompare}.
+\item The PIN tag check is constant-time: \code{pin_ct_equal(nvm.t, t_, sizeof(t_))} (\code{se_tropic_pin.c} line~328; helper at line~137) OR-accumulates over all 48 bytes through a volatile accumulator, with no early exit. In any case $t$ is a 48-byte HMAC over the M\&D output $s$. A wrong PIN yields an unrelated $s$, so no partial match could be steered, and every attempt has already consumed its slots.
 \item ML-DSA signing time varies with the number of rejection rounds. This is inherent to the scheme and leaks nothing about the key beyond what is public.
 \item USB response latency for PIN success versus failure is distinguishable, but the result is returned explicitly anyway.
 \end{itemize}
@@ -374,9 +450,9 @@ This subsection expands the summary above. It is based on the build configuratio
 \end{enumerate}
 A glitch that skips the counter write-back (step~2) does not give a free attempt. The M\&D slot pair $i$ is destroyed \emph{inside TROPIC01} by the wrong-PIN MAC, so retrying at the same $i$ yields a garbage $s$ even for the correct PIN. In effect the budget is enforced by the TROPIC01 slot state, not by the MCU counter. A glitch that forces the tag check to pass (step~4) yields a wrong $s$, so \code{final_key} is wrong and the OTP-session state cannot be decrypted. The attacker gains nothing but a destroyed pair. A glitch during re-arm (step~5) after a \emph{correct} PIN can only leave the device with fewer tries. \textbf{The PIN budget is robust against MCU glitches.} Attacking it needs faults \emph{inside} TROPIC01, whose vendor documentation claims voltage, laser, temperature, and EM glitch sensors with active shielding. That claim was not verified here.
 
-\paragraph{Glitching RDP~2 and boot.} RDP~2 is enforced by option-byte loading in the boot ROM. Published voltage-glitch attacks have downgraded or bypassed RDP on older STM32 families (F0, F1, F3, F4, L0, L4). This review found no public, reproducible RDP~2 bypass for the STM32U5. Such a bypass is plausible for a well-funded model~B attacker, and it is the precondition for the page-22 readout (\fid{F-09}). Because the firmware cannot be updated, it cannot be patched in the field, and the risk is recorded as a residual. BOOT\_LOCK pins the boot address, which narrows the glitch window to the option-byte load.
+\paragraph{Glitching RDP~2 and boot.} RDP~2 is enforced by option-byte loading in the boot ROM. Published voltage-glitch attacks have downgraded or bypassed RDP on older STM32 families (F0, F1, F3, F4, L0, L4). This review found no public, reproducible RDP~2 bypass for the STM32U5. Such a bypass is plausible for a well-funded model~B attacker, and it is the precondition for the page-22 readout (\fid{F-12}). Because the firmware cannot be updated, it cannot be patched in the field, and the risk is recorded as a residual. BOOT\_LOCK pins the boot address, which narrows the glitch window to the option-byte load.
 
-\paragraph{Glitching Secure decisions.} The single-branch decisions listed above (owner pin, \code{se_nv_has_owner()}, the time floor, the cursor advance) have no duplicated checks, no glitch-detection counters, and no random delays. The highest-impact target is consume in \code{se_tropic_otp_xor.c}. It first advances the cursor (line~151, \code{se_tropic_qkd_cursor_advance_from_slot}: TROPIC01 counter, then MCU NV) and then erases the pad's R-MEM slot (line~157), before the XOR result is released. Keystream reuse would require the attacker to skip \emph{both} the advance and the erase, in one consume, and a later consume to read the same, still-present slot. A glitch on the advance alone leaves the slot erased, so the next read fails. A glitch on the erase alone leaves an orphan slot behind the cursor, which is not reachable. The attacker also needs the PIN, because consume runs only inside an authenticated \code{ENCRYPT}. An attacker who holds the PIN can already read pads legitimately, so the residual case is producing two ciphertexts under one pad \emph{intended} for a victim. That is narrow. Mitigation M-14 (duplicated checks and verify-after-write) addresses it.
+\paragraph{Glitching Secure decisions.} The single-branch decisions listed above (owner pin, \code{se_nv_has_owner()}, the time floor, the cursor advance) have no duplicated checks, no glitch-detection counters, and no random delays. The highest-impact target is consume in \code{se_tropic_otp_xor.c}. It first advances the cursor (line~151, \code{se_tropic_qkd_cursor_advance_from_slot}: TROPIC01 counter, then MCU NV) and then erases the pad's R-MEM slot (line~157), before the XOR result is released. Keystream reuse would require the attacker to skip \emph{both} the advance and the erase, in one consume, and a later consume to read the same, still-present slot. A glitch on the advance alone leaves the slot erased, so the next read fails. A glitch on the erase alone leaves an orphan slot behind the cursor, which is not reachable. The attacker also needs the PIN, because consume runs only inside an authenticated \code{ENCRYPT}. An attacker who holds the PIN can already read pads legitimately, so the residual case is producing two ciphertexts under one pad \emph{intended} for a victim. That is narrow. Mitigation M-15 (duplicated checks and verify-after-write) addresses it.
 
 \paragraph{TROPIC01 counters and slots.} Two TROPIC01 mechanisms protect the pads: the M\&D slots, which enforce the PIN budget in hardware, and the pad R-MEM slots, which are erased after use. The pad cursor is \emph{not} hardware-monotonic. The firmware writes it with \code{lt_mcounter_init(h, ctr, next)} on every advance (\code{se_tropic_cursor.c} line~69), and \code{se_tropic_qkd_arm_halves} writes it again at each new fill (\code{secure_qkd_ingest.c} line~115, after all pad slots were erased in \code{se_tropic_qkd_provision_begin}). Its value is therefore protected only by firmware logic and by the cross-check against MCU NV in \code{se_tropic_qkd_cursor_get}, which returns \code{DEVICE_TAMPERED} on a mismatch. A rewound counter alone gives no reuse, because the slots it would point back to are already erased. Pad uniqueness rests on \emph{erase after use}, not on the counter. Erasing the TROPIC01 pairing does not restore erased slots.
 
@@ -395,7 +471,7 @@ A glitch that skips the counter write-back (step~2) does not give a free attempt
 \subsection{Cryptographic and logic threats}
 \begin{itemize}
 \item \textbf{Pad reuse.} The cursor is advanced in MCU NV and in the TROPIC01 mcounter \emph{before} the pad is erased and used. A mismatch between the two returns \code{DEVICE_TAMPERED}. The pad HKDF includes \code{fill_id}. The encrypt and decrypt halves use disjoint ranges. A decrypt skip-ahead burns the skipped pads. No rewind path was found. A power cut during consume burns a pad, which is accepted.
-\item \textbf{Pad reuse on the SAE.} Origin-share logic deletes incomplete shares and requires \code{ORIGIN_PROVISIONED} before reuse (\code{OriginShareCheck}). That integrity depends on RMI integrity (\fid{F-01}).
+\item \textbf{Pad reuse on the SAE.} Origin-share logic deletes incomplete shares and requires \code{ORIGIN_PROVISIONED} before reuse (\code{OriginShareCheck}). That integrity depends on RMI integrity, which is limited to the parties of a record (C-2) apart from the handover path (\fid{F-03}).
 \item \textbf{Zeroization.} \code{wc_ForceZero} is applied to the exporter, the uplink buffer, the MANAGE buffers, DER scratch, the pairing key copies, and the OTP session state. wolfSSL is re-initialised per session, with an arena reset. Wiping on power loss is impossible by nature.
 \item \textbf{RNG.} The TRNG seeds Hash\_DRBG, and the seed function fails closed on HAL error. TROPIC01 has its own TRNG for its keys. Health-test behaviour depends on the HAL and was not tested on hardware.
 \item \textbf{Time.} \code{se_time_set_unix} never lowers the NV floor. A stale value is clamped, and the session arms on the floor. This holds.
@@ -403,7 +479,7 @@ A glitch that skips the counter write-back (step~2) does not give a free attempt
 
 \subsection{USB threats}
 \begin{itemize}
-\item \textbf{BadUSB or rogue host.} The SE is a USB \emph{device} and exposes only CDC ACM (no DFU, MSC, or HID). A malicious host can send any frames. It can cause enumeration-level DoS, read console oracles (\fid{F-10}), and arm TLS modes. It cannot pass the owner pin or the PROVISION CA check. On an empty device it can win \code{OWNER SET}, because the first caller wins. That is acceptable because enrollment happens in the owner's hands.
+\item \textbf{BadUSB or rogue host.} The SE is a USB \emph{device} and exposes only CDC ACM (no DFU, MSC, or HID). A malicious host can send any frames. It can cause enumeration-level DoS, read console oracles (\fid{F-09}), and arm TLS modes. It cannot pass the owner pin or the PROVISION CA check. On an empty device it can win \code{OWNER SET}, because the first caller wins. That is acceptable because enrollment happens in the owner's hands.
 \item \textbf{Malformed packets.} Magic, type, and length are validated. Lengths are capped by \code{USB_FRAME_MAX}, the 160-byte command line, and the 16~KiB and 8~KiB rings. Type \code{0x01} is dropped until a mode is armed. Type \code{0x00} during TLS is queued, not parsed as TLS.
 \item \textbf{DMA races.} USB FS on the U535 uses its own packet memory, not bus-master DMA. NonSecure copies the data into its own buffer. The NSC veneer copies it once into the Secure ring after a CMSE range check. A NonSecure race on that buffer can corrupt only bytes NonSecure already controls. Lengths are register arguments, so there is no time-of-check/time-of-use on them. No DMA channel is configured that could target Secure memory.
 \item \textbf{The SE as an attack platform.} The firmware is immutable at RDP~2 and the descriptors are CDC ACM only, so the SE cannot turn into a HID keyboard against the PC or the SAE.
@@ -411,8 +487,8 @@ A glitch that skips the counter write-back (step~2) does not give a free attempt
 
 \subsection{SAE and network threats}
 \begin{itemize}
-\item \textbf{RMI over an untrusted WAN.} With mTLS (\code{PURE_PQC}, \code{needClientAuth=true}), an attacker \emph{without} a \code{root-ca} leaf gets only handshake reachability. With a leaf, from a compromised peer SAE or a mis-issued certificate, see \fid{F-01} and \fid{F-06}.
-\item \textbf{KME.} See \fid{F-11}.
+\item \textbf{RMI over an untrusted WAN.} With mTLS (\code{PURE_PQC}, \code{needClientAuth=true}) and SPKI pinning, an attacker without a \emph{pinned} leaf gets only handshake reachability (\fid{F-04}). A mis-issued \code{root-ca} leaf is disconnected before the first RMI byte. A compromised pinned peer is limited to its own records, the handover deletion (\fid{F-03}), metadata reads (\fid{F-10}), and whatever its return values carry to callers (\fid{F-06}).
+\item \textbf{KME.} See \fid{F-02}.
 \item \textbf{Local host.} SQLite is \code{0600}. Pad material is HSM-wrapped at rest. Pad plaintext is in process RAM during fetch and provisioning, which is accepted.
 \end{itemize}
 
@@ -421,7 +497,7 @@ UserApp opens no listening socket and no outbound URL. It uses only USB CDC, and
 
 A thief who has the PC, the owner PKCS\#12, and its password can:
 \begin{itemize}
-\item run \code{MANAGE}, including \code{CREDS SAE} (\fid{F-03}) and \code{PAIRING LOAD} (\fid{F-07});
+\item run \code{MANAGE}, including \code{CREDS SAE} (\fid{F-01}) and \code{PAIRING LOAD} (\fid{F-08});
 \item replace the SAE CA, and so act as a SAE towards this device and inject pads they know.
 \end{itemize}
 The same thief \textbf{cannot} run \code{ENCRYPT} or \code{DECRYPT} without the PIN, which is only typed and never stored. \code{pairing-key.hex} (\code{rw-------}) plus SPI access gives L3 as the paired host.
@@ -436,7 +512,7 @@ PQ TLS with ML-KEM-768 and ML-DSA-44 (\code{SECURITY.md}) & Holds & \code{tls_se
 mTLS between SE and SAE (thesis) & Holds for PROVISION & MANAGE is not mTLS (owner pin only, as documented)\\
 Encrypt/decrypt/manage load no client CA and pin the owner SPKI (\code{SECURITY.md}, l.~99) & Holds & \code{tls_accept_peer_leaf}, \code{se_tls_user_pin_peer}\\
 ``Encrypt/decrypt verify the client CA'' (\code{se_tls_client.c} header) & Contradicted & No CA is loaded outside PROVISION\\
-PIN: 8 silicon tries, 16 M\&D slots (\code{SECURITY.md}, \code{TROPIC.md}, \code{ACCESS_POINTS.md}) & Contradicted (docs corrected) & \code{SE_TROPIC_PIN_ROUNDS 7u}: 7 tries and 14 slots, with no build override. The owner confirmed that 7 is intended. The R-MEM blob size limit explains the value. \code{SECURITY.md}, \code{TROPIC.md}, \code{ACCESS_POINTS.md}, and \code{host/README.md} now say 7 tries and 14 slots, and the blob size is 385~B.\\
+PIN: 7 tries, 14 M\&D slots (\code{SECURITY.md}, \code{TROPIC.md}, \code{ACCESS_POINTS.md}, \code{host/README.md}) & Holds & \code{SE_TROPIC_PIN_ROUNDS 7u}: 7 tries and 14 slots, with no build override. The R-MEM blob size limit explains the value (385~B).\\
 PIN length 8--16 (owner) & Holds & \code{SE_TROPIC_PIN_SIZE_MIN/MAX}\\
 NonSecure cannot read Secure keys; mutating commands are not NSC entries (\code{SECURITY.md}) & Holds & \code{se_tls_nsc.h}, \code{se_tls_nsc_callable.c}\\
 Advance-then-erase; no keystream reuse (\code{SECURITY.md}) & Holds & \code{se_tropic_OTP_xor_consume}\\
@@ -445,9 +521,9 @@ No USB DFU or UART command path (docs) & Holds & IOC: CDC ACM only\\
 ``SaeNode source is not in this tree'' (\code{ACCESS_POINTS.md}, l.~5) & Stale & The Java source is present and was audited\\
 \code{NODE_HOSTNAME} is the ``RMI bind'' address (\code{SaeNode/README.md}, l.~74) & Contradicted & It only sets \code{java.rmi.server.hostname}; the sockets bind all interfaces\\
 The SQLite file is owner-only (README) & Holds on POSIX & \code{DB.java} sets \code{0600}; this is skipped on non-POSIX systems\\
-\code{HSM_PIN} is prompted when unset (README) & Holds, with caveat & \code{EnvSecrets.scan} echoes the input when there is no console (\fid{F-13})\\
+\code{HSM_PIN} is prompted when unset (README) & Holds & \code{EnvSecrets.scan} prompts with \code{Console.readPassword} only on a real terminal, and otherwise fails with a clear error; it never reads \code{System.in} (C-5)\\
 SAE-5: the SAE CA key holder can sign a leaf the SE accepts ``until CREDS SAE or OWNER SET replaces the CA'' (\code{ACCESS_POINTS.md}) & Holds; incomplete & It does not say that the owner key alone is enough to run \code{CREDS SAE}\\
-\code{OWNER SET} is first-wins and closed after enrollment (\code{SECURITY.md}) & Partly holds & It is closed only once both the owner and the device SK exist (\fid{F-04})\\
+\code{OWNER SET} is first-wins and closed after enrollment (\code{SECURITY.md}) & Partly holds & It is closed only once both the owner and the device SK exist (\fid{F-05})\\
 \bottomrule
 \end{longtable}
 \section{Attacker capability matrix}\label{sec:matrix}
@@ -467,17 +543,17 @@ Two structural facts determine most rows.
 \textbf{SE only} (no PIN, no owner key) &
 DoS: burn the 7 PIN tries (after 7 failures the PIN state is unrecoverable and the pads become unusable); read the console status and peer list; arm modes. Model~B: attempt invasive readout of page~22 and side channels (\S\ref{sec:sca}). &
 R, I, E/D. Read pads from TROPIC01 (they need L3, \code{fill_id}, and the PIN). Run \code{MANAGE} (it needs the owner key). &
-\code{se_tropic_pin.c} 284--294; \fid{F-09}, \fid{F-10}\\
+\code{se_tropic_pin.c} 284--294; \fid{F-12}, \fid{F-09}\\
 \textbf{SE + PIN} (no owner key) &
 As above, without burning tries. &
 E/D: the USER TLS session requires the owner SPKI. R and I as above. &
-\code{se_tls_user.c}; \fid{F-05}\\
+\code{se_tls_user.c}; \fid{F-07}\\
 \textbf{SE + owner key} (no PIN) &
 I: \code{CREDS SAE} swaps the PROVISION CA, then the attacker's own SAE fills pads it knows; a new fill erases the existing pads (DoS). \code{PAIRING LOAD}; \code{MANAGE} status. Burn PIN tries. &
 E/D (needs the PIN). R of the \emph{existing} pads. \code{OWNER REPLACE} (needs the reset password). &
-\code{se_manage.c} 252--264, 325--349; \code{se_tropic_cursor.c} 89--98; \fid{F-03}, \fid{F-07}\\
+\code{se_manage.c} 252--264, 325--349; \code{se_tropic_cursor.c} 89--98; \fid{F-01}, \fid{F-08}\\
 \textbf{SE + owner key + PIN} &
-Everything the owner can do: E/D, and R of all \emph{remaining} pads via \code{ENCRYPT} on known plaintext (this consumes them); I via F-03; DoS. &
+Everything the owner can do: E/D, and R of all \emph{remaining} pads via \code{ENCRYPT} on known plaintext (this consumes them); I via F-01; DoS. &
 R of pads already consumed (their slots are erased after use). Affect other users' devices. &
 \code{se_tropic_otp_xor.c} 151--157\\
 \textbf{Stolen owner key only} (no SE) &
@@ -485,37 +561,37 @@ Nothing against the device until the SE is reached. With later access to the SE,
 R, I, E/D, Del, DoS without the SE. &
 \code{HsmNodeTls} (no owner trust)\\
 \textbf{Home PC compromised} (malware) &
-Capture the owner PKCS\#12 and its password and \emph{keylog the PIN}, so while the SE is plugged in it has full E/D and R of remaining pads. Read message plaintext on the PC. I via F-03. Read \code{pairing-key.hex}. &
+Capture the owner PKCS\#12 and its password and \emph{keylog the PIN}, so while the SE is plugged in it has full E/D and R of remaining pads. Read message plaintext on the PC. I via F-01. Read \code{pairing-key.hex}. &
 Use the SE when it is unplugged. Read consumed pads. Reach SAE records. &
-\fid{F-03}, \fid{F-07}; UserApp opens no socket\\
+\fid{F-01}, \fid{F-08}; UserApp opens no socket\\
 \textbf{One SAE: root, with HSM access} &
-R of all pads for pairs this SAE serves, both stored (it can unwrap them) and new ones (KME fetch in process RAM). I into devices that come to it for \code{PROVISION} (it is a legitimate PROVISION server). Del and desynchronise records at \emph{every} peer for any pair (\fid{F-01}). Possible code execution on peers through deserialization (\fid{F-06}, gadget-dependent). DoS of its own clients. &
+R of all pads for pairs this SAE serves, both stored (it can unwrap them) and new ones (KME fetch in process RAM). I into devices that come to it for \code{PROVISION} (it is a legitimate PROVISION server). Del and desynchronise records at peers for pairs this SAE is a party to, and delete completed shares of other pairs through the handover path (\fid{F-03}). Read any pair's metadata (\fid{F-10}). Send crafted return values to callers (\fid{F-06}). DoS of its own clients. &
 E/D on any SE (no owner key, no PIN). R of pads for pairs served only by other SAEs. Rewind pads already in a device. &
-\texttt{Node\allowbreak{}Commands\allowbreak{}Service} 80, 89--173; \fid{F-01}, \fid{F-06}\\
+\texttt{Node\allowbreak{}Commands\allowbreak{}Service} 80--242; \fid{F-03}, \fid{F-06}, \fid{F-10}\\
 \textbf{One SAE: root, no HSM access} &
-R of \emph{new} pads in flight (plaintext in Node RAM during the KME fetch and the downlink build). Del, desync, and the F-06 risk as above, using the node's mTLS leaf. DoS. &
+R of \emph{new} pads in flight (plaintext in Node RAM during the KME fetch and the downlink build). Del, desync, and the \fid{F-03}/\fid{F-06}/\fid{F-10} capabilities as above, using the node's pinned mTLS leaf. DoS. &
 R of the stored, HSM-wrapped records (it needs an HSM unwrap). E/D. &
 \texttt{Shared\allowbreak{}Key\allowbreak{}Material\allowbreak{}Store}, \texttt{Hsm\allowbreak{}Aes\allowbreak{}Gcm}\\
 \textbf{Malicious peer SAE} (valid \code{root-ca} leaf) &
-R of pads for pairs where it is the origin or peer (by design). Del and desync any pair at a victim node: \code{removeRecord}, \code{deleteShare}, and \code{markOriginProvisioned} have no caller check, and \code{issuingSaeId} is caller-supplied (\fid{F-01}). Probe for deserialization (\fid{F-06}). &
+R of pads for pairs where it is the origin or peer (by design). Del and desync of records it is a party to. Del of completed shares (RECORD\_SHARED, ORIGIN\_PROVISIONED) of other pairs through \code{deleteShare}, the handover path, which is logged with its SAE ID. \code{getRecordMetadata} for any pair (\fid{F-10}). Crafted return values towards its callers (\fid{F-06}). &
 R of pads for pairs it does not serve: the victim fetches material from its \emph{own} KME, and RMI returns no material. E/D. &
-\fid{F-01}, \fid{F-02}, \fid{F-06}\\
+\fid{F-03}, \fid{F-06}, \fid{F-10}; C-1, C-2\\
 \textbf{QKD/KMS link} (MITM or KME compromised) &
-R of every pad that crosses that link (the SAE--KME hop is classical TLS, \fid{F-11}; a compromised KME sees everything). I in effect: supplying known key material yields pads the attacker knows on both devices. DoS: withhold keys. &
+R of every pad that crosses that link (the SAE--KME hop is classical TLS, \fid{F-02}; a compromised KME sees everything). I in effect: supplying known key material yields pads the attacker knows on both devices. DoS: withhold keys. &
 E/D on a device. Del of SAE records. &
-\texttt{Qkd\allowbreak{}Pad\allowbreak{}Material\allowbreak{}Fetcher}, \texttt{Qkd014\allowbreak{}Client}; \fid{F-11}\\
+\texttt{Qkd\allowbreak{}Pad\allowbreak{}Material\allowbreak{}Fetcher}, \texttt{Qkd014\allowbreak{}Client}; \fid{F-02}\\
 \textbf{Network MITM} (no CA leaf) &
-DoS and traffic analysis. Reach the RMI registry and object ports on all interfaces, but only up to the mTLS handshake (\fid{F-02}). &
+DoS and traffic analysis. Reach the RMI registry and object ports on the configured bind address only, and only up to the mTLS handshake (\fid{F-04}). &
 R, I, E/D, Del: RMI is mTLS \code{PURE_PQC}, and the SE has no network path (USB only). &
 \texttt{Pqc\allowbreak{}Tls\allowbreak{}Rmi\allowbreak{}Server\allowbreak{}Socket\allowbreak{}Factory}\\
 \textbf{SAE root CA compromised} &
-Mint SAE leaves, and so gain every malicious-peer capability against all nodes. Act as a PROVISION server towards any SE whose page-21 CA is \code{root-ca}, so I on devices it can reach over USB. &
+Mint SAE leaves. Over RMI these are rejected unless their SPKI is also pinned, so RMI gains need a pinned key or write access to \code{RMI_KNOWN_PEERS} (C-1). Act as a PROVISION server towards any SE whose page-21 CA is \code{root-ca}, so I on devices it can reach over USB. &
 E/D (no owner key, no PIN). R of pads not routed through an attacker SAE or KME. &
-\S\ref{sec:ca}; \fid{F-12}\\
+\S\ref{sec:ca}; \fid{F-13}\\
 \textbf{Client CA compromised} &
 Mint device leaves the Node's USB side accepts, so impersonate a device identity to an SAE command server and receive pads issued to that identity when the operator selects it. Mint owner certificates, but the SE pins the owner SPKI and ignores the chain. &
 E/D on a real SE. I into a real SE (PROVISION trusts \code{root-ca}, not the client CA). Del of RMI records. &
-\texttt{create\allowbreak{}Context\allowbreak{}For\allowbreak{}Command\allowbreak{}Server}; \fid{F-05}, \fid{F-12}\\
+\texttt{create\allowbreak{}Context\allowbreak{}For\allowbreak{}Command\allowbreak{}Server}; \fid{F-07}, \fid{F-13}\\
 \bottomrule
 \end{longtable}
 \end{small}
@@ -524,51 +600,50 @@ E/D on a real SE. I into a real SE (PROVISION trusts \code{root-ca}, not the cli
 \begin{itemize}
 \item Pad \emph{confidentiality} rests on the SAE hosts and the KME link. Any compromise there reads pads in bulk, independent of the SE and the PIN.
 \item Pad \emph{use on the device} rests on the conjunction of the owner key and the PIN. No single stolen item gives E/D.
-\item Record \emph{integrity} between SAEs rests on every holder of a \code{root-ca} leaf behaving correctly (\fid{F-01}). M-1 and M-2 reduce this to the records the caller legitimately owns.
+\item Record \emph{integrity} between SAEs rests on the \emph{pinned} peers. Each is limited to the records it is a party to (C-2) and to the deletion of completed shares through the handover path (\fid{F-03}).
 \item The cheapest DoS needs only the device: burn the PIN budget.
+\end{itemize}
+
+\section{Security controls that hold}\label{sec:controls}
+These controls are implemented in the current source and were verified by reading the code and its tests. They are not findings. Paths are relative to \code{JAVA_APPS/src/SaeNode/main/java/fel/cvut/node/interNodeCommunication/} unless stated otherwise.
+\begin{description}[style=nextline,leftmargin=1.2em]
+\item[C-1 RMI peer authentication by SPKI pin]
+\begin{itemize}
+\item \code{RMI_KNOWN_PEERS} is a JSON list \code{[\{"saeId","spkiSha256"\}]}, loaded by \code{KnownPeers}. It is mandatory: \code{RmiManager.fromEnvironment} (line~78) and \code{start} (line~111) fail closed without it.
+\item Server side: the accepted socket is wrapped. After the \code{root-ca} mutual-TLS handshake, the first read resolves the peer leaf against the pins, or against the node's own leaf. An unpinned peer is disconnected before any RMI byte is parsed. Every read binds the resolved SAE ID as the caller of the dispatch thread (\code{RmiPeerPinning} lines 42--74 and 148--191; \code{RmiCallerContext}).
+\item Client side: the server leaf must be pinned. If \code{sae-nodes.json} names the endpoint, the leaf must belong to that SAE (\code{RmiManager} line~272).
+\item At start the node logs its own pin entry for its peers' lists (\code{Node} line~150).
+\end{itemize}
+\item[C-2 Caller-based authorization in \code{NodeCommandsService}]
+\begin{itemize}
+\item Every call needs an authenticated caller (\code{requireCaller}, line~218).
+\item \code{synchronize}, \code{lockFetch}, and \code{insert} (lines 87, 109, and 115) accept \code{issuingSaeId} only when it equals the caller (\code{requireCallerIs}, line~224). The KME fetch in \code{insert} uses the authenticated ID.
+\item \code{removeRecord} (line~172) and \code{markOriginProvisioned} (line~98) are allowed only for a party of the row: the node itself, the row's \code{saeId}, or its \code{issuingSaeId} (lines 233--242). Removals log the party.
+\item The exceptions are \code{deleteShare} for completed shares (\fid{F-03}) and \code{getRecordMetadata} (\fid{F-10}).
+\end{itemize}
+\item[C-3 Bind address] The registry and the object port bind \code{NODE_RMI_BIND} (default \code{NODE_HOSTNAME}) through the 5-argument \code{SoftwareTls.createServerSocket} (\code{RmiManager} lines 43, 114--117, and 288--290).
+\item[C-4 Deserialization allow-list for call arguments] The \code{NodeCommands} object is exported with a per-object JEP~290 filter (\code{RmiSerialFilter} lines 16--42; \code{RmiManager} line~124).
+\begin{itemize}
+\item The limits are \code{maxdepth=8}, \code{maxrefs=20000}, \code{maxarray=10000}, and \code{maxbytes=4194304}.
+\item Only \code{Address}, \code{ClientRecord} with its header and data, \code{String}, \code{Integer}/\code{Number}, and the JDK list implementations are allowed; everything else is rejected (\code{!*}).
+\item The registry keeps the JDK's built-in registry filter.
+\item Return values are not covered (\fid{F-06}).
+\end{itemize}
+\item[C-5 Secret prompt] \code{fel/cvut/se/EnvSecrets.scan} (lines 51--64) reads a missing secret only with \code{Console.readPassword}, and only when \code{interactiveConsole()} (line~70) reports a real terminal; on JDK~22+ this uses \code{Console.isTerminal}. Otherwise it throws a clear \code{IllegalStateException} and never reads \code{System.in}.
+\item[C-6 Constant-time PIN tag check (firmware)] \code{se_tropic_pin.c} compares the 48-byte tag with \code{pin_ct_equal} (helper at line~137, use at line~328): a volatile OR-accumulate with no early exit.
+\end{description}
+\paragraph{Test evidence.} The following tests cover these controls:
+\begin{itemize}
+\item \code{RmiPeerPinningTest} uses real mTLS sockets and a real \code{RmiManager}. It covers caller binding, rejection of unpinned peers, the client-side check, the filter on the wire, and no listener on non-loopback IPv4.
+\item \code{RmiAuthorizationTest} runs three nodes. It shows that non-party and spoofed-issuer calls are refused and that the handover works.
+\item Unit tests: \code{KnownPeersTest}, \code{RmiSerialFilterTest}, \code{NodeCommandsServiceTest}, \code{RmiManagerTest}, and \code{EnvSecretsTest}.
+\item The SE host model test \code{test_d_pin}.
 \end{itemize}
 
 \section{Findings}\label{sec:findings}
 Each finding gives its context, the attacker model, the evidence (path, function, and lines), the attack sequence, the impact, the scores, and a pointer to its mitigation.
 
-\subsection*{F-01: RMI methods trust caller-supplied SAE identity \hfill \sev{High}}
-\textbf{Context:} production SAE; untrusted WAN. \textbf{Model:} A, with any certificate under \code{root-ca}: a compromised or rogue peer SAE, or a mis-issued leaf.
-
-\textbf{Evidence.} \code{NodeCommandsService} implements the 8 remote methods, and none of them reads the TLS peer identity. A search for \code{getPeerCertificates} or \code{getClientHost} on the RMI path finds nothing.
-\begin{itemize}
-\item \code{removeRecord(h1,h2)} calls \code{atomicRecordStateMap.forceDelete} with no ownership check (lines 146--154).
-\item \code{deleteShare(h1,h2)} is \emph{exposed on the remote interface}. A remote caller makes the callee delete its counterpart on the SAE named in the row, and then its own row (lines 160--173).
-\item \code{markOriginProvisioned} promotes \code{RECORD_SHARED} to \code{ORIGIN_PROVISIONED} with no issuer check (lines 79--82).
-\item \code{synchronize}, \code{lockFetch}, and \code{insert} validate the reservation against the \code{issuingSaeId} \emph{argument}, not against the caller. \code{insert} then fetches from the KME with \code{getKeyWithKeyIds(issuingSaeId, keyIds)} and stores the result (lines 89--143).
-\item \code{getRecordMetadata} returns the state, the SAE IDs, and the pad length for any hash pair.
-\end{itemize}
-\textbf{Attack sequence.}
-\begin{enumerate}
-\item Obtain any \code{root-ca} leaf, or compromise one SAE.
-\item Connect to a victim SAE's registry.
-\item Enumerate pairs with \code{getRecordMetadata}, or destroy shares on two SAEs at once with \code{removeRecord} or \code{deleteShare}.
-\item Alternatively, run \code{synchronize}, \code{lockFetch}, and \code{insert} with \code{issuingSaeId} set to a third SAE.
-\item Or call \code{markOriginProvisioned} to unlock the re-delivery logic.
-\end{enumerate}
-\textbf{Impact.} Integrity and availability of pad distribution: clients can end up with mismatched shares, or a share is deleted after one side was provisioned. No pad plaintext is returned over RMI; the methods return only booleans and metadata. One compromised SAE can act \emph{as every other SAE}.
-
-\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:H/A:H} $=$ \textbf{6.7}. \code{CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:H/VA:H/SC:N/SI:N/SA:N} $=$ \textbf{7.1}. STRIDE: S, T, D. \textbf{Mitigation:} M-1, M-2.
-
-\subsection*{F-02: RMI listens on all interfaces; no peer pinning \hfill \sev{Medium}}
-\textbf{Context:} production SAE. \textbf{Model:} A.
-
-\textbf{Evidence.}
-\begin{itemize}
-\item \code{RmiManager.PqcTlsRmiServerSocketFactory.createServerSocket} calls the 4-argument \code{SoftwareTls.createServerSocket}, which passes \code{bindAddress = null}. That is the wildcard address.
-\item This applies to the exported object (port \code{40000 + NODE_RMI_PORT}) and to \code{LocateRegistry.createRegistry} (port \code{NODE_RMI_PORT}).
-\item \code{NODE_HOSTNAME} only sets \code{java.rmi.server.hostname}, which is the advertised name, not the bind address.
-\item Any \code{root-ca} leaf is accepted. \code{sae-nodes.json} maps SAE IDs to addresses for outgoing calls, but is not used to authenticate incoming calls.
-\end{itemize}
-\textbf{Impact.} Every NIC exposes the expensive ML-DSA/ML-KEM handshake to the Internet. Unauthenticated handshake floods are a DoS vector, and the open listener maximises the reach of \fid{F-01} and \fid{F-06}.
-
-\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L} $=$ \textbf{5.3}. \code{CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N} $=$ \textbf{6.9}. STRIDE: E, D. \textbf{Mitigation:} M-2, M-3, and the parameter sheet.
-
-\subsection*{F-03: \texttt{CREDS SAE} replaces the PROVISION trust anchor with the owner key only \hfill \sev{High}}
+\subsection*{F-01: \texttt{CREDS SAE} replaces the PROVISION trust anchor with the owner key only \hfill \sev{High}}
 \textbf{Context:} locked SE; home PC compromise. \textbf{Model:} A. The attacker has stolen the owner key and its PKCS\#12 password, and has physical USB access to the SE.
 
 \textbf{Evidence.}
@@ -594,9 +669,40 @@ Each finding gives its context, the attacker model, the evidence (path, function
 \end{itemize}
 \textbf{Status.} \code{CREDS SAE} stays owner-only by product decision, so this is recorded as an accepted design risk. The acceptance assumes the owner key is password-protected and the device stays with its user.
 
-\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:L} $=$ \textbf{5.7}. \code{CVSS:4.0/AV:P/AC:L/AT:N/PR:H/UI:P/VC:H/VI:H/VA:L/SC:N/SI:N/SA:N} $=$ \textbf{6.9}. STRIDE: S, T, E. \textbf{Mitigation:} M-4, optional hardening that keeps the command owner-only.
+\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:L} $=$ \textbf{5.7}. \code{CVSS:4.0/AV:P/AC:L/AT:N/PR:H/UI:P/VC:H/VI:H/VA:L/SC:N/SI:N/SA:N} $=$ \textbf{6.9}. STRIDE: S, T, E. \textbf{Mitigation:} M-1, optional hardening that keeps the command owner-only.
 
-\subsection*{F-04: \texttt{OWNER SET} retry path installs the SAE CA without owner authentication \hfill \sev{Low}}
+\subsection*{F-02: SAE--KME hop is CLASSICAL TLS \hfill \sev{Medium (model B)}}
+\textbf{Evidence.} \code{Node.loadQkdClient} uses \code{SoftwareTls.TlsProfile.CLASSICAL}, and pad plaintext is carried over that link.
+
+\textbf{Impact.} A model-B attacker who records the link and later breaks X25519 learns the pads. This does not break device \code{PROVISION} TLS.
+
+\textbf{Scores.} \code{CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N} $=$ \textbf{6.1}. CVSS:4.0 $=$ \textbf{6.0}. STRIDE: I. \textbf{Mitigation:} M-2.
+
+\subsection*{F-03: RMI \texttt{deleteShare} lets a pinned non-party delete completed shares \hfill \sev{Low}}
+\textbf{Context:} production SAE; untrusted WAN. \textbf{Model:} A, holding a \emph{pinned} SAE leaf (a compromised peer SAE).
+
+\textbf{Evidence.} \code{NodeCommandsService.deleteShare} (lines 193--215) requires an authenticated caller. If the caller is not a party of the row (\code{isParty}, line~242), the call is still accepted when the share is complete (\code{RECORD_SHARED} or \code{ORIGIN_PROVISIONED}), with a warning that names the caller (line~207). In-progress shares are refused. The deletion is remote-first: the callee removes the counterpart row with \code{removeRecord}, as a party, and then its own row. This path serves the re-provision handover: the device has moved to the caller's SAE, which must remove the old origin--peer share it is not a party to.
+
+\textbf{Attack sequence.}
+\begin{enumerate}
+\item Compromise one pinned SAE.
+\item Enumerate pairs with \code{getRecordMetadata} (\fid{F-10}).
+\item Call \code{deleteShare} at the origin of each completed share. Both rows are deleted.
+\end{enumerate}
+\textbf{Impact.} Availability of pad distribution. Affected devices must be re-provisioned. No pad material is disclosed, and every such deletion is logged with the caller's SAE ID.
+
+\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:L} $=$ \textbf{4.7}. \code{CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N} $=$ \textbf{5.1}. STRIDE: T, D. The severity is Low in context, because it needs a pinned SAE key and only forces a re-provision. \textbf{Mitigation:} M-3.
+
+\subsection*{F-04: RMI TLS handshake reachable by unauthenticated hosts on the bind address \hfill \sev{Low}}
+\textbf{Context:} production SAE. \textbf{Model:} A, any host that can reach the bind address.
+
+\textbf{Evidence.} The registry and the object port bind \code{NODE_RMI_BIND}, which defaults to \code{NODE_HOSTNAME} (\code{RmiManager} lines 114--117 and 288--290). The SPKI pin check runs after the mutual-TLS handshake, on the first read of the accepted socket (\code{RmiPeerPinning} lines 148--191). The code has no source allow-list and no handshake rate limit.
+
+\textbf{Impact.} Any host that can route to the bind address can trigger the ML-DSA/ML-KEM handshake. Handshake floods are a DoS vector, and the pre-authentication TLS stack is exposed. An unpinned client gets no RMI access.
+
+\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L} $=$ \textbf{5.3}. \code{CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N} $=$ \textbf{6.9}. STRIDE: D. The severity is Low, because the parameter sheet (Section~\ref{sec:params}) requires a firewall allow-list. \textbf{Mitigation:} M-4.
+
+\subsection*{F-05: \texttt{OWNER SET} retry path installs the SAE CA without owner authentication \hfill \sev{Low}}
 \textbf{Context:} SE after a failed enrollment. \textbf{Model:} A, physical USB.
 
 \textbf{Evidence.} \code{se_auth_begin_owner} refuses only when \code{se_nv_has_owner()} \emph{and} \code{se_nv_has_device_sk()} are both true (\code{se_auth.c} lines 42--45). \code{run_owner_set} skips \code{se_owner_set} when an owner exists, but still runs \code{se_device_id_ensure} and \code{se_creds_set_sae_ca} with the CA from the \emph{unsigned} blob (lines 70--91).
@@ -611,50 +717,52 @@ Each finding gives its context, the attacker model, the evidence (path, function
 
 \textbf{Scores.} \code{CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N} $=$ \textbf{5.7}. \code{CVSS:4.0/AV:P/AC:L/AT:P/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N} $=$ \textbf{5.3}. STRIDE: S, T. \textbf{Mitigation:} M-5.
 
-\subsection*{F-05: SE does not validate the peer chain on ENCRYPT/DECRYPT/MANAGE \hfill \sev{Low}}
+\subsection*{F-06: RMI return values are deserialized on the client without a filter \hfill \sev{Low}}
+\textbf{Context:} production SAE. \textbf{Model:} A, holding a pinned SAE leaf, acting as an RMI \emph{server} towards its callers.
+
+\textbf{Evidence.} \code{RmiSerialFilter.CALLS} is installed on the exported \code{NodeCommands} object (\code{RmiManager} line~124), so it covers incoming call arguments only. The caller deserializes return values and exceptions (\code{RecordMetadata}, \code{SynchronizeOutcome}, \code{String}, remote exceptions) without an \code{ObjectInputFilter}, and \code{jdk.serialFilter} is not set. Only pinned servers are reached (client pin check, \code{RmiManager} line~272).
+
+\textbf{Impact.} A compromised pinned peer can return an arbitrary object graph to its callers. This is a CPU or memory DoS, or code execution in the process that holds the HSM session if a usable gadget chain is on the classpath. No such chain was identified; the search was not exhaustive.
+
+\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:L/I:L/A:L} $=$ \textbf{4.1}. \code{CVSS:4.0/AV:N/AC:H/AT:P/PR:H/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N} $=$ \textbf{2.1}. STRIDE: T, E. \textbf{Mitigation:} M-6.
+
+\subsection*{F-07: SE does not validate the peer chain on ENCRYPT/DECRYPT/MANAGE \hfill \sev{Low}}
 \textbf{Evidence.} \code{tls_accept_peer_leaf} returns~1 and ignores \code{preverify}. Identity is the SPKI pin alone (\code{se_tls_user.c}). Validity period, issuer, and revocation of the owner certificate are never evaluated.
 
 \textbf{Impact.} Revoking the owner key at the CA has no effect on the SE. A stolen owner key stays valid until \code{OWNER REPLACE}. This is by design, since pinning is stronger than CA validation. It is listed so that the manual revocation runbook does not assume otherwise.
 
-\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:H/PR:H/UI:N/S:U/C:L/I:L/A:N} $=$ \textbf{2.7}. CVSS:4.0 $=$ \textbf{1.0}. STRIDE: S. \textbf{Mitigation:} M-6.
+\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:H/PR:H/UI:N/S:U/C:L/I:L/A:N} $=$ \textbf{2.7}. CVSS:4.0 $=$ \textbf{1.0}. STRIDE: S. \textbf{Mitigation:} M-7.
 
-\subsection*{F-06: RMI deserializes peer objects without an \texttt{ObjectInputFilter} \hfill \sev{Medium}}
-\textbf{Context:} production SAE. \textbf{Model:} A, with a \code{root-ca} leaf.
-
-\textbf{Evidence.} The remote methods take \code{Serializable} arguments (\code{ClientRecord}, \code{ClientHeader}, \code{Address}). Neither \code{jdk.serialFilter} nor an \code{ObjectInputFilter} is set anywhere in \code{JAVA_APPS}. The built-in JDK registry filter covers the registry only, not exported objects.
-
-\textbf{Impact.} An authenticated peer can send arbitrary object graphs. If a usable gadget chain exists on the classpath, the result is code execution in the process that holds the HSM session. Otherwise it is a CPU or memory DoS.
-
-\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:H} $=$ \textbf{6.6}. \code{CVSS:4.0/AV:N/AC:H/AT:P/PR:H/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N} $=$ \textbf{7.5}. STRIDE: T, E. \textbf{Mitigation:} M-7.
-
-\subsection*{F-07: \texttt{PAIRING LOAD} is weaker than \texttt{PAIRING} \hfill \sev{Low}}
+\subsection*{F-08: \texttt{PAIRING LOAD} is weaker than \texttt{PAIRING} \hfill \sev{Low}}
 \textbf{Evidence.} \code{do_pairing_load} requires only an empty NV pairing record and a valid format (\code{se_manage.c} lines 325--349). It then loads a caller-supplied X25519 key and slot. By contrast, \code{PAIRING} generates the key on the device and burns SH0.
 
 \textbf{Sequence.} With the owner key and \code{pairing-key.hex}, on an SE whose NV pairing record is empty, an attacker restores the old pairing and speaks L3 again. Combined with SPI access, this exposes R-MEM ciphertext. Pads still need \code{secure_dwk}, \code{fill_id}, and the PIN.
 
 \textbf{Scores.} \code{CVSS:3.1/AV:P/AC:H/PR:H/UI:N/S:U/C:L/I:L/A:N} $=$ \textbf{2.7}. CVSS:4.0 $=$ \textbf{1.0}. STRIDE: E. \textbf{Mitigation:} M-8.
 
-\subsection*{F-08: Factory SH0 is the L3 key until \texttt{PAIRING} \hfill \sev{Info}}
-\textbf{Evidence.} \code{libtropic_user_config.h} selects the published \code{lt_sh0priv_prod0} key. Before \code{PAIRING}, anyone with SPI access can open an L3 session. \textbf{Scores.} \code{CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N} $=$ 3.5; CVSS:4.0 $=$ 1.0. \textbf{Mitigation:} make \code{PAIRING} a mandatory step before issuing a device (parameter sheet).
-
-\subsection*{F-09: Plaintext device secrets in flash page 22; HDP not used \hfill \sev{Info (residual at RDP 2)}}
-\textbf{Evidence.} Page~22 holds \code{secure_dwk}, the ML-DSA-44 SK, and the pairing SK in plaintext (\code{se_nv.c}, \code{SECURITY.md}). \code{HDP1EN} is \code{0x0}. At RDP~2, reading them needs an invasive attack. With page 22 an attacker can impersonate the device in TLS. Pads still require TROPIC01 and the PIN.
-
-\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N} $=$ \textbf{5.7}. CVSS:4.0 $=$ \textbf{5.3}. STRIDE: I. \textbf{Mitigation:} M-9.
-
-\subsection*{F-10: Unauthenticated USB console discloses state \hfill \sev{Low}}
+\subsection*{F-09: Unauthenticated USB console discloses state \hfill \sev{Low}}
 \textbf{Evidence.} The SE-L1 commands (\code{PEER LIST}, \code{CLIENT HASH}/\code{CSR}, \code{TROPIC PUB}, \code{KEM PUB}, \code{OTP STATUS}) answer any host. Together they reveal enrollment state, peer nicknames and hashes, and the remaining pad budget.
 
-\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N} $=$ \textbf{2.4}. CVSS:4.0 $=$ \textbf{2.4}. STRIDE: I. \textbf{Mitigation:} M-10.
+\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N} $=$ \textbf{2.4}. CVSS:4.0 $=$ \textbf{2.4}. STRIDE: I. \textbf{Mitigation:} M-9.
 
-\subsection*{F-11: SAE--KME hop is CLASSICAL TLS \hfill \sev{Medium (model B)}}
-\textbf{Evidence.} \code{Node.loadQkdClient} uses \code{SoftwareTls.TlsProfile.CLASSICAL}, and pad plaintext is carried over that link.
+\subsection*{F-10: RMI \texttt{getRecordMetadata} answers any pinned peer for any pair \hfill \sev{Info}}
+\textbf{Evidence.} \code{getRecordMetadata} (\code{NodeCommandsService} line~80) requires an authenticated caller but performs no party check, because the handover path reads the old share's state first. It returns the state, both SAE IDs, and the pad length for a hash pair.
 
-\textbf{Impact.} A model-B attacker who records the link and later breaks X25519 learns the pads. This does not break device \code{PROVISION} TLS.
+\textbf{Impact.} A pinned peer learns which pairs exist on a node and with which SAE. That is reconnaissance for \fid{F-03}. No pad material is returned.
 
-\textbf{Scores.} \code{CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N} $=$ \textbf{6.1}. CVSS:4.0 $=$ \textbf{6.0}. STRIDE: I. \textbf{Mitigation:} M-11.
+\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:N/A:N} $=$ \textbf{2.7}. \code{CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N} $=$ \textbf{5.1}. STRIDE: I. \textbf{Mitigation:} M-10.
 
-\subsection*{F-12: PKI hygiene \hfill \sev{Low}}
+\subsection*{F-11: Factory SH0 is the L3 key until \texttt{PAIRING} \hfill \sev{Info}}
+\textbf{Evidence.} \code{libtropic_user_config.h} selects the published \code{lt_sh0priv_prod0} key. Before \code{PAIRING}, anyone with SPI access can open an L3 session. \textbf{Scores.} \code{CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N} $=$ 3.5; CVSS:4.0 $=$ 1.0. \textbf{Mitigation:} make \code{PAIRING} a mandatory step before issuing a device (parameter sheet).
+
+\subsection*{F-12: Plaintext device secrets in flash page 22; HDP not used \hfill \sev{Info (residual at RDP 2)}}
+\textbf{Evidence.} Page~22 holds \code{secure_dwk}, the ML-DSA-44 SK, and the pairing SK in plaintext (\code{se_nv.c}, \code{SECURITY.md}). \code{HDP1EN} is \code{0x0}. At RDP~2, reading them needs an invasive attack. With page 22 an attacker can impersonate the device in TLS. Pads still require TROPIC01 and the PIN.
+
+\textbf{Scores.} \code{CVSS:3.1/AV:P/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N} $=$ \textbf{5.7}. CVSS:4.0 $=$ \textbf{5.3}. STRIDE: I. \textbf{Mitigation:} M-12.
+
+\subsection*{F-13: PKI hygiene of the lab CA tooling \hfill \sev{Info} (lab-only)}
+\textbf{Scope.} \code{CertGenerator} and the two CAs it creates (\code{root-ca}, \code{client_ca}) are \textbf{lab-only} tooling for development and the test bench. They are not the production PKI. The observations below describe the lab tooling. Production requirements are in Section~\ref{sec:mit-ca}.
+
 \textbf{Evidence (\code{CertGenerator}).}
 \begin{itemize}
 \item Node and device leaves have no \code{KeyUsage} or \code{ExtendedKeyUsage} (\code{issuePurePqcFromPublicKey}).
@@ -662,41 +770,22 @@ Each finding gives its context, the attacker model, the evidence (path, function
 \item Both CA keys are created on one host under the same \code{pkcs12Password}.
 \item The SE does not check that the \code{CREDS SAE} DER is a CA certificate.
 \end{itemize}
-\textbf{Impact.} Role separation rests on the issuer alone, and a single host compromise yields both CAs.
+\textbf{Impact.} In the lab, role separation rests on the issuer (and, for RMI, also on the SPKI pins, C-1), and a single host compromise yields both CAs. A production deployment must not reuse this tooling.
 
-\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:L/I:L/A:N} $=$ \textbf{3.3}. CVSS:4.0 $=$ \textbf{2.1}. STRIDE: S, E. \textbf{Mitigation:} M-12.
-
-\subsection*{F-13: Secret prompt echoes on \texttt{System.in} without a console \hfill \sev{Low}}
-\textbf{Evidence.} \code{EnvSecrets.scan} uses \code{Console.readPassword} when a console exists. Otherwise it reads \code{System.in} with echo (for example under a service manager or a pipe). This affects \code{HSM_PIN} and the QKD store passwords.
-
-\textbf{Scores.} \code{CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:L/I:N/A:N} $=$ \textbf{2.2}. CVSS:4.0 $=$ \textbf{1.0}. STRIDE: I. \textbf{Mitigation:} M-13.
+\textbf{Scores.} \code{CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:L/I:L/A:N} $=$ \textbf{3.3}. CVSS:4.0 $=$ \textbf{2.1}. STRIDE: S, E. The scores apply only if the lab CAs were used in production. \textbf{Mitigation:} M-13, a production CA as specified in Section~\ref{sec:mit-ca}.
 
 \subsection*{F-14: Documentation contradicts code \hfill \sev{Info}}
 \begin{enumerate}
-\item The PIN budget is 7 tries in code, but the docs said 8. The owner confirmed that \textbf{the code is correct}. \textbf{Fixed in this revision:} \code{SECURITY.md} (lines 37 and 201), \code{TROPIC.md} (lines 47, 122, and 130, including the NVM blob size $1+7\cdot48+48=385$~B), \code{ACCESS_POINTS.md} (line 122), and \code{host/README.md} (line 221) now state 7 tries and 14 M\&D slots.
-\item \code{SaeNode/README.md} calls \code{NODE_HOSTNAME} the ``RMI bind'' address (\fid{F-02}).
-\item The \code{se_tls_client.c} header says encrypt/decrypt ``verify the client CA'' (\fid{F-05}).
+\item The \code{se_tls_client.c} header says encrypt/decrypt ``verify the client CA'' (\fid{F-07}).
 \item The thesis says ``hybrid''; the code uses pure ML-KEM-768.
-\item \code{ACCESS_POINTS.md} still says SaeNode is not in the tree.
+\item \code{ACCESS_POINTS.md} says SaeNode is not in the tree.
 \end{enumerate}
-\textbf{Mitigation:} correct the documents and the source comment.
+\textbf{Mitigation:} M-14.
 \section{Mitigations}
 Each mitigation names the asset, the boundary, the mechanism, and who can implement it.
 
 \begin{description}[style=nextline,leftmargin=1.2em]
-\item[M-1 RMI caller authorization (SAE code; F-01)]
-\begin{itemize}
-\item In every remote method, derive the caller's SAE ID from the TLS peer certificate. A custom \code{RMIServerSocketFactory} can record the verified peer leaf per connection and expose it to the service thread.
-\item Map the certificate to a SAE ID through the pinned table (M-2).
-\item Reject the call if \code{issuingSaeId} does not match the authenticated caller.
-\item Allow \code{removeRecord} and \code{markOriginProvisioned} only from the counterpart SAE recorded in the row.
-\item Remove \code{deleteShare} from the remote interface. It is a local operator action.
-\item Restrict \code{getRecordMetadata} to rows where the caller is a participant.
-\item Log the caller's ID on every deletion.
-\end{itemize}
-\item[M-2 RMI peer pinning (SAE code and configuration; F-01, F-02)] Add each peer's SPKI hash to \texttt{sae-nodes.json}. Accept an inbound handshake only from a listed leaf, in addition to the \texttt{root-ca} chain check. On outbound calls, check that the server leaf matches the SAE being addressed. Today any \texttt{root-ca} server leaf is accepted for any address.
-\item[M-3 Bind address (SAE code; F-02)] Pass \texttt{InetAddress.getByName(NODE\_HOSTNAME)} to the 5-argument \texttt{SoftwareTls.createServerSocket} in \texttt{PqcTlsRmiServerSocketFactory}. This covers both the registry and the object port. Add a firewall allow-list and a per-source rate limit on TLS handshakes.
-\item[M-4 Optional \texttt{CREDS SAE} hardening that keeps it owner-only (firmware; F-03)] Options, from cheapest:
+\item[M-1 Optional \texttt{CREDS SAE} hardening that keeps it owner-only (firmware; F-01)] Options, from cheapest:
 \begin{enumerate}[label=(\alph*)]
 \item require the reset password, whose hash is already stored for \code{OWNER REPLACE};
 \item require the PIN, so that the M\&D budget also limits this command;
@@ -704,23 +793,26 @@ Each mitigation names the asset, the boundary, the mechanism, and who can implem
 \item return the old and new CA fingerprints so that UserApp can ask for confirmation.
 \end{enumerate}
 Option (a) or (b) turns ``stolen owner key'' into ``stolen owner key plus a secret''.
-\item[M-5 Close the \texttt{OWNER SET} retry (firmware; F-04)] Refuse in \texttt{se\_auth\_begin\_owner} whenever \texttt{se\_nv\_has\_owner()} is true. Alternatively, ignore the CA field on the retry path, so that the CA can then be set only through \texttt{MANAGE}.
-\item[M-6 Revocation runbook (operator; F-05)] Revoking the owner at the CA does not reach the SE. For a lost PC or owner key, the runbook must say:
+\item[M-2 KME link (operations; F-02)] Run it on a private cable or segment. Move to \texttt{PURE\_PQC} once the KME supports it.
+\item[M-3 Handover proof for \texttt{deleteShare} (SAE code and firmware; F-03)] Accept a non-party \code{deleteShare} only with evidence that the device has moved to the caller's SAE. One option is a device-signed handover token: an ML-DSA signature by the device key over (hash pair, new SAE ID, fresh nonce from the callee). The callee verifies it against the device certificate it already holds. Alternatively, queue non-party deletions for operator confirmation at the callee. Alert on bursts of handover deletions from one SAE.
+\item[M-4 Network exposure (operations and SAE code; F-04)] Set a firewall allow-list for \code{NODE_RMI_PORT} and \code{40000 + NODE_RMI_PORT} with the peer addresses only, and a per-source rate limit on new TLS connections. Optionally add a source-address check in the accepting socket wrapper, before the handshake.
+\item[M-5 Close the \texttt{OWNER SET} retry (firmware; F-05)] Refuse in \texttt{se\_auth\_begin\_owner} whenever \texttt{se\_nv\_has\_owner()} is true. Alternatively, ignore the CA field on the retry path, so that the CA can then be set only through \texttt{MANAGE}.
+\item[M-6 Client-side filter (SAE code; F-06)] Set \code{-Djdk.serialFilter} to \code{RmiSerialFilter.PATTERN}, extended with the return types (\code{RecordMetadata}, \code{RecordAvailability}, \code{SynchronizeOutcome}, \code{java.time.Instant}, the remote exception classes), on every node. Alternatively install it programmatically with \code{ObjectInputFilter.Config.setSerialFilter} before \code{RmiManager.start}.
+\item[M-7 Revocation runbook (operator; F-07)] Revoking the owner at the CA does not reach the SE. For a lost PC or owner key, the runbook must say:
 \begin{itemize}
 \item run \code{OWNER REPLACE} with a new owner key;
 \item treat any \code{CREDS SAE} performed since the theft as hostile;
 \item revoke the device certificate under \code{client_ca}, which the SAE does check;
 \item delete the peer counterpart.
 \end{itemize}
-Also fix the comment in \code{se_tls_client.c}.
-\item[M-7 Serialization filter (SAE code; F-06)] Install a process-wide \texttt{ObjectInputFilter}, through \texttt{jdk.serialFilter} or programmatically in \texttt{Node} before \texttt{RmiManager.start}. It should allow only the \texttt{fel.cvut.node} record types, \texttt{java.lang} and \texttt{java.time} values, and \texttt{java.util} collections, and cap depth, array length, and total bytes.
-\item[M-8 \texttt{PAIRING LOAD} (firmware; F-07)] Require the reset password or the PIN. Accept only a key whose public half matches the key TROPIC01 holds for that slot. Otherwise disable the command in production builds.
-\item[M-9 Device secrets (firmware, long term; F-09)] The U535 has no SAES and no hardware unique key. Consider wrapping page~22 under a key held by TROPIC01 and released only through L3, so that a flash dump alone is not enough. Until then, RDP~2 is the control. The tree does not configure HDP, so no HDP ranges are proposed here.
-\item[M-10 Console oracles (firmware; F-10)] Move \texttt{OTP STATUS} and \texttt{PEER LIST} behind \texttt{MANAGE}, or reduce the unauthenticated reply to a single ``enrolled'' flag.
-\item[M-11 KME link (operations; F-11)] Run it on a private cable or segment. Move to \texttt{PURE\_PQC} once the KME supports it.
-\item[M-12 PKI (CertGenerator, Node, SE; F-12)] Add \texttt{KeyUsage(digitalSignature)} and EKUs: \texttt{serverAuth} plus \texttt{clientAuth} for nodes, \texttt{clientAuth} for devices. Give the CAs \texttt{pathLen=0}. Use separate PKCS\#12 passwords, keep the CAs offline, and use random serials. Check EKUs in the Node trust managers.
-\item[M-13 Prompt (SAE code; F-13)] Refuse to read a secret from a non-console \texttt{System.in}. Use an interactive console, or a \texttt{0600} file or descriptor.
-\item[M-14 Fault hardening (firmware; residual)]
+\item[M-8 \texttt{PAIRING LOAD} (firmware; F-08)] Require the reset password or the PIN. Accept only a key whose public half matches the key TROPIC01 holds for that slot. Otherwise disable the command in production builds.
+\item[M-9 Console oracles (firmware; F-09)] Move \texttt{OTP STATUS} and \texttt{PEER LIST} behind \texttt{MANAGE}, or reduce the unauthenticated reply to a single ``enrolled'' flag.
+\item[M-10 Metadata scope (SAE code; F-10)] Answer \code{getRecordMetadata} in full only to parties. Give non-parties a reduced answer (state only), or require the same handover proof as M-3.
+\item[M-11 Mandatory pairing (operations; F-11)] Make \code{PAIRING} a mandatory step before a device is issued (Section~\ref{sec:params}).
+\item[M-12 Device secrets (firmware, long term; F-12)] The U535 has no SAES and no hardware unique key. Consider wrapping page~22 under a key held by TROPIC01 and released only through L3, so that a flash dump alone is not enough. Until then, RDP~2 is the control. The tree does not configure HDP, so no HDP ranges are proposed here.
+\item[M-13 PKI (production CA, Node, SE; F-13)] \texttt{CertGenerator} is lab-only. For production, the CA must issue certificates as described in Section~\ref{sec:mit-ca}. Add \texttt{KeyUsage(digitalSignature)} and EKUs: \texttt{serverAuth} plus \texttt{clientAuth} for nodes, \texttt{clientAuth} for devices. Give the CAs \texttt{pathLen=0}. Use separate PKCS\#12 passwords, keep the CAs offline, and use random serials. Check EKUs in the Node trust managers.
+\item[M-14 Documentation (F-14)] Correct the \code{se_tls_client.c} header comment, the ``hybrid'' wording in the thesis, and the stale note in \code{ACCESS_POINTS.md}.
+\item[M-15 Fault hardening (firmware; residual)]
 \begin{itemize}
 \item Duplicate the critical decisions (owner pin, \code{has_owner}, cursor advance) with complementary checks.
 \item Re-read the cursor in NV and in the mcounter after the advance and before the XOR.
@@ -738,11 +830,25 @@ The SAE Node is the only component that needs both CAs: the client CA on the USB
   \item The RMI context trusts the SAE CA only.
   \end{itemize}
   This already holds in code (\code{createContextForCommandServer} and \code{createContextForNode}). Keep it as a tested invariant. A test should show that a \code{client_ca} leaf fails the RMI handshake and that a \code{root-ca} leaf fails the device handshake. No test currently asserts this.
-\item \textbf{RMI peer pinning} on top of the CA check (M-2), so that even a mis-issued SAE-CA leaf is not accepted as a peer.
+\item \textbf{RMI peer pinning} on top of the CA check (C-1), so that even a mis-issued SAE-CA leaf is not accepted as a peer.
 \item \textbf{Optional further split.} Today \code{root-ca} is both the RMI anchor and the CA the SE trusts in \code{PROVISION}. Separate ``SAE-RMI'' and ``SAE-provisioning'' CAs would limit the blast radius of one CA key.
-\item \textbf{Role-binding extensions} (EKU, KeyUsage, path length), so that the separation does not rest on the issuer alone (M-12).
+\item \textbf{Role-binding extensions} (EKU, KeyUsage, path length), so that the separation does not rest on the issuer alone (M-13).
 \item \textbf{Offline CA keys} with distinct passwords, kept off the SAE hosts. A production UserApp never holds \code{client_ca.p12}.
 \end{enumerate}
+
+\paragraph{Production CA requirements.} \code{CertGenerator} is lab-only (\fid{F-13}). A production PKI must meet at least these requirements:
+\begin{itemize}
+\item \textbf{Separate CA keys.} Use one key and one root (or an intermediate under an offline root) per trust domain: SAE-RMI, SAE-provisioning (the CA that \code{CREDS SAE} installs on devices), and device/owner client certificates. Generate each key in an HSM or on an offline host, with distinct credentials and custodians. Never place two CA keys on one host under one password.
+\item \textbf{CA certificates.} \code{BasicConstraints CA:true} (critical) with \code{pathLen=0} for issuing CAs, \code{KeyUsage keyCertSign, cRLSign} (critical), Subject and Authority Key Identifiers, random serials of at least 64 bits, and a validity matched to the key-rotation plan.
+\item \textbf{Leaf certificates.} \code{BasicConstraints CA:false}, \code{KeyUsage digitalSignature} (critical), and \code{ExtendedKeyUsage} by role:
+  \begin{itemize}
+  \item SAE nodes: \code{serverAuth} and \code{clientAuth} under the SAE-RMI CA, and \code{serverAuth} only under the provisioning CA;
+  \item devices and owners: \code{clientAuth} only.
+  \end{itemize}
+  The subject or SAN must carry the SAE ID or device ID, so that it can be checked against \code{RMI_KNOWN_PEERS}.
+\item \textbf{Relying-party checks.} The Node trust managers should check the expected EKU per context, in addition to the issuer and the SPKI pin. The SE should verify \code{CA:true} on a \code{CREDS SAE} certificate (M-1c).
+\item \textbf{Lifecycle.} Have a documented issuance and revocation procedure. Publish a CRL for \code{client_ca} leaves. Rotating an SAE key means updating the pins on every peer.
+\end{itemize}
 
 \section{Recommended hardware and operational parameters}\label{sec:params}
 
@@ -755,8 +861,8 @@ The SAE Node is the only component that needs both CAs: the client CA on the USB
 \code{BOOT_LOCK} & \code{0x1}, set before RDP 2 & BOOT0 ignored; no system bootloader or SRAM boot & Option bytes\\
 \code{RDP} & \code{0xCC} (level 2) & SWD and readout disabled permanently and option bytes frozen. With no update path, an image defect cannot be fixed. & Operator, as the last step\\
 \code{HDP1EN} & \code{0x0} (not used) & The tree defines no range, so none is given & --\\
-\code{PAIRING} & Mandatory, slot 1--3, before issue & Retires the factory SH0 L3 key (\fid{F-08}) & \code{MANAGE PAIRING}\\
-Enrollment check & Confirm \code{OWNER SET} ``ok'' and the CSR & Closes the \fid{F-04} window & Operator\\
+\code{PAIRING} & Mandatory, slot 1--3, before issue & Retires the factory SH0 L3 key (\fid{F-11}) & \code{MANAGE PAIRING}\\
+Enrollment check & Confirm \code{OWNER SET} ``ok'' and the CSR & Closes the \fid{F-05} window & Operator\\
 \bottomrule
 \end{longtable}
 \noindent A locked SE still exposes USB CDC (unauthenticated read-only commands), the board SPI bus, the SAE that provisions it, and the home PC that holds the owner key.
@@ -764,8 +870,8 @@ Enrollment check & Confirm \code{OWNER SET} ``ok'' and the CSR & Closes the \fid
 \subsection{SAE host (production)}
 \begin{itemize}
 \item A dedicated server with no wireless interface. Every interface except the uplink is firewalled down.
-\item RMI: bind \code{NODE_HOSTNAME} (after M-3). The firewall denies by default and allows \code{NODE_RMI_PORT} and \code{40000 + NODE_RMI_PORT} only from the peer addresses in \code{sae-nodes.json}. A VPN or IPsec underlay is optional. The WAN is untrusted, so mTLS plus pinning (M-2) is the real control.
-\item KME: a private cable or segment (\fid{F-11}).
+\item RMI: bind \code{NODE_RMI_BIND} (defaults to \code{NODE_HOSTNAME}, C-3) and set \code{RMI_KNOWN_PEERS} to the peers' pins. The node will not start without it, and it logs its own entry at start. The firewall denies by default and allows \code{NODE_RMI_PORT} and \code{40000 + NODE_RMI_PORT} only from the peer addresses in \code{sae-nodes.json}. A VPN or IPsec underlay is optional. The WAN is untrusted, so mTLS plus pinning (C-1) is the real control.
+\item KME: a private cable or segment (\fid{F-02}).
 \item HSM: a real Utimaco on a management network or a direct link. \code{HSM_PIN} is entered on an interactive console, never kept in an env file.
 \item SQLite on a local disk, mode \code{0600}, under a dedicated service account. \code{RECORD_RETENTION_DAYS} is finite. \code{APP_LOG} is not \code{FULL}.
 \item USB CDC is owned by one process. Operator \code{SELECT} and \code{CONFIRM} stay on local stdin.
@@ -782,22 +888,23 @@ Enrollment check & Confirm \code{OWNER SET} ``ok'' and the CSR & Closes the \fid
 \item Screen locked while the SE is attached.
 \end{itemize}
 
-\section{Residual risk}
+\section{Residual risk}\label{sec:residual}
 \subsection{Accepted by design}
 \begin{itemize}
 \item The PIN is the last line of defence: 8--16 characters and \textbf{7} online tries, after which M\&D destroys the KEK. At the minimum length of 8 digits, the chance of guessing it is $7/10^{8}$.
-\item Plaintext secrets on page~22, protected against non-invasive readout by RDP~2 (\fid{F-09}).
-\item The owner key alone can retarget \code{PROVISION} (\fid{F-03}, an owner decision), but cannot decrypt.
+\item Plaintext secrets on page~22, protected against non-invasive readout by RDP~2 (\fid{F-12}).
+\item The owner key alone can retarget \code{PROVISION} (\fid{F-01}, an owner decision), but cannot decrypt.
 \item The SAE sees pad plaintext in RAM before sealing it to the device.
 \item The KME hop is CLASSICAL TLS.
 \item A power cut during consume burns a pad.
-\item Read-only USB console commands are unauthenticated (\fid{F-10}).
+\item Read-only USB console commands are unauthenticated (\fid{F-09}).
 \end{itemize}
 \subsection{Remaining after all mitigations and parameters}
 \begin{itemize}
 \item \textbf{Immutable firmware.} Any future SE defect is permanent for every issued unit. The only remedy is to replace the device.
 \item \textbf{Invasive and fault attacks on the STM32U535.} It has no hardware crypto and no glitch detectors, and its software ML-DSA and ML-KEM are exposed to power and EM analysis. TROPIC01's countermeasures are vendor claims that could not be verified here.
-\item \textbf{A compromised peer SAE} stays inside the trust set for the records it legitimately shares, even with M-1 and M-2.
+\item \textbf{A compromised pinned peer SAE} stays inside the trust set for the records it is a party to (C-1, C-2). Until M-3 and M-10 are applied, it can also delete \emph{completed} shares of other pairs through the handover path and read their metadata (\fid{F-03}, \fid{F-10}). It can also attack its callers through return values until M-6 is applied (\fid{F-06}).
+\item \textbf{Pin configuration.} \code{RMI_KNOWN_PEERS} is a trust anchor. Write access to it on a node is equivalent to choosing its peers.
 \item \textbf{Manual revocation} leaves a window between a loss and its revocation.
 \item \textbf{Model~B on Tropic L3} once the pairing private key leaks (PC compromise plus SPI access).
 \end{itemize}
@@ -806,36 +913,35 @@ No hardware run, traces, fuzzing, or fault injection. wolfSSL, Bouncy Castle, li
 
 \section{Conclusion}
 \begin{itemize}
-\item \textbf{Locked SE (RDP~2).} It meets its stated goal. Pads require the owner key and the PIN, and are out of reach of the NonSecure world, an arbitrary USB host, or the SAE. The owner key anchors every management action, including the SAE CA. Its protection on the home PC therefore matters for pad \emph{integrity}, but not for the confidentiality of pads already on the device. The remaining SE issues are low-likelihood (\fid{F-04}) or design residuals.
+\item \textbf{Locked SE (RDP~2).} It meets its stated goal. Pads require the owner key and the PIN, and are out of reach of the NonSecure world, an arbitrary USB host, or the SAE. The owner key anchors every management action, including the SAE CA. Its protection on the home PC therefore matters for pad \emph{integrity}, but not for the confidentiality of pads already on the device. The remaining SE issues are low-likelihood (\fid{F-05}) or design residuals.
 \item \textbf{Lab SE (RDP~0).} SWD reads all MCU state. Use it only for development.
-\item \textbf{Production SAE.} The transport layer is sound: pure-PQC mTLS with disjoint USB and RMI truststores. Before facing an untrusted world-wide network, the RMI application layer must still:
-  \begin{itemize}
-  \item stop trusting caller-supplied identity (\fid{F-01});
-  \item bind to one address and pin its peers (\fid{F-02});
-  \item filter deserialization (\fid{F-06}).
-  \end{itemize}
+\item \textbf{Production SAE.} The transport layer is sound: pure-PQC mTLS with disjoint USB and RMI truststores. At the application layer, the caller identity comes from the pinned TLS peer and not from arguments (C-1, C-2), the node binds one address (C-3), and call arguments are allow-list filtered (C-4). The remaining RMI findings are Low or Info: the handover deletion (\fid{F-03}), handshake reachability (\fid{F-04}), unfiltered return values (\fid{F-06}), and metadata disclosure (\fid{F-10}). Before facing an untrusted world-wide network, the node needs the operational parts: the \code{RMI_KNOWN_PEERS} distribution, a firewall allow-list, and a production CA in place of the lab \code{CertGenerator} (\S\ref{sec:mit-ca}).
 \item \textbf{Home PC.} It has no listener. The main risk is theft of the owner PKCS\#12 together with its password.
 \end{itemize}
 \appendix
 \section{Evidence index}
 \begin{longtable}{L{1.2cm}L{7.6cm}L{6.8cm}}
 \toprule ID & File & Function / lines\\ \midrule\endhead
-F-01 & \code{JAVA_APPS/src/SaeNode/main/java/fel/cvut/node/interNodeCommunication/NodeCommandsService.java} & \code{removeRecord} 146--154; \code{deleteShare} 160--173; \code{markOriginProvisioned} 80; \code{insert} 89--143\\
-F-01 & \code{JAVA_APPS/src/SaeNode/main/java/fel/cvut/node/NodeCommands.java} & remote interface (8 methods)\\
-F-02 & \code{.../interNodeCommunication/RmiManager.java} & \code{start} 53--85; \code{PqcTlsRmiServerSocketFactory} 199--211\\
-F-02 & \code{JAVA_APPS/src/SaeNode/main/java/fel/cvut/tls/SoftwareTls.java} & \code{createServerSocket} 88--104\\
-F-03 & \code{stm32u535-trustzone-usb/Secure/Core/Src/se_manage.c}, \code{se_creds.c} & \code{do_creds_sae} 252--264; \code{se_manage_apply} 573; \code{se_creds_set_sae_ca} 212--237\\
-F-04 & \code{stm32u535-trustzone-usb/Secure/Core/Src/se_auth.c} & \code{se_auth_begin_owner} 33--52; \code{run_owner_set} 54--100\\
-F-05 & \code{.../Secure/Core/Src/se_tls_client.c}, \code{se_tls_user.c} & \code{tls_accept_peer_leaf} 300; \code{tls_start} 343--370; \code{se_tls_user_pin_peer}\\
-F-06 & \code{JAVA_APPS} (whole tree) & no \code{ObjectInputFilter} or \code{jdk.serialFilter}\\
-F-07 & \code{.../Secure/Core/Src/se_manage.c} & \code{do_pairing_load} 325--349\\
-F-08 & \code{.../Secure/Core/Inc/libtropic_user_config.h} & SH0 selection\\
-F-09 & \code{.../Secure/STM32U535CCTX_FLASH.ld}, \code{se_nv.c} & \code{FLASH_NV} (page 22)\\
-F-10 & \code{.../NonSecure/Core/Src/tls_usb_io.c}; \code{docs/ACCESS_POINTS.md} SE-L1 & console handlers\\
-F-11 & \code{.../node/Node.java} & \code{loadQkdClient} (CLASSICAL)\\
-F-12 & \code{JAVA_APPS/src/CertGenerator/main/java/fel/cvut/certGen/CertGenerator.java} & \code{createCa} 318; \code{issuePurePqcFromPublicKey} 328\\
-F-13 & \code{JAVA_APPS/src/SaeNode/main/java/fel/cvut/se/EnvSecrets.java} & \code{scan} 54--80\\
-F-14 & \code{.../Secure/Core/Inc/se_tropic_pin.h} & \code{SE_TROPIC_PIN_ROUNDS 7u} (line 39)\\
+F-01 & \code{stm32u535-trustzone-usb/Secure/Core/Src/se_manage.c}, \code{se_creds.c} & \code{do_creds_sae} 252--264; \code{se_manage_apply} 573; \code{se_creds_set_sae_ca} 212--237\\
+F-02 & \code{.../node/Node.java} & \code{loadQkdClient} (CLASSICAL)\\
+F-03 & \code{.../interNodeCommunication/NodeCommandsService.java} & \code{deleteShare} 193--215 (warning 207)\\
+F-04 & \code{.../interNodeCommunication/RmiPeerPinning.java} & pin check after the TLS handshake (148--191)\\
+F-05 & \code{stm32u535-trustzone-usb/Secure/Core/Src/se_auth.c} & \code{se_auth_begin_owner} 33--52; \code{run_owner_set} 54--100\\
+F-06 & \code{.../interNodeCommunication/RmiManager.java}, \code{RmiSerialFilter.java} & per-object filter on the server export only (124); no process-wide \code{jdk.serialFilter}\\
+F-07 & \code{.../Secure/Core/Src/se_tls_client.c}, \code{se_tls_user.c} & \code{tls_accept_peer_leaf} 300; \code{tls_start} 343--370; \code{se_tls_user_pin_peer}\\
+F-08 & \code{.../Secure/Core/Src/se_manage.c} & \code{do_pairing_load} 325--349\\
+F-09 & \code{.../NonSecure/Core/Src/tls_usb_io.c}; \code{docs/ACCESS_POINTS.md} SE-L1 & console handlers\\
+F-10 & \code{.../interNodeCommunication/NodeCommandsService.java} & \code{getRecordMetadata} 80 (\code{requireCaller} only)\\
+F-11 & \code{.../Secure/Core/Inc/libtropic_user_config.h} & SH0 selection\\
+F-12 & \code{.../Secure/STM32U535CCTX_FLASH.ld}, \code{se_nv.c} & \code{FLASH_NV} (page 22)\\
+F-13 & \code{JAVA_APPS/src/CertGenerator/main/java/fel/cvut/certGen/CertGenerator.java} & \code{createCa} 318; \code{issuePurePqcFromPublicKey} 328\\
+F-14 & \code{.../Secure/Core/Src/se_tls_client.c}; \code{ACCESS_POINTS.md} & header comment; l.~5\\
+C-1 & \code{.../interNodeCommunication/RmiPeerPinning.java}, \code{KnownPeers.java}, \code{RmiCallerContext.java}, \code{RmiManager.java} & \code{resolvePeer} 42; \code{verifyServer} 59; \code{pinningServerSocket} 74; \code{PeerBoundSocket} 148--191; \code{ENV_KNOWN_PEERS} 45; fail-closed 78, 111; client check 272; \code{Node} log 150\\
+C-2 & \code{.../interNodeCommunication/NodeCommandsService.java} & \code{requireCaller} 218; \code{requireCallerIs} 224; \code{requireParty} 233; \code{isParty} 242\\
+C-3 & \code{.../interNodeCommunication/RmiManager.java} & \code{ENV_BIND} 43; bind 114--117; server factory 288--302\\
+C-4 & \code{.../interNodeCommunication/RmiSerialFilter.java} & \code{PATTERN} 16; \code{CALLS} 42; export \code{RmiManager} 124\\
+C-5 & \code{JAVA_APPS/src/SaeNode/main/java/fel/cvut/se/EnvSecrets.java} & \code{scan} 51--64; \code{interactiveConsole} 70\\
+C-6 & \code{stm32u535-trustzone-usb/Secure/Core/Src/se_tropic_pin.c} & \code{pin_ct_equal} 137; tag check 328\\
 CA & \code{.../tls/HsmNodeTls.java}, \code{.../node/Node.java} & \code{createContextForNode} 37--50; \code{createContextForCommandServer} 52--71; \code{Node} 144--145\\
 \bottomrule
 \end{longtable}
@@ -863,7 +969,6 @@ The USB and RMI truststores are separate & \code{HsmNodeTls}; \code{CertGenConfi
 RMI requires mTLS with \code{PURE_PQC} & \code{PqcTlsRmiServerSocketFactory(true)}\\
 Pad material is HSM-wrapped at rest & \code{SharedKeyMaterialStore}, \code{HsmAesGcm}\\
 UserApp opens no socket & No \code{ServerSocket}, \code{LocateRegistry}, \code{HttpServer}, or \code{URL} found\\
-\code{relay} has been removed & No remaining references in \code{JAVA_APPS/src}\\
 \bottomrule
 \end{longtable}
 \end{document}

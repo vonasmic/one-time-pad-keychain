@@ -19,6 +19,8 @@
         <module>modules/user-app</module>
         <module>modules/lab-switch</module>
         <module>modules/sae-node</module>
+        <module>modules/se-bench</module>
+        <module>modules/coverage-report</module>
     </modules>
 
     <properties>
@@ -124,6 +126,19 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -157,6 +172,37 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <configuration>
+                    <excludes>
+                        <!-- Vendor SDK (Utimaco), not project code -->
+                        <exclude>com/utimaco/**</exclude>
+                        <!-- Interactive / process entry points (need HSM, USB or a console) -->
+                        <exclude>fel/cvut/node/Node.class</exclude>
+                        <exclude>fel/cvut/node/Node$*.class</exclude>
+                        <exclude>fel/cvut/node/NodeBootstrap.class</exclude>
+                        <exclude>fel/cvut/lab/LabSwitchApp.class</exclude>
+                        <exclude>fel/cvut/qkd/Qkd014Demo.class</exclude>
+                        <exclude>fel/cvut/userapp/UserApplication.class</exclude>
+                        <exclude>fel/cvut/userapp/UserApplication$*.class</exclude>
+                        <exclude>fel/cvut/userapp/ConsoleIo.class</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

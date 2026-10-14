@@ -1,0 +1,264 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{booktabs}
+\usepackage{microtype}
+
+% Palette (shared with testovani.tex)
+\definecolor{passgreen}{HTML}{1B5E20}
+\definecolor{cardbg}{HTML}{FAFAFA}
+\definecolor{cardborder}{HTML}{E0E0E0}
+\definecolor{tbdbg}{HTML}{ECEFF1}
+\definecolor{tbdfg}{HTML}{546E7A}
+
+% Visible placeholder for values that still have to be measured / filled in.
+% \placeholder      -> gray box "--- TBD ---"
+% \todo{hint}       -> gray box with a short hint, e.g. \todo{CPU model}
+\newcommand{\placeholder}{%
+  \tcbox[on line, colback=tbdbg, colframe=tbdbg, boxrule=0pt, arc=1.5pt,
+         left=2pt, right=2pt, top=0pt, bottom=0pt]{\footnotesize\color{tbdfg}\textbf{--- TBD ---}}}
+\newcommand{\todo}[1]{%
+  \tcbox[on line, colback=tbdbg, colframe=tbdbg, boxrule=0pt, arc=1.5pt,
+         left=2pt, right=2pt, top=0pt, bottom=0pt]{\footnotesize\color{tbdfg}\textbf{TBD:} #1}}
+
+% Card box in the same style as \testcase in testovani.tex
+\newcommand{\benchcard}[2]{%
+  \begin{tcolorbox}[
+    colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt,
+    left=8pt, right=8pt, top=6pt, bottom=6pt,
+    before skip=4pt, after skip=4pt, breakable]
+  {\small\ttfamily\bfseries #1}\par
+  \vspace{3pt}
+  {\small\color{black!85} #2}
+  \end{tcolorbox}%
+}
+
+% Per-iteration placeholder table (iterations 1..10)
+\newcommand{\iterrow}[1]{#1 & \placeholder \\}
+\newcommand{\itertable}[2]{%
+  \begin{table}[htbp]
+  \centering\small
+  \begin{tabular}{rl}
+  \toprule
+  Iteration & Duration [ms] \\
+  \midrule
+  \iterrow{1}\iterrow{2}\iterrow{3}\iterrow{4}\iterrow{5}%
+  \iterrow{6}\iterrow{7}\iterrow{8}\iterrow{9}\iterrow{10}%
+  \bottomrule
+  \end{tabular}
+  \caption{Per-iteration durations: #1 (warm-up excluded).}
+  \label{tab:iter-#2}
+  \end{table}%
+}
+
+\begin{document}
+
+\chapter*{Foreword}
+
+This document describes the timing benchmark of the secure element (SE) of the one-time-pad keychain and the hardware of the three parties involved: the SE itself, the SAE node, and the USER machine. The benchmark measures the wall-clock latency, as seen by the Java host software over the USB CDC link, of four SE operations: the PQC mutual TLS handshake with the SE (wolfSSL on the device), the \texttt{INIT LAB} enrollment flow, writing one-time pads into the TROPIC01 R-MEM (\texttt{PROVISION} as the SAE), and a full \texttt{ENCRYPT} request/reply round trip. Only the SE results are reported here; every measured value is still a placeholder (\placeholder) to be filled in from the CSV output of the tool.
+
+\chapter{Hardware specification}
+
+Values that are not certain from the project sources are marked \placeholder\ or \todo{hint} and must be filled in from the actual test bench.
+
+\section{SE -- secure element (keychain)}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{p{0.32\textwidth}p{0.6\textwidth}}
+\toprule
+Parameter & Value \\
+\midrule
+MCU & STMicroelectronics STM32U535CCT6 (LQFP48), Arm TrustZone (secure / non-secure firmware) \\
+CPU / architecture & Arm Cortex-M33 (Armv8-M Mainline) \\
+Clock & \todo{SYSCLK in benchmarked build; \texttt{SE\_firmware.ioc} sets 48\,MHz} \\
+Cores & 1 \\
+RAM & \placeholder \\
+Flash & \placeholder \\
+Secure storage / crypto & Tropic Square TROPIC01 secure element (R-MEM for pads, ECC keys), accessed via \texttt{libtropic}; MCU accelerators used: \todo{e.g. HASH/RNG/PKA} \\
+Firmware & \todo{firmware version / commit}, wolfSSL (PQC TLS), libtropic \todo{version} \\
+Toolchain & \todo{arm-none-eabi-gcc version, optimisation level} \\
+Connection / interface & USB CDC (virtual serial port, \todo{device path, e.g. \texttt{/dev/ttyACM0}}) \\
+Variant used in this run & \todo{host-simulated SE (\texttt{se\_host} + TROPIC01 model) or real device} \\
+\bottomrule
+\end{tabular}
+\caption{SE hardware.}
+\label{tab:hw-se}
+\end{table}
+
+\section{SAE -- node machine (sae-node + HSM)}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{p{0.32\textwidth}p{0.6\textwidth}}
+\toprule
+Parameter & Value \\
+\midrule
+CPU / architecture & \placeholder \\
+Clock & \placeholder \\
+Cores / threads & \placeholder \\
+RAM & \placeholder \\
+Storage & \placeholder \\
+HSM / crypto & Utimaco HSM \todo{simulator or hardware, model, firmware} \\
+OS & \placeholder \\
+Java / toolchain & \todo{JDK version, Maven version} \\
+Connection / interface & \todo{USB CDC to SE, network to peer SAE nodes} \\
+\bottomrule
+\end{tabular}
+\caption{SAE node hardware.}
+\label{tab:hw-sae}
+\end{table}
+
+\section{USER -- machine running user-app}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{p{0.32\textwidth}p{0.6\textwidth}}
+\toprule
+Parameter & Value \\
+\midrule
+CPU / architecture & \placeholder \\
+Clock & \placeholder \\
+Cores / threads & \placeholder \\
+RAM & \placeholder \\
+Storage & \placeholder \\
+Secure storage / crypto & \placeholder \\
+OS & \placeholder \\
+Java / toolchain & \todo{JDK version, Maven version} \\
+Connection / interface & \todo{USB CDC to SE, port} \\
+\bottomrule
+\end{tabular}
+\caption{USER machine hardware.}
+\label{tab:hw-user}
+\end{table}
+
+\chapter{Methodology (SE)}
+
+\section{Tool}
+
+The benchmark tool is the Maven module \texttt{JAVA\_APPS/modules/se-bench}, main class \texttt{fel.cvut.userapp.SeBench}. It is a small CLI that reuses the existing host code instead of re-implementing the protocols. It sits in the \texttt{fel.cvut.userapp} package only so that it can call the package-private \texttt{ChipService}, \texttt{OwnerAuth} and \texttt{ChipInit} classes; their code is not changed. The tool works against the host-simulated SE (\texttt{se\_host} with the TROPIC01 \texttt{model\_server}) as well as against a real keychain. Used in this run: \todo{simulator / real device}.
+
+\section{Benchmarks}
+
+\benchcard{handshake -- wolfSSL TLS handshake}{Arms \texttt{ENCRYPT <unix>} and performs the PQC mutual TLS handshake with the SE (wolfSSL on the device) via \texttt{SeUsbLink.open} and \texttt{SeUsbTls.run(usb, ctx, "ENCRYPT", true, io)}, with the owner context from \texttt{SoftwareTls.createContextFromPkcs12/Pem} (as in user-app). The session is closed before any request is sent, so no pad is consumed.}
+
+\benchcard{initlab -- INIT LAB flow}{The \texttt{INIT LAB} enrollment without console prompts: \texttt{ChipInit.enroll(new OwnerAuth(usb, ctx), ChipInit.FILE\_CERTS, Profile.LAB, EnrollRequest)}. Steps: preflight, OWNER SET, ECC KEYGEN, KEM INIT with PIN, CLIENT CSR, local CSR signing by the client CA, INSERT SIGNED CSR (the signed certificate is written into the chip).}
+
+\benchcard{padwrite -- Tropic pad write}{The SAE side of a \texttt{PROVISION} session: TLS with exporter binding (\texttt{SeSessionBinding.HandshakeExporter} / \texttt{wrapTrustManagers}), verified uplink (\texttt{SeSessionUplink.readAndVerify}), ML-KEM sealing of random pads (\texttt{SeKemFill.buildDownlink}), wait for \texttt{TROPIC\_WIPE\_FINISHED}, write of the downlink into the TROPIC01 R-MEM and final \texttt{SE\_OK} (\texttt{SeProvisionAck.awaitWipeFinished/writeTracking/read}). Same sequence as \texttt{Node.oneProvisionSession}; 64 pads per iteration (\texttt{--pads 64}).}
+
+\benchcard{encrypt -- ENCRYPT/REPLY}{Full \texttt{ENCRYPT} round trip through \texttt{ChipService.encrypt(pin, message)} (the user-app \texttt{ENCRYPT} command): TLS session, PIN and plaintext request, encrypted reply. Consumes one pad per iteration, warm-up included.}
+
+\section{Iterations and statistics}
+
+Each benchmark runs 10 measured iterations (default) preceded by 1 warm-up iteration (\texttt{--warmup}, default 1); warm-up times are printed but not counted. For each benchmark the tool reports $n$, minimum, maximum, mean, median and sample standard deviation in milliseconds, and writes a CSV file \texttt{<out>/<yyyyMMdd-HHmmss>.csv} with per-iteration rows plus a summary block. \texttt{--timeout-sec} (default 120) marks a hung iteration as failed, closes the link and continues.
+
+\section{How the benchmark is run}
+
+Build and help:
+
+\begin{tcolorbox}[colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt, breakable]
+\footnotesize
+\begin{verbatim}
+cd JAVA_APPS
+mvn -B -q -pl modules/se-bench -am install -DskipTests
+mvn -B -q -pl modules/se-bench exec:java -Dexec.args="--help"
+\end{verbatim}
+\end{tcolorbox}
+
+Non-destructive run against the host simulator (the procedure used for the results):
+
+\begin{tcolorbox}[colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt, breakable]
+\footnotesize
+\begin{verbatim}
+cd JAVA_APPS
+modules/se-bench/sim.sh start
+rm -rf /tmp/se-bench-certs && cp -r certs /tmp/se-bench-certs
+set -a; source env/userapp-1.env; source env/certgen.env; set +a
+export USB_SERIAL_PORT=/tmp/ttyACM-bench PQC_CERTS_DIR=/tmp/se-bench-certs
+export SEBENCH_PIN=12345678 SEBENCH_OWNER_PASSWORD=benchowner1 \
+  SEBENCH_SAE_CA_P12_PASSWORD="$PKCS12_PASSWORD"
+# 1) INIT LAB, fresh simulated chip before every iteration
+mvn -B -q -pl modules/se-bench exec:java -Dexec.args="--bench initlab --yes-destructive \
+  --out modules/se-bench/bench-results --reset-cmd '$PWD/modules/se-bench/sim.sh restart'"
+# 2) pad write, handshake, encrypt on the chip enrolled by the last INIT LAB iteration
+mvn -B -q -pl modules/se-bench exec:java -Dexec.args="--bench padwrite,handshake,encrypt --pads 64 \
+  --yes-destructive --out modules/se-bench/bench-results \
+  --sae-ca-p12 /tmp/se-bench-certs/ca/root-ca.p12"
+modules/se-bench/sim.sh stop
+\end{verbatim}
+\end{tcolorbox}
+
+On a real device only the non-destructive subset is run:
+
+\begin{tcolorbox}[colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt, breakable]
+\footnotesize
+\begin{verbatim}
+mvn -B -q -pl modules/se-bench exec:java \
+  -Dexec.args="--bench handshake,encrypt --port /dev/ttyACM0"
+\end{verbatim}
+\end{tcolorbox}
+
+\section{Non-destructiveness}
+
+\begin{itemize}
+\item \texttt{sim.sh} starts a \emph{private} TROPIC01 \texttt{model\_server} on port 28997 and \texttt{se\_host} on the PTY \texttt{/tmp/ttyACM-bench}; it never touches the lab simulators (ports 28992/28993, \texttt{/tmp/ttyACM-se1/se2}) or any USB device.
+\item The model and the host NV state live in RAM only, so every \texttt{sim.sh restart} yields a brand-new chip. \texttt{initlab} uses \texttt{--reset-cmd} to restart the simulator before each iteration, because INIT LAB refuses an already provisioned chip.
+\item The benchmarks run against a \emph{copy} of the certificate directory (\texttt{/tmp/se-bench-certs}), so INIT LAB cannot overwrite the lab device certificate (\texttt{client/client-cert.pem}, \texttt{client-csr.hex}).
+\item The destructive benchmarks \texttt{padwrite} and \texttt{initlab} run only with the explicit opt-in \texttt{--yes-destructive}; otherwise they are skipped. With \texttt{--sae-ca-p12} the SAE leaf certificate is ephemeral and in-memory only.
+\end{itemize}
+
+\chapter{Results (SE)}
+
+Environment of this run: \todo{simulator / real device}, date \placeholder, CSV file \todo{\texttt{bench-results/<timestamp>.csv}}.
+
+\section{Summary}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Benchmark & $n$ & min [ms] & max [ms] & mean [ms] & median [ms] & stddev [ms] \\
+\midrule
+\texttt{handshake} & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
+\texttt{initlab}   & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
+\texttt{padwrite}  & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
+\texttt{encrypt}   & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
+\bottomrule
+\end{tabular}
+\caption{SE benchmark summary (warm-up excluded, sample stddev).}
+\label{tab:summary}
+\end{table}
+
+\section{Per-iteration durations}
+
+\itertable{\texttt{handshake}}{handshake}
+\itertable{\texttt{initlab}}{initlab}
+\itertable{\texttt{padwrite} (64 pads)}{padwrite}
+\itertable{\texttt{encrypt}}{encrypt}
+
+\section{Chart}
+
+\begin{figure}[htbp]
+\centering
+\begin{tcolorbox}[width=0.8\textwidth, height=5cm, valign=center, halign=center,
+  colback=tbdbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt]
+\color{tbdfg}\textbf{--- TBD ---}\\[2pt]\small Bar chart: mean (with min/max) per benchmark
+\end{tcolorbox}
+\caption{Mean latency per SE benchmark (placeholder).}
+\label{fig:chart}
+\end{figure}
+
+\chapter{Discussion and conclusion}
+
+\todo{Interpretation of the results: dominant cost (TLS handshake vs.\ TROPIC01 R-MEM writes), variance, simulator vs.\ real device.}
+
+\medskip
+\todo{Conclusion.}
+
+\end{document}

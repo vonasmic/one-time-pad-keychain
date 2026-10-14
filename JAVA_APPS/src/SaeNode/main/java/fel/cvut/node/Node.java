@@ -4,6 +4,7 @@ import fel.cvut.db.DB;
 import fel.cvut.db.DatabaseConfig;
 import fel.cvut.db.SqliteLogging;
 import fel.cvut.db.RecordRetention;
+import fel.cvut.node.interNodeCommunication.KnownPeers;
 import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
 import fel.cvut.node.recordManager.ClientRecord;
@@ -19,6 +20,7 @@ import fel.cvut.se.SeSessionUplink;
 import fel.cvut.terminal.LocalOperatorConsole;
 import fel.cvut.tls.HsmNodeTls;
 import fel.cvut.tls.SoftwareTls;
+import fel.cvut.tls.TlsStores;
 import fel.cvut.usb.SeUsbLink;
 import fel.cvut.usb.SeUsbTls;
 import fel.cvut.utimaco.Pqmi;
@@ -145,6 +147,8 @@ public class Node implements AutoCloseable {
             deviceTlsContext = HsmNodeTls.createContextForCommandServer(pqmi, tlsNodeId);
 
             rmiManager.start(nodeCommands, tlsContext);
+            LOG.info("RMI bound to " + rmiManager.bindHost() + "; own pin for peers' RMI_KNOWN_PEERS: "
+                    + ownPinJson());
             running = true;
             if (usbConfigured()) {
                 executor.submit(this::usbLoop);
@@ -633,6 +637,17 @@ public class Node implements AutoCloseable {
         deviceTlsContext = null;
     }
 
+    /** Own {@code RMI_KNOWN_PEERS} entry for the operator; best effort, never fails the start. */
+    private String ownPinJson() {
+        try {
+            return "{\"saeId\":\"" + selfRef.getNodeId() + "\",\"spkiSha256\":\""
+                    + KnownPeers.spkiSha256(TlsStores.readPemCerts(TlsStores.nodeLeafPem(tlsNodeId)).get(0))
+                    + "\"}";
+        } catch (Exception ex) {
+            return "<unavailable: " + ex.getMessage() + ">";
+        }
+    }
+
     private boolean usbConfigured() {
         return currentUsbTarget() != null;
     }
@@ -673,6 +688,8 @@ public class Node implements AutoCloseable {
      *   <li>{@code QKD_TRUSTSTORE_PATH}       – QuKayDee KME server CA (PKCS#12 or PEM; public only)</li>
      *   <li>{@code TLS_NODE_ID}               – HSM PQMI key name + leaf cert selector ({@code certs/{TLS_NODE_ID}.pem})</li>
      *   <li>{@code DB_URL}                    – SQLite JDBC URL for this node (e.g. {@code jdbc:sqlite:data/qkd-sae-1.db})</li>
+     *   <li>{@code RMI_KNOWN_PEERS}           – JSON file pinning peer SAEs:
+     *       {@code [{"saeId":"sae-2","spkiSha256":"<hex>"}]} (the node logs its own value at start)</li>
      * </ul>
      *
      * <p>HSM connection ({@code HSM_DEVICE}, {@code HSM_USER}, {@code HSM_PIN}, …) comes from
@@ -681,7 +698,9 @@ public class Node implements AutoCloseable {
      *
      * <p>Optional environment variables:
      * <ul>
-     *   <li>{@code NODE_HOSTNAME}            – RMI bind address (default: {@code 127.0.0.1})</li>
+     *   <li>{@code NODE_HOSTNAME}            – RMI advertised host (default: {@code 127.0.0.1})</li>
+     *   <li>{@code NODE_RMI_BIND}            – RMI registry and object-port bind address
+     *       (default: {@code NODE_HOSTNAME})</li>
      *   <li>{@code USB_SERIAL_PORT}          – CDC path, or {@code auto} / {@code scan}; {@code none} skips USB</li>
      *   <li>{@code USB_BAUD_RATE}            – serial baud (default: {@code 115200})</li>
      *   <li>{@code RECORD_RETENTION_DAYS}    – delete DB rows older than this many days (default: {@code 14})</li>

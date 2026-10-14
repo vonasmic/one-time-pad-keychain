@@ -20,22 +20,37 @@
 
 \noindent
 Příkaz \texttt{PROVISION} naplní čip jednorázovými pady z QKD.
-Obrázek~\ref{fig:provision-flow} je strom SaeNode: enrol a autenticita uplinku,
-výběr peer SAE a peer zařízení, pak nová výměna, doručení uloženého share,
-nebo konec bez klíčů.
+SE otevře TLS jen při \texttt{se\_\allowbreak ready\_\allowbreak provision()} (vlastník, certifikát
+a klíč zařízení, SAE CA, ML-KEM klíč) a synchronizovaném čase. Po mTLS pošle
+uplink v5 vázaný na TLS exporter (\texttt{SeSessionUplink.\allowbreak readAndVerify})
+a souběžně smaže QKD sloty R-MEM; konec hlásí \texttt{TROPIC\_\allowbreak WIPE\_\allowbreak FINISHED}.
+Obrázek~\ref{fig:provision-flow} je strom SaeNode: výběr peer SAE a peer
+zařízení, lokální \texttt{synchronize()} a podle výsledku nová výměna
+(\texttt{INSERTED}), uložený share (\texttt{ORIGIN\_PROVISIONED}, nebo
+\texttt{RECORD\_SHARED\_WITH\_DIFFERENT\_SAE}), nebo konec bez klíčů
+(\texttt{NOT\_INSERTED}).
 
-Nová výměna rezervuje pár (\texttt{RECORD\_SYNCHRONIZATION}), zamkne fetch
-(\texttt{RECORD\_FETCHING\_STARTED}) a po stažení padů zapíše na obou SAE
-\texttt{RECORD\_AVAILABLE}. Origin pošle downlink. \texttt{RECORD\_PROVISIONED}
-vznikne až po ACK čipu a jen na origin řádku. Až po návratu tohoto zápisu
-terminál vytiskne 100\,\% a na dalším řádku \texttt{Share successful.}
-Peer čip dostane materiál později, jen z originu ve stavu
-\texttt{PROVISIONED}, a oba řádky se před odesláním smažou.
+Nová výměna v \texttt{PeerRecordSync} rezervuje pár
+na obou SAE (\texttt{RECORD\_\allowbreak SYNCHRONIZATION}), zamkne fetch
+(\texttt{RECORD\_\allowbreak FETCHING\_\allowbreak STARTED}) a stáhne pady z KME. Peer SAE je přes
+RMI \texttt{insert} dohledá podle ID klíčů u svého KME a uloží zabalené v HSM.
+Oba řádky pak přejdou do \texttt{RECORD\_\allowbreak SHARED}. Origin pošle downlink.
+Po \texttt{SE\_\allowbreak OK} čipu zapíše \texttt{ORIGIN\_\allowbreak PROVISIONED} nejdřív na peeru,
+pak u sebe. Až po návratu obou zápisů terminál vytiskne 100\,\% a na dalším
+řádku \texttt{Share successful.}
+Peer čip dostane materiál později, jen když jsou oba řádky
+\texttt{ORIGIN\_\allowbreak PROVISIONED}. Peer SAE smaže nejdřív řádek na originu,
+pak svůj, a teprve potom pošle downlink.
+
+Mazání je vždy nejdřív vzdálené: rollback, \texttt{deleteShareAndRestart}
+i doručení. Každé RMI volání jde přes mTLS s připnutým SPKI peeru. Volající
+musí být vydávající SAE, nebo strana záznamu. Výjimkou je \texttt{deleteShare}
+od jiného SAE (předání share), povolené jen pro dokončený share.
 
 \section{Formální ověření}
 
 PlusCal v \texttt{specs/sae-provision/SaeProvision.tla} sleduje tuto ságu
-včetně pádu origin i peer JVM mezi každým krokem, vypršení dvouminutové
+včetně pádu origin i peer JVM mezi každým krokem, vypršení pětiminutové
 rezervace, výpadku spojení na origin nebo peer a jednoho pozdějšího pokusu
 (nový fill, nebo doručení na peer).
 TLS, PIN a bajty padů v modelu nejsou. Důkaz je prohledání stavů TLC podle
@@ -44,16 +59,17 @@ TLS, PIN a bajty padů v modelu nejsou. Důkaz je prohledání stavů TLC podle
 \begin{itemize}
   \setlength{\itemsep}{0.15em}
   \item Oba committnuté share mají shodné příznaky materiálu.
-  \item \texttt{PROVISIONED} je jen origin řádek a jen po ACK origin čipu.
+  \item \texttt{ORIGIN\_PROVISIONED} na originu znamená totéž na peeru
+        a oba vznikají jen po ACK origin čipu.
   \item Klíče na peer čipu znamenají klíče na origin čipu a už smazané řádky.
   \item Hláška úspěchu odpovídá konzistentnímu share, nebo jeho pozdějšímu
         spotřebování.
   \item Po čtení při dosažitelném originu i peeru za oknem rezervace je osiřelý
-        \texttt{AVAILABLE} pryč, nebo origin ještě drží čerstvou rezervaci.
+        \texttt{RECORD\_SHARED} pryč, nebo origin ještě drží čerstvou rezervaci.
 \end{itemize}
 
 \noindent
 Stejné invarianty drží dva krajní běhy. Nedosažitelný origin nebo peer se
-nemaže ani neplní, takže \texttt{AVAILABLE} může zůstat. Pád po smazání řádků
+nemaže ani neplní, takže \texttt{RECORD\_SHARED} může zůstat. Pád po smazání řádků
 a před zápisem na peer čip nechá klíče jen na originu, a stejný share se
 nepošle dvakrát.

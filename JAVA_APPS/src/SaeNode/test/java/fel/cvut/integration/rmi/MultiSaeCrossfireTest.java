@@ -1,6 +1,6 @@
 package fel.cvut.integration.rmi;
 
-import fel.cvut.harness.InProcessRmi;
+import fel.cvut.harness.TestRmiNetwork;
 import fel.cvut.harness.JceAesGcm;
 import fel.cvut.harness.SaeFixtures;
 import fel.cvut.harness.SaeSqliteExtension;
@@ -70,23 +70,22 @@ class MultiSaeCrossfireTest {
 
     @Test
     void overlappingExchangesLeaveAtMostOneConsistentPair() throws Exception {
-        try (InProcessRmi originRmi = InProcessRmi.export(originService);
-             InProcessRmi peerRmi = InProcessRmi.export(peerService);
-             InProcessRmi otherRmi = InProcessRmi.export(otherService)) {
-            RmiManager rmi = rmiManager(originRmi, peerRmi, otherRmi);
+        try (TestRmiNetwork net = network()) {
+            RmiManager originRmi = net.rmiFor(ORIGIN_SAE);
+            RmiManager otherRmi = net.rmiFor(OTHER_SAE);
             ExecutorService executor = Executors.newFixedThreadPool(2);
             CyclicBarrier barrier = new CyclicBarrier(2);
             try {
                 Future<ProvisionSession.Exchange.Result> fromOrigin = executor.submit(() -> {
                     barrier.await(15, TimeUnit.SECONDS);
                     reserve(originMap, HASH_1, HASH_2, PEER_SAE, ORIGIN_SAE);
-                    return new PeerRecordSync(SaeFixtures.originRef(), originMap, rmi, qkd)
+                    return new PeerRecordSync(SaeFixtures.originRef(), originMap, originRmi, qkd)
                             .completeNewExchange(SaeFixtures.record(HASH_1, HASH_2, PEER_SAE, List.of()), SaeFixtures.uplink());
                 });
                 Future<ProvisionSession.Exchange.Result> fromOther = executor.submit(() -> {
                     barrier.await(15, TimeUnit.SECONDS);
                     reserve(otherMap, HASH_1, HASH_2, PEER_SAE, OTHER_SAE);
-                    return new PeerRecordSync(SaeFixtures.otherRef(), otherMap, rmi, qkd)
+                    return new PeerRecordSync(SaeFixtures.otherRef(), otherMap, otherRmi, qkd)
                             .completeNewExchange(SaeFixtures.record(HASH_1, HASH_2, PEER_SAE, List.of()), SaeFixtures.uplink());
                 });
                 exchangeResult(fromOrigin);
@@ -103,29 +102,28 @@ class MultiSaeCrossfireTest {
     void disjointPairsAcrossThreeNodesAllSucceed() throws Exception {
         String pairB1 = HASH_1.substring(0, 62) + "10";
         String pairC1 = HASH_1.substring(0, 62) + "20";
-        try (InProcessRmi originRmi = InProcessRmi.export(originService);
-             InProcessRmi peerRmi = InProcessRmi.export(peerService);
-             InProcessRmi otherRmi = InProcessRmi.export(otherService)) {
-            RmiManager rmi = rmiManager(originRmi, peerRmi, otherRmi);
+        try (TestRmiNetwork net = network()) {
+            RmiManager originRmi = net.rmiFor(ORIGIN_SAE);
+            RmiManager otherRmi = net.rmiFor(OTHER_SAE);
             ExecutorService executor = Executors.newFixedThreadPool(3);
             CyclicBarrier barrier = new CyclicBarrier(3);
             try {
                 Future<ProvisionSession.Exchange.Result> a = executor.submit(() -> {
                     barrier.await(15, TimeUnit.SECONDS);
                     reserve(originMap, HASH_1, HASH_2, PEER_SAE, ORIGIN_SAE);
-                    return new PeerRecordSync(SaeFixtures.originRef(), originMap, rmi, qkd)
+                    return new PeerRecordSync(SaeFixtures.originRef(), originMap, originRmi, qkd)
                             .completeNewExchange(SaeFixtures.record(HASH_1, HASH_2, PEER_SAE, List.of()), SaeFixtures.uplink());
                 });
                 Future<ProvisionSession.Exchange.Result> b = executor.submit(() -> {
                     barrier.await(15, TimeUnit.SECONDS);
                     reserve(otherMap, pairB1, HASH_2, PEER_SAE, OTHER_SAE);
-                    return new PeerRecordSync(SaeFixtures.otherRef(), otherMap, rmi, qkd)
+                    return new PeerRecordSync(SaeFixtures.otherRef(), otherMap, otherRmi, qkd)
                             .completeNewExchange(SaeFixtures.record(pairB1, HASH_2, PEER_SAE, List.of()), SaeFixtures.uplink());
                 });
                 Future<ProvisionSession.Exchange.Result> c = executor.submit(() -> {
                     barrier.await(15, TimeUnit.SECONDS);
                     reserve(originMap, pairC1, HASH_2, OTHER_SAE, ORIGIN_SAE);
-                    return new PeerRecordSync(SaeFixtures.originRef(), originMap, rmi, qkd)
+                    return new PeerRecordSync(SaeFixtures.originRef(), originMap, originRmi, qkd)
                             .completeNewExchange(SaeFixtures.record(pairC1, HASH_2, OTHER_SAE, List.of()), SaeFixtures.uplink());
                 });
                 assertTrue(a.get(30, TimeUnit.SECONDS).keys().isPresent());
@@ -163,8 +161,7 @@ class MultiSaeCrossfireTest {
 
     @Test
     void rapidFireInsertsOnOnePeerLeaveOneRowPerPair() throws Exception {
-        try (InProcessRmi peerRmi = InProcessRmi.export(peerService)) {
-            NodeCommands stub = peerRmi.stub();
+        try (TestRmiNetwork net = network()) {
             int threads = 8;
             ExecutorService executor = Executors.newFixedThreadPool(threads);
             CyclicBarrier barrier = new CyclicBarrier(threads);
@@ -176,7 +173,7 @@ class MultiSaeCrossfireTest {
                     futures.add(executor.submit(() -> {
                         barrier.await(15, TimeUnit.SECONDS);
                         ClientRecord record = SaeFixtures.record(HASH_1, HASH_2, issuing, List.of("key-1"));
-                        if (syncLockAndInsert(stub, record, issuing)) {
+                        if (syncLockAndInsert(net.stub(issuing, PEER_SAE), record, issuing)) {
                             successes.incrementAndGet();
                         }
                         return null;
@@ -197,23 +194,11 @@ class MultiSaeCrossfireTest {
         }
     }
 
-    private static RmiManager rmiManager(InProcessRmi origin, InProcessRmi peer, InProcessRmi other)
-            throws RemoteException, NotBoundException {
-        RmiManager rmi = mock(RmiManager.class);
-        when(rmi.connectBySaeId(anyString())).thenAnswer(invocation -> {
-            String id = invocation.getArgument(0);
-            if (ORIGIN_SAE.equals(id)) {
-                return origin.stub();
-            }
-            if (PEER_SAE.equals(id)) {
-                return peer.stub();
-            }
-            if (OTHER_SAE.equals(id)) {
-                return other.stub();
-            }
-            throw new RemoteException("unknown SAE " + id);
-        });
-        return rmi;
+    private TestRmiNetwork network() {
+        return new TestRmiNetwork()
+                .register(ORIGIN_SAE, originService)
+                .register(PEER_SAE, peerService)
+                .register(OTHER_SAE, otherService);
     }
 
     private static void reserve(

@@ -52,6 +52,7 @@
                     </includes>
                     <testIncludes>
                         <testInclude>fel/cvut/integration/tls/NodeTlsSoftwareIdentityTest.java</testInclude>
+                        <testInclude>fel/cvut/integration/tls/SoftwareTlsTwoNodeTest.java</testInclude>
                     </testIncludes>
                 </configuration>
             </plugin>

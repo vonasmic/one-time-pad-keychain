@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fel.cvut</groupId>
+        <artifactId>java-tls-parent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+    <!-- SE benchmark CLI (see README.md). Reuses usb-cdc, se-wire, tls-software and user-app. -->
+    <artifactId>se-bench</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>fel.cvut</groupId>
+            <artifactId>user-app</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fel.cvut</groupId>
+            <artifactId>se-wire</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fel.cvut</groupId>
+            <artifactId>usb-cdc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fel.cvut</groupId>
+            <artifactId>tls-software</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                    <mainClass>fel.cvut.userapp.SeBench</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -68,18 +68,18 @@ class PeerRecordSyncTest {
     void lostReplyAfterPeerSuccessRemovesPeerRecord() throws Exception {
         NodeCommands lostReply = mock(NodeCommands.class);
         when(lostReply.synchronize(any(), anyString())).thenAnswer(invocation ->
-                h.peerService.synchronize(invocation.getArgument(0), invocation.getArgument(1)));
+                h.peer.synchronize(invocation.getArgument(0), invocation.getArgument(1)));
         when(lostReply.lockFetch(anyString(), anyString(), anyString())).thenAnswer(invocation ->
-                h.peerService.lockFetch(
+                h.peer.lockFetch(
                         invocation.getArgument(0),
                         invocation.getArgument(1),
                         invocation.getArgument(2)));
         when(lostReply.insert(any(), anyString())).thenAnswer(invocation -> {
-            boolean inserted = h.peerService.insert(invocation.getArgument(0), invocation.getArgument(1));
+            boolean inserted = h.peer.insert(invocation.getArgument(0), invocation.getArgument(1));
             throw new RemoteException("lost reply after insert=" + inserted);
         });
         when(lostReply.removeRecord(anyString(), anyString())).thenAnswer(invocation ->
-                h.peerService.removeRecord(invocation.getArgument(0), invocation.getArgument(1)));
+                h.peer.removeRecord(invocation.getArgument(0), invocation.getArgument(1)));
         when(h.rmi.connectBySaeId(PEER_SAE)).thenReturn(lostReply);
         h.reserveOrigin();
         assertThrows(RemoteException.class, () ->

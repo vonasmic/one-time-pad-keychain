@@ -17,3 +17,31 @@ ultimaco/quantum-protect/**
 !ultimaco/quantum-protect/
 !ultimaco/quantum-protect/README.md
 
+
+# IDE
+.idea/
+**/.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Backups / editor leftovers
+*.bak
+*.bak-*
+*.orig
+*~
+
+# Java build output
+target/
+out/
+**/bench-results/
+
+# C/C++ build output
+build/
+cmake-build-*/
+*.o
+*.obj
+*.d
+*.su
+*.map

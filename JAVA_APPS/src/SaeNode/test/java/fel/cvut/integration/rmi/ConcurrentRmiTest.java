@@ -1,5 +1,6 @@
 package fel.cvut.integration.rmi;
 
+import fel.cvut.harness.AsCaller;
 import fel.cvut.harness.InProcessRmi;
 import fel.cvut.harness.JceAesGcm;
 import fel.cvut.harness.SaeFixtures;
@@ -59,7 +60,7 @@ class ConcurrentRmiTest {
     @Test
     void concurrentInsertsOfSameHashPairLeaveOnePeerRow() throws Exception {
         ClientRecord record = SaeFixtures.record(HASH_1, HASH_2, ORIGIN_SAE, List.of("key-1"));
-        try (InProcessRmi rmi = InProcessRmi.export(peerService)) {
+        try (InProcessRmi rmi = InProcessRmi.export(AsCaller.bind(ORIGIN_SAE, peerService))) {
             NodeCommands stub = rmi.stub();
             int threads = 8;
             ExecutorService executor = Executors.newFixedThreadPool(threads);
@@ -94,7 +95,7 @@ class ConcurrentRmiTest {
 
     @Test
     void concurrentInsertsOfDifferentHashPairsAllSucceed() throws Exception {
-        try (InProcessRmi rmi = InProcessRmi.export(peerService)) {
+        try (InProcessRmi rmi = InProcessRmi.export(AsCaller.bind(ORIGIN_SAE, peerService))) {
             NodeCommands stub = rmi.stub();
             int threads = 8;
             ExecutorService executor = Executors.newFixedThreadPool(threads);
@@ -121,7 +122,7 @@ class ConcurrentRmiTest {
 
     @Test
     void mixedRpcsFromSeveralClientsDoNotCorruptState() throws Exception {
-        try (InProcessRmi rmi = InProcessRmi.export(peerService)) {
+        try (InProcessRmi rmi = InProcessRmi.export(AsCaller.bind(ORIGIN_SAE, peerService))) {
             NodeCommands stub = rmi.stub();
             int threads = 12;
             ExecutorService executor = Executors.newFixedThreadPool(threads);
@@ -159,8 +160,8 @@ class ConcurrentRmiTest {
                 qkd,
                 JceAesGcm.mockHsm()
         );
-        try (InProcessRmi originRmi = InProcessRmi.export(originService);
-             InProcessRmi peerRmi = InProcessRmi.export(peerService)) {
+        try (InProcessRmi originRmi = InProcessRmi.export(AsCaller.bind(PEER_SAE, originService));
+             InProcessRmi peerRmi = InProcessRmi.export(AsCaller.bind(ORIGIN_SAE, peerService))) {
             ExecutorService executor = Executors.newFixedThreadPool(2);
             CyclicBarrier barrier = new CyclicBarrier(2);
             try {

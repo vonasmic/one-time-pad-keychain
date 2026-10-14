@@ -65,7 +65,7 @@ public final class NodeBootstrap {
                 clientRecordStateRepository,
                 recordRetention.retention()
         );
-        RmiManager rmiManager = new RmiManager(selfRef.getAddress());
+        RmiManager rmiManager = RmiManager.fromEnvironment(selfRef);
         NodeCommands nodeCommands = new NodeCommandsService(selfRef, stateMap, qkdClient, store, rmiManager);
 
         return new Node(

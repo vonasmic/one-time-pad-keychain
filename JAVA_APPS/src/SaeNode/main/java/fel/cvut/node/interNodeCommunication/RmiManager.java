@@ -5,11 +5,16 @@ import fel.cvut.tls.SoftwareTls;
 import fel.cvut.node.Address;
 
 import fel.cvut.node.NodeCommands;
+import fel.cvut.node.NodeRef;
 import java.io.InputStream;
 import javax.net.ssl.SSLContext;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
 import java.io.IOException;
+import java.nio.file.Path;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLSocket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.NotBoundException;
@@ -34,17 +39,60 @@ public class RmiManager {
     private static final Map<String, Address> ADDRESS_BY_SAE_ID = loadSaeNodeAddresses();
     private static final List<SaeNode> KNOWN_SAE_NODES = loadKnownSaeNodes();
 
+    /** Env: address the RMI registry and object port bind to (default {@code NODE_HOSTNAME}). */
+    public static final String ENV_BIND = "NODE_RMI_BIND";
+    /** Env: JSON file of pinned peers ({@link KnownPeers}); required to start RMI. */
+    public static final String ENV_KNOWN_PEERS = "RMI_KNOWN_PEERS";
+    private static final int OBJECT_PORT_OFFSET = 40000;
+
     /** JVM-local TLS context for RMI sockets — must not be stored on serializable socket factories. */
     private static volatile SSLContext installedTlsContext;
+    /** JVM-local pinned peers, same lifecycle as {@link #installedTlsContext}. */
+    private static volatile KnownPeers installedKnownPeers;
 
     private final Address myAddress;
+    private final String bindHost;
+    private final KnownPeers knownPeers;
 
     private Registry registry;
     private NodeCommands messageReceiver;
     private boolean running = false;
 
+    /** Manager without pinning: can be constructed and queried, but {@link #start} refuses to run. */
     public RmiManager(Address myAddress) {
+        this(myAddress, null, null);
+    }
+
+    /**
+     * @param bindHost   local address for the registry and object port; {@code null} uses
+     *                   {@code myAddress.hostname}
+     * @param knownPeers pinned peers; {@code null} makes {@link #start} fail closed
+     */
+    public RmiManager(Address myAddress, String bindHost, KnownPeers knownPeers) {
         this.myAddress = Objects.requireNonNull(myAddress, "myAddress must not be null");
+        this.bindHost = bindHost == null || bindHost.isBlank() ? myAddress.hostname : bindHost.trim();
+        this.knownPeers = knownPeers;
+    }
+
+    /** Production wiring from {@value #ENV_BIND} and {@value #ENV_KNOWN_PEERS}. */
+    public static RmiManager fromEnvironment(NodeRef selfRef) {
+        Objects.requireNonNull(selfRef, "selfRef must not be null");
+        String peersFile = System.getenv(ENV_KNOWN_PEERS);
+        if (peersFile == null || peersFile.isBlank()) {
+            throw new IllegalStateException(ENV_KNOWN_PEERS
+                    + " is not set: RMI requires a pinned peer list (JSON [{\"saeId\",\"spkiSha256\"}])");
+        }
+        try {
+            KnownPeers peers = KnownPeers.load(selfRef.getNodeId(), Path.of(peersFile.trim()));
+            return new RmiManager(selfRef.getAddress(), System.getenv(ENV_BIND), peers);
+        } catch (IOException | RuntimeException ex) {
+            throw new IllegalStateException("Cannot load " + ENV_KNOWN_PEERS + " from " + peersFile, ex);
+        }
+    }
+
+    /** Effective bind address (for diagnostics and tests). */
+    public String bindHost() {
+        return bindHost;
     }
 
     /**
@@ -59,15 +107,21 @@ public class RmiManager {
         System.setProperty("java.rmi.server.hostname", myAddress.hostname);
         try {
             this.messageReceiver = Objects.requireNonNull(receiver, "receiver must not be null");
+            if (knownPeers == null) {
+                throw new IllegalStateException("RMI peer pinning is not configured (" + ENV_KNOWN_PEERS + ")");
+            }
+            installedKnownPeers = knownPeers;
+            InetAddress bindAddress = InetAddress.getByName(bindHost);
 
             PqcTlsRmiClientSocketFactory clientFactory = new PqcTlsRmiClientSocketFactory();
-            PqcTlsRmiServerSocketFactory serverFactory = new PqcTlsRmiServerSocketFactory(true);
+            PqcTlsRmiServerSocketFactory serverFactory = new PqcTlsRmiServerSocketFactory(true, bindAddress);
 
             NodeCommands skeleton = (NodeCommands) UnicastRemoteObject.exportObject(
                     messageReceiver,
-                    40000 + myAddress.port,
+                    OBJECT_PORT_OFFSET + myAddress.port,
                     clientFactory,
-                    serverFactory
+                    serverFactory,
+                    RmiSerialFilter.CALLS
             );
 
             try {
@@ -80,6 +134,7 @@ public class RmiManager {
             running = true;
         } catch (Exception e) {
             installedTlsContext = null;
+            installedKnownPeers = null;
             throw new IllegalStateException("Failed to start RMI manager.", e);
         }
     }
@@ -108,6 +163,7 @@ public class RmiManager {
         messageReceiver = null;
         registry = null;
         installedTlsContext = null;
+        installedKnownPeers = null;
         running = false;
     }
 
@@ -187,26 +243,63 @@ public class RmiManager {
         return context;
     }
 
+    private static KnownPeers requireInstalledKnownPeers() {
+        KnownPeers peers = installedKnownPeers;
+        if (peers == null) {
+            throw new IllegalStateException("RMI peer pins not installed — start RmiManager first");
+        }
+        return peers;
+    }
+
+    /** SAE whose configured registry or object endpoint is {@code host:port}, or null. */
+    static String expectedSaeIdFor(String host, int port) {
+        for (Map.Entry<String, Address> e : ADDRESS_BY_SAE_ID.entrySet()) {
+            Address a = e.getValue();
+            if (a.hostname.equals(host) && (a.port == port || a.port + OBJECT_PORT_OFFSET == port)) {
+                return e.getKey();
+            }
+        }
+        return null;
+    }
+
     private static final class PqcTlsRmiClientSocketFactory extends SslRMIClientSocketFactory {
         private static final long serialVersionUID = 1L;
 
         @Override
         public Socket createSocket(String host, int port) throws IOException {
-            return SoftwareTls.createClientSocket(host, port, requireInstalledTlsContext(), TLS_PROFILE);
+            KnownPeers peers = requireInstalledKnownPeers();
+            SSLSocket socket = SoftwareTls.createClientSocket(host, port, requireInstalledTlsContext(), TLS_PROFILE);
+            RmiPeerPinning.verifyServer(socket, peers, expectedSaeIdFor(host, port));
+            return socket;
         }
     }
 
     private static final class PqcTlsRmiServerSocketFactory extends SslRMIServerSocketFactory {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
         private final boolean needClientAuth;
+        private final InetAddress bindAddress;
 
-        private PqcTlsRmiServerSocketFactory(boolean needClientAuth) {
+        private PqcTlsRmiServerSocketFactory(boolean needClientAuth, InetAddress bindAddress) {
             this.needClientAuth = needClientAuth;
+            this.bindAddress = Objects.requireNonNull(bindAddress, "bindAddress must not be null");
         }
 
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
-            return SoftwareTls.createServerSocket(port, requireInstalledTlsContext(), TLS_PROFILE, needClientAuth);
+            SSLServerSocket tls = SoftwareTls.createServerSocket(
+                    port, requireInstalledTlsContext(), TLS_PROFILE, needClientAuth, bindAddress);
+            return RmiPeerPinning.pinningServerSocket(tls, requireInstalledKnownPeers());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof PqcTlsRmiServerSocketFactory f
+                    && f.needClientAuth == needClientAuth && f.bindAddress.equals(bindAddress);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(needClientAuth, bindAddress);
         }
     }
 

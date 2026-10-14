@@ -47,7 +47,11 @@ Unit tests mock RMI, QKD, and HSM, or use a single SQLite map, a decision table,
 
 SE tests are run with \texttt{ctest --output-on-failure -j1} in \texttt{stm32u535-trustzone-usb/host/tropic\_model/build}.
 
-\textbf{Summary:} 220 passed, 0 skipped, 2 failed (210 Java: 208 passed, 2 failed; 12 SE passed). The two failures are \texttt{HsmLiveNoFallbackTest}: the Utimaco simulator was not reachable during this run (\texttt{NO\_CONNECTION 0xbe000015}).
+\textbf{Summary (RMI hardening run, 14 Oct 2026):} 357 passed, 2 skipped, 0 failed (347 Java: 345 passed, 2 skipped; 12 SE passed). Java with \texttt{-Punit}: 277 tests, of which 129 in \texttt{sae-node}; with \texttt{-Pintegration}: 70 tests, of which 59 in \texttt{sae-node}. The two skipped tests are \texttt{HsmLiveNoFallbackTest}, which only runs with \texttt{env/hsm.env} sourced and the Utimaco simulator reachable. This run did not source it; the cards below show the earlier run against the simulator, in which they passed. All test classes ran, including ones not described card by card below; Section~\ref{sec:hardening-it} and Section~\ref{sec:hardening-unit} list the tests added for the RMI hardening (F-01, F-02, F-06, F-13).
+
+Since the hardening, every \texttt{NodeCommandsService} call needs an authenticated caller SAE. Over real RMI it comes from the pinned TLS peer certificate. The in-process harnesses (\texttt{ProvisionCluster}, \texttt{TestRmiNetwork}, \texttt{AsCaller}) bind the calling node's SAE ID to each exported stub, so the existing multi-SAE, handover and provision tests above run with the real authorization checks.
+
+\textbf{Previous run (before the RMI hardening):} 338 passed, 0 skipped, 0 failed (326 Java tests in the latest \texttt{mvn -B verify} run with the HSM simulator reachable; 12 SE tests from the previous ctest run). Without \texttt{HSM\_DEVICE} the HSM tests are skipped. New tests and the coverage report are described in the chapter \emph{Test extensions and code coverage}.
 
 \chapter{Integration tests}
 
@@ -137,9 +141,9 @@ These tests run the production \texttt{ProvisionSession} FSM end to end through 
 \section{Security}
 \subsubsection{integration / security}
 
-\testcase{HsmLiveNoFallbackTest.encryptDecryptRoundTripOnCryptoServer}{failed}{Against the live CryptoServer, \texttt{HsmAesGcm} seals a plaintext under an HSM alias (not \texttt{BC}) and decrypts it back. Failed in this run: simulator not reachable (\texttt{NO\_CONNECTION}).}
+\testcase{HsmLiveNoFallbackTest.encryptDecryptRoundTripOnCryptoServer}{passed}{Against the live CryptoServer, \texttt{HsmAesGcm} seals a plaintext under an HSM alias (not \texttt{BC}) and decrypts it back. Passed in the latest run against the simulator on port 3001.}
 
-\testcase{HsmLiveNoFallbackTest.missingAliasDoesNotFallBackToInMemoryAes}{failed}{Decrypting a blob under a non-existent HSM alias throws instead of falling back to in-memory AES. Failed in this run: simulator not reachable (\texttt{NO\_CONNECTION}).}
+\testcase{HsmLiveNoFallbackTest.missingAliasDoesNotFallBackToInMemoryAes}{passed}{Decrypting a blob under a non-existent HSM alias throws instead of falling back to in-memory AES. Passed in the latest run against the simulator on port 3001.}
 
 \testcase{NodeTlsSoftwareIdentityTest.pkcs12AndPemLeavesMatch}{passed}{The ML-DSA leaf loaded from PEM and from PKCS12 has the same DER encoding as the generated certificate.}
 
@@ -158,6 +162,35 @@ These tests run the production \texttt{ProvisionSession} FSM end to end through 
 \testcase{Qkd014ClientTest.getStatusParsesKmeLimits}{passed}{\texttt{getStatus} parses \texttt{max\_key\_size} and \texttt{max\_key\_per\_request} into \texttt{KmeStatus} and its accessor methods.}
 
 \testcase{Qkd014ClientTest.getStatusParsesStatusExtension}{passed}{The vendor \texttt{status\_extension} object in the status JSON is kept in \texttt{KmeStatus} rather than dropped.}
+
+\section{RMI hardening}\label{sec:hardening-it}
+\subsubsection{integration / rmi authorization and pinning}
+
+\testcase{RmiAuthorizationTest.nonPartyCannotRemoveOrMarkAForeignShare}{passed}{Three nodes. sae-3 is not a party of the sae-1--sae-2 share. Its \texttt{removeRecord} on either node and its \texttt{markOriginProvisioned} on sae-2 fail with \texttt{AccessException} (inside a \texttt{RemoteException}). Both rows stay RECORD\_SHARED and the key material stays.}
+
+\testcase{RmiAuthorizationTest.partyMayMarkAndRemove}{passed}{The origin (a party) can mark the peer row ORIGIN\_PROVISIONED and then remove it over RMI.}
+
+\testcase{RmiAuthorizationTest.spoofedIssuingSaeIsRejected}{passed}{sae-3 claims \texttt{issuingSaeId}=sae-1 in \texttt{synchronize}, \texttt{lockFetch} and \texttt{insert}. All three are refused because the claimed issuer is not the authenticated caller, and the peer DB stays empty.}
+
+\testcase{RmiAuthorizationTest.nonPartyCannotDeleteAnInProgressShare}{passed}{The origin holds a RECORD\_SYNCHRONIZATION reservation. \texttt{deleteShare} from the non-party sae-3 is refused and the row stays.}
+
+\testcase{RmiAuthorizationTest.handoverOfCompletedShareByNonPartyStillWorks}{passed}{The share is ORIGIN\_PROVISIONED. sae-3 (the new SAE of a handed-over device) calls \texttt{deleteShare} on the origin. This is the one non-party mutation allowed: peer A is deleted first (remote-first), then the origin.}
+
+\testcase{RmiPeerPinningTest.pinnedPeerIsBoundAsCallerOnTheReadingThread}{passed}{A mutual-TLS connection from a CA-signed, pinned leaf: the server-side pinning socket binds the pinned SAE ID as the caller on the thread that reads the stream (the RMI dispatch thread).}
+
+\testcase{RmiPeerPinningTest.ownLeafIsBoundAsSelf}{passed}{A connection that presents the node's own leaf resolves to the node's own SAE ID.}
+
+\testcase{RmiPeerPinningTest.caSignedButUnpinnedPeerIsDisconnectedBeforeAnyRead}{passed}{A leaf signed by the same CA but not in the known-peers list: the handshake completes, then the first read fails with ``not pinned'' and the socket is closed before any RMI byte is processed.}
+
+\testcase{RmiPeerPinningTest.clientRejectsServerThatIsNotTheExpectedPinnedSae}{passed}{Client side: a server whose pinned SAE differs from the one expected for that endpoint is rejected, and an unpinned server is rejected too.}
+
+\testcase{RmiPeerPinningTest.endpointsMapToConfiguredSaeIds}{passed}{\texttt{expectedSaeIdFor} maps both the registry port and the object port (+40000) from \texttt{sae-nodes.json} to the configured SAE ID; unknown endpoints map to none.}
+
+\testcase{RmiPeerPinningTest.realRmiBindsCallerFiltersArgumentsAndListensOnlyOnBindAddress}{passed}{A real \texttt{RmiManager} on a random port pair: a call carries the authenticated caller into \texttt{NodeCommands}, a \texttt{HashMap} smuggled into an argument is rejected by the serialization filter (\texttt{RemoteException}, the call never reaches the service), and neither port accepts connections on non-loopback IPv4 addresses.}
+
+\testcase{RmiTlsTwoNodeTest.*}{passed}{The four existing real RMI-over-TLS tests now start the server with a known-peers list. The shared test identity is pinned as the origin SAE, so ping, record queries, the full exchange and \texttt{markOriginProvisioned} pass the authorization checks.}
+
+\testcase{Qkd014KeyExchangeFlowTest.*}{passed}{The three existing KME flow tests call the peer service as the authenticated origin (\texttt{AsCaller}).}
 
 \chapter{Unit tests}
 
@@ -233,6 +266,42 @@ Unit tests cover parsers, decision tables, framing, store tamper, QKD packing, a
 \testcase{ProvisionTerminalStatusTest.newShareWithoutMarkIsNotSuccess}{passed}{New share whose mark failed: the status is \texttt{SHARE\_NOT\_CONSISTENT}, not success.}
 
 \testcase{ProvisionTerminalStatusTest.storedShareStillPrintsSuccess}{passed}{Delivery of an existing share (no mark needed): the status is the 100\,\% download line followed by \texttt{SHARE\_SUCCESSFUL}.}
+
+\subsubsection{unit / sae-node / rmi hardening}\label{sec:hardening-unit}
+
+\testcase{NodeCommandsServiceTest.callsWithoutAuthenticatedCallerAreRefused}{passed}{Every mutating call and \texttt{getRecordMetadata}, invoked with no bound caller, throws \texttt{AccessException}.}
+
+\testcase{NodeCommandsServiceTest.callerMustMatchClaimedIssuingSae}{passed}{\texttt{synchronize}, \texttt{lockFetch} and \texttt{insert} with an \texttt{issuingSaeId} (or header SAE) that differs from the authenticated caller are refused.}
+
+\testcase{NodeCommandsServiceTest.nonPartyCannotRemoveOrMarkRecord}{passed}{A caller that is neither the row's SAE nor its issuer cannot \texttt{removeRecord} or \texttt{markOriginProvisioned}. Missing rows still return \texttt{null}/\texttt{false}.}
+
+\testcase{NodeCommandsServiceTest.nonPartyDeleteShareOnlyForCompletedShare}{passed}{A non-party \texttt{deleteShare} is refused for an in-progress share (RECORD\_FETCHING\_STARTED). It is allowed for RECORD\_SHARED and ORIGIN\_PROVISIONED (handover) and still deletes remote-first.}
+
+\testcase{RmiManagerTest.bindAddressDefaultsToAdvertisedHostAndCanBeOverridden}{passed}{Without \texttt{NODE\_RMI\_BIND} (or with a blank value) the listener binds to the advertised host; an explicit address overrides it.}
+
+\testcase{RmiManagerTest.startWithoutPinnedPeersFailsClosed}{passed}{\texttt{start} without a known-peers list throws ``Failed to start RMI manager.'' with a cause that names \texttt{RMI\_KNOWN\_PEERS}, and the manager is not running.}
+
+\testcase{RmiManagerTest.fromEnvironmentRequiresKnownPeersFile}{passed}{\texttt{RmiManager.fromEnvironment} refuses to build a manager when \texttt{RMI\_KNOWN\_PEERS} is unset.}
+
+\testcase{KnownPeersTest.fingerprintIsSha256OfSubjectPublicKeyInfo}{passed}{The pin is the SHA-256 of the certificate's SubjectPublicKeyInfo DER, as lowercase hex.}
+
+\testcase{KnownPeersTest.mapsPinnedLeafToSaeIdAndIgnoresOthers}{passed}{A pinned leaf maps to its SAE ID (pins are case- and colon-insensitive); any other certificate maps to none.}
+
+\testcase{KnownPeersTest.rejectsMalformedEntries}{passed}{Blank SAE IDs, fingerprints that are not 64 hex digits and one key pinned for two SAE IDs are rejected.}
+
+\testcase{KnownPeersTest.loadsJsonFileAndRejectsDuplicateSaeIds}{passed}{A \texttt{[\{"saeId","spkiSha256"\}]} JSON file loads; a file with a duplicate SAE ID is rejected.}
+
+\testcase{RmiSerialFilterTest.acceptsEveryArgumentShapeNodeCommandsUses}{passed}{Strings, \texttt{Address}, \texttt{ClientHeader}, \texttt{ClientRecord} and every list implementation the callers use (\texttt{List.of}, \texttt{ArrayList}, \texttt{Arrays.asList}, empty, singleton and unmodifiable lists) round-trip through the filter.}
+
+\testcase{RmiSerialFilterTest.rejectsTypesOutsideTheAllowlist}{passed}{Non-allowlisted top-level types (\texttt{HashMap}, \texttt{PriorityQueue}, \texttt{Date}) are rejected.}
+
+\testcase{RmiSerialFilterTest.rejectsDisallowedObjectSmuggledInsidePayload}{passed}{A disallowed object nested inside an allowed \texttt{ClientRecord} payload list is rejected.}
+
+\testcase{RmiSerialFilterTest.enforcesDepthAndArrayLimits}{passed}{A 12-level nested list (limit 8) and a 20\,000-element list (array limit 10\,000) are rejected.}
+
+\testcase{EnvSecretsTest.withoutConsoleFailsClearlyAndNeverReadsStdin}{passed}{F-13: with the variable unset and no interactive console, \texttt{envOrScan} throws \texttt{IllegalStateException} naming the variable and leaves the supplied stdin unread. This replaces the three former stdin-fallback tests.}
+
+\testcase{EnvSecretsTest.blankFileValueStillFailsWithoutConsole}{passed}{A blank value from the env file counts as unset and also fails clearly without a console.}
 
 \subsubsection{unit / sae-node / db}
 
@@ -519,6 +588,132 @@ USER APP tests cover chip INIT (LAB/PROD), owner auth, PEER ADD pad length, peer
 
 \testcase{ConsoleStyleTest.repliesSplitFailureFromHex}{passed}{A ``failed\ldots'' line is treated as an error, a clean hex block as data, and a prefixed ``OK encrypt reply'' is not hex.}
 
+\chapter{Test extensions and code coverage}
+
+\section{Test strategy}
+
+Tests in \texttt{JAVA\_APPS} are split with the JUnit~5 \texttt{@Tag} annotation into \emph{unit} tests (\texttt{@Tag("unit")}) and \emph{integration} tests (\texttt{@Tag("integration")}). Unit tests check one class in isolation: collaborators (RMI, QKD client, HSM, USB link) are replaced with Mockito mocks or simple fakes, and they run in milliseconds. Integration tests combine several real components: a real TLS handshake, exported RMI over TLS, an HTTP KME server, SQLite databases or the HSM simulator. Tests that need the HSM also carry \texttt{@Tag("hsm")}.
+
+The parent \texttt{pom.xml} passes the \texttt{groups} property to Surefire. Its default is empty, so \texttt{mvn -B verify} runs both groups. Profiles limit the run to one group:
+\begin{itemize}
+  \item \texttt{mvn -B verify -Punit} -- unit tests only,
+  \item \texttt{mvn -B verify -Pintegration} -- integration tests only (including the HSM tests when the simulator is reachable).
+\end{itemize}
+
+The new integration tests live in the \texttt{fel.cvut.integration.*} packages. The TLS and HSM tests share the \texttt{src/SaeNode/test} source tree but are assigned to the \texttt{tls-software} and \texttt{tls-hsm} modules via \texttt{testIncludes} and removed from \texttt{sae-node} via \texttt{testExcludes}. Production code (\texttt{src/*/main}) was not changed while extending the tests; the later RMI hardening (Section~\ref{sec:hardening-it}) did change it.
+
+\section{New unit tests}
+\subsubsection{unit / sae-node, cert-generator, user-app}
+
+The unit tests add error and edge-case paths. After trivial cases (\texttt{null} checks, getters, plain delegations) were removed, 99 tests remained; after the RMI hardening (Section~\ref{sec:hardening-unit}) the classes below hold 105:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llrp{7.2cm}@{}}
+\toprule
+Module & Class & Tests & What it verifies \\
+\midrule
+sae-node & \texttt{SeBytesTest} & 9 & SE protocol byte helpers (encoding, comparison, bounds) \\
+sae-node & \texttt{EnvSecretsTest} & 4 & reading secrets from environment variables and missing values; no stdin fallback without a terminal (F-13, \S\ref{sec:hardening-unit}) \\
+sae-node & \texttt{SeSessionBindingTest} & 7 & binding the SE session to the TLS exporter, including \texttt{ExportingTrustManager} \\
+sae-node & \texttt{Qkd014ClientErrorPathsTest} & 10 & KME error responses (HTTP codes, malformed JSON, limits) \\
+sae-node & \texttt{AtomicRecordStateMapTest} & 9 & record state transitions and their rejection \\
+sae-node & \texttt{NodeCommandsServiceTest} & 14 & node RMI commands, including cleanup when \texttt{insert} fails, and caller authorization (F-01) \\
+sae-node & \texttt{RmiManagerTest} & 6 & \texttt{RmiManager} start/stop and connection errors, bind address and mandatory pins (F-02) \\
+sae-node & \texttt{RecordRetentionSchedulerTest} & 4 & scheduling the purge of expired records \\
+sae-node & \texttt{SqliteLogHandlerTest} & 4 & storing logs in the \texttt{application\_log} table \\
+cert-generator & \texttt{CertGenConfigTest} & 7 & loading and validating the generator configuration \\
+cert-generator & \texttt{CertGeneratorTest} & 4 & issuing ML-DSA certificates into a temporary directory \\
+user-app & \texttt{OwnerAuthUsbTest} & 7 & owner authentication over the USB link (mocked) \\
+user-app & \texttt{ChipInitEdgeCasesTest} & 9 & INIT edge cases (chip error replies) \\
+user-app & \texttt{PeerCommandsFlowTest} & 11 & console flows for PEER ADD/REMOVE/LIST \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{New integration tests}
+
+\subsection{TLS between two nodes (tls-software)}
+\subsubsection{integration / tls}
+
+The tests generate an ML-DSA root CA and \texttt{sae-1} / \texttt{sae-2} leaf certificates (PEM and PKCS12) in a temporary directory and open real TLS connections through \texttt{SoftwareTls}.
+
+\testcase{SoftwareTlsTwoNodeTest.mutualPqcHandshakeAndApplicationDataBothDirections}{passed}{A PEM context and a PKCS12 context complete a mutually authenticated pure post-quantum handshake, data flows in both directions and each side sees the peer's CN.}
+
+\testcase{SoftwareTlsTwoNodeTest.classicalProfileClientNegotiatesPqcWithPureServer}{passed}{A client with the \texttt{CLASSICAL} profile negotiates with a server in the \texttt{PURE\_PQC} profile.}
+
+\testcase{SoftwareTlsTwoNodeTest.nodeFromForeignCaIsRejectedByServer}{passed}{The server rejects a client whose certificate comes from a foreign CA.}
+
+\testcase{SoftwareTlsTwoNodeTest.clientRejectsServerFromForeignCa}{passed}{The client rejects a server whose certificate comes from a foreign CA.}
+
+\testcase{SoftwareTlsTwoNodeTest.deviceLeafIssuedFromRawKeyAuthenticatesOverWrappedTransport}{passed}{A leaf issued from a raw ML-DSA-44 key (\texttt{SoftwareLeaf}) authenticates through \texttt{SoftwareTls.wrapServer} over an already open transport.}
+
+\testcase{SoftwareTlsTwoNodeTest.trustStoreHelpersRoundTrip}{passed}{The \texttt{TlsStores} helpers (trust store from a certificate, PKCS12 loading, leaf from PKCS12) return the original certificates.}
+
+\subsection{RMI between two nodes (sae-node)}
+\subsubsection{integration / rmi}
+
+Two \texttt{RmiManager} instances run in one JVM over TLS (\texttt{PURE\_PQC}). The registry uses port $p$ and the export uses port $40000+p$, so the test picks a free port pair at runtime. \texttt{connectBySaeId} reads fixed ports from \texttt{sae-nodes.json}, so the origin side uses a Mockito \texttt{spy} redirected to \texttt{connect(Address)}. No environment variables are needed.
+
+\testcase{RmiTlsTwoNodeTest.pingAndRecordQueriesTravelOverRmiTls}{passed}{\texttt{ping}, \texttt{synchronize}, \texttt{lockFetch}, \texttt{getRecordMetadata} and \texttt{removeRecord} go over real RMI and change the peer database.}
+
+\testcase{RmiTlsTwoNodeTest.fullExchangeOverRealRmiFinalizesBothDatabases}{passed}{A full \texttt{PeerRecordSync} exchange with a mock KME: both rows end RECORD\_SHARED, the peer key material matches the origin, and \texttt{markOriginProvisioned} over RMI leads to ORIGIN\_PROVISIONED.}
+
+\testcase{RmiTlsTwoNodeTest.peerRefusalPropagatesAsRemoteExceptionOverTheWire}{passed}{An \texttt{insert} without a reservation is refused by the peer, the client gets a \texttt{RemoteException} and the database stays empty.}
+
+\testcase{RmiTlsTwoNodeTest.stopUnexportsAndSameAddressCanBeRestarted}{passed}{A repeated \texttt{start} has no effect, after \texttt{stop} the old stub fails, and the node can be started again on the same address.}
+
+\subsection{ETSI QKD 014 flow into SQLite (sae-node)}
+\subsubsection{integration / qkd}
+
+A mock KME (\texttt{MockKme}, \texttt{com.sun.net.httpserver}) implements \texttt{status}, \texttt{enc\_keys} and \texttt{dec\_keys} (GET and POST). Origin and peer both use a real \texttt{Qkd014Client}; the peer is a real \texttt{NodeCommandsService} on its own SQLite database.
+
+\testcase{Qkd014KeyExchangeFlowTest.keysFlowFromKmeIntoBothDatabases}{passed}{Keys from \texttt{enc\_keys} reach the peer through \texttt{dec\_keys}, both rows are RECORD\_SHARED, the peer's stored (sealed) material equals the origin's, and every issued ID is consumed.}
+
+\testcase{Qkd014KeyExchangeFlowTest.largeKeyIdListIsBatchedThroughPost}{passed}{With small keys and \texttt{max\_key\_per\_request}=2 the ID list is split into several \texttt{dec\_keys} batches; the result is identical on both sides.}
+
+\testcase{Qkd014KeyExchangeFlowTest.peerKmeRefusalRollsBackBothSides}{passed}{The peer's KME answers HTTP 400: the exchange ends with \texttt{RemoteException} and both reservations are rolled back with no key material.}
+
+\subsection{HSM simulator (tls-hsm)}
+\subsubsection{integration / hsm}
+
+\texttt{HsmSimulatorTest} tests \texttt{Pqmi}, \texttt{HsmAesGcm} and \texttt{HsmNodeTls} against a running Utimaco CryptoServer simulator. It runs only when \texttt{HSM\_DEVICE} is set and the given \texttt{port@host} accepts TCP connections; otherwise the whole class is skipped via \texttt{Assumptions} (reported by Surefire as 0 tests run). It only creates keys with the \texttt{it-sim-} prefix, so existing simulator state is left alone. Run it with:
+\begin{center}
+\small\texttt{HSM\_DEVICE=3001@<host> HSM\_TIMEOUT\_MS=60000 HSM\_USER=CXI\_HMAC HSM\_PIN=\ldots{}} \\
+\small\texttt{HSM\_MLDSA\_GROUP=JAVA\_APPS HSM\_MLDSA\_SPEC=0 mvn -B verify}
+\end{center}
+From WSL, a simulator running on Windows is reachable via the host IP (e.g.\ \texttt{172.28.0.1}), not via \texttt{127.0.0.1}. The Linux simulator in the GP~6.5 package is 32-bit and needs i386 libraries; the tests used the simulator already running on port 3001.
+
+\testcase{HsmSimulatorTest.aesGcmRoundTripUsesHsmKey}{passed}{The AES-GCM key is created in the HSM idempotently, every encryption uses a fresh IV, and decryption returns the original data.}
+
+\testcase{HsmSimulatorTest.aesGcmDetectsTamperingAndUnknownAlias}{passed}{A modified ciphertext and a non-existent key alias both throw instead of returning wrong output.}
+
+\testcase{HsmSimulatorTest.pqmiIdentityKeySignsVerifiablyWithMlDsa44}{passed}{PQMI generates an identity key, refuses to overwrite it, exports a 1312\,B public key, and BouncyCastle ML-DSA-44 verifies the HSM signature.}
+
+\testcase{HsmSimulatorTest.hsmBackedNodeCompletesPqcHandshakeWithSoftwarePeer}{passed}{\texttt{HsmNodeTls.createContextForNode} with the key in the HSM completes a mutual PQC handshake with a software node.}
+
+\section{Code coverage}
+
+JaCoCo runs in the \texttt{verify} phase of every module; the \texttt{modules/coverage-report} module (\texttt{report-aggregate}) also merges the data of all eight modules into one report, \texttt{modules/coverage-report/target/site/jacoco-aggregate/index.html} (plus \texttt{jacoco.csv}). The Utimaco library (\texttt{com/utimaco/**}) and interactive entry points (\texttt{Node}, \texttt{NodeBootstrap}, \texttt{LabSwitchApp}, \texttt{Qkd014Demo}, \texttt{UserApplication}, \texttt{ConsoleIo}) are excluded. The combined report is produced by \texttt{mvn -B verify}. The table reflects a run with the HSM simulator reachable (without it \texttt{tls-hsm} has 0\,\% coverage).
+
+\begin{center}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Module & Lines & Lines [\%] & Branches & Branches [\%] \\
+\midrule
+cert-generator & 87 / 305 & 28.5 & 75 / 151 & 49.7 \\
+lab-switch & 70 / 79 & 88.6 & 25 / 33 & 75.8 \\
+sae-node & 1281 / 1492 & 85.9 & 422 / 615 & 68.6 \\
+se-wire & 794 / 1016 & 78.1 & 332 / 513 & 64.7 \\
+tls-hsm & 334 / 505 & 66.1 & 62 / 146 & 42.5 \\
+tls-software & 176 / 216 & 81.5 & 33 / 70 & 47.1 \\
+usb-cdc & 100 / 527 & 19.0 & 59 / 258 & 22.9 \\
+user-app & 490 / 703 & 69.7 & 264 / 412 & 64.1 \\
+\midrule
+\textbf{Total} & \textbf{3332 / 4843} & \textbf{68.8} & \textbf{1272 / 2198} & \textbf{57.9} \\
+\bottomrule
+\end{tabular}
+\end{center}
 \chapter{SE}
 
 Host and TROPIC01 model tests (ctest in \texttt{stm32u535-trustzone-usb/host/tropic\_model/build}).

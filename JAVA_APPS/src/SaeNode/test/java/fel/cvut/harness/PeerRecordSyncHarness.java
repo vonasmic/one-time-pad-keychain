@@ -1,6 +1,7 @@
 package fel.cvut.harness;
 
 import fel.cvut.node.PeerRecordSync;
+import fel.cvut.node.NodeCommands;
 import fel.cvut.node.interNodeCommunication.NodeCommandsService;
 import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
@@ -26,6 +27,8 @@ public final class PeerRecordSyncHarness {
     public final AtomicRecordStateMap originMap;
     public final AtomicRecordStateMap peerMap;
     public final NodeCommandsService peerService;
+    /** Peer service as seen by the origin (calls carry ORIGIN_SAE as the authenticated caller). */
+    public final NodeCommands peer;
     public final Qkd014Client qkd;
     public final RmiManager rmi;
 
@@ -42,8 +45,9 @@ public final class PeerRecordSyncHarness {
                 qkd,
                 JceAesGcm.mockHsm()
         );
+        peer = AsCaller.bind(ORIGIN_SAE, peerService);
         rmi = mock(RmiManager.class);
-        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peerService);
+        when(rmi.connectBySaeId(PEER_SAE)).thenReturn(peer);
     }
 
     /** Builds a harness wired to the given SQLite extension. */

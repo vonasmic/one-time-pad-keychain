@@ -19,25 +19,23 @@ import java.rmi.RemoteException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * Three SAE nodes (origin / peer / other), each with its own real SQLite DB, a real
- * {@link NodeCommandsService} exported over {@link InProcessRmi}, and a shared mock
- * {@link RmiManager} that resolves SAE ids to those stubs. {@link #session} builds a
+ * {@link NodeCommandsService} exported over {@link InProcessRmi} through {@link TestRmiNetwork},
+ * and a per-node mock {@link RmiManager} whose stubs carry that node's SAE ID as the
+ * authenticated RMI caller. {@link #session} builds a
  * production {@link ProvisionSession} wired the same way {@code Node#provisionSession()}
  * wires it (Records = local map + key store, Exchange = PeerRecordSync, RemoteRecords = RMI).
  * HSM, QKD and SeKemFill (device downlink) are mocks.
@@ -47,10 +45,10 @@ public final class ProvisionCluster implements AutoCloseable {
     public static final byte[] DOWNLINK = {7, 7, 7};
 
     public final Qkd014Client qkd;
-    public final RmiManager rmi;
+    /** Per-caller in-process RMI (each node's calls carry its own SAE ID, as pinned TLS does). */
+    public final TestRmiNetwork net = new TestRmiNetwork();
     public final SeKemFill kemFill;
     private final Map<String, SaeNode> nodes = new LinkedHashMap<>();
-    private final Set<String> unreachable = new HashSet<>();
 
     public final class SaeNode {
         public final NodeRef ref;
@@ -58,15 +56,17 @@ public final class ProvisionCluster implements AutoCloseable {
         public final AtomicRecordStateMap map;
         public final SharedKeyMaterialStore store;
         public final NodeCommandsService service;
-        public final InProcessRmi exported;
+        /** This node's view of the network: stubs it obtains carry its SAE ID as the caller. */
+        public final RmiManager rmi;
 
-        SaeNode(NodeRef ref, DataSource dataSource) throws RemoteException {
+        SaeNode(NodeRef ref, DataSource dataSource) throws Exception {
             this.ref = ref;
             this.dataSource = dataSource;
             this.map = SaeFixtures.stateMap(ref.getNodeId(), dataSource);
             this.store = SaeFixtures.keyStore(dataSource, JceAesGcm.mockHsm());
+            this.rmi = net.rmiFor(ref.getNodeId());
             this.service = new NodeCommandsService(ref, map, qkd, store, rmi);
-            this.exported = InProcessRmi.export(service);
+            net.register(ref.getNodeId(), service);
         }
 
         public String id() {
@@ -96,23 +96,11 @@ public final class ProvisionCluster implements AutoCloseable {
 
     public ProvisionCluster(SaeSqliteExtension sqlite) throws Exception {
         qkd = SaeFixtures.mockQkd();
-        rmi = mock(RmiManager.class);
         kemFill = mock(SeKemFill.class);
         when(kemFill.buildDownlink(any(), anyList(), anyByte(), anyInt())).thenReturn(DOWNLINK);
         nodes.put(SaeFixtures.ORIGIN_SAE, new SaeNode(SaeFixtures.originRef(), sqlite.origin()));
         nodes.put(SaeFixtures.PEER_SAE, new SaeNode(SaeFixtures.peerRef(), sqlite.peer()));
         nodes.put(SaeFixtures.OTHER_SAE, new SaeNode(SaeFixtures.otherRef(), sqlite.other()));
-        when(rmi.connectBySaeId(anyString())).thenAnswer(invocation -> {
-            String id = invocation.getArgument(0);
-            if (unreachable.contains(id)) {
-                throw new RemoteException("SAE " + id + " unreachable (test)");
-            }
-            SaeNode node = nodes.get(id);
-            if (node == null) {
-                throw new NotBoundException("unknown SAE " + id);
-            }
-            return node.exported.stub();
-        });
     }
 
     public SaeNode origin() {
@@ -128,11 +116,7 @@ public final class ProvisionCluster implements AutoCloseable {
     }
 
     public void setUnreachable(String saeId, boolean down) {
-        if (down) {
-            unreachable.add(saeId);
-        } else {
-            unreachable.remove(saeId);
-        }
+        net.setUnreachable(saeId, down);
     }
 
     /** Scripted operator: answers confirms in order (default {@code true} once exhausted). */
@@ -204,13 +188,13 @@ public final class ProvisionCluster implements AutoCloseable {
             @Override
             public void forceDelete(String saeId, String clientHash1, String clientHash2)
                     throws RemoteException, NotBoundException {
-                rmi.connectBySaeId(saeId).removeRecord(clientHash2, clientHash1);
+                local.rmi.connectBySaeId(saeId).removeRecord(clientHash2, clientHash1);
             }
 
             @Override
             public void deleteShare(String saeId, String clientHash1, String clientHash2)
                     throws RemoteException, NotBoundException {
-                NodeCommands node = rmi.connectBySaeId(saeId);
+                NodeCommands node = local.rmi.connectBySaeId(saeId);
                 node.deleteShare(clientHash2, clientHash1);
                 try {
                     hook.run();
@@ -227,7 +211,7 @@ public final class ProvisionCluster implements AutoCloseable {
                 if (saeId.equals(local.id())) {
                     return local.map.get(clientHash2, clientHash1).orElse(null);
                 }
-                return rmi.connectBySaeId(saeId).getRecordMetadata(clientHash2, clientHash1);
+                return local.rmi.connectBySaeId(saeId).getRecordMetadata(clientHash2, clientHash1);
             }
         };
         return new ProvisionSession(
@@ -243,6 +227,6 @@ public final class ProvisionCluster implements AutoCloseable {
 
     @Override
     public void close() {
-        nodes.values().forEach(n -> n.exported.close());
+        net.close();
     }
 }
