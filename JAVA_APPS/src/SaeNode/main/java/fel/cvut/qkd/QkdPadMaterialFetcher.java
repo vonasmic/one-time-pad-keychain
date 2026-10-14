@@ -26,7 +26,7 @@ public final class QkdPadMaterialFetcher {
 
     private static final Logger LOG = Logger.getLogger(QkdPadMaterialFetcher.class.getName());
 
-    static final int MIN_PARTIAL_PADS = 2;
+    public static final int MIN_PARTIAL_PADS = 2;
 
     static final Duration DEFAULT_POLL = Duration.ofSeconds(1);
     static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(10);
@@ -39,7 +39,7 @@ public final class QkdPadMaterialFetcher {
     }
 
     @FunctionalInterface
-    interface Sleeper {
+    public interface Sleeper {
         void sleep(Duration duration) throws InterruptedException;
     }
 
@@ -58,7 +58,7 @@ public final class QkdPadMaterialFetcher {
         this(qkdClient, duration -> Thread.sleep(duration.toMillis()), DEFAULT_POLL, DEFAULT_DEADLINE, log);
     }
 
-    QkdPadMaterialFetcher(
+    public QkdPadMaterialFetcher(
             Qkd014Client qkdClient,
             Sleeper sleeper,
             Duration poll,
@@ -203,7 +203,7 @@ public final class QkdPadMaterialFetcher {
      * Request {@code size} taken from status {@code max_key_size}, snapped down to a
      * multiple of the pool unit so {@code stored_key_count} consumption is exact.
      */
-    static int packedKeySizeBits(int maxKeySizeBits, int poolBits) {
+    public static int packedKeySizeBits(int maxKeySizeBits, int poolBits) {
         int alignedMax = maxKeySizeBits - (maxKeySizeBits % 8);
         if (poolBits >= 8) {
             int size = alignedMax - (alignedMax % poolBits);

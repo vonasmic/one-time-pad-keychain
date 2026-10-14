@@ -6,36 +6,60 @@
     NoRecord            no row
     Synchronization     RECORD_SYNCHRONIZATION — pair reserved
     FetchLocked         RECORD_FETCHING_STARTED — lockFetch held
-    ShareCommitted      RECORD_AVAILABLE — share committed; origin fill did
-                        not finish. Origin deletes this leftover and starts
-                        a new share with no operator prompt.
-    OriginProvisioned   RECORD_PROVISIONED — origin device acked (origin SAE only)
+    RecordShared        RECORD_SHARED — both databases hold keys; the origin
+                        device has not acked. Same meaning on both SAEs.
+                        Incomplete. A stale row is deleted; ON DELETE CASCADE
+                        drops shared_key_material. A fresh row is left alone.
+    OriginProvisioned   ORIGIN_PROVISIONED — origin device acked. Written on
+                        the peer first, then the origin. The peer device is
+                        filled only when both rows are OriginProvisioned.
 
-  OriginShareCheck after a successful origin read:
-    OriginProvisioned                      keep; peer device may be filled
-    ShareCommitted/FetchLocked, not expired keep; do not fill
-    Synchronization, not expired           delete peer only
-    missing or expired non-Provisioned     delete both
-  Failed origin read: neither delete nor fill. Java has no sweeper.
+  The reservation window is 5 minutes. It expires Synchronization,
+  FetchLocked, and RecordShared. It does not expire OriginProvisioned.
 
-  ReportTerminalSuccess runs only after MarkOriginProvisioned returns.
-  The terminal line is set only for a consistent share: origin device has
-  keys, origin row is OriginProvisioned, peer row is ShareCommitted, and
-  the material flags match. A crash before that return does not report it.
+  MarkPeerProvisioned runs only after the origin device ack, and only from
+  RecordShared. MarkOriginProvisioned runs only after the peer mark returns.
+  A crash between them leaves the peer OriginProvisioned and the origin
+  RecordShared. ReportTerminalSuccess runs only when both marks have returned.
 
-  Do not treat leftover-share absence as always true: an unreachable origin
-  leaves leftover ShareCommitted; expiring a reservation after a later
-  attempt does not re-run that attempt.
+  A later origin retry does not delete a fresh RecordShared. A stale one is
+  deleted and a new Synchronization is offered to the peer. If the peer
+  rejects it, the origin reservation is rolled back. A later peer-device
+  visit delivers only when both rows are OriginProvisioned (delete-before-send).
+  A fresh RecordShared on the peer is not a delivery. A stale one is reclaimed
+  locally and its keys are dropped.
+
+  Do not treat leftover-share absence as always true: an unreachable peer or
+  origin, or a skipped later attempt, leaves the rows. Expiring a reservation
+  does not by itself re-run the attempt.
+
+  At every saga label the model may crash the origin JVM or the peer JVM
+  (freeze metadata, no compensating delete) before the step commits.
  ***************************************************************************)
 EXTENDS Naturals, TLC
 
 NoRecord            == "NoRecord"
 Synchronization     == "Synchronization"
 FetchLocked         == "FetchLocked"
-ShareCommitted      == "ShareCommitted"
+RecordShared        == "RecordShared"
 OriginProvisioned   == "OriginProvisioned"
 
-RecordStates == {NoRecord, Synchronization, FetchLocked, ShareCommitted, OriginProvisioned}
+RecordStates == {NoRecord, Synchronization, FetchLocked, RecordShared, OriginProvisioned}
+Incomplete == {Synchronization, FetchLocked, RecordShared}
+
+\* Same issuer may refresh Synchronization. FetchLocked and RecordShared yield
+\* only when the reservation window has expired. OriginProvisioned never does.
+OriginStartsSync(record, expired) ==
+  \/ record = NoRecord
+  \/ record = Synchronization
+  \/ (record \in {FetchLocked, RecordShared} /\ expired)
+
+\* Peer synchronize accepts a new reservation. A fresh RecordShared or
+\* FetchLocked, or an OriginProvisioned row, refuses it.
+PeerAcceptsNewSync(record, expired) ==
+  \/ record = NoRecord
+  \/ record = Synchronization
+  \/ (record \in {FetchLocked, RecordShared} /\ expired)
 
 (*--algorithm SaeProvision
 variables
@@ -46,21 +70,34 @@ variables
   peerReservationExpired = FALSE,
   peerHasKeyMaterial = FALSE,
   originProcessDied = FALSE,
-  twoMinutesElapsed = FALSE,
+  peerProcessDied = FALSE,
+  fiveMinutesElapsed = FALSE,
   originSaeReachable = TRUE,
-  laterAttemptReadOrigin = FALSE,
+  peerSaeReachable = TRUE,
+  laterAttemptKind = "none",
   originDeviceHasKeys = FALSE,
   peerDeviceHasKeys = FALSE,
   terminalReportedSuccess = FALSE;
 
 begin
   ReserveOriginPair:
-    originRecord := Synchronization || originReservationExpired := FALSE;
+    either
+      originRecord := Synchronization || originReservationExpired := FALSE;
+    or
+      originProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    end either;
   ReservePeerPair:
     either
       peerRecord := Synchronization || peerReservationExpired := FALSE;
     or
       originProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
       goto ElapseReservationTimeout;
     end either;
   LockOriginFetch:
@@ -69,12 +106,18 @@ begin
     or
       originProcessDied := TRUE;
       goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
+      goto ElapseReservationTimeout;
     end either;
   LockPeerFetch:
     either
       peerRecord := FetchLocked || peerReservationExpired := FALSE;
     or
       originProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
       goto ElapseReservationTimeout;
     end either;
   StorePeerKeyMaterial:
@@ -83,19 +126,28 @@ begin
     or
       originProcessDied := TRUE;
       goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
+      goto ElapseReservationTimeout;
     end either;
   CommitPeerShare:
     either
-      peerRecord := ShareCommitted || peerReservationExpired := FALSE;
+      peerRecord := RecordShared || peerReservationExpired := FALSE;
     or
       originProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
       goto ElapseReservationTimeout;
     end either;
   CommitOriginShare:
     either
-      originRecord := ShareCommitted || originReservationExpired := FALSE || originHasShare := TRUE;
+      originRecord := RecordShared || originReservationExpired := FALSE || originHasShare := TRUE;
     or
       originProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
       goto ElapseReservationTimeout;
     end either;
   SendToOriginDevice:
@@ -104,31 +156,53 @@ begin
     or
       originProcessDied := TRUE;
       goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
+      goto ElapseReservationTimeout;
     end either;
+  \* Peer first. A failed or crashed mark leaves both rows RecordShared.
+  MarkPeerProvisioned:
+    either
+      if originDeviceHasKeys /\ peerRecord = RecordShared then
+        peerRecord := OriginProvisioned || peerReservationExpired := FALSE;
+      end if;
+    or
+      originProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
+      goto ElapseReservationTimeout;
+    end either;
+  \* Origin only after the peer row is OriginProvisioned.
   MarkOriginProvisioned:
     either
-      if originDeviceHasKeys /\ originRecord = ShareCommitted then
+      if originDeviceHasKeys /\ originRecord = RecordShared /\ peerRecord = OriginProvisioned then
         originRecord := OriginProvisioned || originReservationExpired := FALSE;
       end if;
     or
       originProcessDied := TRUE;
       goto ElapseReservationTimeout;
+    or
+      peerProcessDied := TRUE;
+      goto ElapseReservationTimeout;
     end either;
   ReportTerminalSuccess:
     either
-      if originRecord = OriginProvisioned /\ originDeviceHasKeys
-         /\ peerRecord = ShareCommitted /\ originHasShare /\ peerHasKeyMaterial then
+      if originRecord = OriginProvisioned /\ peerRecord = OriginProvisioned
+         /\ originDeviceHasKeys /\ originHasShare /\ peerHasKeyMaterial then
         terminalReportedSuccess := TRUE;
       end if;
     or
-      \* Process died after the mark returned, before the terminal line.
-      skip;
+      \* Origin died after both marks returned, before the terminal line.
+      originProcessDied := TRUE;
+    or
+      peerProcessDied := TRUE;
     end either;
   ElapseReservationTimeout:
     either
-      twoMinutesElapsed := TRUE
-      || originReservationExpired := IF originRecord \in {Synchronization, FetchLocked, ShareCommitted} THEN TRUE ELSE originReservationExpired
-      || peerReservationExpired := IF peerRecord \in {Synchronization, FetchLocked, ShareCommitted} THEN TRUE ELSE peerReservationExpired;
+      fiveMinutesElapsed := TRUE
+      || originReservationExpired := IF originRecord \in Incomplete THEN TRUE ELSE originReservationExpired
+      || peerReservationExpired := IF peerRecord \in Incomplete THEN TRUE ELSE peerReservationExpired;
     or
       skip;
     end either;
@@ -138,88 +212,82 @@ begin
     or
       skip;
     end either;
+  MaybeLosePeerLink:
+    either
+      peerSaeReachable := FALSE;
+    or
+      skip;
+    end either;
   LaterAttempt:
     either
-      \* Origin retries. Leftover ShareCommitted is a failed origin fill:
-      \* delete both rows and reserve again, no operator prompt.
-      \* A fresh Synchronization plus leftover peer ShareCommitted → delete
-      \* peer, then drop the origin row.
-      if originRecord = ShareCommitted then
+      \* Origin retries. Fresh RecordShared and fresh FetchLocked wait.
+      \* Stale incomplete state, a Synchronization row, or no row starts a
+      \* new reservation. The peer must accept it; otherwise the origin
+      \* reservation is rolled back. Peer down rolls the origin back only.
+      if originRecord = OriginProvisioned
+         \/ (originRecord = FetchLocked /\ ~originReservationExpired)
+         \/ (originRecord = RecordShared /\ ~originReservationExpired) then
+        laterAttemptKind := "origin";
+      elsif ~peerSaeReachable then
+        originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
+        || laterAttemptKind := "origin";
+      elsif PeerAcceptsNewSync(peerRecord, peerReservationExpired) then
         originRecord := Synchronization || originReservationExpired := FALSE || originHasShare := FALSE
-        || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-        || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-      elsif originRecord = NoRecord \/ (originRecord \in {Synchronization, FetchLocked} /\ originReservationExpired) then
-        if peerRecord = ShareCommitted then
-          if originSaeReachable then
-            originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
-            || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-          else
-            originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-          end if;
-        else
-          originRecord := Synchronization || originReservationExpired := FALSE;
-        end if;
+        || peerRecord := Synchronization || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
+        || laterAttemptKind := "origin";
+      else
+        originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
+        || laterAttemptKind := "origin";
       end if;
     or
-      \* Second device on the peer: deliver stored material only if origin is
-      \* OriginProvisioned. Delete-before-send; the `or skip` is death after delete.
-      if peerRecord = ShareCommitted then
+      \* Peer device. RecordShared is not deliverable. Stale incomplete state
+      \* is reclaimed locally and its keys are dropped. Delivery requires both
+      \* rows OriginProvisioned, then delete-before-send.
+      if peerRecord = RecordShared /\ ~peerReservationExpired then
+        laterAttemptKind := "peer";
+      elsif peerRecord \in Incomplete /\ peerReservationExpired then
+        peerRecord := Synchronization || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
+        || laterAttemptKind := "peer";
+      elsif peerRecord = OriginProvisioned then
         if originSaeReachable = FALSE then
-          laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
+          laterAttemptKind := "peer";
         elsif originRecord = OriginProvisioned then
           either
             originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
             || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
             || peerDeviceHasKeys := TRUE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
+            || laterAttemptKind := "peer";
           or
             originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
             || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
+            || laterAttemptKind := "peer";
           end either;
-        elsif originRecord \in {ShareCommitted, FetchLocked} then
-          if originReservationExpired then
-            originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
-            || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-          else
-            laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-          end if;
-        elsif originRecord = Synchronization then
-          if originReservationExpired then
-            originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
-            || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-          else
-            peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-            || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
-          end if;
-        elsif originRecord = NoRecord then
-          peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
-          || laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
+        elsif originRecord \in Incomplete /\ ~originReservationExpired then
+          laterAttemptKind := "peer";
         else
-          laterAttemptReadOrigin := twoMinutesElapsed \/ laterAttemptReadOrigin;
+          originRecord := NoRecord || originReservationExpired := FALSE || originHasShare := FALSE
+          || peerRecord := NoRecord || peerReservationExpired := FALSE || peerHasKeyMaterial := FALSE
+          || laterAttemptKind := "peer";
         end if;
+      else
+        laterAttemptKind := "peer";
       end if;
     or
       skip;
     end either;
 end algorithm; *)
-
 \* BEGIN TRANSLATION
 VARIABLES pc, originRecord, originReservationExpired, originHasShare, 
           peerRecord, peerReservationExpired, peerHasKeyMaterial, 
-          originProcessDied, twoMinutesElapsed, originSaeReachable, 
-          laterAttemptReadOrigin, originDeviceHasKeys, peerDeviceHasKeys, 
-          terminalReportedSuccess
+          originProcessDied, peerProcessDied, fiveMinutesElapsed, 
+          originSaeReachable, peerSaeReachable, laterAttemptKind, 
+          originDeviceHasKeys, peerDeviceHasKeys, terminalReportedSuccess
 
 vars == << pc, originRecord, originReservationExpired, originHasShare, 
            peerRecord, peerReservationExpired, peerHasKeyMaterial, 
-           originProcessDied, twoMinutesElapsed, originSaeReachable, 
-           laterAttemptReadOrigin, originDeviceHasKeys, peerDeviceHasKeys, 
-           terminalReportedSuccess >>
+           originProcessDied, peerProcessDied, fiveMinutesElapsed, 
+           originSaeReachable, peerSaeReachable, laterAttemptKind, 
+           originDeviceHasKeys, peerDeviceHasKeys, terminalReportedSuccess >>
 
 Init == (* Global variables *)
         /\ originRecord = NoRecord
@@ -229,181 +297,242 @@ Init == (* Global variables *)
         /\ peerReservationExpired = FALSE
         /\ peerHasKeyMaterial = FALSE
         /\ originProcessDied = FALSE
-        /\ twoMinutesElapsed = FALSE
+        /\ peerProcessDied = FALSE
+        /\ fiveMinutesElapsed = FALSE
         /\ originSaeReachable = TRUE
-        /\ laterAttemptReadOrigin = FALSE
+        /\ peerSaeReachable = TRUE
+        /\ laterAttemptKind = "none"
         /\ originDeviceHasKeys = FALSE
         /\ peerDeviceHasKeys = FALSE
         /\ terminalReportedSuccess = FALSE
         /\ pc = "ReserveOriginPair"
 
 ReserveOriginPair == /\ pc = "ReserveOriginPair"
-                     /\ /\ originRecord' = Synchronization
-                        /\ originReservationExpired' = FALSE
-                     /\ pc' = "ReservePeerPair"
+                     /\ \/ /\ /\ originRecord' = Synchronization
+                              /\ originReservationExpired' = FALSE
+                           /\ pc' = "ReservePeerPair"
+                           /\ UNCHANGED <<originProcessDied, peerProcessDied>>
+                        \/ /\ originProcessDied' = TRUE
+                           /\ pc' = "ElapseReservationTimeout"
+                           /\ UNCHANGED <<originRecord, originReservationExpired, peerProcessDied>>
+                        \/ /\ peerProcessDied' = TRUE
+                           /\ pc' = "ElapseReservationTimeout"
+                           /\ UNCHANGED <<originRecord, originReservationExpired, originProcessDied>>
                      /\ UNCHANGED << originHasShare, peerRecord, 
                                      peerReservationExpired, 
-                                     peerHasKeyMaterial, originProcessDied, 
-                                     twoMinutesElapsed, originSaeReachable, 
-                                     laterAttemptReadOrigin, 
-                                     originDeviceHasKeys, peerDeviceHasKeys, 
+                                     peerHasKeyMaterial, fiveMinutesElapsed, 
+                                     originSaeReachable, peerSaeReachable, 
+                                     laterAttemptKind, originDeviceHasKeys, 
+                                     peerDeviceHasKeys, 
                                      terminalReportedSuccess >>
 
 ReservePeerPair == /\ pc = "ReservePeerPair"
                    /\ \/ /\ /\ peerRecord' = Synchronization
                             /\ peerReservationExpired' = FALSE
                          /\ pc' = "LockOriginFetch"
-                         /\ UNCHANGED originProcessDied
+                         /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                       \/ /\ originProcessDied' = TRUE
                          /\ pc' = "ElapseReservationTimeout"
-                         /\ UNCHANGED <<peerRecord, peerReservationExpired>>
+                         /\ UNCHANGED <<peerRecord, peerReservationExpired, peerProcessDied>>
+                      \/ /\ peerProcessDied' = TRUE
+                         /\ pc' = "ElapseReservationTimeout"
+                         /\ UNCHANGED <<peerRecord, peerReservationExpired, originProcessDied>>
                    /\ UNCHANGED << originRecord, originReservationExpired, 
                                    originHasShare, peerHasKeyMaterial, 
-                                   twoMinutesElapsed, originSaeReachable, 
-                                   laterAttemptReadOrigin, originDeviceHasKeys, 
-                                   peerDeviceHasKeys, terminalReportedSuccess >>
+                                   fiveMinutesElapsed, originSaeReachable, 
+                                   peerSaeReachable, laterAttemptKind, 
+                                   originDeviceHasKeys, peerDeviceHasKeys, 
+                                   terminalReportedSuccess >>
 
 LockOriginFetch == /\ pc = "LockOriginFetch"
                    /\ \/ /\ /\ originRecord' = FetchLocked
                             /\ originReservationExpired' = FALSE
                          /\ pc' = "LockPeerFetch"
-                         /\ UNCHANGED originProcessDied
+                         /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                       \/ /\ originProcessDied' = TRUE
                          /\ pc' = "ElapseReservationTimeout"
-                         /\ UNCHANGED <<originRecord, originReservationExpired>>
+                         /\ UNCHANGED <<originRecord, originReservationExpired, peerProcessDied>>
+                      \/ /\ peerProcessDied' = TRUE
+                         /\ pc' = "ElapseReservationTimeout"
+                         /\ UNCHANGED <<originRecord, originReservationExpired, originProcessDied>>
                    /\ UNCHANGED << originHasShare, peerRecord, 
                                    peerReservationExpired, peerHasKeyMaterial, 
-                                   twoMinutesElapsed, originSaeReachable, 
-                                   laterAttemptReadOrigin, originDeviceHasKeys, 
-                                   peerDeviceHasKeys, terminalReportedSuccess >>
+                                   fiveMinutesElapsed, originSaeReachable, 
+                                   peerSaeReachable, laterAttemptKind, 
+                                   originDeviceHasKeys, peerDeviceHasKeys, 
+                                   terminalReportedSuccess >>
 
 LockPeerFetch == /\ pc = "LockPeerFetch"
                  /\ \/ /\ /\ peerRecord' = FetchLocked
                           /\ peerReservationExpired' = FALSE
                        /\ pc' = "StorePeerKeyMaterial"
-                       /\ UNCHANGED originProcessDied
+                       /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                     \/ /\ originProcessDied' = TRUE
                        /\ pc' = "ElapseReservationTimeout"
-                       /\ UNCHANGED <<peerRecord, peerReservationExpired>>
+                       /\ UNCHANGED <<peerRecord, peerReservationExpired, peerProcessDied>>
+                    \/ /\ peerProcessDied' = TRUE
+                       /\ pc' = "ElapseReservationTimeout"
+                       /\ UNCHANGED <<peerRecord, peerReservationExpired, originProcessDied>>
                  /\ UNCHANGED << originRecord, originReservationExpired, 
                                  originHasShare, peerHasKeyMaterial, 
-                                 twoMinutesElapsed, originSaeReachable, 
-                                 laterAttemptReadOrigin, originDeviceHasKeys, 
-                                 peerDeviceHasKeys, terminalReportedSuccess >>
+                                 fiveMinutesElapsed, originSaeReachable, 
+                                 peerSaeReachable, laterAttemptKind, 
+                                 originDeviceHasKeys, peerDeviceHasKeys, 
+                                 terminalReportedSuccess >>
 
 StorePeerKeyMaterial == /\ pc = "StorePeerKeyMaterial"
                         /\ \/ /\ peerHasKeyMaterial' = TRUE
                               /\ pc' = "CommitPeerShare"
-                              /\ UNCHANGED originProcessDied
+                              /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                            \/ /\ originProcessDied' = TRUE
                               /\ pc' = "ElapseReservationTimeout"
-                              /\ UNCHANGED peerHasKeyMaterial
+                              /\ UNCHANGED <<peerHasKeyMaterial, peerProcessDied>>
+                           \/ /\ peerProcessDied' = TRUE
+                              /\ pc' = "ElapseReservationTimeout"
+                              /\ UNCHANGED <<peerHasKeyMaterial, originProcessDied>>
                         /\ UNCHANGED << originRecord, originReservationExpired, 
                                         originHasShare, peerRecord, 
                                         peerReservationExpired, 
-                                        twoMinutesElapsed, originSaeReachable, 
-                                        laterAttemptReadOrigin, 
+                                        fiveMinutesElapsed, originSaeReachable, 
+                                        peerSaeReachable, laterAttemptKind, 
                                         originDeviceHasKeys, peerDeviceHasKeys, 
                                         terminalReportedSuccess >>
 
 CommitPeerShare == /\ pc = "CommitPeerShare"
-                   /\ \/ /\ /\ peerRecord' = ShareCommitted
+                   /\ \/ /\ /\ peerRecord' = RecordShared
                             /\ peerReservationExpired' = FALSE
                          /\ pc' = "CommitOriginShare"
-                         /\ UNCHANGED originProcessDied
+                         /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                       \/ /\ originProcessDied' = TRUE
                          /\ pc' = "ElapseReservationTimeout"
-                         /\ UNCHANGED <<peerRecord, peerReservationExpired>>
+                         /\ UNCHANGED <<peerRecord, peerReservationExpired, peerProcessDied>>
+                      \/ /\ peerProcessDied' = TRUE
+                         /\ pc' = "ElapseReservationTimeout"
+                         /\ UNCHANGED <<peerRecord, peerReservationExpired, originProcessDied>>
                    /\ UNCHANGED << originRecord, originReservationExpired, 
                                    originHasShare, peerHasKeyMaterial, 
-                                   twoMinutesElapsed, originSaeReachable, 
-                                   laterAttemptReadOrigin, originDeviceHasKeys, 
-                                   peerDeviceHasKeys, terminalReportedSuccess >>
+                                   fiveMinutesElapsed, originSaeReachable, 
+                                   peerSaeReachable, laterAttemptKind, 
+                                   originDeviceHasKeys, peerDeviceHasKeys, 
+                                   terminalReportedSuccess >>
 
 CommitOriginShare == /\ pc = "CommitOriginShare"
                      /\ \/ /\ /\ originHasShare' = TRUE
-                              /\ originRecord' = ShareCommitted
+                              /\ originRecord' = RecordShared
                               /\ originReservationExpired' = FALSE
                            /\ pc' = "SendToOriginDevice"
-                           /\ UNCHANGED originProcessDied
+                           /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                         \/ /\ originProcessDied' = TRUE
                            /\ pc' = "ElapseReservationTimeout"
-                           /\ UNCHANGED <<originRecord, originReservationExpired, originHasShare>>
+                           /\ UNCHANGED <<originRecord, originReservationExpired, originHasShare, peerProcessDied>>
+                        \/ /\ peerProcessDied' = TRUE
+                           /\ pc' = "ElapseReservationTimeout"
+                           /\ UNCHANGED <<originRecord, originReservationExpired, originHasShare, originProcessDied>>
                      /\ UNCHANGED << peerRecord, peerReservationExpired, 
-                                     peerHasKeyMaterial, twoMinutesElapsed, 
-                                     originSaeReachable, 
-                                     laterAttemptReadOrigin, 
-                                     originDeviceHasKeys, peerDeviceHasKeys, 
+                                     peerHasKeyMaterial, fiveMinutesElapsed, 
+                                     originSaeReachable, peerSaeReachable, 
+                                     laterAttemptKind, originDeviceHasKeys, 
+                                     peerDeviceHasKeys, 
                                      terminalReportedSuccess >>
 
 SendToOriginDevice == /\ pc = "SendToOriginDevice"
                       /\ \/ /\ originDeviceHasKeys' = TRUE
-                            /\ pc' = "MarkOriginProvisioned"
-                            /\ UNCHANGED originProcessDied
+                            /\ pc' = "MarkPeerProvisioned"
+                            /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                          \/ /\ originProcessDied' = TRUE
                             /\ pc' = "ElapseReservationTimeout"
-                            /\ UNCHANGED originDeviceHasKeys
+                            /\ UNCHANGED <<peerProcessDied, originDeviceHasKeys>>
+                         \/ /\ peerProcessDied' = TRUE
+                            /\ pc' = "ElapseReservationTimeout"
+                            /\ UNCHANGED <<originProcessDied, originDeviceHasKeys>>
                       /\ UNCHANGED << originRecord, originReservationExpired, 
                                       originHasShare, peerRecord, 
                                       peerReservationExpired, 
-                                      peerHasKeyMaterial, twoMinutesElapsed, 
-                                      originSaeReachable, 
-                                      laterAttemptReadOrigin, 
-                                      peerDeviceHasKeys, 
+                                      peerHasKeyMaterial, fiveMinutesElapsed, 
+                                      originSaeReachable, peerSaeReachable, 
+                                      laterAttemptKind, peerDeviceHasKeys, 
                                       terminalReportedSuccess >>
 
+MarkPeerProvisioned == /\ pc = "MarkPeerProvisioned"
+                       /\ \/ /\ IF originDeviceHasKeys /\ peerRecord = RecordShared
+                                   THEN /\ /\ peerRecord' = OriginProvisioned
+                                           /\ peerReservationExpired' = FALSE
+                                   ELSE /\ TRUE
+                                        /\ UNCHANGED << peerRecord, 
+                                                        peerReservationExpired >>
+                             /\ pc' = "MarkOriginProvisioned"
+                             /\ UNCHANGED <<originProcessDied, peerProcessDied>>
+                          \/ /\ originProcessDied' = TRUE
+                             /\ pc' = "ElapseReservationTimeout"
+                             /\ UNCHANGED <<peerRecord, peerReservationExpired, peerProcessDied>>
+                          \/ /\ peerProcessDied' = TRUE
+                             /\ pc' = "ElapseReservationTimeout"
+                             /\ UNCHANGED <<peerRecord, peerReservationExpired, originProcessDied>>
+                       /\ UNCHANGED << originRecord, originReservationExpired, 
+                                       originHasShare, peerHasKeyMaterial, 
+                                       fiveMinutesElapsed, originSaeReachable, 
+                                       peerSaeReachable, laterAttemptKind, 
+                                       originDeviceHasKeys, peerDeviceHasKeys, 
+                                       terminalReportedSuccess >>
+
 MarkOriginProvisioned == /\ pc = "MarkOriginProvisioned"
-                         /\ \/ /\ IF originDeviceHasKeys /\ originRecord = ShareCommitted
+                         /\ \/ /\ IF originDeviceHasKeys /\ originRecord = RecordShared /\ peerRecord = OriginProvisioned
                                      THEN /\ /\ originRecord' = OriginProvisioned
                                              /\ originReservationExpired' = FALSE
                                      ELSE /\ TRUE
                                           /\ UNCHANGED << originRecord, 
                                                           originReservationExpired >>
                                /\ pc' = "ReportTerminalSuccess"
-                               /\ UNCHANGED originProcessDied
+                               /\ UNCHANGED <<originProcessDied, peerProcessDied>>
                             \/ /\ originProcessDied' = TRUE
                                /\ pc' = "ElapseReservationTimeout"
-                               /\ UNCHANGED <<originRecord, originReservationExpired>>
+                               /\ UNCHANGED <<originRecord, originReservationExpired, peerProcessDied>>
+                            \/ /\ peerProcessDied' = TRUE
+                               /\ pc' = "ElapseReservationTimeout"
+                               /\ UNCHANGED <<originRecord, originReservationExpired, originProcessDied>>
                          /\ UNCHANGED << originHasShare, peerRecord, 
                                          peerReservationExpired, 
-                                         peerHasKeyMaterial, twoMinutesElapsed, 
-                                         originSaeReachable, 
-                                         laterAttemptReadOrigin, 
-                                         originDeviceHasKeys, 
+                                         peerHasKeyMaterial, 
+                                         fiveMinutesElapsed, 
+                                         originSaeReachable, peerSaeReachable, 
+                                         laterAttemptKind, originDeviceHasKeys, 
                                          peerDeviceHasKeys, 
                                          terminalReportedSuccess >>
 
 ReportTerminalSuccess == /\ pc = "ReportTerminalSuccess"
-                         /\ \/ /\ IF originRecord = OriginProvisioned /\ originDeviceHasKeys
-                                     /\ peerRecord = ShareCommitted /\ originHasShare /\ peerHasKeyMaterial
+                         /\ \/ /\ IF originRecord = OriginProvisioned /\ peerRecord = OriginProvisioned
+                                     /\ originDeviceHasKeys /\ originHasShare /\ peerHasKeyMaterial
                                      THEN /\ terminalReportedSuccess' = TRUE
                                      ELSE /\ TRUE
                                           /\ UNCHANGED terminalReportedSuccess
-                            \/ /\ TRUE
-                               /\ UNCHANGED terminalReportedSuccess
+                               /\ UNCHANGED <<originProcessDied, peerProcessDied>>
+                            \/ /\ originProcessDied' = TRUE
+                               /\ UNCHANGED <<peerProcessDied, terminalReportedSuccess>>
+                            \/ /\ peerProcessDied' = TRUE
+                               /\ UNCHANGED <<originProcessDied, terminalReportedSuccess>>
                          /\ pc' = "ElapseReservationTimeout"
                          /\ UNCHANGED << originRecord, 
                                          originReservationExpired, 
                                          originHasShare, peerRecord, 
                                          peerReservationExpired, 
-                                         peerHasKeyMaterial, originProcessDied, 
-                                         twoMinutesElapsed, originSaeReachable, 
-                                         laterAttemptReadOrigin, 
-                                         originDeviceHasKeys, 
+                                         peerHasKeyMaterial, 
+                                         fiveMinutesElapsed, 
+                                         originSaeReachable, peerSaeReachable, 
+                                         laterAttemptKind, originDeviceHasKeys, 
                                          peerDeviceHasKeys >>
 
 ElapseReservationTimeout == /\ pc = "ElapseReservationTimeout"
-                            /\ \/ /\ /\ originReservationExpired' = (IF originRecord \in {Synchronization, FetchLocked, ShareCommitted} THEN TRUE ELSE originReservationExpired)
-                                     /\ peerReservationExpired' = (IF peerRecord \in {Synchronization, FetchLocked, ShareCommitted} THEN TRUE ELSE peerReservationExpired)
-                                     /\ twoMinutesElapsed' = TRUE
+                            /\ \/ /\ /\ fiveMinutesElapsed' = TRUE
+                                     /\ originReservationExpired' = (IF originRecord \in Incomplete THEN TRUE ELSE originReservationExpired)
+                                     /\ peerReservationExpired' = (IF peerRecord \in Incomplete THEN TRUE ELSE peerReservationExpired)
                                \/ /\ TRUE
-                                  /\ UNCHANGED <<originReservationExpired, peerReservationExpired, twoMinutesElapsed>>
+                                  /\ UNCHANGED <<originReservationExpired, peerReservationExpired, fiveMinutesElapsed>>
                             /\ pc' = "MaybeLoseOriginLink"
                             /\ UNCHANGED << originRecord, originHasShare, 
                                             peerRecord, peerHasKeyMaterial, 
-                                            originProcessDied, 
+                                            originProcessDied, peerProcessDied, 
                                             originSaeReachable, 
-                                            laterAttemptReadOrigin, 
+                                            peerSaeReachable, laterAttemptKind, 
                                             originDeviceHasKeys, 
                                             peerDeviceHasKeys, 
                                             terminalReportedSuccess >>
@@ -412,143 +541,138 @@ MaybeLoseOriginLink == /\ pc = "MaybeLoseOriginLink"
                        /\ \/ /\ originSaeReachable' = FALSE
                           \/ /\ TRUE
                              /\ UNCHANGED originSaeReachable
-                       /\ pc' = "LaterAttempt"
+                       /\ pc' = "MaybeLosePeerLink"
                        /\ UNCHANGED << originRecord, originReservationExpired, 
                                        originHasShare, peerRecord, 
                                        peerReservationExpired, 
                                        peerHasKeyMaterial, originProcessDied, 
-                                       twoMinutesElapsed, 
-                                       laterAttemptReadOrigin, 
+                                       peerProcessDied, fiveMinutesElapsed, 
+                                       peerSaeReachable, laterAttemptKind, 
                                        originDeviceHasKeys, peerDeviceHasKeys, 
                                        terminalReportedSuccess >>
 
+MaybeLosePeerLink == /\ pc = "MaybeLosePeerLink"
+                     /\ \/ /\ peerSaeReachable' = FALSE
+                        \/ /\ TRUE
+                           /\ UNCHANGED peerSaeReachable
+                     /\ pc' = "LaterAttempt"
+                     /\ UNCHANGED << originRecord, originReservationExpired, 
+                                     originHasShare, peerRecord, 
+                                     peerReservationExpired, 
+                                     peerHasKeyMaterial, originProcessDied, 
+                                     peerProcessDied, fiveMinutesElapsed, 
+                                     originSaeReachable, laterAttemptKind, 
+                                     originDeviceHasKeys, peerDeviceHasKeys, 
+                                     terminalReportedSuccess >>
+
 LaterAttempt == /\ pc = "LaterAttempt"
-                /\ \/ /\ IF originRecord = ShareCommitted
-                            THEN /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                    /\ originHasShare' = FALSE
-                                    /\ originRecord' = Synchronization
-                                    /\ originReservationExpired' = FALSE
-                                    /\ peerHasKeyMaterial' = FALSE
-                                    /\ peerRecord' = NoRecord
-                                    /\ peerReservationExpired' = FALSE
-                            ELSE /\ IF originRecord = NoRecord \/ (originRecord \in {Synchronization, FetchLocked} /\ originReservationExpired)
-                                       THEN /\ IF peerRecord = ShareCommitted
-                                                  THEN /\ IF originSaeReachable
-                                                             THEN /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                     /\ originHasShare' = FALSE
-                                                                     /\ originRecord' = NoRecord
-                                                                     /\ originReservationExpired' = FALSE
-                                                                     /\ peerHasKeyMaterial' = FALSE
-                                                                     /\ peerRecord' = NoRecord
-                                                                     /\ peerReservationExpired' = FALSE
-                                                             ELSE /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                     /\ originHasShare' = FALSE
-                                                                     /\ originRecord' = NoRecord
-                                                                     /\ originReservationExpired' = FALSE
-                                                                  /\ UNCHANGED << peerRecord, 
-                                                                                  peerReservationExpired, 
-                                                                                  peerHasKeyMaterial >>
-                                                  ELSE /\ /\ originRecord' = Synchronization
+                /\ \/ /\ IF originRecord = OriginProvisioned
+                            \/ (originRecord = FetchLocked /\ ~originReservationExpired)
+                            \/ (originRecord = RecordShared /\ ~originReservationExpired)
+                            THEN /\ laterAttemptKind' = "origin"
+                                 /\ UNCHANGED << originRecord, 
+                                                 originReservationExpired, 
+                                                 originHasShare, peerRecord, 
+                                                 peerReservationExpired, 
+                                                 peerHasKeyMaterial >>
+                            ELSE /\ IF ~peerSaeReachable
+                                       THEN /\ /\ laterAttemptKind' = "origin"
+                                               /\ originHasShare' = FALSE
+                                               /\ originRecord' = NoRecord
+                                               /\ originReservationExpired' = FALSE
+                                            /\ UNCHANGED << peerRecord, 
+                                                            peerReservationExpired, 
+                                                            peerHasKeyMaterial >>
+                                       ELSE /\ IF PeerAcceptsNewSync(peerRecord, peerReservationExpired)
+                                                  THEN /\ /\ laterAttemptKind' = "origin"
+                                                          /\ originHasShare' = FALSE
+                                                          /\ originRecord' = Synchronization
                                                           /\ originReservationExpired' = FALSE
-                                                       /\ UNCHANGED << originHasShare, 
-                                                                       peerRecord, 
+                                                          /\ peerHasKeyMaterial' = FALSE
+                                                          /\ peerRecord' = Synchronization
+                                                          /\ peerReservationExpired' = FALSE
+                                                  ELSE /\ /\ laterAttemptKind' = "origin"
+                                                          /\ originHasShare' = FALSE
+                                                          /\ originRecord' = NoRecord
+                                                          /\ originReservationExpired' = FALSE
+                                                       /\ UNCHANGED << peerRecord, 
                                                                        peerReservationExpired, 
-                                                                       peerHasKeyMaterial, 
-                                                                       laterAttemptReadOrigin >>
-                                       ELSE /\ TRUE
-                                            /\ UNCHANGED << originRecord, 
-                                                            originReservationExpired, 
-                                                            originHasShare, 
-                                                            peerRecord, 
-                                                            peerReservationExpired, 
-                                                            peerHasKeyMaterial, 
-                                                            laterAttemptReadOrigin >>
+                                                                       peerHasKeyMaterial >>
                       /\ UNCHANGED peerDeviceHasKeys
-                   \/ /\ IF peerRecord = ShareCommitted
-                            THEN /\ IF originSaeReachable = FALSE
-                                       THEN /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
+                   \/ /\ IF peerRecord = RecordShared /\ ~peerReservationExpired
+                            THEN /\ laterAttemptKind' = "peer"
+                                 /\ UNCHANGED << originRecord, 
+                                                 originReservationExpired, 
+                                                 originHasShare, peerRecord, 
+                                                 peerReservationExpired, 
+                                                 peerHasKeyMaterial, 
+                                                 peerDeviceHasKeys >>
+                            ELSE /\ IF peerRecord \in Incomplete /\ peerReservationExpired
+                                       THEN /\ /\ laterAttemptKind' = "peer"
+                                               /\ peerHasKeyMaterial' = FALSE
+                                               /\ peerRecord' = Synchronization
+                                               /\ peerReservationExpired' = FALSE
                                             /\ UNCHANGED << originRecord, 
                                                             originReservationExpired, 
                                                             originHasShare, 
-                                                            peerRecord, 
-                                                            peerReservationExpired, 
-                                                            peerHasKeyMaterial, 
                                                             peerDeviceHasKeys >>
-                                       ELSE /\ IF originRecord = OriginProvisioned
-                                                  THEN /\ \/ /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                /\ originHasShare' = FALSE
-                                                                /\ originRecord' = NoRecord
-                                                                /\ originReservationExpired' = FALSE
-                                                                /\ peerDeviceHasKeys' = TRUE
-                                                                /\ peerHasKeyMaterial' = FALSE
-                                                                /\ peerRecord' = NoRecord
-                                                                /\ peerReservationExpired' = FALSE
-                                                          \/ /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                /\ originHasShare' = FALSE
-                                                                /\ originRecord' = NoRecord
-                                                                /\ originReservationExpired' = FALSE
-                                                                /\ peerHasKeyMaterial' = FALSE
-                                                                /\ peerRecord' = NoRecord
-                                                                /\ peerReservationExpired' = FALSE
-                                                             /\ UNCHANGED peerDeviceHasKeys
-                                                  ELSE /\ IF originRecord \in {ShareCommitted, FetchLocked}
-                                                             THEN /\ IF originReservationExpired
-                                                                        THEN /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                                /\ originHasShare' = FALSE
-                                                                                /\ originRecord' = NoRecord
-                                                                                /\ originReservationExpired' = FALSE
-                                                                                /\ peerHasKeyMaterial' = FALSE
-                                                                                /\ peerRecord' = NoRecord
-                                                                                /\ peerReservationExpired' = FALSE
-                                                                        ELSE /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                             /\ UNCHANGED << originRecord, 
-                                                                                             originReservationExpired, 
-                                                                                             originHasShare, 
-                                                                                             peerRecord, 
-                                                                                             peerReservationExpired, 
-                                                                                             peerHasKeyMaterial >>
-                                                             ELSE /\ IF originRecord = Synchronization
-                                                                        THEN /\ IF originReservationExpired
-                                                                                   THEN /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
+                                       ELSE /\ IF peerRecord = OriginProvisioned
+                                                  THEN /\ IF originSaeReachable = FALSE
+                                                             THEN /\ laterAttemptKind' = "peer"
+                                                                  /\ UNCHANGED << originRecord, 
+                                                                                  originReservationExpired, 
+                                                                                  originHasShare, 
+                                                                                  peerRecord, 
+                                                                                  peerReservationExpired, 
+                                                                                  peerHasKeyMaterial, 
+                                                                                  peerDeviceHasKeys >>
+                                                             ELSE /\ IF originRecord = OriginProvisioned
+                                                                        THEN /\ \/ /\ /\ laterAttemptKind' = "peer"
+                                                                                      /\ originHasShare' = FALSE
+                                                                                      /\ originRecord' = NoRecord
+                                                                                      /\ originReservationExpired' = FALSE
+                                                                                      /\ peerDeviceHasKeys' = TRUE
+                                                                                      /\ peerHasKeyMaterial' = FALSE
+                                                                                      /\ peerRecord' = NoRecord
+                                                                                      /\ peerReservationExpired' = FALSE
+                                                                                \/ /\ /\ laterAttemptKind' = "peer"
+                                                                                      /\ originHasShare' = FALSE
+                                                                                      /\ originRecord' = NoRecord
+                                                                                      /\ originReservationExpired' = FALSE
+                                                                                      /\ peerHasKeyMaterial' = FALSE
+                                                                                      /\ peerRecord' = NoRecord
+                                                                                      /\ peerReservationExpired' = FALSE
+                                                                                   /\ UNCHANGED peerDeviceHasKeys
+                                                                        ELSE /\ IF originRecord \in Incomplete /\ ~originReservationExpired
+                                                                                   THEN /\ laterAttemptKind' = "peer"
+                                                                                        /\ UNCHANGED << originRecord, 
+                                                                                                        originReservationExpired, 
+                                                                                                        originHasShare, 
+                                                                                                        peerRecord, 
+                                                                                                        peerReservationExpired, 
+                                                                                                        peerHasKeyMaterial >>
+                                                                                   ELSE /\ /\ laterAttemptKind' = "peer"
                                                                                            /\ originHasShare' = FALSE
                                                                                            /\ originRecord' = NoRecord
                                                                                            /\ originReservationExpired' = FALSE
                                                                                            /\ peerHasKeyMaterial' = FALSE
                                                                                            /\ peerRecord' = NoRecord
                                                                                            /\ peerReservationExpired' = FALSE
-                                                                                   ELSE /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                                           /\ peerHasKeyMaterial' = FALSE
-                                                                                           /\ peerRecord' = NoRecord
-                                                                                           /\ peerReservationExpired' = FALSE
-                                                                                        /\ UNCHANGED << originRecord, 
-                                                                                                        originReservationExpired, 
-                                                                                                        originHasShare >>
-                                                                        ELSE /\ IF originRecord = NoRecord
-                                                                                   THEN /\ /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                                           /\ peerHasKeyMaterial' = FALSE
-                                                                                           /\ peerRecord' = NoRecord
-                                                                                           /\ peerReservationExpired' = FALSE
-                                                                                   ELSE /\ laterAttemptReadOrigin' = (twoMinutesElapsed \/ laterAttemptReadOrigin)
-                                                                                        /\ UNCHANGED << peerRecord, 
-                                                                                                        peerReservationExpired, 
-                                                                                                        peerHasKeyMaterial >>
-                                                                             /\ UNCHANGED << originRecord, 
-                                                                                             originReservationExpired, 
-                                                                                             originHasShare >>
-                                                       /\ UNCHANGED peerDeviceHasKeys
-                            ELSE /\ TRUE
-                                 /\ UNCHANGED << originRecord, 
-                                                 originReservationExpired, 
-                                                 originHasShare, peerRecord, 
-                                                 peerReservationExpired, 
-                                                 peerHasKeyMaterial, 
-                                                 laterAttemptReadOrigin, 
-                                                 peerDeviceHasKeys >>
+                                                                             /\ UNCHANGED peerDeviceHasKeys
+                                                  ELSE /\ laterAttemptKind' = "peer"
+                                                       /\ UNCHANGED << originRecord, 
+                                                                       originReservationExpired, 
+                                                                       originHasShare, 
+                                                                       peerRecord, 
+                                                                       peerReservationExpired, 
+                                                                       peerHasKeyMaterial, 
+                                                                       peerDeviceHasKeys >>
                    \/ /\ TRUE
-                      /\ UNCHANGED <<originRecord, originReservationExpired, originHasShare, peerRecord, peerReservationExpired, peerHasKeyMaterial, laterAttemptReadOrigin, peerDeviceHasKeys>>
+                      /\ UNCHANGED <<originRecord, originReservationExpired, originHasShare, peerRecord, peerReservationExpired, peerHasKeyMaterial, laterAttemptKind, peerDeviceHasKeys>>
                 /\ pc' = "Done"
-                /\ UNCHANGED << originProcessDied, twoMinutesElapsed, 
-                                originSaeReachable, originDeviceHasKeys, 
+                /\ UNCHANGED << originProcessDied, peerProcessDied, 
+                                fiveMinutesElapsed, originSaeReachable, 
+                                peerSaeReachable, originDeviceHasKeys, 
                                 terminalReportedSuccess >>
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
@@ -556,9 +680,10 @@ Terminating == pc = "Done" /\ UNCHANGED vars
 
 Next == ReserveOriginPair \/ ReservePeerPair \/ LockOriginFetch
            \/ LockPeerFetch \/ StorePeerKeyMaterial \/ CommitPeerShare
-           \/ CommitOriginShare \/ SendToOriginDevice \/ MarkOriginProvisioned
-           \/ ReportTerminalSuccess \/ ElapseReservationTimeout
-           \/ MaybeLoseOriginLink \/ LaterAttempt
+           \/ CommitOriginShare \/ SendToOriginDevice \/ MarkPeerProvisioned
+           \/ MarkOriginProvisioned \/ ReportTerminalSuccess
+           \/ ElapseReservationTimeout \/ MaybeLoseOriginLink
+           \/ MaybeLosePeerLink \/ LaterAttempt
            \/ Terminating
 
 Spec == Init /\ [][Next]_vars
@@ -573,9 +698,11 @@ TypeOK ==
   /\ originReservationExpired \in BOOLEAN
   /\ peerReservationExpired \in BOOLEAN
   /\ originProcessDied \in BOOLEAN
-  /\ twoMinutesElapsed \in BOOLEAN
+  /\ peerProcessDied \in BOOLEAN
+  /\ fiveMinutesElapsed \in BOOLEAN
   /\ originSaeReachable \in BOOLEAN
-  /\ laterAttemptReadOrigin \in BOOLEAN
+  /\ peerSaeReachable \in BOOLEAN
+  /\ laterAttemptKind \in {"none", "origin", "peer"}
   /\ originDeviceHasKeys \in BOOLEAN
   /\ peerDeviceHasKeys \in BOOLEAN
   /\ terminalReportedSuccess \in BOOLEAN
@@ -583,24 +710,27 @@ TypeOK ==
   /\ peerHasKeyMaterial \in BOOLEAN
 
 MatchingSharesWhenCommitted ==
-  (originRecord \in {ShareCommitted, OriginProvisioned} /\ peerRecord = ShareCommitted)
+  (originRecord \in {RecordShared, OriginProvisioned}
+    /\ peerRecord \in {RecordShared, OriginProvisioned})
     => originHasShare = peerHasKeyMaterial
 
-PeerRowNeverProvisioned == peerRecord # OriginProvisioned
+\* Mark writes the origin only after the peer is already OriginProvisioned.
+OriginProvisionedImpliesPeerProvisioned ==
+  (originRecord = OriginProvisioned) => peerRecord = OriginProvisioned
 
-ProvisionedMeansOriginDeviceHasKeys == (originRecord = OriginProvisioned) => originDeviceHasKeys
+ProvisionedMeansOriginDeviceHasKeys ==
+  (originRecord = OriginProvisioned \/ peerRecord = OriginProvisioned) => originDeviceHasKeys
 
 PeerDeviceImpliesOriginAlreadyFilled == peerDeviceHasKeys => originDeviceHasKeys
 
-PeerDeviceImpliesShareConsumed == peerDeviceHasKeys => peerRecord = NoRecord
+PeerDeviceImpliesShareConsumed == peerDeviceHasKeys => peerRecord = NoRecord /\ originRecord = NoRecord
 
-\* Printed only after MarkOriginProvisioned returns a consistent share.
-\* A later peer delivery may consume both rows; the flag stays set.
+\* Printed only after both marks return. A later peer delivery may consume both rows.
 TerminalSuccessMeansConsistentShare ==
   terminalReportedSuccess =>
     /\ originDeviceHasKeys
     /\ \/ /\ originRecord = OriginProvisioned
-          /\ peerRecord = ShareCommitted
+          /\ peerRecord = OriginProvisioned
           /\ originHasShare
           /\ peerHasKeyMaterial
        \/ /\ originRecord = NoRecord
@@ -608,15 +738,19 @@ TerminalSuccessMeansConsistentShare ==
           /\ originHasShare = FALSE
           /\ peerHasKeyMaterial = FALSE
 
-\* After the reservation window may have expired *and* a later attempt actually
-\* read the origin (including a failed read). When the origin SAE is reachable,
-\* leftover ShareCommitted whose origin is not OriginProvisioned is gone, or
-\* the share is whole, or the second device consumed it.
-NoAbandonedShareAfterReachableRead ==
-  (pc = "Done" /\ laterAttemptReadOrigin /\ originSaeReachable) =>
-    \/ (originRecord = NoRecord /\ peerRecord = NoRecord)
-    \/ (originRecord = OriginProvisioned /\ peerRecord = ShareCommitted /\ originHasShare = peerHasKeyMaterial)
-    \/ (originRecord = OriginProvisioned /\ peerRecord = NoRecord)
-    \/ (originRecord \in {Synchronization, FetchLocked, ShareCommitted} /\ ~originReservationExpired)
+\* Origin retry with the peer up does not leave a stale RecordShared on the origin.
+NoStaleOriginSharedAfterOriginRetry ==
+  (pc = "Done" /\ fiveMinutesElapsed /\ peerSaeReachable /\ laterAttemptKind = "origin") =>
+    ~(originRecord = RecordShared /\ originReservationExpired)
+
+\* Peer visit does not leave its own stale RecordShared. If the peer row is
+\* OriginProvisioned and the origin could be read, a stale or missing origin
+\* share has been deleted.
+NoStaleSharedAfterPeerCheck ==
+  (pc = "Done" /\ fiveMinutesElapsed /\ originSaeReachable /\ laterAttemptKind = "peer") =>
+    /\ ~(peerRecord = RecordShared /\ peerReservationExpired)
+    /\ (peerRecord = OriginProvisioned =>
+          originRecord = OriginProvisioned
+          \/ (originRecord \in Incomplete /\ ~originReservationExpired))
 
 =============================================================================

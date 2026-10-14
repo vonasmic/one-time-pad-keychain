@@ -2,11 +2,13 @@ package fel.cvut.userapp;
 
 import fel.cvut.se.SeConstants;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@Tag("unit")
 class OwnerAuthTest {
 
     @Test

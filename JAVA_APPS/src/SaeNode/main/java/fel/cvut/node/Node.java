@@ -59,11 +59,13 @@ public class Node implements AutoCloseable {
     /** Short read used only to see whether the wipe line is already waiting. */
     private static final int WIPE_READY_PROBE_MS = 200;
     /**
-     * Device already stored the keys, but {@code markProvisioned} did not commit.
-     * The origin row is still available, so this is not a successful share.
+     * Device already stored the keys, but both rows were not marked
+     * {@code ORIGIN_PROVISIONED}. The share stays {@code RECORD_SHARED}.
      */
-    static final String SHARE_NOT_CONSISTENT =
+    public static final String SHARE_NOT_CONSISTENT =
             "Device stored the keys, but the share was not marked provisioned.";
+    /** Printed on the line after the 100% bar, once the share is consistent. */
+    public static final String SHARE_SUCCESSFUL = "Share successful.";
 
     private final NodeRef selfRef;
     private final String tlsNodeId;
@@ -310,11 +312,10 @@ public class Node implements AutoCloseable {
             boolean markedProvisioned = true;
             if (processResult instanceof ProvisionSession.Outcome.Generated) {
                 ClientRecord.ClientHeader header = clientRecord.getClientHeader();
-                markedProvisioned = localRecordStateMap.markProvisioned(
-                        header.clientHash1(), header.clientHash2());
+                markedProvisioned = markOriginProvisionedOnBoth(header);
                 if (!markedProvisioned) {
                     LOG.warning(
-                            "Device acked provision but origin row was not RECORD_AVAILABLE for hashes "
+                            "Device acked provision but both rows were not marked ORIGIN_PROVISIONED for hashes "
                                     + header.clientHash1() + " / " + header.clientHash2()
                     );
                 }
@@ -347,17 +348,17 @@ public class Node implements AutoCloseable {
     }
 
     /**
-     * Terminal line after the device ack. A new origin share prints the 100% line
-     * only when {@code markedProvisioned} is true: {@code markProvisioned} has
-     * returned and the origin row is {@code RECORD_PROVISIONED}. Until that return
-     * the row is still available, and a later peer check can delete both sides
-     * while the origin device keeps the keys.
+     * Terminal text after the device ack. A new origin share prints the 100% line
+     * and {@link #SHARE_SUCCESSFUL} only when {@code markedProvisioned} is true:
+     * the peer row and then the origin row are both {@code ORIGIN_PROVISIONED}.
+     * Until that return both rows stay {@code RECORD_SHARED}. A stored share
+     * prints the same two lines after {@code SE_OK}.
      */
-    static String afterDeviceAckStatus(boolean newOriginShare, boolean markedProvisioned, long payloadLength) {
+    public static String afterDeviceAckStatus(boolean newOriginShare, boolean markedProvisioned, long payloadLength) {
         if (newOriginShare && !markedProvisioned) {
             return SHARE_NOT_CONSISTENT;
         }
-        return SeProvisionAck.downloadComplete(payloadLength);
+        return SeProvisionAck.downloadComplete(payloadLength) + "\n" + SHARE_SUCCESSFUL;
     }
 
     /**
@@ -438,6 +439,12 @@ public class Node implements AutoCloseable {
                     public void forceDelete(String saeId, String clientHash1, String clientHash2)
                             throws RemoteException, NotBoundException {
                         forceDeleteRemoteRecord(saeId, clientHash1, clientHash2);
+                    }
+
+                    @Override
+                    public void deleteShare(String saeId, String clientHash1, String clientHash2)
+                            throws RemoteException, NotBoundException {
+                        deleteRemoteShare(saeId, clientHash1, clientHash2);
                     }
 
                     @Override
@@ -539,6 +546,38 @@ public class Node implements AutoCloseable {
                                 + ": "
                                 + reason
                 ));
+    }
+
+    /**
+     * Marks the peer, then the origin. A failed peer mark leaves both rows {@code RECORD_SHARED}.
+     */
+    private boolean markOriginProvisionedOnBoth(ClientRecord.ClientHeader header) {
+        try {
+            NodeCommands peer = rmiManager.connectBySaeId(header.saeId());
+            if (!peer.markOriginProvisioned(header.clientHash2(), header.clientHash1())) {
+                LOG.warning(
+                        "Peer SAE " + header.saeId()
+                                + " did not accept ORIGIN_PROVISIONED for hashes "
+                                + header.clientHash2() + " / " + header.clientHash1()
+                );
+                return false;
+            }
+        } catch (RemoteException | NotBoundException ex) {
+            LOG.warning(
+                    "Peer SAE " + header.saeId()
+                            + " was unreachable while marking ORIGIN_PROVISIONED: "
+                            + ex.getMessage()
+            );
+            return false;
+        }
+        return localRecordStateMap.markOriginProvisioned(header.clientHash1(), header.clientHash2());
+    }
+
+    /** Calls {@link NodeCommands#deleteShare} with reversed hashes. */
+    private void deleteRemoteShare(String saeId, String clientHash1, String clientHash2)
+            throws RemoteException, NotBoundException {
+        NodeCommands remoteNode = rmiManager.connectBySaeId(saeId);
+        remoteNode.deleteShare(clientHash2, clientHash1);
     }
 
     private void forceDeleteRemoteRecord(String saeId, String clientHash1, String clientHash2)

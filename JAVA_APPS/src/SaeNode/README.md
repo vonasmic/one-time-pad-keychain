@@ -120,12 +120,13 @@ SELECT / CONFIRM / NOTIFY.
 
 New-share states: `RECORD_SYNCHRONIZATION` (may be taken over by a higher issuing
 SAE) → `RECORD_FETCHING_STARTED` after both SAEs synchronize and origin locks
-fetch (no higher-SAE takeover; 2-minute stale reclaim) → `RECORD_AVAILABLE` →
-origin-only `RECORD_PROVISIONED` after the origin device ack. The terminal
-success line is printed only after that mark returns, so it means the share
-is consistent. A leftover
-`RECORD_AVAILABLE` on the origin means that fill failed: the next origin
-provision deletes it and starts a new share without prompting.
+fetch (no higher-SAE takeover; 5-minute stale reclaim) → `RECORD_SHARED`
+(both databases hold keys; origin device has not acked) → `ORIGIN_PROVISIONED`
+on both SAEs after the origin device ack. The peer device is filled only when
+both rows are `ORIGIN_PROVISIONED`. The terminal success line is printed only
+after both marks return. A `RECORD_SHARED` row older than 5 minutes is an
+incomplete setup: the next synchronize deletes it, and `ON DELETE CASCADE`
+deletes the key material with the row.
 
 On start the node runs a timed thread that deletes rows older than
 `RECORD_RETENTION_DAYS` (default 14) immediately and then every 24 hours.

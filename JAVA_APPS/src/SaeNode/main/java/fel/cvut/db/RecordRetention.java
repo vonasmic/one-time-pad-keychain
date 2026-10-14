@@ -90,7 +90,7 @@ public final class RecordRetention implements AutoCloseable {
         }
     }
 
-    static Duration parseRetentionDays(String value) {
+    public static Duration parseRetentionDays(String value) {
         if (value == null || value.isBlank()) {
             return Duration.ofDays(DEFAULT_RETENTION_DAYS);
         }
@@ -109,7 +109,7 @@ public final class RecordRetention implements AutoCloseable {
         return Duration.ofDays(days);
     }
 
-    static int purgeExpired(DataSource dataSource, Duration retention) throws SQLException {
+    public static int purgeExpired(DataSource dataSource, Duration retention) throws SQLException {
         Instant cutoff = Instant.now().minus(retention);
         try (Connection connection = dataSource.getConnection()) {
             return new ClientRecordStateRepository().deleteOlderThan(connection, cutoff);

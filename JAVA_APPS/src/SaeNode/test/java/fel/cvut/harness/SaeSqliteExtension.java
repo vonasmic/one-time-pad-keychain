@@ -15,16 +15,18 @@ import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Creates two temporary SQLite databases (origin + peer SAE), migrates production Flyway
- * scripts onto both, and clears tables before every test.
+ * Creates three temporary SQLite databases (origin, peer, and a third SAE), migrates
+ * production Flyway scripts onto each, and clears tables before every test.
  */
 public final class SaeSqliteExtension implements BeforeAllCallback, BeforeEachCallback {
 
     private static final AtomicBoolean STARTED = new AtomicBoolean();
     private static Path originFile;
     private static Path peerFile;
+    private static Path otherFile;
     private static HikariDataSource originDataSource;
     private static HikariDataSource peerDataSource;
+    private static HikariDataSource otherDataSource;
     private static volatile Throwable startupFailure;
 
     public DataSource origin() {
@@ -37,6 +39,16 @@ public final class SaeSqliteExtension implements BeforeAllCallback, BeforeEachCa
         return peerDataSource;
     }
 
+    public DataSource other() {
+        requireStarted();
+        return otherDataSource;
+    }
+
+    public String originJdbcUrl() {
+        requireStarted();
+        return "jdbc:sqlite:" + originFile;
+    }
+
     @Override
     public void beforeAll(ExtensionContext context) {
         startOnce();
@@ -47,6 +59,7 @@ public final class SaeSqliteExtension implements BeforeAllCallback, BeforeEachCa
         startOnce();
         clear(originDataSource);
         clear(peerDataSource);
+        clear(otherDataSource);
     }
 
     private static void startOnce() {
@@ -67,12 +80,16 @@ public final class SaeSqliteExtension implements BeforeAllCallback, BeforeEachCa
                 Path dir = Files.createTempDirectory("sae-sqlite-");
                 originFile = dir.resolve("origin.db");
                 peerFile = dir.resolve("peer.db");
+                otherFile = dir.resolve("other.db");
                 Files.createFile(originFile);
                 Files.createFile(peerFile);
+                Files.createFile(otherFile);
                 originDataSource = DB.openPool("jdbc:sqlite:" + originFile, "sae-test-origin");
                 peerDataSource = DB.openPool("jdbc:sqlite:" + peerFile, "sae-test-peer");
+                otherDataSource = DB.openPool("jdbc:sqlite:" + otherFile, "sae-test-other");
                 migrate(originDataSource);
                 migrate(peerDataSource);
+                migrate(otherDataSource);
             } catch (Exception ex) {
                 startupFailure = ex;
                 STARTED.set(true);

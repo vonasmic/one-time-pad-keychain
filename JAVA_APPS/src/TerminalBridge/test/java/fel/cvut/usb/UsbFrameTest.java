@@ -1,6 +1,7 @@
 package fel.cvut.usb;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@Tag("unit")
 class UsbFrameTest {
 
     @Test

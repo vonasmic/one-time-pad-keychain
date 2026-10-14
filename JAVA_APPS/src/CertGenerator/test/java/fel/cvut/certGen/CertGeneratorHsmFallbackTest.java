@@ -1,12 +1,14 @@
 package fel.cvut.certGen;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import java.net.ConnectException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("unit")
 class CertGeneratorHsmFallbackTest {
 
     @Test

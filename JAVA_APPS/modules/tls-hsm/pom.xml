@@ -54,6 +54,14 @@
                 <artifactId>junit-jupiter</artifactId>
                 <scope>test</scope>
             </dependency>
+        <dependency>
+            <groupId>fel.cvut</groupId>
+            <artifactId>usb-cdc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>${src.root}/SaeNode/main/java</sourceDirectory>
@@ -89,7 +97,7 @@
                         <include>com/utimaco/**</include>
                     </includes>
                     <testIncludes>
-                        <testInclude>fel/cvut/utimaco/HsmLiveNoFallbackTest.java</testInclude>
+                        <testInclude>fel/cvut/integration/utimaco/HsmLiveNoFallbackTest.java</testInclude>
                     </testIncludes>
                 </configuration>
             </plugin>

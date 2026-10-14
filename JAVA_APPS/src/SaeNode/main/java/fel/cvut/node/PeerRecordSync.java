@@ -12,7 +12,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -58,9 +57,9 @@ public final class PeerRecordSync {
     /**
      * Completes a new exchange after origin has already reserved {@code RECORD_SYNCHRONIZATION}.
      *
-     * @return QKD key material when both sides finalized; empty when the peer rejected the exchange
+     * @return generated keys, a different-SAE share on the target, or rejection
      */
-    public Optional<List<String>> completeNewExchange(ClientRecord clientRecord, SeSessionUplink uplink)
+    public ProvisionSession.Exchange.Result completeNewExchange(ClientRecord clientRecord, SeSessionUplink uplink)
             throws RemoteException, Qkd014ClientException, NotBoundException {
         Objects.requireNonNull(clientRecord, "clientRecord must not be null");
         Objects.requireNonNull(uplink, "uplink must not be null");
@@ -72,31 +71,41 @@ public final class PeerRecordSync {
         try {
             NodeCommands targetNode = rmiManager.connectBySaeId(clientHeader.saeId());
             peerTouched = true;
-            if (!targetNode.synchronize(peerHeader, localSaeId)) {
+            AtomicRecordStateMap.SynchronizeOutcome syncOutcome = targetNode.synchronize(peerHeader, localSaeId);
+            if (syncOutcome == AtomicRecordStateMap.SynchronizeOutcome.RECORD_SHARED_WITH_DIFFERENT_SAE) {
+                AtomicRecordStateMap.RecordMetadata metadata =
+                        targetNode.getRecordMetadata(peerHeader.clientHash1(), peerHeader.clientHash2());
+                if (metadata != null) {
+                    return new ProvisionSession.Exchange.Result.SharedWithDifferentSae(metadata);
+                }
+                rollbackOrigin(clientHeader, localSaeId, "rolled back after target SAE rejected synchronize");
+                return new ProvisionSession.Exchange.Result.Rejected();
+            }
+            if (syncOutcome != AtomicRecordStateMap.SynchronizeOutcome.INSERTED) {
                 rollbackOrigin(clientHeader, localSaeId, "rolled back after target SAE rejected synchronize");
                 LOG.info("Target SAE rejected synchronize for hashes "
                         + clientHeader.clientHash1() + " / " + clientHeader.clientHash2());
-                return Optional.empty();
+                return new ProvisionSession.Exchange.Result.Rejected();
             }
 
             if (!localRecordStateMap.lockFetch(clientHeader.clientHash1(), clientHeader.clientHash2(), localSaeId)) {
                 rollbackBoth(clientHeader, peerHeader, localSaeId,
                         "rolled back after origin lockFetch failed");
-                return Optional.empty();
+                return new ProvisionSession.Exchange.Result.Rejected();
             }
             if (!targetNode.lockFetch(peerHeader.clientHash1(), peerHeader.clientHash2(), localSaeId)) {
                 rollbackBoth(clientHeader, peerHeader, localSaeId,
                         "rolled back after target SAE rejected lockFetch");
-                return Optional.empty();
+                return new ProvisionSession.Exchange.Result.Rejected();
             }
 
             QkdPadMaterialFetcher.FetchedKeys fetched =
                     padMaterialFetcher.fetch(clientHeader.saeId(), uplink, clientHeader.padPlainLen());
             ClientRecord completedRecord = clientRecord.withPayload(fetched.keyIds());
             if (orchestrateTargetInsertThenFinalizeOrigin(targetNode, completedRecord, localSaeId)) {
-                return Optional.of(fetched.keyMaterial());
+                return new ProvisionSession.Exchange.Result.Generated(fetched.keyMaterial());
             }
-            return Optional.empty();
+            return new ProvisionSession.Exchange.Result.Rejected();
         } catch (Qkd014ClientException ex) {
             rollbackBoth(
                     clientHeader,
@@ -182,8 +191,10 @@ public final class PeerRecordSync {
             String issuingSaeId,
             String reason
     ) {
-        rollbackOrigin(originHeader, issuingSaeId, reason);
+        // Remote first. The peer delete is best-effort; the local reservation is always released
+        // so a failed exchange does not block retries.
         tryRemovePeerRecord(originHeader.saeId(), peerHeader.clientHash1(), peerHeader.clientHash2());
+        rollbackOrigin(originHeader, issuingSaeId, reason);
     }
 
     private void rollbackOrigin(ClientRecord.ClientHeader header, String issuingSaeId, String reason) {

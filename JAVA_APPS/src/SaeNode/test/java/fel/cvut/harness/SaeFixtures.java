@@ -33,6 +33,7 @@ public final class SaeFixtures {
 
     public static final String ORIGIN_SAE = "sae-1";
     public static final String PEER_SAE = "sae-2";
+    public static final String OTHER_SAE = "sae-3";
     public static final String HASH_1 = "a".repeat(64);
     public static final String HASH_2 = "b".repeat(64);
     public static final int UPLINK_SLOT = 64;
@@ -46,6 +47,10 @@ public final class SaeFixtures {
 
     public static NodeRef peerRef() {
         return new NodeRef(new Address("127.0.0.1", 2020), PEER_SAE);
+    }
+
+    public static NodeRef otherRef() {
+        return new NodeRef(new Address("127.0.0.1", 2030), OTHER_SAE);
     }
 
     public static AtomicRecordStateMap stateMap(String saeId, DataSource dataSource) {
@@ -137,13 +142,21 @@ public final class SaeFixtures {
     }
 
     public static Qkd014Client mockQkd() {
-        Qkd014Client qkd = mock(Qkd014Client.class);
         SeSessionUplink uplink = uplink();
         int payloadBytes = Math.max(64, uplink.plainMax() * uplink.padCount());
-        KeyContainer keys = keyContainer("key-1", payloadBytes);
+        return mockQkdWithKey("key-1", Base64.getEncoder().encodeToString(new byte[payloadBytes]));
+    }
+
+    public static Qkd014Client mockQkdWithKey(String keyId, String keyMaterial) {
+        Qkd014Client qkd = mock(Qkd014Client.class);
+        KeyItem item = new KeyItem();
+        item.key_ID = keyId;
+        item.key = keyMaterial;
+        KeyContainer keys = new KeyContainer();
+        keys.keys = List.of(item);
         try {
             KmeStatus status = new KmeStatus();
-            status.max_key_size = payloadBytes * 8;
+            status.max_key_size = Math.max(64, keyMaterial.length()) * 8;
             status.max_key_per_request = 1;
             when(qkd.getStatus(any())).thenReturn(status);
             when(qkd.getKey(any(), any(), nullable(Integer.class))).thenReturn(keys);

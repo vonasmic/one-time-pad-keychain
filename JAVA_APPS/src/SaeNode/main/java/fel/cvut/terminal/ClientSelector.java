@@ -36,7 +36,8 @@ public final class ClientSelector {
         return readSelection(options.size(), prompt);
     }
 
-    private static String formatSaeOptionLabel(LabeledOption option) {
+    /** Location and SAE id, or the id alone when the location is missing or identical. */
+    public static String formatSaeOptionLabel(LabeledOption option) {
         String id = option.id();
         String label = option.label();
         if (label.isEmpty() || label.equals(id)) {

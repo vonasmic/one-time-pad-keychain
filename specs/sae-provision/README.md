@@ -1,10 +1,11 @@
 # SAE provision PlusCal
 
-One spec of the current Java: reserve pair → lockFetch → insert → origin
-commit → device ack, then a later origin retry or peer-device delivery.
+One spec of the current Java: reserve pair → lockFetch → insert → both sides
+`RECORD_SHARED` → origin device ack → peer then origin `ORIGIN_PROVISIONED`,
+then a later origin retry or peer-device delivery.
 
-`pcal.trans` already wrote the TLA+ under `BEGIN TRANSLATION`. Re-run it only
-if you edit the PlusCal.
+`pcal.trans` writes the TLA+ under `BEGIN TRANSLATION`. Re-run it if you edit
+the PlusCal. TLC on this spec finds no invariant error (840 distinct states).
 
 ## Names
 
@@ -15,19 +16,19 @@ if you edit the PlusCal.
 | `NoRecord`                                            | No row                                                              |
 | `Synchronization`                                     | `RECORD_SYNCHRONIZATION` — pair reserved                            |
 | `FetchLocked`                                         | `RECORD_FETCHING_STARTED` — fetch lock held                         |
-| `ShareCommitted`                                      | `RECORD_AVAILABLE` — share committed but origin fill did not finish |
-| `OriginProvisioned`                                   | `RECORD_PROVISIONED` — origin device acked (origin SAE only)        |
-| `originReservationExpired` / `peerReservationExpired` | `date_of_creation` older than 2 minutes                             |
+| `RecordShared`                                        | `RECORD_SHARED` — both databases hold keys; origin has not acked. Same meaning on both SAEs. Incomplete. |
+| `OriginProvisioned`                                   | `ORIGIN_PROVISIONED` — origin device acked. Written on the peer, then the origin. |
+| `originReservationExpired` / `peerReservationExpired` | `date_of_creation` older than 5 minutes. Does not apply to `OriginProvisioned`. |
 | `originHasShare`                                      | Origin finished commit (no ciphertext file on origin)               |
-| `peerHasKeyMaterial`                                  | Peer store holds the ciphertext                                     |
+| `peerHasKeyMaterial`                                  | Peer store holds the ciphertext. Cleared when the state row is deleted (cascade). |
 | `originProcessDied`                                   | Origin JVM died mid-saga; no compensating delete                    |
-| `twoMinutesElapsed`                                   | Reservation clock advanced once after the saga                      |
+| `peerProcessDied`                                     | Peer JVM died mid-saga; no compensating delete                      |
+| `fiveMinutesElapsed`                                  | Reservation clock advanced once after the saga                      |
 | `originSaeReachable`                                  | Later `getRecordMetadata` to the origin succeeds                    |
-| `laterAttemptReadOrigin`                              | A later provision attempt consulted the origin                      |
+| `peerSaeReachable`                                    | Later RMI to the peer succeeds                                      |
+| `laterAttemptKind`                                    | `"origin"`, `"peer"`, or `"none"` if that visit was skipped         |
 | `originDeviceHasKeys` / `peerDeviceHasKeys`           | That SE acked the downlink                                          |
-| `terminalReportedSuccess`                             | Terminal 100% line after a consistent origin share                  |
-
-
+| `terminalReportedSuccess`                             | Terminal 100% line after both rows are `OriginProvisioned`          |
 
 
 ## How to run
@@ -38,7 +39,8 @@ Paste `SaeProvision.tla` and `SaeProvision.cfg` into the
 from this directory:
 
 ```bash
-java -XX:+UseParallelGC -cp "$TLA2TOOLS_JAR" tlc2.TLC -noTE -config SaeProvision.cfg SaeProvision.tla
+java -cp tla2tools.jar pcal.trans SaeProvision.tla
+java -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC -noTE -config SaeProvision.cfg SaeProvision.tla
 ```
 
 TLC should find no error for the invariants in `SaeProvision.cfg`.
@@ -47,31 +49,28 @@ TLC should find no error for the invariants in `SaeProvision.cfg`.
 
 Always:
 
-- If both sides hold a committed share, the material flags match.
-- The peer row is never `OriginProvisioned`.
-- `OriginProvisioned` exists only after the origin device ack.
-- The peer device is filled only if the origin device already acked, and
-only after both rows were deleted (delete-before-send).
-- The terminal success line is reported only after `MarkOriginProvisioned`
-returns a consistent share: origin device has keys, origin row is
-`OriginProvisioned`, peer row is `ShareCommitted`, and the material flags
-match. A later peer delivery may then consume both rows.
+- If both sides are `RecordShared` or `OriginProvisioned`, the material flags match.
+- The origin row is `OriginProvisioned` only when the peer row already is.
+- Either row is `OriginProvisioned` only after the origin device ack.
+- The peer device is filled only after both rows were `OriginProvisioned`, and only after both rows were deleted (delete-before-send).
+- The terminal success line is reported only when both rows are `OriginProvisioned`, the origin device has the keys, and the material flags match. A later peer delivery may then consume both rows.
 
-After the reservation window **and** an origin read (`laterAttemptReadOrigin`,
-origin reachable):
+After the 5-minute window, when the peer is reachable and the later visit is an origin retry:
 
-- leftover peer `ShareCommitted` whose origin is not `OriginProvisioned` is gone, or
-- the origin is still in a fresh in-progress state.
+- the origin does not still hold a stale `RecordShared`. A fresh `RecordShared` is left in place.
 
-On origin retry, leftover origin `ShareCommitted` is deleted (peer row too)
-and a new `Synchronization` starts with no operator prompt.
+After the 5-minute window, when the origin is reachable and the later visit is a peer-device check:
+
+- the peer does not still hold a stale `RecordShared` (that row is reclaimed and its keys dropped).
+- if the peer row is still `OriginProvisioned`, the origin is `OriginProvisioned` or a fresh incomplete row. A missing or stale origin share was deleted.
+
+Every saga label may freeze with either the origin or the peer JVM dead before that step commits. A crash between the peer mark and the origin mark leaves the peer `OriginProvisioned` and the origin `RecordShared`.
 
 ## What it does not claim
 
-These are Java behavior. The spec includes them; it does not pretend they
-heal:
+These are Java behavior. The spec includes them; it does not pretend they heal:
 
-- Origin unreachable: the later attempt neither deletes nor fills. A
-leftover `ShareCommitted` can sit. -> Intended behaviour
-- Crash after delete-before-send and before the peer socket write: origin device has keys, both rows gone, peer device empty. -> Unfortunate but required to prevent double share
-
+- Origin unreachable: the peer visit neither deletes nor fills. A leftover `RecordShared` or `OriginProvisioned` can sit.
+- Peer unreachable: an origin retry of a stale share clears the origin row and leaves the peer row.
+- A skipped later visit does not reclaim a stale `RecordShared`. The clock alone does not delete it.
+- Crash after delete-before-send and before the peer socket write: origin device has keys, both rows gone, peer device empty.

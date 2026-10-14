@@ -27,6 +27,8 @@
         <bc.version>1.84</bc.version>
         <junit.version>5.11.4</junit.version>
         <src.root>${maven.multiModuleProjectDirectory}/src</src.root>
+        <!-- Empty = run both @Tag("integration") and @Tag("unit"). Filter with -Dgroups=integration|unit. -->
+        <groups></groups>
     </properties>
 
     <dependencyManagement>
@@ -138,7 +140,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.2</version>
                     <configuration>
-                    <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                        <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                        <groups>${groups}</groups>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -160,4 +163,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>integration</id>
+            <properties>
+                <groups>integration</groups>
+            </properties>
+        </profile>
+        <profile>
+            <id>unit</id>
+            <properties>
+                <groups>unit</groups>
+            </properties>
+        </profile>
+    </profiles>
 </project>

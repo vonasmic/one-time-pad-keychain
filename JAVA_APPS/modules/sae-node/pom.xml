@@ -113,10 +113,10 @@
                         <exclude>fel/cvut/utimaco/**</exclude>
                     </excludes>
                     <testExcludes>
-                        <testExclude>fel/cvut/se/**</testExclude>
-                        <testExclude>fel/cvut/terminal/**</testExclude>
-                        <testExclude>fel/cvut/tls/NodeTlsSoftwareIdentityTest.java</testExclude>
-                        <testExclude>fel/cvut/utimaco/HsmLiveNoFallbackTest.java</testExclude>
+                        <testExclude>fel/cvut/unit/se/**</testExclude>
+                        <testExclude>fel/cvut/unit/terminal/**</testExclude>
+                        <testExclude>fel/cvut/integration/tls/NodeTlsSoftwareIdentityTest.java</testExclude>
+                        <testExclude>fel/cvut/integration/utimaco/HsmLiveNoFallbackTest.java</testExclude>
                     </testExcludes>
                 </configuration>
             </plugin>

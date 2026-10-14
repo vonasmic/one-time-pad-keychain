@@ -4,6 +4,7 @@ import fel.cvut.node.Address;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
 import fel.cvut.node.recordManager.ClientRecord;
 
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -13,17 +14,16 @@ import java.rmi.RemoteException;
 public interface NodeCommands extends Remote {
     String ping(Address from) throws RemoteException;
 
-    byte[] relay(byte[] payload) throws RemoteException;
-
     AtomicRecordStateMap.RecordMetadata getRecordMetadata(String clientHash1, String clientHash2) throws RemoteException;
 
     /**
      * Reserves {@code RECORD_SYNCHRONIZATION} for the hash pair using the same eligibility
      * rules as a local synchronize.
      *
-     * @return {@code true} when this peer accepted/created the synchronization reservation
+     * @return the same eligibility outcome as a local synchronize
      */
-    boolean synchronize(ClientRecord.ClientHeader clientHeader, String issuingSaeId) throws RemoteException;
+    AtomicRecordStateMap.SynchronizeOutcome synchronize(
+            ClientRecord.ClientHeader clientHeader, String issuingSaeId) throws RemoteException;
 
     /**
      * Promotes local {@code RECORD_SYNCHRONIZATION} owned by {@code issuingSaeId} to
@@ -34,4 +34,17 @@ public interface NodeCommands extends Remote {
     boolean insert(ClientRecord clientRecord, String issuingSaeId) throws RemoteException;
 
     AtomicRecordStateMap.RecordMetadata removeRecord(String clientHash1, String clientHash2) throws RemoteException;
+
+    /**
+     * Deletes this node's row for the hash pair and the counterpart on {@code metadata.saeId()}.
+     */
+    void deleteShare(String clientHash1, String clientHash2) throws RemoteException, NotBoundException;
+
+    /**
+     * Promotes this node's {@code RECORD_SHARED} row to {@code ORIGIN_PROVISIONED}.
+     * The origin calls this on the peer (reversed hashes) and then on itself.
+     *
+     * @return {@code true} when the row changed
+     */
+    boolean markOriginProvisioned(String clientHash1, String clientHash2) throws RemoteException;
 }

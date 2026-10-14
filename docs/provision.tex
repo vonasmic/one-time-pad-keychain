@@ -27,15 +27,17 @@ nebo konec bez klíčů.
 Nová výměna rezervuje pár (\texttt{RECORD\_SYNCHRONIZATION}), zamkne fetch
 (\texttt{RECORD\_FETCHING\_STARTED}) a po stažení padů zapíše na obou SAE
 \texttt{RECORD\_AVAILABLE}. Origin pošle downlink. \texttt{RECORD\_PROVISIONED}
-vznikne až po ACK čipu a jen na origin řádku. Terminál hlásí dokončení až po
-návratu tohoto zápisu. Peer čip dostane materiál později, jen z originu ve stavu
+vznikne až po ACK čipu a jen na origin řádku. Až po návratu tohoto zápisu
+terminál vytiskne 100\,\% a na dalším řádku \texttt{Share successful.}
+Peer čip dostane materiál později, jen z originu ve stavu
 \texttt{PROVISIONED}, a oba řádky se před odesláním smažou.
 
 \section{Formální ověření}
 
 PlusCal v \texttt{specs/sae-provision/SaeProvision.tla} sleduje tuto ságu
-včetně pádu procesu mezi kroky, vypršení dvouminutové rezervace, výpadku
-spojení na origin a jednoho pozdějšího pokusu (nový fill, nebo doručení na peer).
+včetně pádu origin i peer JVM mezi každým krokem, vypršení dvouminutové
+rezervace, výpadku spojení na origin nebo peer a jednoho pozdějšího pokusu
+(nový fill, nebo doručení na peer).
 TLS, PIN a bajty padů v modelu nejsou. Důkaz je prohledání stavů TLC podle
 \texttt{SaeProvision.cfg}. Ve všech dosažitelných stavech platí:
 
@@ -46,11 +48,12 @@ TLS, PIN a bajty padů v modelu nejsou. Důkaz je prohledání stavů TLC podle
   \item Klíče na peer čipu znamenají klíče na origin čipu a už smazané řádky.
   \item Hláška úspěchu odpovídá konzistentnímu share, nebo jeho pozdějšímu
         spotřebování.
-  \item Po čtení dosažitelného originu za oknem rezervace je osiřelý
+  \item Po čtení při dosažitelném originu i peeru za oknem rezervace je osiřelý
         \texttt{AVAILABLE} pryč, nebo origin ještě drží čerstvou rezervaci.
 \end{itemize}
 
 \noindent
-Stejné invarianty drží dva krajní běhy. Nedosažitelný origin se nemaže ani
-neplní, takže \texttt{AVAILABLE} může zůstat. Pád po smazání řádků a před
-zápisem na peer čip nechá klíče jen na originu, a stejný share se nepošle dvakrát.
+Stejné invarianty drží dva krajní běhy. Nedosažitelný origin nebo peer se
+nemaže ani neplní, takže \texttt{AVAILABLE} může zůstat. Pád po smazání řádků
+a před zápisem na peer čip nechá klíče jen na originu, a stejný share se
+nepošle dvakrát.

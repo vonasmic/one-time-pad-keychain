@@ -8,9 +8,9 @@ show the intended design, not method-level control flow.
 
 ## 1. Main end-to-end provision flow (device ↔ SAE)
 
-Origin device gets a new share. Both SAEs become **Available**, then the origin
-device is filled; **RECORD_PROVISIONED** is only after that ack. The terminal
-success line is printed only after that mark returns. A later peer
+Origin device gets a new share. Both SAEs become **RECORD_SHARED**, then the origin
+device is filled. After the ack both rows become **ORIGIN_PROVISIONED**. The terminal
+success line is printed only after both marks return. A later peer
 device is section 6d — not this chart.
 
 ```mermaid
@@ -28,9 +28,9 @@ flowchart TD
         WaitConn[Wait for client]
         UserChoice[Operator selects peer]
         NewExchange[Reserve pair, fetch QKD, sync peer]
-        BothAvailable[Both SAEs Available]
+        BothAvailable[Both SAEs RECORD_SHARED]
         SendOrigin[Send keys to origin device]
-        MarkProvisioned[Origin RECORD_PROVISIONED]
+        MarkProvisioned[Both ORIGIN_PROVISIONED]
         SuccessLine[Terminal success line]
         NoKeys[End without keys]
     end
@@ -38,7 +38,7 @@ flowchart TD
     subgraph targetSAE [Peer SAE]
         SyncKeys[Accept sync]
         StoreKeys[Fetch QKD and store material]
-        PeerAvailable[Peer Available]
+        PeerAvailable[Peer RECORD_SHARED]
     end
 
     subgraph external [External]
@@ -78,12 +78,12 @@ sequenceDiagram
     Note over SAE: Operator selects target peer on stdin
 
     alt New share for the origin device
-        Note over SAE: Both SAEs become Available
+        Note over SAE: Both SAEs become RECORD_SHARED
         SAE-->>SE: Return secret keys
         SE-->>SAE: Ack
-        Note over SAE: Origin RECORD_PROVISIONED
+        Note over SAE: Both rows ORIGIN_PROVISIONED
     else Stored share for the peer device
-        Note over SAE: Only if origin is already Provisioned
+        Note over SAE: Only if both rows are ORIGIN_PROVISIONED
         SAE-->>SE: Return stored secret keys
     else Origin not yet Provisioned
         SAE-->>SE: Close without keys
@@ -167,25 +167,24 @@ flowchart TD
 ## 5. Record states
 
 Each SAE keeps **record state** for a client pair (not the key bytes). Key
-material lives on the **peer**. **Provisioned** is origin-only: the origin
-device has acknowledged the downlink.
+material lives on the **peer**. **ORIGIN_PROVISIONED** is written on both SAEs
+after the origin device acknowledges the downlink. The peer device is filled
+only from that state.
 
 ```mermaid
 flowchart LR
     None([No record]) --> Sync[Synchronization]
     Sync --> Fetch[Fetching]
-    Fetch --> Avail[Available]
-    Avail --> Prov[Provisioned]
+    Fetch --> Shared[RECORD_SHARED]
+    Shared --> Prov[ORIGIN_PROVISIONED]
 ```
 
 | State | Meaning |
 | --- | --- |
 | Synchronization | Pair reserved; exchange not locked yet |
 | Fetching | Both sides locked; QKD fill in progress |
-| Available | Share committed but origin fill did not finish. Leftover; not success |
-| Provisioned | Origin device acked. Peer device may now take the stored half |
-
-The peer row stops at **Available**. It never becomes **Provisioned**.
+| RECORD_SHARED | Both databases hold keys. Incomplete until the origin device acks. Deleted after 5 minutes, and the key row goes with it |
+| ORIGIN_PROVISIONED | Origin device acked. Both rows carry this state. Peer device may take the stored half |
 
 ---
 
@@ -205,8 +204,9 @@ flowchart TD
 
     Kind -->|In progress and expired| AllowNew
     Kind -->|In progress and live| Wait[Cannot start now]
-    Kind -->|Available leftover| AllowNew
-    Kind -->|Provisioned| Filled[Origin device already filled]
+    Kind -->|RECORD_SHARED and stale| AllowNew
+    Kind -->|RECORD_SHARED and fresh| Wait
+    Kind -->|ORIGIN_PROVISIONED| Filled[Origin device already filled]
     Kind -->|Different peer| SharedElsewhere[Shared with another SAE]
 ```
 
@@ -218,12 +218,12 @@ flowchart TD
     Exchange[Fetch QKD and sync with peer]
     Exchange -->|Fail| Rollback[Drop incomplete records]
     Rollback --> NoKeys[No keys returned]
-    Exchange -->|OK| BothAvail[Both SAEs Available]
+    Exchange -->|OK| BothAvail[Both SAEs RECORD_SHARED]
     BothAvail --> Send[Send keys to origin device]
-    Send -->|Ack| Prov[Origin RECORD_PROVISIONED]
-    Send -->|No ack| LeftAvail[Leave Available]
+    Send -->|Ack| Prov[Both ORIGIN_PROVISIONED]
+    Send -->|No ack| LeftAvail[Leave RECORD_SHARED]
     Prov --> Done([Terminal success line])
-    LeftAvail --> NextVisit[Next origin visit deletes leftover and starts new]
+    LeftAvail --> NextVisit[After 5 minutes the incomplete share is deleted]
 ```
 
 ### 6c. Peer SAE during the exchange
@@ -237,23 +237,23 @@ flowchart TD
     GetKeys -->|Error| Cleanup[Drop incomplete record]
     Cleanup --> Reject
     GetKeys -->|OK| Save[Save key material]
-    Save --> Avail[Peer Available]
+    Save --> Avail[Peer RECORD_SHARED]
     Avail --> Done([Confirm to origin])
 ```
 
 ### 6d. Later: peer device
 
-A second device is filled from the **stored** peer material only after the
-origin device is **Provisioned**. Available on both SAEs is not enough.
+A second device is filled from the **stored** peer material only when both
+rows are **ORIGIN_PROVISIONED**. `RECORD_SHARED` on both SAEs is not enough.
 
 ```mermaid
 flowchart TD
-    Start([Peer has Available material])
-    Origin{Origin record?}
-    Origin -->|Provisioned| Send[Send stored keys to peer device]
-    Origin -->|Not yet Provisioned| Hold[Do not send]
-    Origin -->|Gone or abandoned| Clean[Drop the leftover share]
-    Origin -->|Unreachable| Hold
+    Start([Peer has stored material])
+    Both{Both ORIGIN_PROVISIONED?}
+    Both -->|Yes| Send[Send stored keys to peer device]
+    Both -->|RECORD_SHARED still fresh| Hold[Do not send]
+    Both -->|Missing or stale| Clean[Drop the incomplete share]
+    Both -->|Origin unreachable| Hold
 ```
 
 ---

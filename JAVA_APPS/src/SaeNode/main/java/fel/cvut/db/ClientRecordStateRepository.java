@@ -59,11 +59,11 @@ public final class ClientRecordStateRepository {
               AND record_availability = 'RECORD_FETCHING_STARTED'
             """;
 
-    private static final String MARK_PROVISIONED = """
+    private static final String MARK_ORIGIN_PROVISIONED = """
             UPDATE client_record_state
             SET record_availability = ?
             WHERE client_hash1 = ? AND client_hash2 = ?
-              AND record_availability = 'RECORD_AVAILABLE'
+              AND record_availability = 'RECORD_SHARED'
             """;
 
     private static final String DELETE_OLDER_THAN = """
@@ -135,7 +135,7 @@ public final class ClientRecordStateRepository {
             Instant now
     ) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(FINISH_IF_FETCHING)) {
-            statement.setString(1, AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE.name());
+            statement.setString(1, AtomicRecordStateMap.RecordAvailability.RECORD_SHARED.name());
             statement.setString(2, now.toString());
             statement.setString(3, clientHash1);
             statement.setString(4, clientHash2);
@@ -143,13 +143,16 @@ public final class ClientRecordStateRepository {
         }
     }
 
-    public boolean markProvisionedIfAvailable(
+    /**
+     * Sets {@code ORIGIN_PROVISIONED} only from {@code RECORD_SHARED}.
+     */
+    public boolean markOriginProvisionedIfShared(
             Connection connection,
             String clientHash1,
             String clientHash2
     ) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(MARK_PROVISIONED)) {
-            statement.setString(1, AtomicRecordStateMap.RecordAvailability.RECORD_PROVISIONED.name());
+        try (PreparedStatement statement = connection.prepareStatement(MARK_ORIGIN_PROVISIONED)) {
+            statement.setString(1, AtomicRecordStateMap.RecordAvailability.ORIGIN_PROVISIONED.name());
             statement.setString(2, clientHash1);
             statement.setString(3, clientHash2);
             return statement.executeUpdate() > 0;

@@ -51,7 +51,7 @@
                         <include>fel/cvut/tls/TlsStores.java</include>
                     </includes>
                     <testIncludes>
-                        <testInclude>fel/cvut/tls/NodeTlsSoftwareIdentityTest.java</testInclude>
+                        <testInclude>fel/cvut/integration/tls/NodeTlsSoftwareIdentityTest.java</testInclude>
                     </testIncludes>
                 </configuration>
             </plugin>

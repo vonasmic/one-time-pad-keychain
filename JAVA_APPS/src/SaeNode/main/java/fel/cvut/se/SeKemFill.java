@@ -113,8 +113,8 @@ public final class SeKemFill {
         return aeadSeal(slotKey(ss, fillId, logical), logical, plain);
     }
 
-    /** Package-visible for tests. */
-    static byte[] slotKey(byte[] ss, byte[] fillId, int logicalSlot) {
+    /** Slot AEAD key for tests that open a sealed pad image. */
+    public static byte[] slotKey(byte[] ss, byte[] fillId, int logicalSlot) {
         byte[] label = SeConstants.SLOT_LABEL.getBytes(StandardCharsets.US_ASCII);
         byte[] info = new byte[label.length + SeConstants.FILL_ID_LEN + 2];
         System.arraycopy(label, 0, info, 0, label.length);

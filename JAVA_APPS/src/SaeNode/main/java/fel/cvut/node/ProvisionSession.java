@@ -1,11 +1,13 @@
 package fel.cvut.node;
 
+import fel.cvut.node.interNodeCommunication.RmiManager;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
 import fel.cvut.node.recordManager.ClientRecord;
 import fel.cvut.qkd.Qkd014ClientException;
 import fel.cvut.se.SeConstants;
 import fel.cvut.se.SeKemFill;
 import fel.cvut.se.SeSessionUplink;
+import fel.cvut.terminal.ClientSelector;
 
 import java.io.IOException;
 import java.rmi.NotBoundException;
@@ -50,8 +52,26 @@ public final class ProvisionSession {
     }
 
     public interface Exchange {
-        Optional<List<String>> completeNewExchange(ClientRecord clientRecord, SeSessionUplink uplink)
+        Result completeNewExchange(ClientRecord clientRecord, SeSessionUplink uplink)
                 throws RemoteException, Qkd014ClientException, IOException, NotBoundException;
+
+        /** Result of a new-share attempt against the selected target SAE. */
+        sealed interface Result {
+            record Generated(List<String> keyMaterial) implements Result {
+            }
+
+            record SharedWithDifferentSae(AtomicRecordStateMap.RecordMetadata metadata) implements Result {
+            }
+
+            record Rejected() implements Result {
+            }
+
+            default Optional<List<String>> keys() {
+                return this instanceof Generated generated
+                        ? Optional.of(generated.keyMaterial())
+                        : Optional.empty();
+            }
+        }
     }
 
     public interface Operator {
@@ -62,6 +82,13 @@ public final class ProvisionSession {
 
     public interface RemoteRecords {
         void forceDelete(String saeId, String clientHash1, String clientHash2)
+                throws RemoteException, NotBoundException;
+
+        /**
+         * Asks {@code saeId} to delete its row and the counterpart on that row's SAE.
+         * Hash arguments are this node's stored pair; the implementation reverses them.
+         */
+        void deleteShare(String saeId, String clientHash1, String clientHash2)
                 throws RemoteException, NotBoundException;
 
         /**
@@ -106,7 +133,7 @@ public final class ProvisionSession {
                 case INSERTED -> {
                     return generateNewShare(clientRecord, uplink, skipGeneratePrompt);
                 }
-                case RECORD_AVAILABLE, RECORD_SHARED_WITH_DIFFERENT_SAE -> {
+                case ORIGIN_PROVISIONED, RECORD_SHARED_WITH_DIFFERENT_SAE -> {
                     Outcome existing = resolveExistingShare(clientHeader, uplink, insertOutcome);
                     if (existing == null) {
                         skipGeneratePrompt = true;
@@ -139,13 +166,16 @@ public final class ProvisionSession {
                 return new Outcome.Reselect();
             }
             operator.notify("Generating new keys.");
-            Optional<List<String>> keyMaterial = exchange.completeNewExchange(clientRecord, uplink);
-            if (keyMaterial.isPresent()) {
+            Exchange.Result result = exchange.completeNewExchange(clientRecord, uplink);
+            if (result instanceof Exchange.Result.Generated generated) {
                 return new Outcome.Generated(encodeDownlink(
                         uplink,
-                        keyMaterial.get(),
+                        generated.keyMaterial(),
                         SeConstants.DECRYPT_HALF_ORIGIN,
                         clientHeader.padPlainLen()));
+            }
+            if (result instanceof Exchange.Result.SharedWithDifferentSae conflict) {
+                return resolveRemoteDifferentShare(clientRecord, uplink, conflict.metadata());
             }
             return new Outcome.InProgress(
                     "Target SAE rejected the insert. Wait for any provision in progress there to finish and then retry");
@@ -196,12 +226,6 @@ public final class ProvisionSession {
             return deleteShareAndRestart(clientHeader, metadata);
         }
         if (Objects.equals(metadata.issuingSaeId(), localSaeId)) {
-            if (metadata.recordAvailability()
-                    == AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE) {
-                // Origin fill never reached RECORD_PROVISIONED. Drop the leftover
-                // share and start a new exchange without asking the operator.
-                return deleteShareAndRestart(clientHeader, metadata);
-            }
             if (!operator.confirm(existingSharePrompt(metadata, "Delete them and generate new keys?"))) {
                 return keepExistingShare();
             }
@@ -210,11 +234,39 @@ public final class ProvisionSession {
         return deliverExistingShare(clientHeader, metadata, uplink);
     }
 
+    /**
+     * Target already stores this pair for another SAE. Confirming delete removes that share
+     * on the target and its counterpart, then retries the exchange as origin.
+     */
+    private Outcome resolveRemoteDifferentShare(
+            ClientRecord clientRecord,
+            SeSessionUplink uplink,
+            AtomicRecordStateMap.RecordMetadata metadata
+    ) throws RemoteException, Qkd014ClientException, IOException, NotBoundException {
+        ClientRecord.ClientHeader clientHeader = clientRecord.getClientHeader();
+        if (!operator.confirm(existingSharePrompt(metadata,
+                "This will permanently delete those keys. Do you really want to delete them and generate new ones?"))) {
+            records.tryDelete(
+                    clientHeader.clientHash1(),
+                    clientHeader.clientHash2(),
+                    localSaeId,
+                    "operator declined to delete remote share");
+            return keepExistingShare();
+        }
+        remote.deleteShare(clientHeader.saeId(), clientHeader.clientHash1(), clientHeader.clientHash2());
+        return generateNewShare(clientRecord, uplink, true);
+    }
+
     private Outcome deliverExistingShare(
             ClientRecord.ClientHeader clientHeader,
             AtomicRecordStateMap.RecordMetadata metadata,
             SeSessionUplink uplink
     ) throws IOException, RemoteException, NotBoundException {
+        if (metadata.recordAvailability()
+                != AtomicRecordStateMap.RecordAvailability.ORIGIN_PROVISIONED) {
+            operator.notify(OriginShareCheck.IN_PROGRESS_MESSAGE);
+            return new Outcome.InProgress(OriginShareCheck.IN_PROGRESS_MESSAGE);
+        }
         if (uplink.plainMax() < metadata.padPlainLen()) {
             String message = smallerChipMessage(metadata.padPlainLen(), uplink.plainMax());
             operator.notify(message);
@@ -237,19 +289,13 @@ public final class ProvisionSession {
                 yield new Outcome.InProgress(OriginShareCheck.IN_PROGRESS_MESSAGE);
             }
             case DELETE_BOTH -> {
-                records.forceDeleteLocal(clientHash1, clientHash2, "origin share is missing or stale");
                 try {
                     remote.forceDelete(metadata.issuingSaeId(), clientHash1, clientHash2);
                 } catch (RemoteException | NotBoundException ex) {
-                    operator.notify(OriginShareCheck.DELETED_MESSAGE);
-                    yield new Outcome.InProgress(OriginShareCheck.DELETED_MESSAGE);
+                    operator.notify(OriginShareCheck.UNREACHABLE_MESSAGE);
+                    yield new Outcome.InProgress(OriginShareCheck.UNREACHABLE_MESSAGE);
                 }
-                operator.notify(OriginShareCheck.DELETED_MESSAGE);
-                yield new Outcome.InProgress(OriginShareCheck.DELETED_MESSAGE);
-            }
-            case DELETE_LOCAL -> {
-                records.forceDeleteLocal(
-                        clientHash1, clientHash2, "origin already reserved a new synchronization");
+                records.forceDeleteLocal(clientHash1, clientHash2, "origin share is missing or stale");
                 operator.notify(OriginShareCheck.DELETED_MESSAGE);
                 yield new Outcome.InProgress(OriginShareCheck.DELETED_MESSAGE);
             }
@@ -284,11 +330,11 @@ public final class ProvisionSession {
             ClientRecord.ClientHeader clientHeader,
             AtomicRecordStateMap.RecordMetadata metadata
     ) throws RemoteException, NotBoundException {
+        remote.forceDelete(metadata.saeId(), clientHeader.clientHash1(), clientHeader.clientHash2());
         records.forceDeleteLocal(
                 clientHeader.clientHash1(),
                 clientHeader.clientHash2(),
                 "user confirmed deletion of shared record");
-        remote.forceDelete(metadata.saeId(), clientHeader.clientHash1(), clientHeader.clientHash2());
         return null;
     }
 
@@ -306,10 +352,22 @@ public final class ProvisionSession {
 
     private static String existingSharePrompt(AtomicRecordStateMap.RecordMetadata metadata, String question) {
         return "Shared keys already exist with SAE "
-                + metadata.saeId()
+                + saeDescription(metadata.saeId())
                 + " (created "
                 + metadata.dateOfCreation()
                 + ").\n"
                 + question;
+    }
+
+    /** Location and id from {@code sae-nodes.json}, matching the SAE selection menu. */
+    private static String saeDescription(String saeId) {
+        String location = saeId;
+        for (RmiManager.SaeNode node : RmiManager.getKnownSaeNodes()) {
+            if (node.saeId().equals(saeId)) {
+                location = node.location();
+                break;
+            }
+        }
+        return ClientSelector.formatSaeOptionLabel(new ClientSelector.LabeledOption(saeId, location));
     }
 }

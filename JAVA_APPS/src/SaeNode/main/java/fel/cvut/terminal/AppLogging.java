@@ -39,7 +39,7 @@ public final class AppLogging {
     }
 
     /** {@code null} and blank are {@link Mode#TERMINAL}. */
-    static Mode parse(String raw) {
+    public static Mode parse(String raw) {
         if (raw == null || raw.isBlank()) {
             return Mode.TERMINAL;
         }

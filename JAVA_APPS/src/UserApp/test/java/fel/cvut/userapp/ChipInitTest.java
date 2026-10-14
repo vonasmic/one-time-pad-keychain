@@ -5,6 +5,7 @@ import fel.cvut.se.SeConstants;
 import fel.cvut.se.SeManage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.Tag;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("unit")
 class ChipInitTest {
 
     private static final byte[] PW = "password".getBytes(StandardCharsets.US_ASCII);

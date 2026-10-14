@@ -3,8 +3,6 @@ package fel.cvut.node.interNodeCommunication;
 import fel.cvut.node.Address;
 import fel.cvut.node.NodeCommands;
 import fel.cvut.node.NodeRef;
-import fel.cvut.node.OriginShareAccess;
-import fel.cvut.node.OriginShareCheck;
 import fel.cvut.node.recordManager.AtomicRecordStateMap;
 import fel.cvut.node.recordManager.ClientRecord;
 import fel.cvut.node.recordManager.SharedKeyMaterialStore;
@@ -16,7 +14,6 @@ import fel.cvut.qkd.Qkd014ClientException;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +30,7 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
     private final AtomicRecordStateMap atomicRecordStateMap;
     private final SharedKeyMaterialStore sharedKeyMaterialStore;
     private final Qkd014Client qkdClient;
-    private final OriginShareAccess originShareAccess;
+    private final RmiManager rmiManager;
 
     public NodeCommandsService(
             NodeRef selfRef,
@@ -41,7 +38,7 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
             Qkd014Client qkdClient,
             SharedKeyMaterialStore sharedKeyMaterialStore
     ) {
-        this(selfRef, atomicRecordStateMap, qkdClient, sharedKeyMaterialStore, OriginShareAccess.unreachable());
+        this(selfRef, atomicRecordStateMap, qkdClient, sharedKeyMaterialStore, new RmiManager(selfRef.getAddress()));
     }
 
     public NodeCommandsService(
@@ -49,7 +46,7 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
             AtomicRecordStateMap atomicRecordStateMap,
             Qkd014Client qkdClient,
             SharedKeyMaterialStore sharedKeyMaterialStore,
-            OriginShareAccess originShareAccess
+            RmiManager rmiManager
     ) {
         this.selfRef = Objects.requireNonNull(selfRef, "selfRef must not be null");
         this.atomicRecordStateMap = Objects.requireNonNull(atomicRecordStateMap, "atomicRecordStateMap must not be null");
@@ -58,17 +55,12 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
                 sharedKeyMaterialStore,
                 "sharedKeyMaterialStore must not be null"
         );
-        this.originShareAccess = Objects.requireNonNull(originShareAccess, "originShareAccess must not be null");
+        this.rmiManager = Objects.requireNonNull(rmiManager, "rmiManager must not be null");
     }
 
     @Override
     public String ping(Address from) throws RemoteException {
         return "pong from " + selfRef;
-    }
-
-    @Override
-    public byte[] relay(byte[] payload) throws RemoteException {
-        return payload;
     }
 
     @Override
@@ -78,93 +70,15 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
     }
 
     @Override
-    public boolean synchronize(ClientRecord.ClientHeader clientHeader, String issuingSaeId) throws RemoteException {
+    public AtomicRecordStateMap.SynchronizeOutcome synchronize(
+            ClientRecord.ClientHeader clientHeader, String issuingSaeId) throws RemoteException {
         Objects.requireNonNull(clientHeader, "clientHeader must not be null");
-        AtomicRecordStateMap.SynchronizeOutcome outcome =
-                atomicRecordStateMap.synchronize(clientHeader, issuingSaeId);
-        if (outcome == AtomicRecordStateMap.SynchronizeOutcome.INSERTED) {
-            return true;
-        }
-        if (outcome == AtomicRecordStateMap.SynchronizeOutcome.RECORD_AVAILABLE) {
-            reconcileLeftoverShare(clientHeader);
-        }
-        return false;
+        return atomicRecordStateMap.synchronize(clientHeader, issuingSaeId);
     }
 
-    /**
-     * Peer already has {@code RECORD_AVAILABLE} (or origin has {@code RECORD_PROVISIONED}).
-     * Read the issuing SAE and delete leftover material when the origin share is half-failed.
-     * A failed origin read leaves the local row; this method never starts a new reservation.
-     */
-    private void reconcileLeftoverShare(ClientRecord.ClientHeader clientHeader) {
-        Optional<AtomicRecordStateMap.RecordMetadata> local =
-                atomicRecordStateMap.get(clientHeader.clientHash1(), clientHeader.clientHash2());
-        if (local.isEmpty()) {
-            return;
-        }
-        AtomicRecordStateMap.RecordMetadata origin;
-        try {
-            origin = readOriginRow(local.get(), clientHeader);
-        } catch (RemoteException | NotBoundException ex) {
-            LOG.warning(
-                    "Origin SAE unreachable while reconciling leftover share for hashes "
-                            + clientHeader.clientHash1() + " / " + clientHeader.clientHash2()
-                            + ": " + ex.getMessage()
-            );
-            return;
-        }
-        OriginShareCheck.Decision decision = OriginShareCheck.decide(origin, Instant.now());
-        switch (decision) {
-            case PROVISIONED, IN_PROGRESS -> {
-                // Keep both rows. A new provision must not start.
-            }
-            case DELETE_LOCAL -> forceDeleteLocal(clientHeader, "origin already reserved a new synchronization");
-            case DELETE_BOTH -> {
-                forceDeleteLocal(clientHeader, "origin share is missing or stale");
-                tryRemoveOrigin(local.get(), clientHeader);
-            }
-        }
-    }
-
-    private AtomicRecordStateMap.RecordMetadata readOriginRow(
-            AtomicRecordStateMap.RecordMetadata local,
-            ClientRecord.ClientHeader clientHeader
-    ) throws RemoteException, NotBoundException {
-        if (Objects.equals(local.issuingSaeId(), selfRef.getNodeId())) {
-            return local;
-        }
-        return originShareAccess.get(
-                local.issuingSaeId(),
-                clientHeader.clientHash2(),
-                clientHeader.clientHash1()
-        );
-    }
-
-    private void forceDeleteLocal(ClientRecord.ClientHeader clientHeader, String reason) {
-        logDeleteAttempt(clientHeader.clientHash1(), clientHeader.clientHash2(), reason);
-        atomicRecordStateMap.forceDelete(clientHeader.clientHash1(), clientHeader.clientHash2());
-    }
-
-    private void tryRemoveOrigin(
-            AtomicRecordStateMap.RecordMetadata local,
-            ClientRecord.ClientHeader clientHeader
-    ) {
-        if (Objects.equals(local.issuingSaeId(), selfRef.getNodeId())) {
-            return;
-        }
-        try {
-            originShareAccess.remove(
-                    local.issuingSaeId(),
-                    clientHeader.clientHash2(),
-                    clientHeader.clientHash1()
-            );
-        } catch (RemoteException | NotBoundException ex) {
-            LOG.warning(
-                    "Best-effort origin record delete failed for SAE " + local.issuingSaeId()
-                            + " hashes " + clientHeader.clientHash2() + " / " + clientHeader.clientHash1()
-                            + ": " + ex.getMessage()
-            );
-        }
+    @Override
+    public boolean markOriginProvisioned(String clientHash1, String clientHash2) {
+        return atomicRecordStateMap.markOriginProvisioned(clientHash1, clientHash2);
     }
 
     @Override
@@ -194,9 +108,9 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
                 var current = atomicRecordStateMap.get(header.clientHash1(), header.clientHash2());
                 if (current.isPresent()
                         && (current.get().recordAvailability()
-                        == AtomicRecordStateMap.RecordAvailability.RECORD_AVAILABLE
+                        == AtomicRecordStateMap.RecordAvailability.RECORD_SHARED
                         || current.get().recordAvailability()
-                        == AtomicRecordStateMap.RecordAvailability.RECORD_PROVISIONED)) {
+                        == AtomicRecordStateMap.RecordAvailability.ORIGIN_PROVISIONED)) {
                     return true;
                 }
                 logDeleteAttempt(
@@ -237,6 +151,25 @@ public class NodeCommandsService implements fel.cvut.node.NodeCommands {
                 "removed via RMI on SAE " + selfRef.getNodeId()
         );
         return atomicRecordStateMap.forceDelete(clientHash1, clientHash2).orElse(null);
+    }
+
+    /**
+     * Removes the counterpart on the SAE stored in this node's row first, then force-deletes
+     * this node's row. If the remote call fails, the local row is kept and the failure propagates.
+     */
+    @Override
+    public void deleteShare(String clientHash1, String clientHash2) throws RemoteException, NotBoundException {
+        Optional<AtomicRecordStateMap.RecordMetadata> current = atomicRecordStateMap.get(clientHash1, clientHash2);
+        if (current.isEmpty()) {
+            return;
+        }
+        AtomicRecordStateMap.RecordMetadata metadata = current.get();
+        logDeleteAttempt(clientHash1, clientHash2, "user confirmed deletion of shared record");
+        if (!Objects.equals(metadata.saeId(), selfRef.getNodeId())) {
+            NodeCommands peer = rmiManager.connectBySaeId(metadata.saeId());
+            peer.removeRecord(clientHash2, clientHash1);
+        }
+        atomicRecordStateMap.forceDelete(clientHash1, clientHash2);
     }
 
     private void validateFetchingReservation(String clientHash1, String clientHash2, String issuingSaeId)

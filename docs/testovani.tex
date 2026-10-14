@@ -1,658 +1,552 @@
-\chapter{Application testing}
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=1in}
 
-\noindent
-Java: \texttt{mvn -f JAVA\_APPS/pom.xml test} (with \texttt{env/hsm.env}).\\
-SE: \texttt{ctest --output-on-failure -j1} in \texttt{stm32u535-trustzone-usb/host/tropic\_model/build}.\\
-Summary: 207 passed, 0 skipped, 0 failed.
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{booktabs}
+\usepackage{microtype}
+
+% Define custom visual palette for test reports
+\definecolor{passgreen}{HTML}{1B5E20}
+\colorlet{status-passed}{passgreen}
+\definecolor{status-failed}{HTML}{B71C1C}
+\definecolor{status-skipped}{HTML}{E65100}
+\definecolor{cardbg}{HTML}{FAFAFA}
+\definecolor{cardborder}{HTML}{E0E0E0}
+
+% Custom macro for styled test cases
+\newcommand{\testcase}[3]{%
+  \begin{tcolorbox}[
+    colback=cardbg,
+    colframe=cardborder,
+    boxrule=0.5pt,
+    arc=2.5pt,
+    left=8pt, right=8pt, top=6pt, bottom=6pt,
+    before skip=4pt, after skip=4pt,
+    breakable
+  ]
+  {\small\ttfamily\bfseries #1} \hfill {\small\bfseries\color{status-#2}#2}\par
+  \vspace{3pt}
+  {\small\color{black!85} #3}
+  \end{tcolorbox}%
+}
+
+\begin{document}
+
+\chapter*{Foreword}
+
+This report covers automated tests of the Java applications (SAE-node, USER APP, usb-cdc, cert-generator, LabSwitch) and of the SE host / TROPIC01 model.
+
+Java tests live under \texttt{JAVA\_APPS} and are tagged \texttt{unit} or \texttt{integration}. Run them with \texttt{mvn -f JAVA\_APPS/pom.xml test} (with \texttt{env/hsm.env}). The live HSM tests in \texttt{tls-hsm} need the Utimaco simulator; if it is down they fail and Maven skips the downstream modules (\texttt{cert-generator}, \texttt{sae-node}), so add \texttt{-Dmaven.test.failure.ignore=true} to still run every module. Filter with \texttt{-Dgroups=integration} or \texttt{-Dgroups=unit}, or profiles \texttt{-Pintegration} / \texttt{-Punit}. The default run executes both.
+
+Unit tests mock RMI, QKD, and HSM, or use a single SQLite map, a decision table, a parser, framing, store tamper, or status strings. Integration tests drive a real \texttt{NodeCommandsService} on two or three SQLite maps, the production \texttt{ProvisionSession} FSM (including three-node handover via \texttt{ProvisionCluster}), exported RMI, an embedded HTTP KME, a live HSM, a TLS handshake, or multi-node concurrency. Shared-record states are \texttt{RECORD\_SYNCHRONIZATION}, \texttt{RECORD\_FETCHING\_STARTED}, \texttt{RECORD\_SHARED} and \texttt{ORIGIN\_PROVISIONED} (there is no AVAILABILITY enum value).
+
+SE tests are run with \texttt{ctest --output-on-failure -j1} in \texttt{stm32u535-trustzone-usb/host/tropic\_model/build}.
+
+\textbf{Summary:} 220 passed, 0 skipped, 2 failed (210 Java: 208 passed, 2 failed; 12 SE passed). The two failures are \texttt{HsmLiveNoFallbackTest}: the Utimaco simulator was not reachable during this run (\texttt{NO\_CONNECTION 0xbe000015}).
+
+\chapter{Integration tests}
+
+Integration tests are the real multi-SAE, fail-during-transmit, security-gate, and production-\texttt{ProvisionSession} cases (two or three SQLite maps, exported RMI, mocked HSM/QKD/device). They must pass for the application to be considered consistent and safe.
+
+\section{Multi-SAE consistency and transmit failure}
+\subsubsection{integration / multi-SAE}
+
+\testcase{PeerRecordSyncTest.successfulExchangeFinalizesBothSides}{passed}{Origin reserves the pair and runs \texttt{completeNewExchange} against a real peer service: keys are returned, both rows end RECORD\_SHARED and both store the negotiated \texttt{padPlainLen}.}
+
+\testcase{PeerRecordSyncTest.lostReplyAfterPeerSuccessRemovesPeerRecord}{passed}{Peer \texttt{insert} commits but its reply is lost (\texttt{RemoteException}): the exchange throws, origin and peer end empty with no key material, and the pair can be reserved again on both sides.}
+
+\testcase{PeerRecordSyncTest.originFinalizeFailureRemovesPeerRecord}{passed}{Peer insert succeeds but origin \texttt{finishRecordInsert} returns false: \texttt{IllegalStateException}, both rows are removed and the pair is reinsertable.}
+
+\testcase{OriginShareReconcileTest.freshSharedRejectsSynchronize}{passed}{Both sides hold a fresh RECORD\_SHARED pair: peer \texttt{synchronize} returns NOT\_INSERTED and both rows stay RECORD\_SHARED.}
+
+\testcase{OriginShareReconcileTest.originProvisionedRejectsSynchronize}{passed}{Both sides are ORIGIN\_PROVISIONED: peer \texttt{synchronize} returns ORIGIN\_PROVISIONED and neither row changes.}
+
+\testcase{OriginShareReconcileTest.staleSharedReclaimsPeerAndDeletesKeys}{passed}{A peer RECORD\_SHARED row aged 6\,min with stored key material: \texttt{synchronize} returns INSERTED, the row becomes RECORD\_SYNCHRONIZATION and the key material is deleted.}
+
+\testcase{OriginShareReconcileTest.deleteShareRemovesOriginAndPeer}{passed}{\texttt{deleteShare} on the origin service removes its RECORD\_SHARED row and, via RMI, the reversed row on the peer.}
+
+\testcase{ConcurrentRmiTest.concurrentInsertsOfSameHashPairLeaveOnePeerRow}{passed}{8 threads run synchronize, lockFetch and insert for the same pair through one exported stub: at least one succeeds and the peer holds exactly one RECORD\_SHARED row.}
+
+\testcase{ConcurrentRmiTest.concurrentInsertsOfDifferentHashPairsAllSucceed}{passed}{8 threads insert 8 distinct pairs through one exported stub: every insert succeeds and the peer DB has 8 rows.}
+
+\testcase{ConcurrentRmiTest.mixedRpcsFromSeveralClientsDoNotCorruptState}{passed}{12 threads each insert, ping, read metadata and remove their own pair in parallel: no call throws and the peer DB ends with 0 rows.}
+
+\testcase{ConcurrentRmiTest.twoExportedNodesAcceptConcurrentInsertsOnSeparateDatabases}{passed}{Origin and peer are exported separately and receive concurrent inserts: both succeed and each SQLite DB holds exactly one row.}
+
+\testcase{MultiSaeCrossfireTest.overlappingExchangesLeaveAtMostOneConsistentPair}{passed}{sae-1 and sae-3 exchange the same pair with sae-2 at the same instant over exported RMI: at most one origin ends RECORD\_SHARED or ORIGIN\_PROVISIONED, the peer then holds the matching row and exactly one key-material row (otherwise none), and after cleanup the pair can be reserved again.}
+
+\testcase{MultiSaeCrossfireTest.disjointPairsAcrossThreeNodesAllSucceed}{passed}{Three exported nodes run three disjoint exchanges at once (sae-1$\to$sae-2, sae-3$\to$sae-2, sae-1$\to$sae-3): all return keys and all six rows end RECORD\_SHARED.}
+
+\testcase{MultiSaeCrossfireTest.rapidFireInsertsOnOnePeerLeaveOneRowPerPair}{passed}{8 threads alternately issued by sae-1 and sae-3 insert the same pair into one peer stub: at least one succeeds and the peer holds exactly one RECORD\_SHARED row.}
+
+\testcase{TransmitAbortConsistencyTest.dropDuringInsertThenSecondSaeRetriesWithoutOrphan}{passed}{The peer stub is unexported while \texttt{insert} is in flight: the exchange fails without leaving a one-sided shared row; sae-3 then retries, both its row and the peer row end RECORD\_SHARED, the sae-1 row is gone and only the peer holds key material.}
+
+\testcase{TransmitAbortConsistencyTest.lostReplyThenImmediateRetryIsReinsertableAndConsistent}{passed}{Peer \texttt{insert} commits but the reply is lost: the exchange throws and leaves no orphan; sae-3 then completes a clean exchange with both rows RECORD\_SHARED and the sae-1 row empty.}
+
+\section{Provision consistency}
+\subsubsection{integration / provision}
+
+\testcase{KeystreamOnceTest.secondExchangeIsRefusedWhileShareIsAvailable}{passed}{After a completed exchange the origin \texttt{synchronize} returns NOT\_INSERTED for the fresh RECORD\_SHARED pair; the peer payload and its GCM ciphertext are unchanged and only one key-material row exists.}
+
+\testcase{KeystreamOnceTest.peerReconcileDoesNotRegenerateWhileOriginAvailable}{passed}{After a completed exchange a peer \texttt{synchronize} returns NOT\_INSERTED: both rows stay RECORD\_SHARED and the stored peer ciphertext is unchanged (no new pad).}
+
+\testcase{KeystreamOnceTest.secondSaeCannotInsertOverAvailablePair}{passed}{sae-3 tries to share a pair that sae-1 already shares with the peer: the exchange returns \texttt{SharedWithDifferentSae} naming sae-1, the sae-3 row stays RECORD\_SYNCHRONIZATION for the delete prompt, and the peer payload, ciphertext and sae-1 RECORD\_SHARED row are unchanged.}
+
+\testcase{KeystreamOnceTest.newExchangeAfterDeleteUsesNewCiphertext}{passed}{Both rows are force-deleted and the pair is exchanged again: the new peer ciphertext differs from the old one (fresh IV) and decrypts to the new payload.}
+
+\section{Re-provision handover and end-to-end provision}
+\subsubsection{integration / handover}
+
+These tests run the production \texttt{ProvisionSession} FSM end to end through the \texttt{ProvisionCluster} harness: three SAE nodes (sae-1 origin, sae-2 peer A, sae-3 peer B), each with its own SQLite DB and a real \texttt{NodeCommandsService} exported over in-process RMI, \texttt{PeerRecordSync} as the exchange, and mocked HSM, QKD and device downlink. The initial share is created by a real session from origin to peer A and, unless noted, marked ORIGIN\_PROVISIONED on both sides.
+
+\testcase{ReprovisionHandoverTest.peerBContactsOriginDeletesOldShareAndCreatesNewOne}{passed}{With origin--A ORIGIN\_PROVISIONED, peer B starts a share with the origin and confirms delete: a hook after \texttt{deleteShare} sees origin and A empty, then B and origin end RECORD\_SHARED with key material only on the origin.}
+
+\testcase{ReprovisionHandoverTest.peerBContactsPeerADeletesOldShareAndCreatesNewOne}{passed}{Same setup, B targets peer A: after \texttt{deleteShare} origin and A are empty, then B and A end RECORD\_SHARED with key material only on A, and the origin stays empty.}
+
+\testcase{ReprovisionHandoverTest.handoverAlsoWorksWhileOldShareIsFreshRecordShared}{passed}{Origin--A is still a fresh RECORD\_SHARED (never provisioned): B's handover against the origin still succeeds and A ends empty.}
+
+\testcase{ReprovisionHandoverTest.declinedDeleteKeepsOldShareAndLeavesBEmpty}{passed}{B confirms generate but declines ``permanently delete'': the outcome is \texttt{InProgress}, B is empty, and origin and A keep ORIGIN\_PROVISIONED with A's key material.}
+
+\testcase{ReprovisionHandoverTest.unreachablePeerADuringDeleteShareDeletesNothing}{passed}{A is unreachable during \texttt{deleteShare}: the remote remove fails first, so origin and A keep ORIGIN\_PROVISIONED and key material, B rolls back empty; once A is back the handover succeeds.}
+
+\testcase{ReprovisionHandoverTest.unreachableOriginLeavesOldShareIntact}{passed}{Origin is unreachable when B starts the exchange: \texttt{RemoteException}, B is empty and the origin--A ORIGIN\_PROVISIONED share is untouched.}
+
+\testcase{ReprovisionHandoverTest.staleRecordSharedOnOriginIsTakenOverWithoutPrompt}{passed}{Origin holds RECORD\_SHARED aged 6\,min: B's exchange overwrites it with only the generate prompt; B and origin end RECORD\_SHARED while A's stale row remains for its own reclaim.}
+
+\testcase{ProvisionSessionEndToEndTest.generateThenDeliverToPeerDeviceClearsBothNodes}{passed}{Origin generates a share (RECORD\_SHARED both sides, key material only on the peer), both are marked ORIGIN\_PROVISIONED, the peer device receives the stored share without a prompt and both DBs end empty.}
+
+\testcase{ProvisionSessionEndToEndTest.deliveryRefusedWhileOriginNotProvisioned}{passed}{Peer is ORIGIN\_PROVISIONED but the origin is still RECORD\_SHARED: delivery returns the in-progress message and the peer keeps its key material.}
+
+\testcase{ProvisionSessionEndToEndTest.deliveryWithMissingOriginRowDeletesBoth}{passed}{Origin row is missing at delivery: both sides are force-deleted and the operator gets the ``Shared keys were deleted'' message.}
+
+\testcase{ProvisionSessionEndToEndTest.deliveryWithOriginUnreachableKeepsPeerShare}{passed}{Origin is unreachable at delivery: the unreachable message is returned and peer key material plus the origin ORIGIN\_PROVISIONED row stay.}
+
+\testcase{ProvisionSessionEndToEndTest.operatorDeclinesGenerateReselectsAndLeavesNoRows}{passed}{Operator declines generating new keys: the outcome is \texttt{Reselect} and both origin and peer DBs stay empty.}
+
+\testcase{ProvisionSessionEndToEndTest.originReprovisionAfterProvisionedDeletesAndRegenerates}{passed}{Origin re-provisions an ORIGIN\_PROVISIONED pair: after confirming delete, a new RECORD\_SHARED pair is generated with fresh key material on the peer.}
+
+\testcase{ProvisionSessionEndToEndTest.qkdFailureOnPeerInsertRollsBackBothNodes}{passed}{Peer \texttt{getKeyWithKeyIds} fails: both nodes end empty; after the KME stub is restored the same pair generates normally.}
+
+\testcase{ProvisionSessionEndToEndTest.peerUnreachableDuringGenerateRollsBackOrigin}{passed}{Peer is unreachable during generate: \texttt{RemoteException}, the origin reservation is rolled back and both DBs are empty.}
+
+\section{Security}
+\subsubsection{integration / security}
+
+\testcase{HsmLiveNoFallbackTest.encryptDecryptRoundTripOnCryptoServer}{failed}{Against the live CryptoServer, \texttt{HsmAesGcm} seals a plaintext under an HSM alias (not \texttt{BC}) and decrypts it back. Failed in this run: simulator not reachable (\texttt{NO\_CONNECTION}).}
+
+\testcase{HsmLiveNoFallbackTest.missingAliasDoesNotFallBackToInMemoryAes}{failed}{Decrypting a blob under a non-existent HSM alias throws instead of falling back to in-memory AES. Failed in this run: simulator not reachable (\texttt{NO\_CONNECTION}).}
+
+\testcase{NodeTlsSoftwareIdentityTest.pkcs12AndPemLeavesMatch}{passed}{The ML-DSA leaf loaded from PEM and from PKCS12 has the same DER encoding as the generated certificate.}
+
+\testcase{NodeTlsSoftwareIdentityTest.pemAndPkcs12ContextsHandshake}{passed}{An SSL context built from PKCS12 and one built from PEM complete a TLS handshake in both server/client directions.}
+
+\testcase{NodeTlsSoftwareIdentityTest.missingPkcs12FailsClosed}{passed}{A missing \texttt{.p12} makes both context creation and leaf loading throw \texttt{IllegalStateException} instead of falling back to an empty identity.}
+
+\testcase{ApplicationLogNoSecretsTest.successfulExchangeDoesNotLogPadPinOrHsmKey}{passed}{A full origin--peer exchange with a marker-tagged QKD key writes rows to \texttt{application\_log}, but none of them contains the marker, the Base64 key material, the PIN or the HSM key alias.}
+
+\testcase{Qkd014ClientTest.getKeyWithKeyIdsBatchesUsingStatusLimit}{passed}{With \texttt{max\_key\_per\_request}=3 on an embedded KME, 4 key IDs are fetched as one POST and one GET batch, no request exceeds the limit, and all keys come back in order.}
+
+\testcase{Qkd014ClientTest.qkdErrorOnDecKeysIsSerializableThroughRemoteException}{passed}{A \texttt{Qkd014ClientException} wrapped in a \texttt{RemoteException} survives Java serialization with its cause and message intact.}
+
+\testcase{Qkd014ClientTest.oversizeUnbatchedRequestSurfacesKmeError}{passed}{The KME answers \texttt{dec\_keys} with HTTP 400 and an error body: the client throws \texttt{Qkd014ClientException} carrying code 400 and the KME message.}
+
+\testcase{Qkd014ClientTest.getStatusParsesKmeLimits}{passed}{\texttt{getStatus} parses \texttt{max\_key\_size} and \texttt{max\_key\_per\_request} into \texttt{KmeStatus} and its accessor methods.}
+
+\testcase{Qkd014ClientTest.getStatusParsesStatusExtension}{passed}{The vendor \texttt{status\_extension} object in the status JSON is kept in \texttt{KmeStatus} rather than dropped.}
+
+\chapter{Unit tests}
+
+Unit tests cover parsers, decision tables, framing, store tamper, QKD packing, and the \texttt{ProvisionSession}/\texttt{OriginShareCheck} FSMs with fakes. A failure here is local; it does not by itself prove a split-brain or a leaked pad.
 
 \section{sae-node}
+\subsubsection{unit / sae-node / node}
 
-\subsection{node}
+\testcase{PeerRecordSyncTest.connectFailureLeavesBothEmptyAndReinsertable}{passed}{\texttt{connectBySaeId} throws \texttt{RemoteException}: the exchange rethrows, both maps are empty with no key material, and the pair can be reserved again.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / node}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{PeerRecordSyncTest.insertFalseLeavesBothEmptyAndReinsertable}{passed}{Peer accepts synchronize and lockFetch but \texttt{insert} returns false: no keys are returned, both sides are empty and reinsertable.}
 
-\detokenize{ProvisionSessionTest.insertedAndConfirmedGenerates} &
-After a successful insert and operator confirmation, builds a new ML-KEM downlink from QKD material. & passed \\
-\detokenize{ProvisionSessionTest.insertedAndDeclinedReselects} &
-If the operator declines the new share, drops the reservation and returns to target selection; nothing is sent to the chip. & passed \\
-\detokenize{ProvisionSessionTest.notInsertedIsInProgress} &
-If insert fails on this SAE because another node already holds the pair, the operator gets an in-progress message. & passed \\
-\detokenize{ProvisionSessionTest.originAvailableShareIsDeletedAndRestartedWithoutPrompt} &
-A local AVAILABLE share issued by this SAE is deleted on both sides and a new one is generated immediately, with no prompt. & passed \\
-\detokenize{ProvisionSessionTest.originProvisionedShareAsksBeforeDelete} &
-A share already on the chip (PROVISIONED) is not deleted without confirmation; on decline it stays on disk and in the DB. & passed \\
-\detokenize{ProvisionSessionTest.availableShareDeliversExisting} &
-A peer share in AVAILABLE is packed into a downlink again; QKD is not called. & passed \\
-\detokenize{ProvisionSessionTest.differentSaeShareUsedWhenConfirmed} &
-A share issued by another SAE is delivered as existing material after the operator confirms. & passed \\
-\detokenize{ProvisionSessionTest.differentSaeShareKeptWhenDeleteDeclined} &
-Double no: do not use the foreign share and do not delete it -- the row and payload stay. & passed \\
-\detokenize{ProvisionSessionTest.differentSaeShareDeletedWhenDeleteConfirmed} &
-After the second confirmation the foreign share is deleted and a new QKD exchange starts. & passed \\
-\detokenize{ProvisionSessionTest.existingShareRefusedWhenChipIsSmallerThanStoredPad} &
-The chip reports a smaller pad than stored \texttt{pad\_plain}; the existing share is neither delivered nor deleted. & passed \\
-\detokenize{ProvisionSessionTest.existingShareRefusedWhenOriginNotProvisioned} &
-Peer is AVAILABLE but origin is not yet PROVISIONED -- delivery is deferred, nothing is deleted. & passed \\
-\detokenize{ProvisionSessionTest.existingShareDeletedWhenOriginRowMissing} &
-The origin row is gone: the peer leftover is deleted locally and remotely. & passed \\
-\detokenize{ProvisionSessionTest.existingShareKeptWhenOriginUnreachable} &
-Origin SAE does not answer: the peer share is left untouched and the operator gets unreachable. & passed \\
-\detokenize{ProvisionSessionTest.existingShareUsesStoredLengthWhenChipIsLargeEnough} &
-Chip slot larger than the stored pad: the downlink is built from stored \texttt{pad\_plain}, not from the current chip size. & passed \\
-\detokenize{OriginShareReconcileTest.provisionedOriginKeepsPeerShare} &
-Peer \texttt{synchronize} against a PROVISIONED origin refuses insert and leaves both rows. & passed \\
-\detokenize{OriginShareReconcileTest.freshFetchingOriginLeavesPeerShare} &
-Origin is fetching keys (FETCHING, \textless{}2\,min): the peer leftover is not deleted. & passed \\
-\detokenize{OriginShareReconcileTest.staleFetchingOriginDeletesBoth} &
-FETCHING older than 2\,min: deletes origin and peer so the pair can be inserted again. & passed \\
-\detokenize{OriginShareReconcileTest.freshSynchronizationDeletesPeerOnly} &
-Origin is stuck in SYNCHRONIZATION: only the peer leftover is deleted; the origin reservation stays. & passed \\
-\detokenize{OriginShareReconcileTest.missingOriginDeletesPeer} &
-No origin row -- the peer leftover is orphaned and is removed. & passed \\
-\detokenize{OriginShareReconcileTest.unreachableOriginLeavesPeerShare} &
-RMI to origin fails: the peer leftover is left untouched (fail-open toward the network). & passed \\
-\detokenize{OriginShareReconcileTest.staleAvailableOriginDeletesBoth} &
-AVAILABLE on origin without PROVISIONED for more than 2\,min is treated as stuck and deleted on both sides. & passed \\
-\detokenize{OriginShareCheckTest.missingOriginDeletesBoth} &
-Decision table: no origin metadata $\to$ DELETE\_BOTH. & passed \\
-\detokenize{OriginShareCheckTest.provisionedAllowsDelivery} &
-PROVISIONED on origin allows peer delivery even after two minutes. & passed \\
-\detokenize{OriginShareCheckTest.freshAvailableIsInProgress} &
-AVAILABLE younger than 2\,min is still an in-progress fill, not a delivery. & passed \\
-\detokenize{OriginShareCheckTest.staleAvailableDeletesBoth} &
-AVAILABLE older than 2\,min without provision: both sides go. & passed \\
-\detokenize{OriginShareCheckTest.freshFetchingIsInProgress} &
-Fresh FETCHING = wait, QKD is still running. & passed \\
-\detokenize{OriginShareCheckTest.staleFetchingDeletesBoth} &
-Stuck FETCHING after timeout is cleaned on both sides. & passed \\
-\detokenize{OriginShareCheckTest.freshSynchronizationDeletesLocalOnly} &
-Fresh SYNCHRONIZATION: drop only the local leftover, do not touch the origin reservation. & passed \\
-\detokenize{OriginShareCheckTest.staleSynchronizationDeletesBoth} &
-SYNCHRONIZATION after timeout: both sides, so it cannot deadlock. & passed \\
-\detokenize{OriginShareCheckTest.exactlyTwoMinutesIsNotStale} &
-The stale boundary is strict: exactly 120\,s is not yet a timeout. & passed \\
-\detokenize{InputHandlerTest.selectForUplinkStoresMinWhenChipIsSmaller} &
-The header stores $\min(\mathrm{chip\ plainMax},\ \mathrm{peer\ padPlain})$ -- here the smaller chip wins. & passed \\
-\detokenize{InputHandlerTest.selectForUplinkStoresMinWhenPeerIsSmaller} &
-The same $\min$, this time the smaller pad reported by the peer wins. & passed \\
-\detokenize{PeerRecordSyncTest.successfulExchangeFinalizesBothSides} &
-Full exchange: lock, QKD, insert on peer, finish on origin; both AVAILABLE with the same \texttt{pad\_plain}. & passed \\
-\detokenize{PeerRecordSyncTest.connectFailureDeletesOriginAndLeavesPeerEmpty} &
-RMI connect fails before insert: origin rolls back, peer DB is empty, the pair can be inserted again. & passed \\
-\detokenize{PeerRecordSyncTest.insertFalseDeletesOriginAndDoesNotWipePeer} &
-Peer \texttt{insert} returns false: origin is gone; nothing was deleted on the peer because nothing was there. & passed \\
-\detokenize{PeerRecordSyncTest.insertThrowBeforePersistCleansBothSides} &
-Exception in insert before the DB write -- origin rollback, peer empty. & passed \\
-\detokenize{PeerRecordSyncTest.lostReplyAfterPeerSuccessRemovesPeerRecord} &
-Peer insert already wrote the row but the reply was lost: origin rollback plus best-effort peer delete. & passed \\
-\detokenize{PeerRecordSyncTest.originFinalizeFailureRemovesPeerRecord} &
-Peer is written, \texttt{finishRecordInsert} on origin fails -- both sides are cleaned. & passed \\
-\detokenize{PeerRecordSyncTest.qkdFailureDeletesOriginAndNeverTouchesPeer} &
-KME returns 503 before RMI insert: origin is gone, the peer is never called. & passed \\
-\detokenize{ProvisionTerminalStatusTest.newSharePrintsSuccessOnlyAfterMarkReturns} &
-``download complete'' only after the device ACKs \emph{and} \texttt{markProvisioned} returns true. & passed \\
-\detokenize{ProvisionTerminalStatusTest.newShareWithoutMarkIsNotSuccess} &
-ACK without switching to PROVISIONED reports SHARE\_NOT\_CONSISTENT, not success. & passed \\
-\detokenize{ProvisionTerminalStatusTest.storedShareStillPrintsSuccess} &
-Delivering an already stored share prints success without a new mark (mark is not called for existing shares). & passed \\
-\end{longtable}
+\testcase{PeerRecordSyncTest.insertThrowBeforePersistLeavesBothEmptyAndReinsertable}{passed}{Peer \texttt{insert} throws \texttt{RemoteException} before writing: the exchange rethrows, both sides are empty and reinsertable.}
 
-\subsection{db}
+\testcase{PeerRecordSyncTest.qkdFailureLeavesBothEmptyAndReinsertable}{passed}{The KME \texttt{getKey} fails with HTTP 503: the exchange throws, both sides are empty and reinsertable.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / db}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{PeerRecordSyncTest.differentSaeShareDoesNotRollbackOrigin}{passed}{The target answers RECORD\_SHARED\_WITH\_DIFFERENT\_SAE: the exchange returns \texttt{SharedWithDifferentSae} and the origin reservation stays RECORD\_SYNCHRONIZATION for the delete prompt.}
 
-\detokenize{RecordProvisionedTest.finishRecordInsertRefreshesTimestamp} &
-FETCHING $\to$ AVAILABLE bumps \texttt{date\_of\_creation} so the 2\,min timeout does not start from the reservation. & passed \\
-\detokenize{RecordProvisionedTest.markProvisionedOnlyFromAvailable} &
-PROVISIONED can be set only from AVAILABLE; from SYNCHRONIZATION/FETCHING it returns false. & passed \\
-\detokenize{RecordRetentionTest.purgeDeletesRowsOlderThanRetentionAndKeepsNewer} &
-The janitor deletes metadata older than retention (default 14\,days) and keeps a younger row. & passed \\
-\detokenize{RecordRetentionTest.purgeDeletesBothAvailabilityStates} &
-Expired AVAILABLE and SYNCHRONIZATION both fall to the same purge, not only one state. & passed \\
-\detokenize{RecordRetentionTest.purgeCascadesSharedKeyMaterialForDeletedParentsOnly} &
-A deleted parent takes pad ciphertext with it; the payload of a live row stays. & passed \\
-\detokenize{RecordRetentionTest.parseRetentionDaysDefaultsToFourteenWhenUnsetOrBlank} &
-Empty \texttt{RECORD\_RETENTION\_DAYS} = 14, so a missing env does not break startup. & passed \\
-\detokenize{RecordRetentionTest.parseRetentionDaysAcceptsCustomPositiveValue} &
-A positive integer of days is taken as retention. & passed \\
-\detokenize{RecordRetentionTest.parseRetentionDaysRejectsInvalidValues} &
-0, negative, fractional, and garbage fail at startup instead of silently using the default. & passed \\
-\detokenize{RecordRetentionTest.getRefusesExpiredMetadata} &
-\texttt{get} does not return an expired row to the application, but it still sits in SQLite until purge. & passed \\
-\detokenize{RecordRetentionTest.synchronizeReclaimsExpiredAvailableRow} &
-A new insert on expired AVAILABLE overwrites it to SYNCHRONIZATION with a new timestamp. & passed \\
-\detokenize{RecordRetentionTest.readPayloadRefusesExpiredKeyMaterial} &
-Reading the AES-GCM blob of an expired record returns empty; the ciphertext stays in the table. & passed \\
-\detokenize{SqliteLoggingTest.storesApplicationLogsAndWarningsFromOtherLoggers} &
-\texttt{application\_log} takes INFO+ from \texttt{fel.cvut.*} and WARNING+ from BC/Hikari; FINE and library INFO do not. & passed \\
-\detokenize{ConcurrentRecordStateTest.concurrentInsertsOfSameHashPairLeaveExactlyOneRow} &
-8 threads on the same hash pair: the unique constraint leaves one row, not a duplicate. & passed \\
-\detokenize{ConcurrentRecordStateTest.concurrentInsertsOfDifferentHashPairsAllSucceed} &
-Different pairs in parallel -- every insert succeeds, no false conflict. & passed \\
-\detokenize{ClientRecordStateTamperTest.tamperedMetadataIsStillReadable} &
-SQL UPDATE of \texttt{sae\_id} is still readable (the table is not MAC'd). & passed \\
-\detokenize{ClientRecordStateTamperTest.tamperedPeerIdBlocksNewInsertAsDenialOfService} &
-A forged peer SAE ID blocks a legitimate synchronize as ``already shared with another SAE''. & passed \\
-\detokenize{ClientRecordStateTamperTest.flippedAvailabilityStillReturnsTheRow} &
-Flipping availability in SQL does not hide the row -- the state is trusted only in the application. & passed \\
-\detokenize{RecordFetchLockTest.lockFetchRequiresSynchronizationOwnedByIssuer} &
-\texttt{lockFetch} succeeds only for the issuer in SYNCHRONIZATION; a foreign SAE and an empty pair get false. & passed \\
-\detokenize{RecordFetchLockTest.fetchingStartedBlocksHigherIssuingSaeUntilStale} &
-After lock, FETCHING denies insert to a second SAE on the same pair until the row goes stale. & passed \\
-\detokenize{SharedKeyMaterialTamperTest.roundTripReturnsOriginalPayload} &
-HSM/JCE AES-GCM write and read return the same list of QKD keys. & passed \\
-\detokenize{SharedKeyMaterialTamperTest.flippedCiphertextIsRejected} &
-A flipped bit in the ciphertext column fails the GCM tag; plaintext is not returned. & passed \\
-\detokenize{SharedKeyMaterialTamperTest.flippedIvIsRejected} &
-Same for a flipped IV -- decrypt throws IOException. & passed \\
-\detokenize{SharedKeyMaterialTamperTest.sqlCheckRejectsNon128TagBits} &
-A CHECK constraint on a 128-bit tag rejects UPDATE to 96; the original blob can still be read. & passed \\
-\detokenize{SharedKeyMaterialTamperTest.sealedBlobRejectsWrongTagBitsBeforeDecrypt} &
-Java \texttt{SealedBlob.verify} fails a 96-bit tag before calling the HSM. & passed \\
-\detokenize{SharedKeyMaterialTamperTest.wrongHsmAliasIsRejected} &
-A foreign \texttt{hsm\_key\_alias} in the row is rejected on read so it is not decrypted with another key. & passed \\
-\end{longtable}
+\testcase{ProvisionSessionTest.insertedAndConfirmedGenerates}{passed}{Local synchronize returns INSERTED and the operator confirms: one prompt, the exchange returns keys and the outcome is \texttt{Generated} with the built downlink.}
 
-\subsection{qkd}
+\testcase{ProvisionSessionTest.insertedAndDeclinedReselects}{passed}{Local synchronize returns INSERTED and the operator declines generating keys: the reservation is deleted and the outcome is \texttt{Reselect}.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / qkd}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{ProvisionSessionTest.notInsertedIsInProgress}{passed}{Local synchronize returns NOT\_INSERTED: the outcome is \texttt{InProgress} and the operator is told sharing is in progress on another SAE and to retry in 10 seconds.}
 
-\detokenize{QkdPadMaterialFetcherTest.packedSizeIsStatusMaxKeySizeAlignedToPoolUnit} &
-Request size is \texttt{max\_key\_size} rounded down to a multiple of the pool \texttt{key\_size}. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.fetchPacksOneLargeKeyWhenPoolCoversIt} &
-When one packed key covers the whole uplink, a single \texttt{getKey} is used, not hundreds of small ones. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.fetchUsesMaxKeySizeFromStatus} &
-Key length is taken from KME status, not from a hardcoded 100\,kbit. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.fetchDoesNotRequestMorePackedKeysThanThePoolHolds} &
-\texttt{number} in getKey never exceeds \texttt{stored\_key\_count} / units in a packed key. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.http500OnPackedSizeFallsBackToKeySize} &
-KME 500 on packed size (typically a VARCHAR limit) falls back to pool-unit requests. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.insufficientMaterialRefreshesStatus} &
-400 ``not enough material'' calls status again and continues with the new count. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.waitsWhenPoolIsEmptyThenContinues} &
-\texttt{stored\_key\_count}=0: sleep, new status, then getKey. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.keepsPartialFetchWhenPoolDoesNotReplenish} &
-The pool does not refill: returns a partial pad count above the minimum instead of throwing. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.finishesWithPoolUnitsWhenTheyCoverTheRemainder} &
-A remainder smaller than a packed key is filled with pool units. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.kmeFailurePropagatesWhenNoMaterialIsFetched} &
-503 on the first getKey and zero bytes = exception out, not a silent empty fetch. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.fetchUsesNegotiatedPadPlain} &
-Target length is computed from the negotiated \texttt{pad\_plain}, not from the chip maximum. & passed \\
-\detokenize{QkdPadMaterialFetcherTest.fixtureUplinkHasRoomForAtLeastOnePad} &
-The fixture uplink has budget for at least one pad (guards against constant regression). & passed \\
-\detokenize{Qkd014ClientTest.getKeyWithKeyIdsBatchesUsingStatusLimit} &
-\texttt{dec\_keys} with more IDs than \texttt{max\_key\_per\_request} is split into POST+GET batches. & passed \\
-\detokenize{Qkd014ClientTest.qkdErrorOnDecKeysIsSerializableThroughRemoteException} &
-\texttt{Qkd014ClientException} survives Java serialization inside \texttt{RemoteException} (RMI). & passed \\
-\detokenize{Qkd014ClientTest.oversizeUnbatchedRequestSurfacesKmeError} &
-KME 400 on dec\_keys maps to an exception with the HTTP code and body message. & passed \\
-\detokenize{Qkd014ClientTest.getStatusParsesKmeLimits} &
-Status JSON puts \texttt{max\_key\_size} and \texttt{max\_key\_per\_request} into \texttt{KmeStatus}. & passed \\
-\detokenize{Qkd014ClientTest.getStatusParsesStatusExtension} &
-Vendor field \texttt{status\_extension} is stored, not dropped. & passed \\
-\end{longtable}
+\testcase{ProvisionSessionTest.originProvisionedShareAsksBeforeDelete}{passed}{This SAE issued an ORIGIN\_PROVISIONED share: the operator is asked ``Delete them and generate new keys?''; on decline the keys are kept, nothing is deleted and no keys are sent.}
 
-\subsection{se}
+\testcase{ProvisionSessionTest.availableShareDeliversExisting}{passed}{An ORIGIN\_PROVISIONED share issued by the peer with a stored payload, origin also provisioned: the outcome is \texttt{Existing} with the downlink, without a new exchange.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / se}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{ProvisionSessionTest.differentSaeShareUsedWhenConfirmed}{passed}{Local synchronize returns RECORD\_SHARED\_WITH\_DIFFERENT\_SAE (share with sae-3, ``Paris''): the operator confirms using it and the stored share is delivered as \texttt{Existing} after one prompt.}
 
-\detokenize{SeProtocolTest.lvRoundTripPreservesVersionAndItems} &
-LV encode/decode: version, an empty item, and a 1088\,B item round-trip unchanged. & passed \\
-\detokenize{SeProtocolTest.lvRejectsWrongUplinkVersion} &
-An LV v1 uplink (v5 expected) fails before hashes and the ML-KEM PK are read. & passed \\
-\detokenize{SeProtocolTest.lvReadDoesNotRequireEof} &
-Bytes may remain on the same stream after the envelope; the parser does not wait for EOF. & passed \\
-\detokenize{SeProtocolTest.maxPadsRespects200KiBBudgetIncludingDecryptHalf} &
-Pad count: \texttt{kem\_ct}+\texttt{decrypt\_half}+\texttt{pad\_plain}+$n\cdot$slot $\le$ 200\,KiB, here $n=507$. & passed \\
-\detokenize{SeProtocolTest.sealedFillDownlinkIsV3WithKemCtDecryptHalfPadPlainAndPadImages} &
-Downlink v3: CT, half byte, LE pad\_plain, AEAD image of each pad; opening pad0 matches the QKD bytes. & passed \\
-\detokenize{SeProtocolTest.sealedFillDownlinkEncodesPeerDecryptHalf} &
-A peer fill puts DECRYPT\_HALF\_PEER in item 1, not origin. & passed \\
-\detokenize{SeProtocolTest.sealedFillRejectsInvalidDecryptHalf} &
-A half byte outside \{origin, peer\} throws IllegalArgumentException; the downlink is not built. & passed \\
-\detokenize{SeProtocolTest.partialFillPutsEqualPadsInEachHalf} &
-4 pads of material on 6 slots: 2+2 live, middle slots empty, halves the same length. & passed \\
-\detokenize{SeProtocolTest.uplinkVerifyAcceptsValidSessionBinding} &
-The session signature (hash, fill\_id, ML-KEM PK, peers) passes \texttt{readAndVerify}. & passed \\
-\detokenize{SeProtocolTest.provisionAckParsesSeOkLine} &
-Line \texttt{SE\_OK\\n} is the only valid end of download; the complete text reports 236\,KB. & passed \\
-\detokenize{SeProtocolTest.provisionAckRejectsByteCount} &
-\texttt{SE\_OK 241664} is a schema mismatch -- a byte count in the ACK is no longer valid. & passed \\
-\detokenize{SeProtocolTest.provisionAckRejectsUnexpectedLine} &
-\texttt{SE\_ERR} instead of SE\_OK is an IOException. & passed \\
-\detokenize{SeProtocolTest.provisionAckAcceptsWipeFinished} &
-After wipe the firmware waits for \texttt{TROPIC\_WIPE\_FINISHED}, not SE\_OK. & passed \\
-\detokenize{SeProtocolTest.provisionAckRejectsUnexpectedWipeLine} &
-SE\_OK in the wipe phase is rejected. & passed \\
-\detokenize{SeProtocolTest.writeTrackingPairsTenKbChunksWithKbLines} &
-Every 10\,KB of payload waits for a line with cumulative KB; only then SE\_OK. & passed \\
-\detokenize{SeProtocolTest.writeTrackingShortTailGoesStraightToSeOk} &
-Payload \textless{}10\,KB: no progress line, straight to SE\_OK. & passed \\
-\detokenize{SeProtocolTest.writeTrackingRejectsUnexpectedLine} &
-Text instead of a KB number -- tracking fails so the offset cannot drift. & passed \\
-\detokenize{SeProtocolTest.downloadProgressCapsPercentUntilComplete} &
-236/236\,KB in progress is 99\,\%; 100\,\% only at \texttt{downloadComplete}. & passed \\
-\detokenize{SeProtocolTest.uplinkRejectsVersion2AsSchemaMismatch} &
-An old LV v2 uplink fails with the expected-version message, not a silent parse. & passed \\
-\detokenize{SeProtocolTest.sealedFillDownlinkUsesNegotiatedPadPlain} &
-AEAD images and the LE field use the negotiated length, not the chip \texttt{plainMax}. & passed \\
-\detokenize{SeManageTest.ownerSetGoldenEmptyCa} &
-OWNER SET wire: password length, ML-DSA SPKI, CA length 0; decode returns the same. & passed \\
-\detokenize{SeManageTest.ownerSetNeedMatchesFirmwareFrameNeed} &
-\texttt{ownerSetNeed} reports NEED\_MORE / done / NEED\_FAIL the same way as the firmware parser. & passed \\
-\detokenize{SeManageTest.ownerSetRejectsEmptySpkiAndOversizeCa} &
-Empty SPKI and CA above CREDS\_DER\_MAX are rejected at encode. & passed \\
-\detokenize{SeManageTest.manageRequestGoldenKemInit} &
-KEM INIT: cmd + PIN 8\,B + body 0 -- bit-identical golden frame. & passed \\
-\detokenize{SeManageTest.manageRequestNeedMatchesFirmwareTestK} &
-\texttt{requestNeed} on a CREDS\_SAE body matches firmware test K (8\,B at 4\,B body). & passed \\
-\detokenize{SeManageTest.manageReplyRoundTripDoesNotRequireEof} &
-OK/PIN\_FAIL reply is read without EOF; \texttt{describe()} composes status and msg. & passed \\
-\detokenize{SeManageTest.manageReplyTruncatedThrows} &
-Two bytes instead of a full reply = EOFException. & passed \\
-\detokenize{SeManageTest.peerAndReplaceAndCertBodiesRoundTripInsideRequest} &
-PEER ADD/REMOVE, OWNER REPLACE, and device-cert bodies encode into a MANAGE request and back. & passed \\
-\detokenize{SeManageTest.pairingOkMsgAndLoadBodyRoundTrip} &
-ASCII ``PAIRING ok'' carries slot+priv+pub; LOAD body 65\,B does the same in binary. Bare ``PAIRING ok'' fails. & passed \\
-\detokenize{SeManageTest.pinAndPasswordAsciiRules} &
-PIN 8--16 printable ASCII, password 8--64; a newline in the PIN is rejected. & passed \\
-\detokenize{SecureOtpTest.encryptRequestRoundTripKeepsPinAndPlaintext} &
-Encrypt request: [len][PIN][le32 len][msg]; PIN and plaintext are not rewritten. & passed \\
-\detokenize{SecureOtpTest.encryptReplyRoundTripPreservesSlotsAndChunks} &
-The reply carries logical slots (0 and 7) and XOR chunks; decode returns them. & passed \\
-\detokenize{SecureOtpTest.decryptRequestPrefixesPinOntoEncryptReply} &
-Decrypt request is a PIN prefix plus the raw encrypt reply, so the chip sees the same slots. & passed \\
-\detokenize{SecureOtpTest.decryptReplyConcatenatesChunks} &
-Several decrypt chunks are concatenated into one plaintext. & passed \\
-\detokenize{SecureOtpTest.encryptReplyReadDoesNotRequireEof} &
-TLS bytes may remain after the reply; the parser does not consume them. & passed \\
-\detokenize{SecureOtpTest.pinMustBeEightToSixteenBytes} &
-7- and 17-byte PINs fail encode; 8 and 16 succeed. & passed \\
-\detokenize{SecureOtpTest.emptyPlaintextIsRejected} &
-An empty message is not encrypted -- OTP would burn a pad for nothing. & passed \\
-\detokenize{SecureOtpTest.zeroPadCountIsRejected} &
-A reply with pad\_count 0 is IOException on encrypt and decrypt. & passed \\
-\detokenize{SecureOtpTest.errorReplyThrowsOtpExceptionWithCode} &
-Chip error code EXHAUSTED becomes \texttt{OtpException}, not empty plaintext. & passed \\
-\end{longtable}
+\testcase{ProvisionSessionTest.differentSaeShareKeptWhenDeleteDeclined}{passed}{Share with sae-3: the operator declines using it and declines the ``permanently delete'' prompt; both prompts name ``Paris (sae-3)'', nothing is deleted and the keys are kept.}
 
-\subsection{rmi}
+\testcase{ProvisionSessionTest.differentSaeShareDeletedWhenDeleteConfirmed}{passed}{Share with sae-3: the operator declines using it but confirms deletion; the local row is deleted and a new exchange produces \texttt{Generated}.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / rmi}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{ProvisionSessionTest.existingShareRefusedWhenChipIsSmallerThanStoredPad}{passed}{Stored share has \texttt{padPlainLen} 64 but the chip offers 35: the outcome is \texttt{InProgress} with a message naming both sizes, and nothing is deleted.}
 
-\detokenize{ConcurrentRmiTest.concurrentInsertsOfSameHashPairLeaveOnePeerRow} &
-8 RMI clients on the same pair: one AVAILABLE row on the peer. & passed \\
-\detokenize{ConcurrentRmiTest.concurrentInsertsOfDifferentHashPairsAllSucceed} &
-8 distinct pairs through one exported stub, all 8 in the DB. & passed \\
-\detokenize{ConcurrentRmiTest.mixedRpcsFromSeveralClientsDoNotCorruptState} &
-Parallel insert+ping+getMetadata+remove: 0 rows at the end, no exception. & passed \\
-\detokenize{ConcurrentRmiTest.twoExportedNodesAcceptConcurrentInsertsOnSeparateDatabases} &
-Two RMI exports, two SQLite files: inserts do not mix between origin and peer DB. & passed \\
-\detokenize{RmiConnectionDropTest[CONNECT_FAILS]} &
-Drop before connect: origin rollback, peer empty, the pair can be inserted again. & passed \\
-\detokenize{RmiConnectionDropTest[INSERT_THROWS_BEFORE_PERSIST]} &
-Insert throws RemoteException before the write -- the same cleanup on both sides. & passed \\
-\detokenize{RmiConnectionDropTest[INSERT_RETURNS_FALSE]} &
-Peer insert=false (conflict): origin gone, peer unchanged toward a duplicate. & passed \\
-\detokenize{RmiConnectionDropTest[INSERT_LOST_REPLY]} &
-The peer row exists, the reply was lost: best-effort peer delete + origin rollback. & passed \\
-\detokenize{RmiConnectionDropTest[ORIGIN_FINISH_FAILS]} &
-Peer written, finish on origin fails -- both DBs empty. & passed \\
-\detokenize{RmiConnectionDropTest[UNEXPORT_BEFORE_INSERT]} &
-Unexport of the stub before insert = connect/insert fail, rollback. & passed \\
-\detokenize{RmiConnectionDropTest[UNEXPORT_DURING_INSERT]} &
-Unexport mid-insert: the same invariant, no half-written record. & passed \\
-\detokenize{RmiConnectionDropTest[REMOVE_RECORD]} &
-A drop on \texttt{removeRecord} during cleanup does not leave origin hanging. & passed \\
-\detokenize{RmiConnectionDropTest[GET_METADATA]} &
-A drop on \texttt{getRecordMetadata} during reconcile -- leftover is not used as a delivery. & passed \\
-\end{longtable}
+\testcase{ProvisionSessionTest.existingShareRefusedWhenOriginNotProvisioned}{passed}{Local row is ORIGIN\_PROVISIONED but the origin row is still RECORD\_SHARED: the outcome is the in-progress message and no local or remote delete happens.}
 
-\subsection{tls}
+\testcase{ProvisionSessionTest.existingShareDeletedWhenOriginRowMissing}{passed}{The origin row is missing: one remote and one local delete are made and the operator gets the ``Shared keys were deleted'' message.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / tls}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{ProvisionSessionTest.existingShareKeptWhenOriginUnreachable}{passed}{Reading the origin row throws \texttt{RemoteException}: the outcome is the unreachable message and no local or remote delete happens.}
 
-\detokenize{NodeTlsSoftwareIdentityTest.pkcs12AndPemLeavesMatch} &
-The same ML-DSA leaf from PEM and from PKCS12 has identical DER. & passed \\
-\detokenize{NodeTlsSoftwareIdentityTest.pemAndPkcs12ContextsHandshake} &
-BC JSSE server PKCS12 $\leftrightarrow$ PEM client (and the reverse) completes a Pure-PQC handshake. & passed \\
-\detokenize{NodeTlsSoftwareIdentityTest.missingPkcs12FailsClosed} &
-A missing \texttt{.p12} throws IllegalStateException instead of falling back to an empty identity. & passed \\
-\end{longtable}
+\testcase{ProvisionSessionTest.existingShareUsesStoredLengthWhenChipIsLargeEnough}{passed}{Stored \texttt{padPlainLen} is 35 and the chip offers 64: the share is delivered and the downlink is built with the stored 35, not the chip size.}
 
-\subsection{utimaco}
+\testcase{ProvisionSessionTest.remoteDifferentSaeShareKeptWhenDeleteDeclined}{passed}{Local insert succeeds but the exchange reports the target shares with sae-2 (``Berlin''): declining deletion keeps the keys, deletes the local reservation and sends no remote \texttt{deleteShare}.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / utimaco}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{ProvisionSessionTest.remoteDifferentSaeShareDeletedThenGenerates}{passed}{Same conflict with deletion confirmed: one remote \texttt{deleteShare}, no local delete, and the retried exchange returns \texttt{Generated}.}
 
-\detokenize{HsmFailClosedTest.storeWriteDoesNotPersistWhenEncryptFails} &
-Mock HSM throws on encrypt: \texttt{shared\_key\_material} stays empty, no plaintext in SQLite. & passed \\
-\detokenize{HsmFailClosedTest.encryptWithoutCryptoServerDoesNotFallBackToSoftwareAes} &
-Without CryptoServer JCE installed, BouncyCastle AES is not used; the exception mentions ``CryptoServer''. & passed \\
-\detokenize{HsmLiveNoFallbackTest.encryptDecryptRoundTripOnCryptoServer} &
-Live simulator: AES-GCM on a CXI key, alias is not \texttt{BC}, plaintext comes back. & passed \\
-\detokenize{HsmLiveNoFallbackTest.missingAliasDoesNotFallBackToInMemoryAes} &
-Decrypt under a missing HSM alias fails; in-memory AES is not used. & passed \\
-\end{longtable}
+\testcase{OriginShareCheckTest.missingOriginDeletesBoth}{passed}{No origin metadata (\texttt{null}) $\to$ DELETE\_BOTH.}
 
-\subsection{terminal}
+\testcase{OriginShareCheckTest.provisionedAllowsDelivery}{passed}{An ORIGIN\_PROVISIONED origin row $\to$ PROVISIONED even when checked after the 5\,min window.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{sae-node / terminal}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{OriginShareCheckTest.freshSharedIsInProgress}{passed}{RECORD\_SHARED checked 4\,min\,59\,s after creation $\to$ IN\_PROGRESS.}
 
-\detokenize{AppLoggingTest.onlyFullAndTerminal} &
-Log-mode env: only \texttt{full}/\texttt{terminal}; \texttt{debug} and empty fail / default to TERMINAL. & passed \\
-\detokenize{AppLoggingTest.sqliteKeepsTheSameRowsInEitherMode} &
-What goes into SQLite does not depend on console mode -- FULL only adds stderr, not extra DB rows. & passed \\
-\end{longtable}
+\testcase{OriginShareCheckTest.staleSharedDeletesBoth}{passed}{RECORD\_SHARED checked 5\,min\,1\,s after creation $\to$ DELETE\_BOTH.}
 
-\section{user-app}
+\testcase{OriginShareCheckTest.freshFetchingIsInProgress}{passed}{A fresh RECORD\_FETCHING\_STARTED origin row $\to$ IN\_PROGRESS.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{user-app}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{OriginShareCheckTest.staleFetchingDeletesBoth}{passed}{A RECORD\_FETCHING\_STARTED row past the 5\,min window $\to$ DELETE\_BOTH.}
 
-\detokenize{ChipInitTest.ownerPasswordRequiresMatchingConfirmation} &
-Two matching 8+ ASCII lines = password; mismatch or too short returns null and INIT does not continue. & passed \\
-\detokenize{ChipInitTest.pairingChoiceAcceptsSlotsOrSkip} &
-\texttt{1}--\texttt{3} is a slot, \texttt{n} skips pairing, \texttt{0}/empty is invalid. & passed \\
-\detokenize{ChipInitTest.initLabAndProdCommandsAreRecognized} &
-Console accepts ``INIT LAB''/``INITLAB'' vs ``INIT PROD''; bare INIT is neither. & passed \\
-\detokenize{ChipInitTest.csrFileRoundTrip} &
-ML-DSA pub is written as hex to \texttt{client-csr.hex} and read back unchanged. & passed \\
-\detokenize{ChipInitTest.pairingKeyFileRoundTrip} &
-Pairing file mode 600, slot+priv+pub round-trip; path sits next to client-cert.pem. & passed \\
-\detokenize{ChipInitTest.labRejectsAllZeroClientCsr} &
-LAB: all-zero CSR = the chip did not issue a key, enroll fails. & passed \\
-\detokenize{ChipInitTest.labFreshOwnerKeygenKemSignCreds} &
-LAB from empty: OWNER SET, KEYGEN, KEM INIT, INSERT SIGNED CSR, and print of the client hash. & passed \\
-\detokenize{ChipInitTest.labSkipsOccupiedEcc} &
-An occupied ECC slot is skipped in LAB KEYGEN; KEM+CSR continue. & passed \\
-\detokenize{ChipInitTest.alreadyEnrolledContinues} &
-``Owner already enrolled'' is not fatal -- KEYGEN/KEM/CSR continue. & passed \\
-\detokenize{ChipInitTest.prodMissingCertWarnsAndSkipsPairing} &
-PROD without a signed cert: CSR is written, INSERT and PAIRING are not called. & passed \\
-\detokenize{ChipInitTest.prodDoesNotInstallExistingCert} &
-PROD with an existing PEM cert does not send INSERT again; pairing keys are stored, priv is not logged. & passed \\
-\detokenize{ChipInitTest.prodBarePairingOkStopsWithoutSaving} &
-Firmware replies ``PAIRING ok'' without hex keys -- INIT stops, nothing is written to disk. & passed \\
-\detokenize{ChipInitTest.prodOccupiedEccReplacesWithoutPin} &
-PROD KEYGEN on an occupied ECC proceeds without PIN (replace), unlike PIN-gated OTP. & passed \\
-\detokenize{ChipInitTest.keygenFailureStops} &
-KEYGEN ERR: no KEM/CSR, \texttt{stoppedAt=KEYGEN}. & passed \\
-\detokenize{ChipInitTest.kemFailureStops} &
-KEM SLOT\_OCC: stop at KEM INIT, CSR is not signed. & passed \\
-\detokenize{ChipInitTest.kemAlreadyProvisionedRefusesBeforeManage} &
-ML-KEM PK is already on the chip: INIT ends before OWNER/MANAGE so the seed is not overwritten. & passed \\
-\detokenize{ChipInitTest.credsFailureStops} &
-INSERT SIGNED CSR ERR after KEYGEN+KEM: stop; owner may already be written. & passed \\
-\detokenize{ChipInitTest.ownerSetFailureStops} &
-OWNER SET failed: no MANAGE, no client-hash read. & passed \\
-\detokenize{ChipInitTest.missingClientHashDoesNotFailInit} &
-Chip does not return a hash: enroll is still OK, the hash is just not printed. & passed \\
-\detokenize{OwnerAuthTest.ownerSetAsciiStatuses} &
-Firmware text mapping: ``ok'', ``refused''=already enrolled, otherwise Failed with detail. & passed \\
-\detokenize{OwnerAuthTest.clientCsrIgnoresTruncatedHex} &
-``failed'' and short hex $\to$ null; a full ML-DSA pub even with a newline in the middle is assembled. & passed \\
-\detokenize{PeerCommandsTest.parsePadPlainAcceptsDecimal} &
-PEER ADD accepts ``446'' and ``35\\n'' as plaintext-pad length. & passed \\
-\detokenize{PeerCommandsTest.parsePadPlainRejectsZeroAndNonDecimal} &
-0 and ``failed''/``abc'' are not sent to firmware. & passed \\
-\detokenize{PeerCertHashTest.hashIsSha384OfRawSubjectPublicKeyBitsNotFullSpkiDer} &
-Peer ID is SHA-384 of the key bits (96 hex), not a hash of the full SPKI DER -- that would not match the chip. & passed \\
-\detokenize{PeerCertHashTest.hashFromPemPathMatchesInMemoryCert} &
-The same cert from a PEM file and from an in-memory object yields the same hash. & passed \\
-\detokenize{PeerCertHashTest.parseHashHexAccepts96Hex} &
-96 hex, including uppercase, is a valid peer ID. & passed \\
-\detokenize{PeerCertHashTest.parseHashHexRejectsCertNamesAndBadLength} &
-``client2'' and short hex are rejected by the console -- a file name is not a PEER ADD argument. & passed \\
-\detokenize{PeerCertHashTest.nicknameRulesMatchFirmware} &
-Nickname: alnum/\_-/. , 1--16 characters, no space -- same rules as NV on the chip. & passed \\
-\detokenize{PeerCertHashTest.pythonStyleBitStringSkipUnusedBitsByte} &
-BIT STRING has a leading unused-bits byte; the hash skips it (\texttt{getBytes()}, not the full DER). & passed \\
-\detokenize{PeerCertHashTest.alicePemMatchesEmbedFwCredsRawSpkiLengthWhenPresent} &
-Lab \texttt{certs/Alice.pem}: 1312\,B raw ML-DSA SPKI, hash of the bits, not of \texttt{getEncoded()}. & passed \\
-\detokenize{ConsoleStyleTest.colorIsMeaningAndCanBeTurnedOff} &
-With color off the text stays ``OK''; with color on, ANSI bold+green and reset. & passed \\
-\detokenize{ConsoleStyleTest.noColorKeepsBoldAndDropsHue} &
-NO\_COLOR: bold INIT remains, the blue color code is dropped. & passed \\
-\detokenize{ConsoleStyleTest.repliesSplitFailureFromHex} &
-``failed\ldots'' is an error; a clean hex block is data; prefix ``OK encrypt reply'' is not hex. & passed \\
-\end{longtable}
+\testcase{OriginShareCheckTest.freshSynchronizationIsInProgress}{passed}{A fresh RECORD\_SYNCHRONIZATION origin row $\to$ IN\_PROGRESS.}
+
+\testcase{OriginShareCheckTest.staleSynchronizationDeletesBoth}{passed}{A RECORD\_SYNCHRONIZATION row past the 5\,min window $\to$ DELETE\_BOTH.}
+
+\testcase{OriginShareCheckTest.exactlyFiveMinutesIsNotStale}{passed}{RECORD\_SHARED checked exactly 5\,min after creation is still IN\_PROGRESS: the stale boundary is strict.}
+
+\testcase{InputHandlerTest.selectForUplinkStoresMinWhenChipIsSmaller}{passed}{Chip slot 64 and peer pad 64: the selected header stores the chip's usable size ($64 -$ \texttt{RMEM\_OVERHEAD}), the smaller of the two.}
+
+\testcase{InputHandlerTest.selectForUplinkStoresMinWhenPeerIsSmaller}{passed}{Chip slot 475 and peer pad 35: the selected header stores the peer's 35, the smaller of the two.}
+
+\testcase{ProvisionTerminalStatusTest.newSharePrintsSuccessOnlyAfterMarkReturns}{passed}{New share whose \texttt{markOriginProvisioned} succeeded: \texttt{afterDeviceAckStatus} prints the 100\,\% download line followed by \texttt{SHARE\_SUCCESSFUL}.}
+
+\testcase{ProvisionTerminalStatusTest.newShareWithoutMarkIsNotSuccess}{passed}{New share whose mark failed: the status is \texttt{SHARE\_NOT\_CONSISTENT}, not success.}
+
+\testcase{ProvisionTerminalStatusTest.storedShareStillPrintsSuccess}{passed}{Delivery of an existing share (no mark needed): the status is the 100\,\% download line followed by \texttt{SHARE\_SUCCESSFUL}.}
+
+\subsubsection{unit / sae-node / db}
+
+\testcase{RecordProvisionedTest.finishRecordInsertRefreshesTimestamp}{passed}{\texttt{finishRecordInsert} moves RECORD\_FETCHING\_STARTED to RECORD\_SHARED and sets \texttt{date\_of\_creation} later than the reservation time.}
+
+\testcase{RecordProvisionedTest.markOriginProvisionedOnlyFromShared}{passed}{\texttt{markOriginProvisioned} returns false from RECORD\_SYNCHRONIZATION and RECORD\_FETCHING\_STARTED, true from RECORD\_SHARED; afterwards \texttt{synchronize} returns ORIGIN\_PROVISIONED.}
+
+\testcase{RecordRetentionTest.purgeDeletesRowsOlderThanRetentionAndKeepsNewer}{passed}{\texttt{purgeExpired} deletes a RECORD\_SHARED row older than the retention window and keeps a younger one; exactly one row remains.}
+
+\testcase{RecordRetentionTest.purgeDeletesBothAvailabilityStates}{passed}{Expired RECORD\_SHARED and RECORD\_SYNCHRONIZATION rows are both purged; the table ends empty.}
+
+\testcase{RecordRetentionTest.purgeCascadesSharedKeyMaterialForDeletedParentsOnly}{passed}{Purging an expired parent cascades its key material, while the younger parent's key material and row stay.}
+
+\testcase{RecordRetentionTest.parseRetentionDaysDefaultsToFourteenWhenUnsetOrBlank}{passed}{\texttt{null}, empty and blank \texttt{RECORD\_RETENTION\_DAYS} all parse to the 14-day default.}
+
+\testcase{RecordRetentionTest.parseRetentionDaysAcceptsCustomPositiveValue}{passed}{Positive day counts (``7'', `` 30 '') parse to the matching \texttt{Duration}.}
+
+\testcase{RecordRetentionTest.parseRetentionDaysRejectsInvalidValues}{passed}{``0'', ``-1'', ``abc'' and ``14.5'' each throw \texttt{IllegalStateException} naming \texttt{RECORD\_RETENTION\_DAYS}.}
+
+\testcase{RecordRetentionTest.getRefusesExpiredMetadata}{passed}{\texttt{AtomicRecordStateMap.get} returns empty for a RECORD\_SHARED row past retention, while the row still sits in SQLite until purge.}
+
+\testcase{RecordRetentionTest.synchronizeReclaimsExpiredSharedRow}{passed}{\texttt{synchronize} on an expired RECORD\_SHARED row returns INSERTED, replaces it with RECORD\_SYNCHRONIZATION and a fresh timestamp.}
+
+\testcase{RecordRetentionTest.synchronizeReclaimsStaleSharedAndDeletesKeys}{passed}{\texttt{synchronize} on a RECORD\_SHARED row older than 5\,min returns INSERTED, leaves RECORD\_SYNCHRONIZATION and cascade-deletes its key material.}
+
+\testcase{RecordRetentionTest.readPayloadRefusesExpiredKeyMaterial}{passed}{\texttt{readPayload} returns empty for a row past retention while the ciphertext row remains in the table.}
+
+\testcase{SqliteLoggingTest.storesApplicationLogsAndWarningsFromOtherLoggers}{passed}{After install, \texttt{application\_log} keeps INFO+ from \texttt{fel.cvut.*} (with thrown text) and WARNING+ from BC/Hikari, but not FINE or library INFO.}
+
+\testcase{RecordFetchLockTest.lockFetchRequiresSynchronizationOwnedByIssuer}{passed}{\texttt{lockFetch} fails on a missing row and for a non-owning SAE, and succeeds for the issuer of the RECORD\_SYNCHRONIZATION row, which becomes RECORD\_FETCHING\_STARTED.}
+
+\testcase{RecordFetchLockTest.fetchingStartedBlocksHigherIssuingSaeUntilStale}{passed}{Once the pair is RECORD\_FETCHING\_STARTED, \texttt{synchronize} from a higher issuing SAE (sae-2) returns NOT\_INSERTED (the stale case is not exercised here).}
+
+\testcase{ConcurrentRecordStateTest.concurrentInsertsOfSameHashPairLeaveExactlyOneRow}{passed}{8 threads call \texttt{synchronize} on the same pair at once: at least one gets INSERTED and the table holds exactly one row.}
+
+\testcase{ConcurrentRecordStateTest.concurrentInsertsOfDifferentHashPairsAllSucceed}{passed}{8 threads call \texttt{synchronize} on 8 distinct pairs: every call returns INSERTED and the table holds 8 rows.}
+
+\testcase{SharedKeyMaterialTamperTest.roundTripReturnsOriginalPayload}{passed}{Writing a payload through the mock-HSM store and reading it back returns the same list of QKD key strings.}
+
+\testcase{SharedKeyMaterialTamperTest.flippedCiphertextIsRejected}{passed}{Flipping one bit of the stored ciphertext makes \texttt{readPayload} throw \texttt{IOException}; no plaintext is returned.}
+
+\testcase{SharedKeyMaterialTamperTest.flippedIvIsRejected}{passed}{Flipping one bit of the stored GCM IV likewise makes \texttt{readPayload} throw \texttt{IOException}.}
+
+\testcase{SharedKeyMaterialTamperTest.sqlCheckRejectsNon128TagBits}{passed}{Updating \texttt{gcm\_tag\_bits} to 96 is rejected by the SQL CHECK constraint, and the original payload can still be read.}
+
+\testcase{SharedKeyMaterialTamperTest.sealedBlobRejectsWrongTagBitsBeforeDecrypt}{passed}{\texttt{SealedBlob.verify} rejects a 96-bit tag with \texttt{IllegalArgumentException} before any decrypt call.}
+
+\testcase{SharedKeyMaterialTamperTest.wrongHsmAliasIsRejected}{passed}{Rewriting \texttt{hsm\_key\_alias} in SQL makes \texttt{readPayload} throw \texttt{IOException} so a foreign key is not used for decrypt.}
+
+\testcase{ClientRecordStateTamperTest.tamperedMetadataIsStillReadable}{passed}{A RECORD\_SHARED row whose \texttt{sae\_id} and \texttt{issuing\_sae\_id} are rewritten in SQL is read back with the forged values (the table is not integrity-protected).}
+
+\testcase{ClientRecordStateTamperTest.tamperedPeerIdBlocksNewInsertAsDenialOfService}{passed}{After \texttt{sae\_id} is forged in SQL, a legitimate \texttt{synchronize} returns RECORD\_SHARED\_WITH\_DIFFERENT\_SAE and the row stays: a denial of service, not a takeover.}
+
+\testcase{ClientRecordStateTamperTest.flippedAvailabilityStillReturnsTheRow}{passed}{Rewriting \texttt{record\_availability} to RECORD\_SYNCHRONIZATION in SQL does not hide the row; \texttt{get} returns it with the forged state.}
+
+\subsubsection{unit / sae-node / qkd}
+
+\testcase{QkdPadMaterialFetcherTest.packedSizeIsStatusMaxKeySizeAlignedToPoolUnit}{passed}{\texttt{packedKeySizeBits} rounds \texttt{max\_key\_size} down to a multiple of the pool unit; the fixture packed size is 99\,840 bits (a multiple of the pool).}
+
+\testcase{QkdPadMaterialFetcherTest.fetchPacksOneLargeKeyWhenPoolCoversIt}{passed}{When one packed key covers the uplink budget, \texttt{fetch} issues a single \texttt{getKey} with \texttt{number}=1 at the packed bit size.}
+
+\testcase{QkdPadMaterialFetcherTest.fetchUsesMaxKeySizeFromStatus}{passed}{The packed request size comes from KME \texttt{max\_key\_size} (here 4096 bits aligned to the pool), not from a hardcoded constant.}
+
+\testcase{QkdPadMaterialFetcherTest.fetchDoesNotRequestMorePackedKeysThanThePoolHolds}{passed}{\texttt{getKey}'s \texttt{number} never exceeds how many packed keys the current \texttt{stored\_key\_count} can supply.}
+
+\testcase{QkdPadMaterialFetcherTest.http500OnPackedSizeFallsBackToKeySize}{passed}{HTTP 500 on a packed-size \texttt{getKey} makes the fetcher fall back to pool-unit sized requests instead of aborting.}
+
+\testcase{QkdPadMaterialFetcherTest.insufficientMaterialRefreshesStatus}{passed}{A ``not enough material'' response triggers a fresh \texttt{getStatus} and the fetch continues with the new pool count.}
+
+\testcase{QkdPadMaterialFetcherTest.waitsWhenPoolIsEmptyThenContinues}{passed}{Status with \texttt{stored\_key\_count}=0 waits once, refreshes status, then continues with \texttt{getKey}.}
+
+\testcase{QkdPadMaterialFetcherTest.keepsPartialFetchWhenPoolDoesNotReplenish}{passed}{When the pool never refills enough for the full budget, a partial fetch above the minimum is returned instead of throwing.}
+
+\testcase{QkdPadMaterialFetcherTest.finishesWithPoolUnitsWhenTheyCoverTheRemainder}{passed}{A remainder smaller than one packed key is filled with pool-unit \texttt{getKey} calls only (no packed-size request).}
+
+\testcase{QkdPadMaterialFetcherTest.kmeFailurePropagatesWhenNoMaterialIsFetched}{passed}{HTTP 503 on the first \texttt{getKey} with zero bytes fetched propagates \texttt{Qkd014ClientException} (no silent empty result).}
+
+\testcase{QkdPadMaterialFetcherTest.fetchUsesNegotiatedPadPlain}{passed}{\texttt{fetch(..., negotiatedPadPlain)} sizes the target from the negotiated length, not from the chip \texttt{plainMax}.}
+
+\testcase{QkdPadMaterialFetcherTest.fixtureUplinkHasRoomForAtLeastOnePad}{passed}{The shared fixture uplink admits at least one pad and \texttt{plainMax} equals slot size minus R-MEM overhead.}
+
+\subsubsection{unit / sae-node / se}
+
+\testcase{SeProtocolTest.lvRoundTripPreservesVersionAndItems}{passed}{An LV uplink with the current version, an empty item and a 1088\,B item encodes and decodes unchanged.}
+
+\testcase{SeProtocolTest.lvRejectsWrongUplinkVersion}{passed}{An LV uplink with the wrong version fails before hashes or the ML-KEM public key are consumed.}
+
+\testcase{SeProtocolTest.lvReadDoesNotRequireEof}{passed}{Trailing bytes may remain on the stream after the LV envelope; the parser does not wait for EOF.}
+
+\testcase{SeProtocolTest.maxPadsRespects200KiBBudgetIncludingDecryptHalf}{passed}{Pad count is limited so KEM CT, decrypt-half, pad\_plain and all pad images fit the 200\,KiB downlink budget.}
+
+\testcase{SeProtocolTest.sealedFillDownlinkIsV3WithKemCtDecryptHalfPadPlainAndPadImages}{passed}{A sealed fill downlink is LV v3 with KEM CT, the decrypt-half byte, little-endian \texttt{pad\_plain} and AEAD pad images; opening pad 0 recovers the key material.}
+
+\testcase{SeProtocolTest.sealedFillDownlinkEncodesPeerDecryptHalf}{passed}{A peer fill puts \texttt{DECRYPT\_HALF\_PEER} in the half item, not the origin half.}
+
+\testcase{SeProtocolTest.sealedFillRejectsInvalidDecryptHalf}{passed}{A decrypt-half byte outside \{origin, peer\} throws \texttt{IllegalArgumentException} and no downlink is built.}
+
+\testcase{SeProtocolTest.partialFillPutsEqualPadsInEachHalf}{passed}{Four pads of material on six slots yield two live pads per half, empty middle slots and equal half lengths.}
+
+\testcase{SeProtocolTest.uplinkVerifyAcceptsValidSessionBinding}{passed}{\texttt{readAndVerify} accepts an uplink whose session signature covers the hashes, fill\_id, ML-KEM public key and peers.}
+
+\testcase{SeProtocolTest.provisionAckParsesSeOkLine}{passed}{A lone \texttt{SE\_OK} line ends the download; the complete-text helper reports the transferred size.}
+
+\testcase{SeProtocolTest.provisionAckRejectsByteCount}{passed}{\texttt{SE\_OK} followed by a byte count is rejected as a schema mismatch.}
+
+\testcase{SeProtocolTest.provisionAckRejectsUnexpectedLine}{passed}{An \texttt{SE\_ERR} line instead of \texttt{SE\_OK} throws \texttt{IOException}.}
+
+\testcase{SeProtocolTest.provisionAckAcceptsWipeFinished}{passed}{In the wipe phase the expected terminator is \texttt{TROPIC\_WIPE\_FINISHED}, not \texttt{SE\_OK}.}
+
+\testcase{SeProtocolTest.provisionAckRejectsUnexpectedWipeLine}{passed}{\texttt{SE\_OK} during wipe is rejected.}
+
+\testcase{SeProtocolTest.writeTrackingPairsTenKbChunksWithKbLines}{passed}{Every 10\,KB of payload is acknowledged by a cumulative-KB line before the final \texttt{SE\_OK}.}
+
+\testcase{SeProtocolTest.writeTrackingShortTailGoesStraightToSeOk}{passed}{A payload shorter than 10\,KB goes straight to \texttt{SE\_OK} with no progress line.}
+
+\testcase{SeProtocolTest.writeTrackingRejectsUnexpectedLine}{passed}{Non-numeric text where a KB line is expected fails tracking so the offset cannot drift.}
+
+\testcase{SeProtocolTest.downloadProgressCapsPercentUntilComplete}{passed}{Progress at full byte count still reports 99\,\%; 100\,\% appears only from \texttt{downloadComplete}.}
+
+\testcase{SeProtocolTest.uplinkRejectsVersion2AsSchemaMismatch}{passed}{An LV v2 uplink fails with an expected-version message instead of a silent parse.}
+
+\testcase{SeProtocolTest.sealedFillDownlinkUsesNegotiatedPadPlain}{passed}{AEAD images and the little-endian length field use the negotiated \texttt{pad\_plain}, not the chip \texttt{plainMax}.}
+
+\testcase{SeManageTest.ownerSetGoldenEmptyCa}{passed}{OWNER SET with password, ML-DSA SPKI and an empty CA encodes and decodes bit-identically.}
+
+\testcase{SeManageTest.ownerSetNeedMatchesFirmwareFrameNeed}{passed}{\texttt{ownerSetNeed} reports NEED\_MORE / done / NEED\_FAIL the same way as the firmware frame budget.}
+
+\testcase{SeManageTest.ownerSetRejectsEmptySpkiAndOversizeCa}{passed}{Encode rejects an empty SPKI and a CA longer than \texttt{CREDS\_DER\_MAX}.}
+
+\testcase{SeManageTest.manageRequestGoldenKemInit}{passed}{A KEM INIT MANAGE request (cmd + 8\,B PIN + empty body) matches the golden frame byte-for-byte.}
+
+\testcase{SeManageTest.manageRequestNeedMatchesFirmwareTestK}{passed}{\texttt{requestNeed} on a CREDS\_SAE body matches firmware test K for the 8\,B-at-4\,B-body budget.}
+
+\testcase{SeManageTest.manageReplyRoundTripDoesNotRequireEof}{passed}{An OK/PIN\_FAIL reply is decoded without requiring EOF, and \texttt{describe()} joins status and message.}
+
+\testcase{SeManageTest.manageReplyTruncatedThrows}{passed}{A two-byte truncated reply throws \texttt{EOFException}.}
+
+\testcase{SeManageTest.peerAndReplaceAndCertBodiesRoundTripInsideRequest}{passed}{PEER ADD/REMOVE, OWNER REPLACE and device-cert bodies encode into a MANAGE request and decode back.}
+
+\testcase{SeManageTest.pairingOkMsgAndLoadBodyRoundTrip}{passed}{ASCII ``PAIRING ok'' carries slot+priv+pub; a 65\,B LOAD body round-trips in binary. A bare ok without keys is also accepted.}
+
+\testcase{SeManageTest.pinAndPasswordAsciiRules}{passed}{PIN must be 8--16 printable ASCII and password 8--64; a newline inside the PIN is rejected.}
+
+\testcase{SecureOtpTest.encryptRequestRoundTripKeepsPinAndPlaintext}{passed}{An encrypt request frame round-trips with the same PIN and plaintext bytes.}
+
+\testcase{SecureOtpTest.encryptReplyRoundTripPreservesSlotsAndChunks}{passed}{An encrypt reply preserves logical slots and XOR chunks through encode/decode.}
+
+\testcase{SecureOtpTest.decryptRequestPrefixesPinOntoEncryptReply}{passed}{A decrypt request is the PIN prefixed onto the raw encrypt reply so the chip sees the same slots.}
+
+\testcase{SecureOtpTest.decryptReplyConcatenatesChunks}{passed}{Several decrypt chunks are concatenated into one plaintext.}
+
+\testcase{SecureOtpTest.encryptReplyReadDoesNotRequireEof}{passed}{Trailing TLS bytes after the reply are left on the stream; the parser does not consume them.}
+
+\testcase{SecureOtpTest.pinMustBeEightToSixteenBytes}{passed}{7- and 17-byte PINs fail encode; 8- and 16-byte PINs succeed.}
+
+\testcase{SecureOtpTest.emptyPlaintextIsRejected}{passed}{An empty plaintext is rejected at encode so a pad is not burned for nothing.}
+
+\testcase{SecureOtpTest.zeroPadCountIsRejected}{passed}{A reply with \texttt{pad\_count}=0 throws \texttt{IOException} on both encrypt and decrypt paths.}
+
+\testcase{SecureOtpTest.errorReplyThrowsOtpExceptionWithCode}{passed}{A chip error reply (e.g.\ EXHAUSTED) becomes \texttt{OtpException} with that code, not empty plaintext.}
+
+\subsubsection{unit / sae-node / terminal}
+
+\testcase{AppLoggingTest.onlyFullAndTerminal}{passed}{\texttt{AppLogging.parse} accepts only \texttt{full}/\texttt{terminal} (default TERMINAL); ``debug'' throws \texttt{IllegalStateException}.}
+
+\testcase{AppLoggingTest.sqliteKeepsTheSameRowsInEitherMode}{passed}{\texttt{storedInSqlite} keeps the same filtering rules regardless of console mode (INFO+ for app loggers, WARNING+ for BC).}
+
+\subsubsection{unit / sae-node / utimaco}
+
+\testcase{HsmFailClosedTest.storeWriteDoesNotPersistWhenEncryptFails}{passed}{When the mock HSM throws on encrypt, \texttt{SharedKeyMaterialStore.write} throws \texttt{IOException} and \texttt{shared\_key\_material} stays empty.}
+
+\testcase{HsmFailClosedTest.encryptWithoutCryptoServerDoesNotFallBackToSoftwareAes}{passed}{Without CryptoServer JCE installed, \texttt{HsmAesGcm.encrypt} fails with a message mentioning CryptoServer instead of falling back to software AES (aborts if CryptoServer is already present).}
 
 \section{usb-cdc}
+\subsubsection{unit / usb-cdc}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{usb-cdc}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{UsbFrameTest.roundTripCommand}{passed}{A CMD frame (magic+type+len+payload) encodes ``CLIENT CSR'' and the decoder returns the same command.}
 
-\detokenize{UsbFrameTest.roundTripCommand} &
-A CMD frame (magic+type+len+payload) is built and Decoder pulls ``CLIENT CSR'' out of it again. & passed \\
-\detokenize{UsbFrameTest.splitHeaderThenPayload} &
-A SECURE frame arrives in two pieces (3\,B + rest); take() only after a complete header+body. & passed \\
-\detokenize{UsbFrameTest.commandLeftAsideFromSecure} &
-CMD HELP and a SECURE TLS byte in one buffer: first take is console, second is TLS, they do not mix. & passed \\
-\detokenize{UsbFrameTest.junkBeforeMagicIsSkipped} &
-Random bytes before magic are discarded; the first valid CMD is still found. & passed \\
-\detokenize{UsbFrameTest.encodeSplitChunksAtMaxPayload} &
-A body $>$ MAX\_PAYLOAD is split into two SECURE frames; the decoder reassembles them. & passed \\
-\detokenize{CdcPortScanTest.autoTokens} &
-\texttt{auto}/\texttt{SCAN} starts port selection; a concrete \texttt{/dev/ttyACM1} does not. & passed \\
-\detokenize{CdcPortScanTest.prefersKeychainIdOverStLink} &
-ST-Link on ACM0 vs keychain PID on ACM1 $\to$ ACM1, so the debugger is not opened. & passed \\
-\detokenize{CdcPortScanTest.singleAcmWhenIdsAreMissing} &
-A single ACM without USB IDs is taken (lab PTY without sysfs). & passed \\
-\detokenize{CdcPortScanTest.waitsWhenSeveralAcmHaveNoKeychainId} &
-Two unlabeled ACM devices: choose=null, the wait message lists both paths. & passed \\
-\detokenize{CdcPortScanTest.waitsWhenTwoKeychainsArePlugged} &
-Two keychain PIDs at once: do not guess, wait for LabSwitch/env. & passed \\
-\detokenize{CdcPortScanTest.emptyListWaits} &
-No ACM: wait, do not throw NPE. & passed \\
-\end{longtable}
+\testcase{UsbFrameTest.splitHeaderThenPayload}{passed}{A SECURE frame split as 3\,B then the rest is only returned by \texttt{take()} once header and body are complete.}
 
-\section{lab-switch}
+\testcase{UsbFrameTest.commandLeftAsideFromSecure}{passed}{CMD HELP and a SECURE TLS byte in one buffer yield console then TLS takes, without mixing.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{lab-switch}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{UsbFrameTest.junkBeforeMagicIsSkipped}{passed}{Random bytes before the magic are discarded and the first valid CMD is still found.}
 
-\detokenize{LabSwitchTest.concurrentSameJvmPollsDoNotThrowOverlappingFileLock} &
-Two \texttt{open()} calls on the same JSON in one JVM share the instance; 8 threads read/switch USER/SAE without OverlappingFileLockException. & passed \\
-\detokenize{LabSwitchTest.ownerToggleKeepsBothClientNodes} &
-USER$\to$SAE changes mode, but both clients' \texttt{ttyACM-se1/se2} stay. & passed \\
-\end{longtable}
+\testcase{UsbFrameTest.encodeSplitChunksAtMaxPayload}{passed}{A body larger than \texttt{MAX\_PAYLOAD} is split into two SECURE frames that the decoder reassembles.}
+
+\testcase{CdcPortScanTest.autoTokens}{passed}{Tokens \texttt{auto}/\texttt{SCAN} start port selection; a concrete \texttt{/dev/ttyACM1} does not.}
+
+\testcase{CdcPortScanTest.prefersKeychainIdOverStLink}{passed}{ST-Link on ACM0 versus a keychain PID on ACM1 selects ACM1 so the debugger is not opened.}
+
+\testcase{CdcPortScanTest.singleAcmWhenIdsAreMissing}{passed}{A single ACM device without USB IDs is chosen.}
+
+\testcase{CdcPortScanTest.waitsWhenSeveralAcmHaveNoKeychainId}{passed}{Two unlabeled ACM devices: choose is null and the wait message lists both paths.}
+
+\testcase{CdcPortScanTest.emptyListWaits}{passed}{An empty ACM list waits without throwing NPE.}
 
 \section{cert-generator}
+\subsubsection{unit / cert-generator}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{cert-generator}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\testcase{CertGeneratorHsmFallbackTest.treatsUtimacoNoConnectionAsConnectionFailure}{passed}{Utimaco \texttt{NO\_CONNECTION 0xbe000015} is classified as a connection failure so the software CA path is used.}
 
-\detokenize{CertGeneratorHsmFallbackTest.treatsUtimacoNoConnectionAsConnectionFailure} &
-Utimaco \texttt{NO\_CONNECTION 0xbe000015} is treated as ``HSM is down'', so software CA is used. & passed \\
-\detokenize{CertGeneratorHsmFallbackTest.treatsConnectExceptionCauseAsConnectionFailure} &
-\texttt{ConnectException} in the cause (cHSM TCP) is the same -- fallback, not a generator crash. & passed \\
-\detokenize{CertGeneratorHsmFallbackTest.treatsMissingHsmEnvAsConnectionFailure} &
-Missing \texttt{HSM\_DEVICE} is a connection failure, not ``wrong PIN''. & passed \\
-\detokenize{CertGeneratorHsmFallbackTest.doesNotTreatWrongPinAsConnectionFailure} &
-``login failed: invalid PIN'' does not trigger fallback -- that would silently switch to software keys. & passed \\
-\end{longtable}
+\testcase{CertGeneratorHsmFallbackTest.treatsConnectExceptionCauseAsConnectionFailure}{passed}{A \texttt{ConnectException} in the cause chain is likewise a connection failure (fallback, not a crash).}
 
-\section{SE}
+\testcase{CertGeneratorHsmFallbackTest.treatsMissingHsmEnvAsConnectionFailure}{passed}{A missing \texttt{HSM\_DEVICE} env is a connection failure, not a wrong-PIN class error.}
 
-TROPIC01 host model, groups A--K and \texttt{brick\_lab}.
+\testcase{CertGeneratorHsmFallbackTest.doesNotTreatWrongPinAsConnectionFailure}{passed}{``login failed: invalid PIN'' is not a connection failure, so the generator does not silently fall back to software keys.}
 
-\begin{longtable}{@{}
-      >{\raggedright\arraybackslash\ttfamily\small}p{0.34\textwidth}
-      >{\raggedright\arraybackslash}p{0.46\textwidth}
-      l@{}}
-  \caption{SE model}\\
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endfirsthead
-  \toprule Test & What it checks & Result \\
-  \midrule
-  \endhead
-  \bottomrule
-  \endlastfoot
+\section{lab-switch}
+\subsubsection{unit / lab-switch}
 
-\detokenize{test_a_session} &
-L2 session against the model: init, ping, info, deinit; a second init after deinit pings again. & passed \\
-\detokenize{test_b_ecc} &
-Empty ECC slot reports INVALID\_KEY and empty PUB; import, generate, occupied-slot replace, P-256 sign+verify. & passed \\
-\detokenize{test_c_rmem} &
-R-MEM: encrypted write, raw slot $\neq$ plaintext, overwrite after erase, write forbidden to PIN and ML-KEM seed slots, logical pad 0 map. & passed \\
-\detokenize{test_d_pin} &
-MAC-and-Destroy PIN: setup, correct PIN, wrong PIN consumes a try and wipes final\_key, after exhaustion even the correct PIN fails. & passed \\
-\detokenize{test_e_mcounter} &
-Two cursors (encrypt first half, decrypt second); advance without XOR burns the slot; encrypt exhausts, decrypt still lives. & passed \\
-\detokenize{test_f_mlkem} &
-Host as SAE: encapsulate ML-KEM-768, chip decapsulate, pad in R-MEM under PIN-gated XOR, wrong PIN does not load the pad. & passed \\
-\detokenize{test_g_ingest} &
-Downlink v3 in 17\,B chunks, FINISH commits fill\_id, OTP burns pad 0; skip-ahead and rewind with half=0 fail. & passed \\
-\detokenize{test_h_pairing} &
-New pairing key, factory SH0 invalidated, session only with the new key, LOAD after NV wipe. & passed \\
-\detokenize{test_i_post_tls} &
-Production \texttt{secure\_otp\_session\_feed}: PIN+plaintext, slot ID in the reply, 100\,KiB, remaining bytes, decrypt skip-ahead, refuse when fewer pads remain than the message (no partial ciphertext). & passed \\
-\detokenize{test_j_peers} &
-NV PEER add/remove/list; uplink has $7+3n$ LV items according to the peer count. & passed \\
-\detokenize{test_k_owner} &
-First OWNER SET wins, second is refused; REPLACE; unsigned MANAGE CREDS stream; ML-KEM in NV; ENCRYPT/PROVISION ready only after creds. & passed \\
-\detokenize{brick_lab} &
-Model only: irreversible config writes and occupying SH0 -- not run on silicon. & passed \\
-\end{longtable}
+\testcase{LabSwitchTest.concurrentSameJvmPollsDoNotThrowOverlappingFileLock}{passed}{Two \texttt{open()} calls on the same JSON in one JVM share the instance; 8 threads read and switch USER/SAE without \texttt{OverlappingFileLockException}.}
+
+\testcase{LabSwitchTest.ownerToggleKeepsBothClientNodes}{passed}{Switching USER$\to$SAE changes mode while both clients' \texttt{ttyACM-se1/se2} entries stay.}
+
+\chapter{USER APP}
+
+USER APP tests cover chip INIT (LAB/PROD), owner auth, PEER ADD pad length, peer certificate hashes, and console style.
+
+\subsubsection{unit / user-app}
+
+\testcase{ChipInitTest.ownerPasswordRequiresMatchingConfirmation}{passed}{Two matching 8+ ASCII lines yield the password; mismatch or too-short input returns null and INIT does not continue.}
+
+\testcase{ChipInitTest.pairingChoiceAcceptsSlotsOrSkip}{passed}{Inputs \texttt{1}--\texttt{3} select a pairing slot, \texttt{n} skips pairing, and \texttt{0}/empty are invalid.}
+
+\testcase{ChipInitTest.initLabAndProdCommandsAreRecognized}{passed}{The console accepts ``INIT LAB''/``INITLAB'' versus ``INIT PROD''; bare INIT is neither.}
+
+\testcase{ChipInitTest.csrFileRoundTrip}{passed}{An ML-DSA public key written as hex to \texttt{client-csr.hex} is read back unchanged.}
+
+\testcase{ChipInitTest.pairingKeyFileRoundTrip}{passed}{The pairing file (mode 600) next to \texttt{client-cert.pem} round-trips slot+priv+pub.}
+
+\testcase{ChipInitTest.labRejectsAllZeroClientCsr}{passed}{LAB treats an all-zero CSR as ``chip did not issue a key'' and enrollment fails.}
+
+\testcase{ChipInitTest.labFreshOwnerKeygenKemSignCreds}{passed}{LAB from empty runs OWNER SET, KEYGEN, KEM INIT, INSERT SIGNED CSR and prints the client hash.}
+
+\testcase{ChipInitTest.labSkipsOccupiedEcc}{passed}{An occupied ECC slot is skipped during LAB KEYGEN; KEM and CSR continue.}
+
+\testcase{ChipInitTest.alreadyEnrolledContinues}{passed}{``Owner already enrolled'' is non-fatal: KEYGEN/KEM/CSR still continue.}
+
+\testcase{ChipInitTest.prodMissingCertWarnsAndSkipsPairing}{passed}{PROD without a signed cert writes the CSR and skips INSERT and PAIRING.}
+
+\testcase{ChipInitTest.prodDoesNotInstallExistingCert}{passed}{PROD with an existing PEM cert does not send INSERT again; pairing keys are stored and the private key is not logged.}
+
+\testcase{ChipInitTest.prodBarePairingOkStopsWithoutSaving}{passed}{Firmware ``PAIRING ok'' without hex keys stops INIT and writes nothing to disk.}
+
+\testcase{ChipInitTest.prodOccupiedEccReplacesWithoutPin}{passed}{PROD KEYGEN on an occupied ECC proceeds without a PIN (replace), unlike PIN-gated OTP.}
+
+\testcase{ChipInitTest.keygenFailureStops}{passed}{KEYGEN ERR stops INIT at KEYGEN with no KEM/CSR.}
+
+\testcase{ChipInitTest.kemFailureStops}{passed}{KEM SLOT\_OCC stops at KEM INIT and the CSR is not signed.}
+
+\testcase{ChipInitTest.kemAlreadyProvisionedRefusesBeforeManage}{passed}{An ML-KEM public key already on the chip ends INIT before OWNER/MANAGE so the seed is not overwritten.}
+
+\testcase{ChipInitTest.credsFailureStops}{passed}{INSERT SIGNED CSR ERR after KEYGEN+KEM stops INIT (owner may already be written).}
+
+\testcase{ChipInitTest.ownerSetFailureStops}{passed}{OWNER SET failure stops INIT with no MANAGE and no client-hash read.}
+
+\testcase{ChipInitTest.missingClientHashDoesNotFailInit}{passed}{If the chip returns no client hash, enrollment still succeeds and the hash is simply not printed.}
+
+\testcase{OwnerAuthTest.ownerSetAsciiStatuses}{passed}{Firmware text ``ok'' and ``refused'' (already enrolled) map to success/refused; anything else is Failed with detail.}
+
+\testcase{OwnerAuthTest.clientCsrIgnoresTruncatedHex}{passed}{``failed'' and short hex yield null; a full ML-DSA public key is assembled even when a newline splits the hex.}
+
+\testcase{PeerCommandsTest.parsePadPlainAcceptsDecimal}{passed}{PEER ADD accepts decimal pad lengths such as ``446'' and ``35'' followed by a newline.}
+
+\testcase{PeerCommandsTest.parsePadPlainRejectsZeroAndNonDecimal}{passed}{0 and non-decimal strings (``failed'', ``abc'') are rejected and not sent to firmware.}
+
+\testcase{PeerCertHashTest.hashIsSha384OfRawSubjectPublicKeyBitsNotFullSpkiDer}{passed}{Peer ID is SHA-384 of the raw subjectPublicKey bits (96 hex), not a hash of the full SPKI DER.}
+
+\testcase{PeerCertHashTest.hashFromPemPathMatchesInMemoryCert}{passed}{The same certificate from a PEM file and from an in-memory object yields the same peer hash.}
+
+\testcase{PeerCertHashTest.parseHashHexAccepts96Hex}{passed}{96 hex digits, including uppercase, are accepted as a peer ID.}
+
+\testcase{PeerCertHashTest.parseHashHexRejectsCertNamesAndBadLength}{passed}{A file name like ``client2'' and short hex are rejected: a cert name is not a PEER ADD argument.}
+
+\testcase{PeerCertHashTest.nicknameRulesMatchFirmware}{passed}{Nicknames must be 1--16 characters of alnum/\texttt{\_}/-/.; spaces are rejected, matching firmware NV rules.}
+
+\testcase{PeerCertHashTest.pythonStyleBitStringSkipUnusedBitsByte}{passed}{The BIT STRING's leading unused-bits byte is skipped (\texttt{getBytes()}, not the full DER) before hashing.}
+
+\testcase{PeerCertHashTest.alicePemMatchesEmbedFwCredsRawSpkiLengthWhenPresent}{passed}{Lab \texttt{certs/Alice.pem} has a 1312\,B raw ML-DSA SPKI; the hash is of those bits, not of \texttt{getEncoded()}.}
+
+\testcase{ConsoleStyleTest.colorIsMeaningAndCanBeTurnedOff}{passed}{With color off the text stays ``OK''; with color on it is ANSI bold+green with reset.}
+
+\testcase{ConsoleStyleTest.noColorKeepsBoldAndDropsHue}{passed}{Under NO\_COLOR, bold INIT remains but the blue hue code is dropped.}
+
+\testcase{ConsoleStyleTest.repliesSplitFailureFromHex}{passed}{A ``failed\ldots'' line is treated as an error, a clean hex block as data, and a prefixed ``OK encrypt reply'' is not hex.}
+
+\chapter{SE}
+
+Host and TROPIC01 model tests (ctest in \texttt{stm32u535-trustzone-usb/host/tropic\_model/build}).
+
+\subsubsection{SE model}
+
+\testcase{test\_a\_session}{passed}{L2 session against the model: init, ping, info, deinit; a second init after deinit pings again.}
+
+\testcase{test\_b\_ecc}{passed}{Empty ECC slot reports INVALID\_KEY and empty PUB; import, generate, occupied-slot replace, and P-256 sign+verify succeed.}
+
+\testcase{test\_c\_rmem}{passed}{R-MEM: encrypted write, raw slot $\neq$ plaintext, overwrite after erase, write forbidden to PIN and ML-KEM seed slots, logical pad 0 map.}
+
+\testcase{test\_d\_pin}{passed}{MAC-and-Destroy PIN: setup, correct PIN, wrong PIN consumes a try and wipes final\_key; after exhaustion even the correct PIN fails.}
+
+\testcase{test\_e\_mcounter}{passed}{Two cursors (encrypt first half, decrypt second); advance without XOR burns the slot; encrypt exhausts while decrypt still lives.}
+
+\testcase{test\_f\_mlkem}{passed}{Host as SAE: encapsulate ML-KEM-768, chip decapsulate, pad in R-MEM under PIN-gated XOR; wrong PIN does not load the pad.}
+
+\testcase{test\_g\_ingest}{passed}{Downlink v3 in 17\,B chunks; FINISH commits fill\_id; OTP burns pad 0; skip-ahead and rewind with half=0 fail.}
+
+\testcase{test\_h\_pairing}{passed}{New pairing key invalidates factory SH0; session works only with the new key; LOAD works after an NV wipe.}
+
+\testcase{test\_i\_post\_tls}{passed}{Production \texttt{secure\_otp\_session\_feed}: PIN+plaintext, slot ID in the reply, 100\,KiB, remaining bytes, decrypt skip-ahead; refuse when fewer pads remain than the message.}
+
+\testcase{test\_j\_peers}{passed}{NV PEER add/remove/list; the uplink carries $7+3n$ LV items for $n$ peers.}
+
+\testcase{test\_k\_owner}{passed}{First OWNER SET wins, second is refused; REPLACE; unsigned MANAGE CREDS stream; ML-KEM in NV; ENCRYPT/PROVISION ready only after creds.}
+
+\testcase{brick\_lab}{passed}{Model only: irreversible config writes and occupying SH0 -- not run on silicon.}
+
+\end{document}

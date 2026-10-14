@@ -18,15 +18,17 @@ import java.util.Optional;
  * Thread-safe record-state store backed by SQLite {@code client_record_state}.
  *
  * <p>Lifecycle for a new share: {@link RecordAvailability#RECORD_SYNCHRONIZATION}
- * (may be taken over by higher issuing SAE) → {@link RecordAvailability#RECORD_FETCHING_STARTED}
- * (locked to the issuing SAE; only stale reclaim) → {@link RecordAvailability#RECORD_AVAILABLE}
- * (both databases committed; origin device has not acked) → origin-only
- * {@link RecordAvailability#RECORD_PROVISIONED} after the origin device ack.
+ * (may be taken over by a higher issuing SAE) → {@link RecordAvailability#RECORD_FETCHING_STARTED}
+ * (locked to the issuing SAE; only stale reclaim) → {@link RecordAvailability#RECORD_SHARED}
+ * (both databases committed; origin device has not acked) → {@link RecordAvailability#ORIGIN_PROVISIONED}
+ * on both SAEs after the origin device ack. The peer device is filled only from
+ * {@code ORIGIN_PROVISIONED}. A stale {@code RECORD_SHARED} is an incomplete setup:
+ * reclaim deletes the row, and {@code ON DELETE CASCADE} deletes its key material.
  */
 public class AtomicRecordStateMap {
 
-    /** Stale reclaim window for synchronization, fetching, and unacked {@code RECORD_AVAILABLE}. */
-    public static final long RESERVATION_TIMEOUT_MINUTES = 2;
+    /** Stale reclaim window for synchronization, fetching, and unacked {@code RECORD_SHARED}. */
+    public static final long RESERVATION_TIMEOUT_MINUTES = 5;
 
     private final DataSource dataSource;
     private final ClientRecordStateRepository repository;
@@ -98,6 +100,9 @@ public class AtomicRecordStateMap {
                 );
 
                 if (outcome == SynchronizeOutcome.INSERTED) {
+                    if (existing.isPresent()) {
+                        repository.deleteByHashes(connection, clientHash1, clientHash2);
+                    }
                     RecordMetadata metadata = new RecordMetadata(
                             now,
                             RecordAvailability.RECORD_SYNCHRONIZATION,
@@ -174,7 +179,7 @@ public class AtomicRecordStateMap {
 
     /**
      * Finishes an exchange by promoting {@link RecordAvailability#RECORD_FETCHING_STARTED}
-     * to {@link RecordAvailability#RECORD_AVAILABLE} and refreshing {@code date_of_creation}
+     * to {@link RecordAvailability#RECORD_SHARED} and refreshing {@code date_of_creation}
      * so the origin-device upload has its own reservation window.
      */
     public boolean finishRecordInsert(String clientHash1, String clientHash2) {
@@ -197,14 +202,15 @@ public class AtomicRecordStateMap {
     }
 
     /**
-     * Promotes origin {@link RecordAvailability#RECORD_AVAILABLE} to
-     * {@link RecordAvailability#RECORD_PROVISIONED} after the device ack.
+     * Promotes {@link RecordAvailability#RECORD_SHARED} to
+     * {@link RecordAvailability#ORIGIN_PROVISIONED} after the origin device ack.
+     * Caller marks the peer row and then the origin row.
      */
-    public boolean markProvisioned(String clientHash1, String clientHash2) {
+    public boolean markOriginProvisioned(String clientHash1, String clientHash2) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
-                boolean changed = repository.markProvisionedIfAvailable(connection, clientHash1, clientHash2);
+                boolean changed = repository.markOriginProvisionedIfShared(connection, clientHash1, clientHash2);
                 connection.commit();
                 return changed;
             } catch (SQLException ex) {
@@ -281,15 +287,24 @@ public class AtomicRecordStateMap {
             return SynchronizeOutcome.INSERTED;
         }
 
-        if (current.recordAvailability() == RecordAvailability.RECORD_AVAILABLE
-                || current.recordAvailability() == RecordAvailability.RECORD_PROVISIONED) {
+        boolean staleReservation = isReservationStale(current.dateOfCreation(), now);
+
+        if (current.recordAvailability() == RecordAvailability.RECORD_SHARED) {
+            if (staleReservation) {
+                return SynchronizeOutcome.INSERTED;
+            }
+            if (!Objects.equals(current.saeId(), saeId)) {
+                return SynchronizeOutcome.RECORD_SHARED_WITH_DIFFERENT_SAE;
+            }
+            return SynchronizeOutcome.NOT_INSERTED;
+        }
+
+        if (current.recordAvailability() == RecordAvailability.ORIGIN_PROVISIONED) {
             if (Objects.equals(current.saeId(), saeId)) {
-                return SynchronizeOutcome.RECORD_AVAILABLE;
+                return SynchronizeOutcome.ORIGIN_PROVISIONED;
             }
             return SynchronizeOutcome.RECORD_SHARED_WITH_DIFFERENT_SAE;
         }
-
-        boolean staleReservation = isReservationStale(current.dateOfCreation(), now);
 
         if (current.recordAvailability() == RecordAvailability.RECORD_FETCHING_STARTED) {
             // Fetch lock: only stale reclaim; no higher-SAE / same-issuer overwrite.
@@ -315,13 +330,14 @@ public class AtomicRecordStateMap {
     public enum RecordAvailability {
         RECORD_SYNCHRONIZATION,
         RECORD_FETCHING_STARTED,
-        RECORD_AVAILABLE,
-        RECORD_PROVISIONED
+        RECORD_SHARED,
+        ORIGIN_PROVISIONED
     }
 
     public enum SynchronizeOutcome {
         INSERTED,
-        RECORD_AVAILABLE,
+        /** Row is already {@link RecordAvailability#ORIGIN_PROVISIONED} for this SAE. */
+        ORIGIN_PROVISIONED,
         RECORD_SHARED_WITH_DIFFERENT_SAE,
         NOT_INSERTED
     }
