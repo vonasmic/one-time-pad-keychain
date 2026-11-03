@@ -4,7 +4,7 @@ QKD mTLS uses **HSM-backed** SAE client keys (Utimaco CryptoServer JCE). Private
 
 `CertGenerator` imports these PKCS#12 files into CryptoServer (missing aliases only) in the
 same non-interactive run that provisions PQC node certs (`certs/Alice.pem`, etc.) — see
-[`CertGenerator README`](../../src/CertGenerator/README.md).
+[`CertGenerator README`](../../modules/cert-generator/README.md).
 
 ## Target layout
 
@@ -71,17 +71,20 @@ Simulator running, `env/hsm.env` sourced (and `env/certgen.env` present):
 
 ```bash
 set -a && source env/hsm.env && set +a
-mvn -q exec:java -Dexec.mainClass=fel.cvut.certGen.CertGenerator
+mvn -pl :cert-generator -am exec:java
 ```
+
+From the repo root the same run is `scripts/java.sh certgen`.
 
 Missing `*-client.p12` aliases are imported into CryptoServer (`PKCS12_PASSWORD`).
 PKCS#12 files are left on disk. Runtime signing uses CryptoServer only.
+
 ## Step 5 — Env / node config
 
 ```bash
 QKD_HSM_KEY_ALIAS=sae-1          # this node's SAE alias in the HSM
 QKD_TRUSTSTORE_PATH=certs/qkd/qkd-server-ca.p12
-# Secret — leave unset in production (stdin prompt):
+# Secret — leave unset in production (masked terminal prompt):
 QKD_TRUSTSTORE_PASSWORD=password
 ```
 

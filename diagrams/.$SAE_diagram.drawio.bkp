@@ -1,179 +1,176 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36">
-  <diagram name="PROVISION" id="ProvisionProcessTree001">
-    <mxGraphModel dx="4670" dy="2985" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2100" pageHeight="2400" math="0" shadow="0">
+<mxfile host="Electron" agent="generated">
+  <diagram name="SAE" id="SaeArchitecture001">
+    <mxGraphModel dx="1304" dy="807" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-241" parent="1" style="swimlane;startSize=30;fillColor=#e6e6e6;rounded=1;fontStyle=1;fontSize=14;direction=east;" value="Client (Endpoint)" vertex="1">
-          <mxGeometry height="130" width="520" x="760" y="740" as="geometry" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;" value="&lt;b&gt;SAE A and what it connects to&lt;/b&gt;" vertex="1">
+          <mxGeometry height="40" width="700" x="40" y="580" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-242" parent="uvQYUA6P2yuay3lXrDvk-241" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Secure Element&lt;/font&gt;" vertex="1">
-          <mxGeometry height="50" width="130" x="30" y="50" as="geometry" />
+        <mxCell id="siteB" parent="1" style="swimlane;startSize=30;rounded=1;fontStyle=1;fontSize=14;collapsible=0;whiteSpace=wrap;html=1;fillColor=#f3eaf7;" value="Other site: SAE B (same software, uses KME B)" vertex="1">
+          <mxGeometry height="300" width="380" x="1020" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-243" parent="uvQYUA6P2yuay3lXrDvk-241" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;USB CDC ACM&lt;br&gt;/dev/ttyACM0&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="150" x="290" y="35" as="geometry" />
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-258" parent="siteB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;SAE B&lt;br&gt;node process&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="200" x="20" y="55" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-244" edge="1" parent="uvQYUA6P2yuay3lXrDvk-241" source="uvQYUA6P2yuay3lXrDvk-242" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-243">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-259" parent="siteB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Counterpart keychain&lt;br&gt;provisioned at SAE B&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="200" x="20" y="195" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-266" edge="1" parent="siteB" source="uvQYUA6P2yuay3lXrDvk-258" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-259" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-245" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-244" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;CDC endpoint&lt;/font&gt;" vertex="1">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-266-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-266" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;USB, same as at SAE A&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-257" parent="1" style="swimlane;startSize=30;rounded=1;fontStyle=1;fontSize=14;collapsible=0;whiteSpace=wrap;html=1;fillColor=#f0f8ff;flipH=1;" value="Internet: QuKayDee KME service (cloud)" vertex="1">
+          <mxGeometry height="315" width="400" x="540" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="kmeB" parent="uvQYUA6P2yuay3lXrDvk-257" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;KME B&lt;br&gt;serves SAE B&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="170" x="210" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-260" parent="uvQYUA6P2yuay3lXrDvk-257" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;KME A&lt;br&gt;serves SAE A&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="170" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-261" parent="uvQYUA6P2yuay3lXrDvk-257" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;QKD link between the KMEs&lt;br&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="135" width="306.5" x="38" y="179" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-264" edge="1" parent="uvQYUA6P2yuay3lXrDvk-257" source="uvQYUA6P2yuay3lXrDvk-260" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;endArrow=none;entryX=0.25;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;" target="uvQYUA6P2yuay3lXrDvk-261" value="">
+          <mxGeometry relative="1" x="0.0031" as="geometry">
+            <mxPoint x="105" y="226" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kmeBq" edge="1" parent="uvQYUA6P2yuay3lXrDvk-257" source="kmeB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.839;entryY=0.213;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;" target="uvQYUA6P2yuay3lXrDvk-261" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kmeBsae" edge="1" parent="1" source="kmeB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-258" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kmeBsae-l" connectable="0" parent="kmeBsae" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;HTTPS,&lt;br&gt;same as KME A&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hsmsite" parent="1" style="swimlane;startSize=30;rounded=1;fontStyle=1;fontSize=14;collapsible=0;whiteSpace=wrap;html=1;fillColor=#fdf0ef;" value="SAE A site network: HSM" vertex="1">
+          <mxGeometry height="260" width="340" x="70" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-262" parent="hsmsite" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;&lt;b&gt;Utimaco HSM&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 13px;&quot;&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;signs for the node,&lt;br&gt;holds the KME client key,&lt;br&gt;seals stored key material&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="195" width="280" x="30" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-241" parent="1" style="swimlane;startSize=30;rounded=1;fontStyle=1;fontSize=14;collapsible=0;whiteSpace=wrap;html=1;fillColor=#e6e6e6;" value="Keychain device (plugged into the SAE A computer by USB)" vertex="1">
+          <mxGeometry height="150" width="600" x="70" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-242" parent="uvQYUA6P2yuay3lXrDvk-241" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;&lt;b&gt;TROPIC01&lt;br&gt;&lt;/b&gt;secure chip&lt;br&gt;stores the pads&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="170" x="30" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-243" parent="uvQYUA6P2yuay3lXrDvk-241" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;&lt;b&gt;STM32U535&lt;br&gt;&lt;/b&gt;microcontroller&lt;br&gt;USB serial port&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="240" x="330" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-244" edge="1" parent="uvQYUA6P2yuay3lXrDvk-241" source="uvQYUA6P2yuay3lXrDvk-242" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;" target="uvQYUA6P2yuay3lXrDvk-243" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-244-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-244" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;SPI bus on the board&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-246" parent="1" style="swimlane;startSize=30;fillColor=#fff4e6;rounded=1;fontStyle=1;fontSize=14;" value="Terminal" vertex="1">
-          <mxGeometry height="140" width="520" x="760" y="900" as="geometry" />
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-249" parent="1" style="swimlane;startSize=30;rounded=1;fontStyle=1;fontSize=14;collapsible=0;whiteSpace=wrap;html=1;fillColor=#f3eaf7;" value="SAE A computer: one Java node process" vertex="1">
+          <mxGeometry height="500" width="600" x="710" y="913" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-248" parent="uvQYUA6P2yuay3lXrDvk-246" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;UsbTcpBridge&lt;br&gt;CDC relay (no USB on Node)&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="180" x="275" y="50" as="geometry" />
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-250" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Operator console&lt;br&gt;the terminal the node runs in&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="250" x="30" y="47" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-247" parent="uvQYUA6P2yuay3lXrDvk-246" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;TerminalApp&lt;br&gt;SELECT / CONFIRM / NOTIFY&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="180" x="40" y="50" as="geometry" />
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-253" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=0;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Node&lt;/b&gt;&lt;br&gt;provisioning logic, pair locks&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="250" x="30" y="200" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-249" parent="1" style="swimlane;startSize=30;fillColor=#f3eaf7;rounded=1;fontStyle=1;fontSize=14;" value="SAE A" vertex="1">
-          <mxGeometry height="350" width="540" x="920" y="1100" as="geometry" />
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-252" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Peer SAE link&lt;br&gt;RMI server and client&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="250" x="333" y="232" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-250" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;TerminalGateway&lt;br&gt;NODE_TERMINAL_PORT&lt;br&gt;PURE_PQC&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="230" x="30" y="70" as="geometry" />
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-263" parent="uvQYUA6P2yuay3lXrDvk-249" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#D5E8D4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;SQLite database&lt;br&gt;library inside this process,&lt;br&gt;one local file (DB_URL), WAL mode,&lt;br&gt;readable only by the node user&lt;br&gt;share records, sealed keys, logs&lt;/font&gt;" vertex="1">
+          <mxGeometry height="150" width="250" x="330" y="37" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-251" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Command server&lt;br&gt;NODE_NATIVE_PORT&lt;br&gt;PURE_PQC / client_ca&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="230" x="300" y="70" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-252" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;RMI&lt;br&gt;NODE_RMI_PORT&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="220" x="330" y="228" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-291" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-253" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-252">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-254" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-250" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=classic;" target="uvQYUA6P2yuay3lXrDvk-253" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-253" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Node&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="220" x="33" y="228" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-254" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-250" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-253">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-255" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-251" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-253">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-257" parent="1" style="swimlane;startSize=30;fillColor=#f0f8ff;rounded=1;fontStyle=1;fontSize=14;" value="External" vertex="1">
-          <mxGeometry height="520" width="470" x="370" y="1090" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-258" parent="uvQYUA6P2yuay3lXrDvk-257" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;SAE B&lt;br&gt;peer Node&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="180" x="25" y="70" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-259" parent="uvQYUA6P2yuay3lXrDvk-257" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Client pairing&lt;/font&gt;" vertex="1">
-          <mxGeometry height="65" width="180" x="25" y="175" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-260" parent="uvQYUA6P2yuay3lXrDvk-257" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;KME A&lt;br&gt;ETSI 014&lt;/font&gt;" vertex="1">
-          <mxGeometry height="80" width="190" x="250" y="70" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-261" parent="uvQYUA6P2yuay3lXrDvk-257" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;QKD&lt;/font&gt;" vertex="1">
-          <mxGeometry height="65" width="190" x="250" y="175" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-262" parent="uvQYUA6P2yuay3lXrDvk-257" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Utimaco HSM&lt;br&gt;ML-DSA / AES-GCM&lt;/font&gt;" vertex="1">
-          <mxGeometry height="90" width="180" x="30" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-263" parent="uvQYUA6P2yuay3lXrDvk-257" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#D5E8D4;strokeColor=#82b366;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;SQLite&lt;br&gt;client_record_state&lt;br&gt;SYNCHRONIZATION → FETCHING → AVAILABLE&lt;br&gt;shared_key_material&lt;/font&gt;" vertex="1">
-          <mxGeometry height="90" width="200" x="240" y="320" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-264" edge="1" parent="uvQYUA6P2yuay3lXrDvk-257" source="uvQYUA6P2yuay3lXrDvk-260" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-261">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-265" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-264" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;CLASSICAL mTLS&lt;/font&gt;" vertex="1">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-254-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-254" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;prompts and answers&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-266" edge="1" parent="uvQYUA6P2yuay3lXrDvk-257" source="uvQYUA6P2yuay3lXrDvk-258" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-259">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-291" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-253" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.65;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;startArrow=classic;" target="uvQYUA6P2yuay3lXrDvk-252" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-267" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-243" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-248">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-276" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-253" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;" target="uvQYUA6P2yuay3lXrDvk-263" value="">
+          <mxGeometry relative="1" x="-0.1121" as="geometry">
+            <Array as="points">
+              <mxPoint x="217.5" y="187" />
+              <mxPoint x="300" y="187" />
+              <mxPoint x="300" y="112" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-276-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-276" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;direct calls (JDBC)&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.1121" as="geometry">
+            <mxPoint x="85" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-251" parent="uvQYUA6P2yuay3lXrDvk-249" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Device provisioning&lt;br&gt;TLS server on the USB serial port&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="250" x="240" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-255" edge="1" parent="uvQYUA6P2yuay3lXrDvk-249" source="uvQYUA6P2yuay3lXrDvk-251" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;startArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="155" y="287" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-267" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-243" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;" target="uvQYUA6P2yuay3lXrDvk-251" value="">
+          <mxGeometry relative="1" x="-0.141" as="geometry" />
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-267-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-267" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;USB cable, serial port (CDC)&lt;br&gt;post-quantum TLS 1.3, &lt;br&gt;&lt;/font&gt;&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(18, 18, 18)); color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;keychain is the TLS client&lt;/span&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.141" as="geometry">
+            <mxPoint x="27" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-293" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-260" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-253" value="">
+          <mxGeometry relative="1" x="0.1361" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="665" />
+              <mxPoint x="510" y="665" />
+              <mxPoint x="510" y="960" />
+              <mxPoint x="680" y="960" />
+              <mxPoint x="680" y="1137" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-293-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-293" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;HTTPS to the ETSI QKD 014 key API&lt;br&gt;mutual TLS (Classical only&lt;/font&gt;&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(18, 18, 18)); color: light-dark(#000000, var(--ge-light-color, #ffffff));&quot;&gt;)&lt;/span&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.3686" as="geometry">
+            <mxPoint x="-115" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-274" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-253" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startArrow=classic;" target="uvQYUA6P2yuay3lXrDvk-262" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-268" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-267" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;USB CDC PQC TLS&lt;/font&gt;" vertex="1">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-274-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-274" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;TCP, Utimaco protocol&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1" y="-17" as="offset" />
+            <mxPoint x="39" y="-14" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-273" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-252" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontSize=12;dashed=1;strokeColor=#8b4513;shadow=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-258" value="Peer RMI">
-          <mxGeometry relative="1" as="geometry">
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-273" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-252" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontSize=12;dashed=1;strokeColor=#8b4513;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" value="">
+          <mxGeometry relative="1" x="-0.7859" as="geometry">
             <Array as="points">
-              <mxPoint x="1360" y="1550" />
-              <mxPoint x="380" y="1540" />
-              <mxPoint x="380" y="1200" />
+              <mxPoint x="1350" y="1185" />
+              <mxPoint x="1350" y="670" />
             </Array>
-            <mxPoint x="280" y="1190" as="targetPoint" />
+            <mxPoint x="1240" y="670" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-274" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-253" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-262">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1118" y="1520" />
-              <mxPoint x="490" y="1520" />
-            </Array>
+        <mxCell id="uvQYUA6P2yuay3lXrDvk-273-l" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-273" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;Network TCP:&amp;nbsp;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;Java RMI with mutual post-quantum TLS 1.3;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.7566" as="geometry">
+            <mxPoint x="-10" y="-270" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-275" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-274" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;PQMI / CXI&lt;/font&gt;" vertex="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="140" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-276" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-253" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.7;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="uvQYUA6P2yuay3lXrDvk-263">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1063" y="1473" />
-            </Array>
-            <mxPoint x="1072.9999999999995" y="1389.9999999999998" as="sourcePoint" />
-            <mxPoint x="720" y="1482" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-277" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-276" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;JDBC&lt;/font&gt;" vertex="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="-33" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-284" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-250" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-246">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1065" y="1070" />
-              <mxPoint x="890" y="1070" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-285" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-284" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; background-color: rgb(236, 236, 236);&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20connectable%3D%220%22%20parent%3D%221%22%20style%3D%22edgeLabel%3Bhtml%3D1%3Balign%3Dcenter%3BverticalAlign%3Dmiddle%3Bresizable%3D0%3Bpoints%3D%5B%5D%3B%22%20value%3D%22%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2012px%3B%26quot%3B%26gt%3BOperator%20TLS%26lt%3B%2Ffont%26gt%3B%22%20vertex%3D%221%22%3E%3CmxGeometry%20x%3D%221622.764718692354%22%20y%3D%22705.0588235294117%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3EP&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px; text-align: start; background-color: rgb(236, 236, 236);&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry relative="1" x="0.0238" y="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-286" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-284" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="PQC TLS" vertex="1">
-          <mxGeometry relative="1" x="-0.0016" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-287" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-248" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-251">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1125" y="1070" />
-              <mxPoint x="1335" y="1070" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-288" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-287" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="TCP forward" vertex="1">
-          <mxGeometry relative="1" x="-0.0837" y="-3" as="geometry">
-            <mxPoint x="-25" y="-3" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-289" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-243" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="uvQYUA6P2yuay3lXrDvk-248" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-293" edge="1" parent="1" source="uvQYUA6P2yuay3lXrDvk-260" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uvQYUA6P2yuay3lXrDvk-253">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="890" y="1380" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uvQYUA6P2yuay3lXrDvk-294" connectable="0" parent="uvQYUA6P2yuay3lXrDvk-293" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Key provision" vertex="1">
-          <mxGeometry relative="1" x="0.0907" y="-1" as="geometry">
-            <mxPoint x="-1" y="-33" as="offset" />
-          </mxGeometry>
+        <mxCell id="note" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;How to read&lt;/b&gt;: boxes are grouped by where each part runs. Everything inside &quot;SAE A computer&quot; is one process; the database is a file. Links to the KME, other SAEs and to the keychain all use mutual TLS; the USB link to the device also runs TLS. SAE B is set up the same way as SAE A." vertex="1">
+          <mxGeometry height="60" width="1460" x="40" y="1480" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Java SAE apps: certgen, migrate, node, userapp.
+# Java SAE apps: certgen, migrate, node, userapp, pins (spkiSha384 in env/sae-nodes.json).
 # lab-node / lab-userapp wrap those apps for the run-all tmux panes.
 set -euo pipefail
 # shellcheck source=common.sh
@@ -42,7 +42,7 @@ ensure_env_files() {
   if [[ ! -f "$JAVA_DIR/env/userapp-2.env" ]]; then
     log "creating env/userapp-2.env for client-2"
     cat >"$JAVA_DIR/env/userapp-2.env" <<'EOF'
-# UserApp 2 — keychain /tmp/ttyACM-se2. See src/UserApp/README.md.
+# UserApp 2 — keychain /tmp/ttyACM-se2. See modules/user-app/README.md.
 USB_SERIAL_PORT=/tmp/ttyACM-se2
 USERAPP_OWNER_P12=user/user.p12
 USERAPP_OWNER_P12_PASSWORD=password
@@ -63,7 +63,14 @@ certgen() {
   source_env env/hsm.env
   source_env env/certgen.env
   install_module_deps cert-generator
-  run_module cert-generator
+  (run_module cert-generator)
+  pins
+}
+
+# spkiSha384 pins of the SAE directory (env/sae-nodes.json) from certs/{name}.pem. Rewritten
+# only when a leaf changed; run after CertGenerator and before every node start.
+pins() {
+  python3 "$SCRIPTS/rmi-pins.py" --java-dir "$JAVA_DIR"
 }
 
 migrate() {
@@ -81,6 +88,7 @@ node() {
   source_env "$env_file"
   unset USB_LAB_FILE
   unset USB_LAB_CLIENT
+  pins
   run_module sae-node
 }
 
@@ -122,6 +130,7 @@ lab_node() {
   client="client-${which}"
   unset USB_LAB_FILE
   unset USB_LAB_CLIENT
+  pins
   exec python3 -u "$SCRIPTS/lab-run.py" --lab "$file" --role node \
     --fixed-client "$client" -- \
     mvn -q -pl :sae-node exec:java
@@ -171,6 +180,7 @@ case "${1:-}" in
   compile) compile ;;
   certgen) certgen ;;
   migrate) migrate ;;
+  pins) pins ;;
   node) shift; node "${1:-}" ;;
   userapp) shift; userapp "${1:-}" ;;
   lab-node) shift; lab_node "${1:-}" ;;
@@ -179,7 +189,7 @@ case "${1:-}" in
   list-panes) list_panes ;;
   -h|--help|"")
     cat <<EOF
-Usage: $(basename "$0") compile|certgen|migrate|node ENV|userapp [ENV]|lab-node 1|2|lab-userapp 1|2|lab [CMD]|list-panes
+Usage: $(basename "$0") compile|certgen|migrate|pins|node ENV|userapp [ENV]|lab-node 1|2|lab-userapp 1|2|lab [CMD]|list-panes
 EOF
     [[ -n "${1:-}" ]] || exit 1
     ;;

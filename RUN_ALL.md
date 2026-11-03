@@ -27,28 +27,36 @@ sequenceDiagram
   participant User
   participant Script as run_all_sh
   participant Hsm as cs_sim
+  participant Java as java_sh
   participant Cert as CertGenerator
+  participant Host as host_sh
   participant Tmux as tmux_otp_keychain
 
   User->>User: start Windows HSM simulator
-  User->>Script: ./run-all.sh
-  Script->>Hsm: csadm setup if needed
-  Script->>Cert: mvn CertGenerator
-  Cert-->>Script: done
-  Script->>Script: cmake make se_host
-  Script->>Script: migrate node-1 node-2
-  Script->>Tmux: stack 5 rows
+  User->>Script: ./run-all.sh or ./run-all-with-hw.sh
+  Script->>Script: config scripts/configs/run-all or scripts/configs/with-hw
+  Script->>Hsm: hsm.sh GetState, csadm setup if needed
+  Script->>Java: java.sh compile (mvn install)
+  Script->>Java: java.sh certgen
+  Java->>Java: copy userapp-1/2 env files if missing
+  Java->>Cert: mvn CertGenerator
+  Cert-->>Java: done
+  Java->>Java: java.sh pins (rmi-pins.py, env/sae-nodes.json)
+  Script->>Host: host.sh prepare
+  Host->>Host: libtropic init if empty, cmake make se_host
+  Script->>Java: java.sh migrate node-1 node-2
+  Script->>Tmux: lab file (owner USER, serial lines), panes from the config
   Script->>Tmux: attach
 ```
 
 Foreground (calling terminal), in order:
 
-1. Copy `JAVA_APPS/env/userapp-{1,2}.env` from the examples if they are missing. `env/hsm.env` must already exist.
-2. Init nested `stm32u535-trustzone-usb/libtropic` if it is empty.
-3. Check `HSM_DEVICE` (`csadm GetState`) and run one-time `csadm` setup if `CXI_HMAC` or PQMI is missing. The simulator is not started here.
-4. CertGenerator (`env/hsm.env` sourced; `env/certgen.env` is read by the process).
-5. Tropic model venv and `host/tropic_model/_deps` if missing, then `cmake` + `make se_host` (runtime `OWNER`/`CREDS` enrollment; no compile-in creds).
-6. Flyway migrate for `env/node-1.env` and `env/node-2.env`.
+1. Pick the configuration: `scripts/configs/run-all` (`./run-all.sh`, default) or `scripts/configs/with-hw` (`./run-all-with-hw.sh`), and check the required tools.
+2. `scripts/hsm.sh`: check `HSM_DEVICE` (`csadm GetState`) and run one-time `csadm` setup if `CXI_HMAC` or PQMI is missing. The simulator is not started here.
+3. `scripts/java.sh compile`: `mvn install -DskipTests` in `JAVA_APPS`.
+4. `scripts/java.sh certgen`: `env/hsm.env`, `env/node-1.env` and `env/node-2.env` must exist. `env/userapp-1.env` is copied from `env/userapp.env` (or the example) and `env/userapp-2.env` is written if missing. CertGenerator then runs with `env/hsm.env` and `env/certgen.env` sourced, and `java.sh pins` (`scripts/rmi-pins.py`) refreshes the `spkiSha384` pins in `env/sae-nodes.json`.
+5. `scripts/host.sh prepare`: init nested `stm32u535-trustzone-usb/libtropic` if it is empty, Tropic model venv and `host/tropic_model/_deps` if missing, then `cmake` + `make se_host` (runtime `OWNER`/`CREDS` enrollment; no compile-in creds).
+6. `scripts/java.sh migrate`: Flyway migrate for `env/node-1.env` and `env/node-2.env`.
 
 Then tmux session `otp-keychain` window `stack`. `scripts/host.sh list-panes` and
 `scripts/java.sh list-panes` define every pane. `./run-all.sh` only chooses which
@@ -69,7 +77,7 @@ Crashed panes stay open (`remain-on-exit`).
 
 Two `se_host` processes are two simulated keychains running **in parallel**.
 Lab-only **USB owner** is `/tmp/otp-keychain-lab.json` (see
-[LabSwitch](JAVA_APPS/src/LabSwitch/README.md)). There is no CL 1 / CL 2 switch.
+[LabSwitch](JAVA_APPS/modules/lab-switch/README.md)). There is no CL 1 / CL 2 switch.
 
 | Lab command | Who opens USB | Serial PTYs | Other panes |
 | --- | --- | --- | --- |

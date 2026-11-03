@@ -19,10 +19,10 @@ provision / QKD fill). UserApp is not an SAE. CDC bytes are framed (`0x00` comma
 
 | Path | Role |
 | --- | --- |
-| [`JAVA_APPS/`](JAVA_APPS/README.md) | SaeNode (SAE), UserApp (USER), CertGenerator, LabSwitch |
-| [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) | Current SE firmware (CubeIDE `SE_firmware`) + host `se_host` |
+| [`JAVA_APPS/`](JAVA_APPS/README.md) | SaeNode (SAE), UserApp (USER), CertGenerator (lab only), LabSwitch (lab only), se-bench |
+| [`stm32u535-trustzone-usb/`](stm32u535-trustzone-usb/README.md) | SE firmware (CubeIDE `SE_firmware`) + host `se_host` |
 | [`ultimaco/`](ultimaco/hsm-simulator/README.md) | Drop-in location for Utimaco HSM + Quantum Protect SDKs |
-| [`scripts/`](scripts/) | `run-all.sh`, `java.sh`, `host.sh`, `hsm.sh` |
+| [`scripts/`](scripts/) | `run-all.sh`, `java.sh`, `host.sh`, `hsm.sh`, `lab-run.py` |
 
 USB console syntax: [`stm32u535-trustzone-usb/docs/COMMANDS.md`](stm32u535-trustzone-usb/docs/COMMANDS.md). TLS / LV framing: [`docs/COMMUNICATION.md`](stm32u535-trustzone-usb/docs/COMMUNICATION.md).
 
@@ -34,7 +34,7 @@ Start the Windows HSM simulator yourself (`cs_sim.bat` — [JAVA_APPS HSM setup]
 ./run-all.sh
 ```
 
-That builds `se_host`, migrates the node databases, and opens a tmux session with two Tropic models, two SAE nodes, UserApp, LabSwitch, and two simulated keychains. Details: [`RUN_ALL.md`](RUN_ALL.md).
+That checks the HSM (one-time `csadm` setup if needed), runs CertGenerator, builds `se_host`, migrates the node databases, and opens a tmux session with two Tropic models, two simulated keychains (`se_host`), two SAE nodes, two UserApps, and LabSwitch. Details: [`RUN_ALL.md`](RUN_ALL.md).
 
 ## Firmware
 
@@ -46,7 +46,7 @@ The device enumerates as USB CDC ACM. Arm TLS with `PROVISION` (SAE) / `ENCRYPT`
 
 ## Java applications
 
-**USER** = [`UserApp`](JAVA_APPS/src/UserApp/README.md). **SAE** = [`SaeNode`](JAVA_APPS/src/SaeNode/README.md). They are different processes; only one may open CDC. Operator SELECT / CONFIRM / NOTIFY is SaeNode stdin.
+**USER** = [`UserApp`](JAVA_APPS/modules/user-app/README.md). **SAE** = [`SaeNode`](JAVA_APPS/modules/sae-node/README.md). They are different processes; only one may open CDC. Operator SELECT / CONFIRM / NOTIFY is SaeNode stdin.
 
 Working directory for Maven is `JAVA_APPS` (so `certs/` and `env/` resolve). Wrappers from the repo root:
 
@@ -57,6 +57,8 @@ scripts/java.sh userapp
 ```
 
 Or source `env/hsm.env` plus the process env file and run `mvn exec:java` as documented in each app README.
+
+Deployment design and install steps (user site, and one SAE; the second SAE is the same design): [`diagrams/deployment.drawio`](diagrams/deployment.drawio).
 
 ## Requirements
 

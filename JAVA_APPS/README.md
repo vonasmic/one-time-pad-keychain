@@ -4,14 +4,15 @@ Java applications using **Bouncy Castle JSSE** for the TLS protocol engine, **Ut
 
 The device connects to **two** of these processes over USB CDC: **USER** (UserApp) and **SAE** (SaeNode). UserApp is not an SAE. CDC is framed (`fel.cvut.usb.UsbFrame` in `usb-cdc`): type `0x00` is a console command, type `0x01` is a Secure payload (TLS or the OWNER SET blob). Each app terminates TLS on that stream.
 
-Applications live under `src/`. Maven modules: `se-wire`, `usb-cdc`, `tls-software`, `tls-hsm`, `cert-generator`, `user-app`, `lab-switch`, `sae-node`. Run every `mvn -pl :<module> -am exec:java` from `JAVA_APPS` so `certs/` and `env/` resolve. UserApp depends on `tls-software` only (no HSM / RMI / DB).
+Application sources live under `modules/<module>/src/` (standard Maven layout). Maven modules: `se-wire`, `tls-software`, `tls-hsm`, `usb-cdc`, `cert-generator`, `user-app`, `lab-switch`, `sae-node`, `se-bench`, `coverage-report` (JaCoCo aggregate). Run every `mvn -pl :<module> -am exec:java` from `JAVA_APPS` so `certs/` and `env/` resolve. UserApp depends on `se-wire`, `usb-cdc`, and `tls-software` (no HSM / RMI / DB).
 
 | Application | Entry point | README |
 | --- | --- | --- |
-| [CertGenerator](src/CertGenerator/README.md) | `fel.cvut.certGen.CertGenerator` | PKI / HSM provision |
-| [SaeNode](src/SaeNode/README.md) | `fel.cvut.node.Node` | **SAE**: QKD, DB, RMI, USB `PROVISION`, operator stdin |
-| [UserApp](src/UserApp/README.md) | `fel.cvut.userapp.UserApplication` | **USER**: USB OTP encrypt / decrypt / manage (not SAE) |
-| [LabSwitch](src/LabSwitch/README.md) | `fel.cvut.lab.LabSwitchApp` | Lab USB owner USER/SAE (`./run-all.sh`; dual panes) |
+| [CertGenerator](modules/cert-generator/README.md) | `fel.cvut.certGen.CertGenerator` | Lab-only PKI / HSM provision |
+| [SaeNode](modules/sae-node/README.md) | `fel.cvut.node.Node` | **SAE**: QKD, DB, RMI, USB `PROVISION`, operator stdin |
+| [UserApp](modules/user-app/README.md) | `fel.cvut.userapp.UserApplication` | **USER**: USB OTP encrypt / decrypt / manage (not SAE) |
+| [LabSwitch](modules/lab-switch/README.md) | `fel.cvut.lab.LabSwitchApp` | Lab USB owner USER/SAE (`./run-all.sh`; dual panes) |
+| [se-bench](modules/se-bench/README.md) | `fel.cvut.userapp.SeBench` | SE timing benchmarks over USB CDC |
 
 ## Contents
 
@@ -23,10 +24,11 @@ Applications live under `src/`. Maven modules: `se-wire`, `usb-cdc`, `tls-softwa
 ## TLS
 
 - Profiles: `SoftwareTls.TlsProfile.PURE_PQC` (TLS 1.3 + MLKEM768 + mldsa44 only) and `CLASSICAL` (same PQC preferred, then TLS 1.2 + x25519 / classical signatures)
-- Inter-node RMI uses `PURE_PQC` with SAE `root-ca` trust
-- Device `PROVISION` uses `PURE_PQC` on USB CDC with the same HSM node identity; client auth trusts `client_ca` (**device** certs). UserApp is a separate TLS server over CDC for `ENCRYPT` / `DECRYPT` / `MANAGE`.
+- Inter-node RMI uses `PURE_PQC`; its truststore holds only the SAE `root-ca`. Peers are also pinned by leaf SPKI SHA-384 (`spkiSha384` in the SAE directory `SAE_NODES_FILE`, see [SaeNode](modules/sae-node/README.md#sae-directory))
+- Device `PROVISION` uses `PURE_PQC` on USB CDC with the same HSM node identity; its separate truststore holds only `client_ca` (**device** certs). UserApp is a separate TLS server over CDC for `ENCRYPT` / `DECRYPT` / `MANAGE`.
 - QKD KME mTLS uses `CLASSICAL` with CryptoServer HSM keys (`CertGenerator` imports `certs/qkd/*-client.p12` → `QKD_HSM_KEY_ALIAS`); truststore is public KME CA only
-- Node identity: `CertGenerator` (`env/certgen.env`) → listed node PEMs + HSM keys, client CA, and QuKayDee PKCS#12 import
+- Node identity (lab): `CertGenerator` (`env/certgen.env`) → listed node PEMs + HSM keys, client CA, and QuKayDee PKCS#12 import
+- Diagrams: trust anchors, truststores and pins in [`diagrams/trust_pki.drawio`](../diagrams/trust_pki.drawio); deployment design and install steps in [`diagrams/deployment.drawio`](../diagrams/deployment.drawio)
 
 ### Provider routing (`TlsProviders.install`)
 
@@ -43,31 +45,30 @@ then `installOrdered(...)` so `Security` order is this list, highest priority fi
 JSSE tries BC `initSign` first; an HSM private key fails with `InvalidKeyException`, then the
 alternate signs on the HSM. There is no software fallback for TLS identity keys.
 `SoftwareTls.TlsProfile` is a data-driven enum (protocols/named-groups/signature-schemes per
-constant), so adding or tuning a cipher profile means editing one enum constant, not a
-switch statement.
+constant), so adding or tuning a cipher profile means editing one enum constant.
 
 ## HSM / PQMI
 
 | File | Role |
 | --- | --- |
-| [`tls/SoftwareTls.java`](src/SaeNode/main/java/fel/cvut/tls/SoftwareTls.java) | Software TLS: profiles, PEM/PKCS#12, USB wrapServer |
-| [`tls/HsmNodeTls.java`](src/SaeNode/main/java/fel/cvut/tls/HsmNodeTls.java) | SAE HSM TLS factories |
-| [`tls/TlsProviders.java`](src/SaeNode/main/java/fel/cvut/tls/TlsProviders.java) | JCE/JSSE bootstrap, CryptoServer keystore import/load, PQMI ML-DSA shim |
-| [`tls/TlsStores.java`](src/SaeNode/main/java/fel/cvut/tls/TlsStores.java) | Trust/leaf PEM & PKCS#12 loading (public material) |
-| [`utimaco/Pqmi.java`](src/SaeNode/main/java/fel/cvut/utimaco/Pqmi.java) | HSM env + ephemeral CXI/PQMI ops (ML-DSA keygen/sign) |
-| [`utimaco/HsmGate.java`](src/SaeNode/main/java/fel/cvut/utimaco/HsmGate.java) | Serializes PQMI CXI and CryptoServer JCE access to one device |
-| [`certGen/CertGenerator.java`](src/CertGenerator/main/java/fel/cvut/certGen/CertGenerator.java) | Provision: PQC node certs + QuKayDee PKCS#12 → HSM |
+| [`tls/SoftwareTls.java`](modules/tls-software/src/main/java/fel/cvut/tls/SoftwareTls.java) | Software TLS: profiles, PEM/PKCS#12, USB wrapServer |
+| [`tls/HsmNodeTls.java`](modules/tls-hsm/src/main/java/fel/cvut/tls/HsmNodeTls.java) | SAE HSM TLS factories |
+| [`tls/TlsProviders.java`](modules/tls-hsm/src/main/java/fel/cvut/tls/TlsProviders.java) | JCE/JSSE bootstrap, CryptoServer keystore import/load, PQMI ML-DSA shim |
+| [`tls/TlsStores.java`](modules/tls-software/src/main/java/fel/cvut/tls/TlsStores.java) | Trust/leaf PEM & PKCS#12 loading (public material) |
+| [`utimaco/Pqmi.java`](modules/tls-hsm/src/main/java/fel/cvut/utimaco/Pqmi.java) | HSM env + ephemeral CXI/PQMI ops (ML-DSA keygen/sign) |
+| [`utimaco/HsmGate.java`](modules/tls-hsm/src/main/java/fel/cvut/utimaco/HsmGate.java) | Serializes PQMI CXI and CryptoServer JCE access to one device |
+| [`certGen/CertGenerator.java`](modules/cert-generator/src/main/java/fel/cvut/certGen/CertGenerator.java) | Provision: PQC node certs + QuKayDee PKCS#12 → HSM |
 
 `Node` owns a `Pqmi` config handle and `SSLContext`; `TlsProviders.install` keeps one logged-in CryptoServer JCE provider for the JVM. Both paths use `HsmGate` so CXI and JCE never overlap on the HSM.
 
 How to run a node (operator stdin + USB provision):
-[`src/SaeNode/README.md`](src/SaeNode/README.md).
+[`modules/sae-node/README.md`](modules/sae-node/README.md).
 
 How to run the USB OTP encrypt/decrypt console (no HSM):
-[`src/UserApp/README.md`](src/UserApp/README.md).
+[`modules/user-app/README.md`](modules/user-app/README.md).
 
 Shared CDC helpers:
-[`src/TerminalBridge/README.md`](src/TerminalBridge/README.md).
+[`modules/usb-cdc/README.md`](modules/usb-cdc/README.md).
 
 Node identity is `certs/{Node}.pem` plus the HSM key (`{HSM_MLDSA_GROUP}/{Node}`).
 
@@ -156,7 +157,7 @@ Skip the `LoadFile` line if the QP simulator already has PQ modules. Physical cH
 ### Provision (CertGenerator)
 
 Full description, run commands, and every env variable:
-[`src/CertGenerator/README.md`](src/CertGenerator/README.md).
+[`modules/cert-generator/README.md`](modules/cert-generator/README.md).
 
 With the simulator running:
 
@@ -169,17 +170,22 @@ mvn -pl :cert-generator -am exec:java
 
 From the repo root the same run is `scripts/java.sh certgen`.
 
+CertGenerator and its software CAs are for lab use only.
+
 No menu. Missing CAs, node HSM keys / PEMs, client bundles, and QuKayDee PKCS#12 aliases
 are created or imported; existing material is left alone.
 
-SAE root CA stays in `certs/ca/root-ca.p12` (software). Client CA stays in `certs/ca/client_ca.p12` (software) for the Java user bundle and for signing on-chip device CSRs. The device does **not** embed a client CA: ENCRYPT/DECRYPT pin the TLS peer to the enrolled owner key (UserApp cert). Enroll over USB `OWNER SET` (unsigned blob: reset password + owner SPKI + optional SAE CA). Device ML-DSA is generated on-chip; `CLIENT CSR` + MANAGE `INSERT SIGNED CSR` (cert only) install the leaf.
+SAE root CA lives in `certs/ca/root-ca.p12` (software). Client CA lives in `certs/ca/client_ca.p12` (software) for the Java user bundle and for signing on-chip device CSRs. The device does **not** embed a client CA: ENCRYPT/DECRYPT pin the TLS peer to the enrolled owner key (UserApp cert). Enroll over USB `OWNER SET` (unsigned blob: reset password + owner SPKI + optional SAE CA). Device ML-DSA is generated on-chip; `CLIENT CSR` + MANAGE `INSERT SIGNED CSR` (cert only) install the leaf.
 
 ### Node startup
 
 `env/hsm.env` (copy from `env/example/hsm.env.example`) holds the Utimaco connection
 (`HSM_DEVICE`, `HSM_USER`, `HSM_PIN`, `HSM_MLDSA_GROUP`) shared by every node process. Each
-node's own env file (`env/node-N.env`, from `env/example/.env.example`) sets `TLS_NODE_ID` to
-select its HSM key and leaf cert (`certs/{TLS_NODE_ID}.pem`). From the repo root:
+node's own env file (`env/node-N.env`, from `env/example/.env.example`) holds its site-local
+settings: `SAE_ID` and `SAE_NODES_FILE`, the SAE directory (`env/sae-nodes.json`) that every
+site holds an identical copy of. The node's entry there gives its name (HSM key and leaf cert
+`certs/{name}.pem`), advertised hostname and RMI port; `scripts/rmi-pins.py` fills the
+`spkiSha384` pins from `scripts/java.sh certgen` / `node`. From the repo root:
 
 ```bash
 scripts/java.sh node env/node-1.env
@@ -199,22 +205,26 @@ mvn -pl :sae-node -am exec:java
 After an HSM reinit, run `CertGenerator` before starting nodes — the node process does
 not create HSM keys automatically.
 
-Database setup and every node env variable: [`src/SaeNode/README.md`](src/SaeNode/README.md).
+Database setup and every node env variable: [`modules/sae-node/README.md`](modules/sae-node/README.md).
 
 ## Secrets
 
-Passwords and PINs are loaded with `EnvSecrets.envOrScan` (`fel.cvut.se`): env if set, otherwise a
-stdin prompt (masked when a console is attached). **In production, do not put these secrets in
-env files or process environment** — leave them unset and enter them at the prompt so they are
-not visible in shell history, process listings, or committed config.
+Passwords and PINs are loaded with `EnvSecrets.envOrScan` (`fel.cvut.se`): the first non-blank
+environment variable among the given names; for CertGenerator, then the same key in
+`env/certgen.env`; otherwise a masked prompt (`Console.readPassword`) on an interactive terminal.
+Without an interactive terminal the call fails with `IllegalStateException`; stdin is never read,
+so a secret cannot be piped in. **In production, do not put these secrets in env files or process
+environment** — leave them unset and enter them at the masked prompt so they are not visible in
+shell history, process listings, or committed config.
 
 | Secret | Used by |
 | --- | --- |
 | `HSM_PIN` | SaeNode, CertGenerator (via `Pqmi`) |
 | `PKCS12_PASSWORD` | CertGenerator (CA / QuKayDee PKCS#12) |
 | `QKD_TRUSTSTORE_PASSWORD` (or `QKD_KEYSTORE_PASSWORD`) | SaeNode, Qkd014Demo |
-| `USERAPP_OWNER_P12_PASSWORD` | UserApp |
-| `USERAPP_CLIENT_CA_P12_PASSWORD` | UserApp (INIT LAB) |
+| `USERAPP_OWNER_P12_PASSWORD` | UserApp, se-bench |
+| `USERAPP_CLIENT_CA_P12_PASSWORD` | UserApp (read at startup; used by INIT LAB), se-bench (`initlab`) |
+| `SEBENCH_PIN`, `SEBENCH_OWNER_PASSWORD`, `SEBENCH_SAE_P12_PASSWORD`, `SEBENCH_SAE_CA_P12_PASSWORD` | se-bench |
 
 Lab templates under `env/example/` may show example values for local simulator work only.
 

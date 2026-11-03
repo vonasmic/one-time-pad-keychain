@@ -9,6 +9,9 @@
 \usepackage[most]{tcolorbox}
 \usepackage{booktabs}
 \usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 
 % Palette (shared with testovani.tex)
 \definecolor{passgreen}{HTML}{1B5E20}
@@ -33,41 +36,27 @@
     colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt,
     left=8pt, right=8pt, top=6pt, bottom=6pt,
     before skip=4pt, after skip=4pt, breakable]
-  {\small\ttfamily\bfseries #1}\par
+  {\small\bfseries #1}\par
   \vspace{3pt}
   {\small\color{black!85} #2}
   \end{tcolorbox}%
 }
 
-% Per-iteration placeholder table (iterations 1..10)
-\newcommand{\iterrow}[1]{#1 & \placeholder \\}
-\newcommand{\itertable}[2]{%
-  \begin{table}[htbp]
-  \centering\small
-  \begin{tabular}{rl}
-  \toprule
-  Iteration & Duration [ms] \\
-  \midrule
-  \iterrow{1}\iterrow{2}\iterrow{3}\iterrow{4}\iterrow{5}%
-  \iterrow{6}\iterrow{7}\iterrow{8}\iterrow{9}\iterrow{10}%
-  \bottomrule
-  \end{tabular}
-  \caption{Per-iteration durations: #1 (warm-up excluded).}
-  \label{tab:iter-#2}
-  \end{table}%
-}
-
 \begin{document}
+\sloppy
 
 \chapter*{Foreword}
 
-This document describes the timing benchmark of the secure element (SE) of the one-time-pad keychain and the hardware of the three parties involved: the SE itself, the SAE node, and the USER machine. The benchmark measures the wall-clock latency, as seen by the Java host software over the USB CDC link, of four SE operations: the PQC mutual TLS handshake with the SE (wolfSSL on the device), the \texttt{INIT LAB} enrollment flow, writing one-time pads into the TROPIC01 R-MEM (\texttt{PROVISION} as the SAE), and a full \texttt{ENCRYPT} request/reply round trip. Only the SE results are reported here; every measured value is still a placeholder (\placeholder) to be filled in from the CSV output of the tool.
+This document reports the performance benchmark of the one-time-pad keychain. It covers the latency of the keychain operations as seen by the host over USB, the flash and RAM footprint of the keychain firmware, and the CPU and memory usage of the two host applications (SAE node and UserApp).
 
-\chapter{Hardware specification}
+All keychain latencies come from one complete benchmark run against the real keychain (\texttt{JAVA\_APPS/bench-results/20261022-173859.csv}). The host resource usage comes from a lab run with simulated keychains (\texttt{JAVA\_APPS/bench-results/resources-sim-20261022-170130/}). The firmware footprint comes from the linker scripts and the built ELF images of the firmware project. All times are given in seconds; the raw CSV files store milliseconds.
 
-Values that are not certain from the project sources are marked \placeholder\ or \todo{hint} and must be filled in from the actual test bench.
+Values that have not been measured are marked \placeholder\ or \todo{hint}.
 
-\section{SE -- secure element (keychain)}
+%% ===================================================================
+\chapter{Test setup}
+
+\section{Keychain hardware and firmware}
 
 \begin{table}[htbp]
 \centering\small
@@ -75,24 +64,24 @@ Values that are not certain from the project sources are marked \placeholder\ or
 \toprule
 Parameter & Value \\
 \midrule
-MCU & STMicroelectronics STM32U535CCT6 (LQFP48), Arm TrustZone (secure / non-secure firmware) \\
-CPU / architecture & Arm Cortex-M33 (Armv8-M Mainline) \\
-Clock & \todo{SYSCLK in benchmarked build; \texttt{SE\_firmware.ioc} sets 48\,MHz} \\
-Cores & 1 \\
-RAM & \placeholder \\
-Flash & \placeholder \\
-Secure storage / crypto & Tropic Square TROPIC01 secure element (R-MEM for pads, ECC keys), accessed via \texttt{libtropic}; MCU accelerators used: \todo{e.g. HASH/RNG/PKA} \\
-Firmware & \todo{firmware version / commit}, wolfSSL (PQC TLS), libtropic \todo{version} \\
-Toolchain & \todo{arm-none-eabi-gcc version, optimisation level} \\
-Connection / interface & USB CDC (virtual serial port, \todo{device path, e.g. \texttt{/dev/ttyACM0}}) \\
-Variant used in this run & \todo{host-simulated SE (\texttt{se\_host} + TROPIC01 model) or real device} \\
+MCU & STMicroelectronics STM32U535CCT6 (LQFP48), Arm TrustZone with a secure and a non-secure firmware image \\
+CPU / architecture & Arm Cortex-M33 (Armv8-M Mainline), 1 core \\
+Clock & 48\,MHz SYSCLK (MSI) \\
+Flash & 256\,KiB (secure 192\,KiB incl.\ two 8\,KiB data pages and one 8\,KiB veneer page, non-secure 64\,KiB); usage in Chapter~\ref{ch:fw-res} \\
+RAM & 272\,KiB SRAM mapped by the linker scripts (secure 224\,KiB, non-secure 32\,KiB, SRAM4 16\,KiB); usage in Chapter~\ref{ch:fw-res} \\
+Secure element & Tropic Square TROPIC01 (one-time pads in R-MEM, ECC keys), accessed via libtropic v4.1.0; MCU accelerators used: \todo{e.g. HASH/RNG/PKA} \\
+TLS & wolfSSL 5.9.4, TLS~1.3 client on the device (TLS13-AES256-GCM-SHA384), post-quantum mutual authentication \\
+Firmware build & firmware repository commit \texttt{35f1152} (22 Oct 2026); Release configuration, \texttt{-Os} \todo{confirm that the flashed image is this build} \\
+Toolchain & GNU Tools for STM32 14.3.rel1 (arm-none-eabi-gcc 14.3.1), STM32CubeIDE 1.19.0 \\
+Host interface & USB full-speed CDC ACM (virtual serial port \texttt{/dev/ttyACM0}), 64\,B bulk packets with automatic zero-length packets \\
+One-time pads & 507 pads in TROPIC01 R-MEM, 415\,B of plaintext per pad; 253 pads in the decrypt half, 254 in the encrypt half \\
 \bottomrule
 \end{tabular}
-\caption{SE hardware.}
+\caption{Keychain hardware and firmware.}
 \label{tab:hw-se}
 \end{table}
 
-\section{SAE -- node machine (sae-node + HSM)}
+\section{Host machine}
 
 \begin{table}[htbp]
 \centering\small
@@ -100,165 +89,418 @@ Variant used in this run & \todo{host-simulated SE (\texttt{se\_host} + TROPIC01
 \toprule
 Parameter & Value \\
 \midrule
-CPU / architecture & \placeholder \\
-Clock & \placeholder \\
-Cores / threads & \placeholder \\
-RAM & \placeholder \\
-Storage & \placeholder \\
-HSM / crypto & Utimaco HSM \todo{simulator or hardware, model, firmware} \\
-OS & \placeholder \\
-Java / toolchain & \todo{JDK version, Maven version} \\
-Connection / interface & \todo{USB CDC to SE, network to peer SAE nodes} \\
+CPU / architecture & AMD Ryzen AI 7 350 w/ Radeon 860M, x86-64 \\
+Cores / threads & 8 cores, 16 threads \\
+RAM & 15\,631\,MiB visible to WSL2 \\
+OS & Ubuntu 24.04.1 LTS on WSL2, kernel 6.18.33.2-microsoft-standard-WSL2 \\
+Java / toolchain & OpenJDK 21.0.12.1, Apache Maven 3.8.7 \\
+HSM (SAE) & Utimaco HSM simulator (CryptoServer simulator, Quantum Protect PQMI firmware) \\
+QKD (SAE) & QuKayDee ETSI GS QKD 014 KME (remote, mTLS) \\
 \bottomrule
 \end{tabular}
-\caption{SAE node hardware.}
-\label{tab:hw-sae}
+\caption{Host machine for the benchmark tool, the SAE nodes and the UserApps.}
+\label{tab:hw-host}
 \end{table}
 
-\section{USER -- machine running user-app}
-
-\begin{table}[htbp]
-\centering\small
-\begin{tabular}{p{0.32\textwidth}p{0.6\textwidth}}
-\toprule
-Parameter & Value \\
-\midrule
-CPU / architecture & \placeholder \\
-Clock & \placeholder \\
-Cores / threads & \placeholder \\
-RAM & \placeholder \\
-Storage & \placeholder \\
-Secure storage / crypto & \placeholder \\
-OS & \placeholder \\
-Java / toolchain & \todo{JDK version, Maven version} \\
-Connection / interface & \todo{USB CDC to SE, port} \\
-\bottomrule
-\end{tabular}
-\caption{USER machine hardware.}
-\label{tab:hw-user}
-\end{table}
-
-\chapter{Methodology (SE)}
-
-\section{Tool}
-
-The benchmark tool is the Maven module \texttt{JAVA\_APPS/modules/se-bench}, main class \texttt{fel.cvut.userapp.SeBench}. It is a small CLI that reuses the existing host code instead of re-implementing the protocols. It sits in the \texttt{fel.cvut.userapp} package only so that it can call the package-private \texttt{ChipService}, \texttt{OwnerAuth} and \texttt{ChipInit} classes; their code is not changed. The tool works against the host-simulated SE (\texttt{se\_host} with the TROPIC01 \texttt{model\_server}) as well as against a real keychain. Used in this run: \todo{simulator / real device}.
-
-\section{Benchmarks}
-
-\benchcard{handshake -- wolfSSL TLS handshake}{Arms \texttt{ENCRYPT <unix>} and performs the PQC mutual TLS handshake with the SE (wolfSSL on the device) via \texttt{SeUsbLink.open} and \texttt{SeUsbTls.run(usb, ctx, "ENCRYPT", true, io)}, with the owner context from \texttt{SoftwareTls.createContextFromPkcs12/Pem} (as in user-app). The session is closed before any request is sent, so no pad is consumed.}
-
-\benchcard{initlab -- INIT LAB flow}{The \texttt{INIT LAB} enrollment without console prompts: \texttt{ChipInit.enroll(new OwnerAuth(usb, ctx), ChipInit.FILE\_CERTS, Profile.LAB, EnrollRequest)}. Steps: preflight, OWNER SET, ECC KEYGEN, KEM INIT with PIN, CLIENT CSR, local CSR signing by the client CA, INSERT SIGNED CSR (the signed certificate is written into the chip).}
-
-\benchcard{padwrite -- Tropic pad write}{The SAE side of a \texttt{PROVISION} session: TLS with exporter binding (\texttt{SeSessionBinding.HandshakeExporter} / \texttt{wrapTrustManagers}), verified uplink (\texttt{SeSessionUplink.readAndVerify}), ML-KEM sealing of random pads (\texttt{SeKemFill.buildDownlink}), wait for \texttt{TROPIC\_WIPE\_FINISHED}, write of the downlink into the TROPIC01 R-MEM and final \texttt{SE\_OK} (\texttt{SeProvisionAck.awaitWipeFinished/writeTracking/read}). Same sequence as \texttt{Node.oneProvisionSession}; 64 pads per iteration (\texttt{--pads 64}).}
-
-\benchcard{encrypt -- ENCRYPT/REPLY}{Full \texttt{ENCRYPT} round trip through \texttt{ChipService.encrypt(pin, message)} (the user-app \texttt{ENCRYPT} command): TLS session, PIN and plaintext request, encrypted reply. Consumes one pad per iteration, warm-up included.}
-
-\section{Iterations and statistics}
-
-Each benchmark runs 10 measured iterations (default) preceded by 1 warm-up iteration (\texttt{--warmup}, default 1); warm-up times are printed but not counted. For each benchmark the tool reports $n$, minimum, maximum, mean, median and sample standard deviation in milliseconds, and writes a CSV file \texttt{<out>/<yyyyMMdd-HHmmss>.csv} with per-iteration rows plus a summary block. \texttt{--timeout-sec} (default 120) marks a hung iteration as failed, closes the link and continues.
-
-\section{How the benchmark is run}
-
-Build and help:
-
-\begin{tcolorbox}[colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt, breakable]
-\footnotesize
-\begin{verbatim}
-cd JAVA_APPS
-mvn -B -q -pl modules/se-bench -am install -DskipTests
-mvn -B -q -pl modules/se-bench exec:java -Dexec.args="--help"
-\end{verbatim}
-\end{tcolorbox}
-
-Non-destructive run against the host simulator (the procedure used for the results):
-
-\begin{tcolorbox}[colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt, breakable]
-\footnotesize
-\begin{verbatim}
-cd JAVA_APPS
-modules/se-bench/sim.sh start
-rm -rf /tmp/se-bench-certs && cp -r certs /tmp/se-bench-certs
-set -a; source env/userapp-1.env; source env/certgen.env; set +a
-export USB_SERIAL_PORT=/tmp/ttyACM-bench PQC_CERTS_DIR=/tmp/se-bench-certs
-export SEBENCH_PIN=12345678 SEBENCH_OWNER_PASSWORD=benchowner1 \
-  SEBENCH_SAE_CA_P12_PASSWORD="$PKCS12_PASSWORD"
-# 1) INIT LAB, fresh simulated chip before every iteration
-mvn -B -q -pl modules/se-bench exec:java -Dexec.args="--bench initlab --yes-destructive \
-  --out modules/se-bench/bench-results --reset-cmd '$PWD/modules/se-bench/sim.sh restart'"
-# 2) pad write, handshake, encrypt on the chip enrolled by the last INIT LAB iteration
-mvn -B -q -pl modules/se-bench exec:java -Dexec.args="--bench padwrite,handshake,encrypt --pads 64 \
-  --yes-destructive --out modules/se-bench/bench-results \
-  --sae-ca-p12 /tmp/se-bench-certs/ca/root-ca.p12"
-modules/se-bench/sim.sh stop
-\end{verbatim}
-\end{tcolorbox}
-
-On a real device only the non-destructive subset is run:
-
-\begin{tcolorbox}[colback=cardbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt, breakable]
-\footnotesize
-\begin{verbatim}
-mvn -B -q -pl modules/se-bench exec:java \
-  -Dexec.args="--bench handshake,encrypt --port /dev/ttyACM0"
-\end{verbatim}
-\end{tcolorbox}
-
-\section{Non-destructiveness}
+\section{Lab topology}
+\label{sec:topology}
 
 \begin{itemize}
-\item \texttt{sim.sh} starts a \emph{private} TROPIC01 \texttt{model\_server} on port 28997 and \texttt{se\_host} on the PTY \texttt{/tmp/ttyACM-bench}; it never touches the lab simulators (ports 28992/28993, \texttt{/tmp/ttyACM-se1/se2}) or any USB device.
-\item The model and the host NV state live in RAM only, so every \texttt{sim.sh restart} yields a brand-new chip. \texttt{initlab} uses \texttt{--reset-cmd} to restart the simulator before each iteration, because INIT LAB refuses an already provisioned chip.
-\item The benchmarks run against a \emph{copy} of the certificate directory (\texttt{/tmp/se-bench-certs}), so INIT LAB cannot overwrite the lab device certificate (\texttt{client/client-cert.pem}, \texttt{client-csr.hex}).
-\item The destructive benchmarks \texttt{padwrite} and \texttt{initlab} run only with the explicit opt-in \texttt{--yes-destructive}; otherwise they are skipped. With \texttt{--sae-ca-p12} the SAE leaf certificate is ephemeral and in-memory only.
+\item \textbf{Keychain benchmark:} one real keychain is connected over USB to the host. The benchmark tool runs on the host inside WSL2 and acts as the UserApp (owner operations, encrypt) and as the SAE (provisioning). The SAE identity is an ephemeral certificate signed by the SAE root CA; no HSM or QKD is involved in the keychain latency figures.
+\item \textbf{Host resource measurement:} two simulated keychains (TROPIC01 model with the host build of the firmware, connected through pseudo-terminals), two SAE nodes with the Utimaco HSM simulator (on the Windows side of the same machine, reached over the WSL virtual network) and the remote QuKayDee KME, and two UserApps, one per keychain. All Java applications run on the same host.
 \end{itemize}
 
-\chapter{Results (SE)}
+%% ===================================================================
+\chapter{Methodology}
 
-Environment of this run: \todo{simulator / real device}, date \placeholder, CSV file \todo{\texttt{bench-results/<timestamp>.csv}}.
+\section{Measured operations}
+
+\benchcard{INIT LAB (enrollment)}{Complete enrollment of a reset keychain for the lab profile, as done by the UserApp without user prompts: owner set, ECC key generation in the TROPIC01, PIN setup, device CSR, signing of the CSR by the client CA on the host and storing the signed certificate on the device.}
+
+\benchcard{OWNER REPLACE (reset)}{Owner reset before every enrollment: wipes the pads, the PIN data, the device key and certificate, the SAE CA and the peers, and keeps the owner. Timed separately from INIT LAB.}
+
+\benchcard{PROVISION (full pad fill)}{The SAE side of a provisioning session: mutual TLS handshake in provisioning mode, verified uplink from the device, ML-KEM sealed downlink of random pads, TROPIC01 wipe and write of all 507 pads into R-MEM, final acknowledgement.}
+
+\benchcard{Handshake (ENCRYPT session)}{Arming of an encrypt session and the PQC mutual TLS~1.3 handshake with the device. The session is closed before any request, so no pad and no PIN try is used.}
+
+\benchcard{Encrypt/decrypt round trip}{One complete UserApp encrypt request: arming, TLS handshake, PIN and plaintext request, reply with one record per pad. The plaintext is 9216\,B (9\,KiB) of printable ASCII, which uses $\lceil 9216/415 \rceil = 23$ pads. Decrypt runs the same path on the device (same session type, framing and per-pad XOR), so this figure stands for both directions.}
+
+\section{Procedure and statistics}
+
+\begin{itemize}
+\item The operations run in the order INIT LAB (with OWNER REPLACE) $\rightarrow$ PROVISION $\rightarrow$ handshake $\rightarrow$ encrypt/decrypt, on the same keychain, in one run.
+\item Each operation runs 1 warm-up iteration followed by $n = 10$ measured iterations. Warm-up iterations are not counted.
+\item The latency is the wall-clock time measured by the host from the first request byte to the final reply, including USB transfer and host processing.
+\item Reported statistics: minimum, maximum, mean, median, sample standard deviation and the coefficient of variation (CV = stddev/mean). A 95th percentile is not reported: with $n = 10$ it equals the maximum.
+\item Per-iteration timeouts: 120\,s (600\,s for PROVISION). A failed iteration is counted and stops the run for the pad-consuming operations; the reported run has no failed iteration.
+\item The encrypt stage reuses one serial link for the warm-up and all iterations, like the UserApp. Its 11 requests use 253 of the 254 encrypt-half pads written by the preceding PROVISION.
+\end{itemize}
+
+\section{Host resource measurement}
+
+\begin{itemize}
+\item CPU, RSS, peak RSS (VmHWM) and JVM heap of each Java process are sampled every 1\,s. CPU is given in \% of \emph{one} core of the 16-thread host and covers only the Java process (simulators, HSM and KME are excluded).
+\item Each JVM additionally records Java Flight Recorder data; the heap used after GC is taken from it.
+\item The applications run inside the Maven JVM, so RSS and heap include Maven.
+\item Phases are cut from the sample series by timestamps logged by the driver. Phases with operations include short pauses, so the mean CPU is lower than during a single operation; the maximum is the busiest 1\,s sample.
+\end{itemize}
+
+%% ===================================================================
+\chapter{Results: keychain latency}
+
+Run \texttt{20261022-173859.csv}, 22 October 2026, real keychain, 1 warm-up + 10 iterations per operation, full pad fill, 9216\,B message. All five operations complete with 0 failed iterations.
 
 \section{Summary}
 
 \begin{table}[htbp]
 \centering\small
-\begin{tabular}{lrrrrrr}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrr}
 \toprule
-Benchmark & $n$ & min [ms] & max [ms] & mean [ms] & median [ms] & stddev [ms] \\
+Operation & $n$ & failed & min [s] & max [s] & mean [s] & median [s] & stddev [s] & CV [\%] \\
 \midrule
-\texttt{handshake} & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
-\texttt{initlab}   & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
-\texttt{padwrite}  & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
-\texttt{encrypt}   & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder & \placeholder \\
+INIT LAB                          & 10 & 0 &  22.43 &  22.68 &  22.59 &  22.59 & 0.07 & 0.30 \\
+OWNER REPLACE                     & 10 & 0 &  35.25 &  35.45 &  35.38 &  35.39 & 0.05 & 0.14 \\
+PROVISION (507 pads)              & 10 & 0 & 184.64 & 186.02 & 185.18 & 185.05 & 0.47 & 0.25 \\
+Handshake (ENCRYPT session)       & 10 & 0 &   4.10 &   5.46 &   4.29 &   4.14 & 0.42 & 9.71 \\
+Encrypt/decrypt (9216\,B, 23 pads) & 10 & 0 &  23.58 &  25.02 &  24.03 &  23.90 & 0.42 & 1.73 \\
 \bottomrule
-\end{tabular}
-\caption{SE benchmark summary (warm-up excluded, sample stddev).}
+\end{tabular}}
+\caption{Keychain operation latency, real keychain (warm-up excluded, sample stddev). Source: summary block of \texttt{20261022-173859.csv}, converted from ms; CV computed from it.}
 \label{tab:summary}
 \end{table}
 
-\section{Per-iteration durations}
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  xbar, width=0.85\textwidth, height=6cm,
+  xmin=0, xmax=215,
+  xlabel={mean latency [s]},
+  symbolic y coords={Handshake,Encrypt/decrypt,INIT LAB,OWNER REPLACE,PROVISION},
+  ytick=data, y tick label style={font=\small},
+  bar width=9pt, enlarge y limits=0.15,
+  nodes near coords, nodes near coords align={horizontal},
+  every node near coord/.append style={font=\footnotesize, xshift=6pt},
+  point meta=explicit symbolic,
+]
+% Means and sample stddev from 20261022-173859.csv (ms / 1000)
+\addplot+[error bars/.cd, x dir=both, x explicit] coordinates {
+  (4.288,Handshake) +- (0.416,0) [4.29]
+  (24.030,Encrypt/decrypt) +- (0.416,0) [24.03]
+  (22.587,INIT LAB) +- (0.068,0) [22.59]
+  (35.379,OWNER REPLACE) +- (0.050,0) [35.38]
+  (185.179,PROVISION) +- (0.470,0) [185.18]
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Mean latency per operation with $\pm 1$ sample stddev (real keychain, $n = 10$). Source: \texttt{20261022-173859.csv}.}
+\label{fig:means}
+\end{figure}
 
-\itertable{\texttt{handshake}}{handshake}
-\itertable{\texttt{initlab}}{initlab}
-\itertable{\texttt{padwrite} (64 pads)}{padwrite}
-\itertable{\texttt{encrypt}}{encrypt}
+\section{Per-iteration latency}
 
-\section{Chart}
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{rrrrrr}
+\toprule
+Iteration & INIT LAB & OWNER REPLACE & PROVISION & Handshake & Encrypt/decrypt \\
+\midrule
+1  & 22.68 & 35.36 & 185.21 & 4.31 & 23.58 \\
+2  & 22.57 & 35.25 & 184.64 & 5.46 & 23.94 \\
+3  & 22.56 & 35.38 & 185.02 & 4.10 & 25.02 \\
+4  & 22.62 & 35.40 & 186.02 & 4.10 & 24.02 \\
+5  & 22.62 & 35.39 & 185.03 & 4.10 & 24.29 \\
+6  & 22.65 & 35.40 & 185.97 & 4.12 & 23.86 \\
+7  & 22.62 & 35.37 & 185.16 & 4.13 & 23.84 \\
+8  & 22.43 & 35.40 & 185.07 & 4.14 & 24.27 \\
+9  & 22.56 & 35.40 & 185.01 & 4.23 & 23.72 \\
+10 & 22.56 & 35.45 & 184.65 & 4.19 & 23.76 \\
+\bottomrule
+\end{tabular}
+\caption{Per-iteration latency in s (warm-up excluded). Source: per-iteration rows of \texttt{20261022-173859.csv}, converted from ms.}
+\label{tab:iter}
+\end{table}
 
 \begin{figure}[htbp]
 \centering
-\begin{tcolorbox}[width=0.8\textwidth, height=5cm, valign=center, halign=center,
-  colback=tbdbg, colframe=cardborder, boxrule=0.5pt, arc=2.5pt]
-\color{tbdfg}\textbf{--- TBD ---}\\[2pt]\small Bar chart: mean (with min/max) per benchmark
-\end{tcolorbox}
-\caption{Mean latency per SE benchmark (placeholder).}
-\label{fig:chart}
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.9\textwidth, height=6.5cm,
+  xlabel={iteration}, ylabel={deviation from the median [\%]},
+  xmin=0.5, xmax=10.5, xtick={1,...,10},
+  ymin=-5, ymax=35, grid=major,
+  legend pos=north east, legend style={font=\footnotesize},
+]
+% (latency - median) / median * 100, from 20261022-173859.csv
+\addplot+[mark=*] coordinates {(1,0.37)(2,-0.11)(3,-0.14)(4,0.11)(5,0.11)(6,0.27)(7,0.14)(8,-0.71)(9,-0.15)(10,-0.12)};
+\addlegendentry{INIT LAB}
+\addplot+[mark=square*] coordinates {(1,-0.08)(2,-0.40)(3,-0.03)(4,0.01)(5,-0.01)(6,0.01)(7,-0.06)(8,0.02)(9,0.02)(10,0.16)};
+\addlegendentry{OWNER REPLACE}
+\addplot+[mark=triangle*] coordinates {(1,0.09)(2,-0.22)(3,-0.02)(4,0.52)(5,-0.01)(6,0.50)(7,0.06)(8,0.01)(9,-0.02)(10,-0.21)};
+\addlegendentry{PROVISION}
+\addplot+[mark=diamond*] coordinates {(1,4.30)(2,31.96)(3,-0.83)(4,-0.91)(5,-0.77)(6,-0.34)(7,-0.06)(8,0.06)(9,2.18)(10,1.30)};
+\addlegendentry{Handshake}
+\addplot+[mark=pentagon*] coordinates {(1,-1.31)(2,0.16)(3,4.71)(4,0.49)(5,1.65)(6,-0.16)(7,-0.26)(8,1.55)(9,-0.74)(10,-0.56)};
+\addlegendentry{Encrypt/decrypt}
+\end{axis}
+\end{tikzpicture}
+\caption{Run-to-run variation: deviation of each iteration from the median of its operation. Source: \texttt{20261022-173859.csv}.}
+\label{fig:iter}
 \end{figure}
 
-\chapter{Discussion and conclusion}
+\section{Derived values}
 
-\todo{Interpretation of the results: dominant cost (TLS handshake vs.\ TROPIC01 R-MEM writes), variance, simulator vs.\ real device.}
+The following values are computed from the means in Table~\ref{tab:summary}; they are not measured separately.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{p{0.62\textwidth}r}
+\toprule
+Derived value & Value \\
+\midrule
+PROVISION mean / 507 pads (handshake, wipe and writes included) & 0.365\,s per pad \\
+PROVISION pad plaintext ($507 \times 415$\,B = 210\,405\,B) / mean & 1\,136\,B/s \\
+Encrypt/decrypt mean / 23 pads (handshake included) & 1.045\,s per pad \\
+(Encrypt/decrypt mean $-$ handshake mean) / 23 pads & 0.858\,s per pad \\
+9216\,B / encrypt/decrypt mean & 384\,B/s \\
+Handshake share of the encrypt/decrypt mean & 17.8\,\% \\
+OWNER REPLACE mean + INIT LAB mean (reset and new enrollment) & 57.97\,s \\
+\bottomrule
+\end{tabular}
+\caption{Values derived from Table~\ref{tab:summary}.}
+\label{tab:derived}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  xbar stacked, width=0.85\textwidth, height=3.6cm,
+  xmin=0, xmax=26, xlabel={mean latency [s]},
+  symbolic y coords={Encrypt/decrypt 9216\,B},
+  ytick=data, bar width=14pt, enlarge y limits=0.6,
+  legend style={at={(0.5,-0.55)}, anchor=north, legend columns=2, font=\footnotesize},
+]
+\addplot coordinates {(4.29,Encrypt/decrypt 9216\,B)};
+\addlegendentry{TLS handshake (measured separately)}
+\addplot coordinates {(19.74,Encrypt/decrypt 9216\,B)};
+\addlegendentry{request and 23 pad records (derived)}
+\end{axis}
+\end{tikzpicture}
+\caption{Split of the encrypt/decrypt mean (24.03\,s) into the handshake mean and the remainder.}
+\label{fig:split}
+\end{figure}
+
+\section{Handshake in PROVISION and in ENCRYPT sessions}
+
+The handshake of an ENCRYPT session takes 4.29\,s on average (median 4.14\,s). The handshake of a PROVISION session takes about 10.9\,s on the same keychain (observed on the device; the CSV records only the whole PROVISION iteration, \todo{isolated PROVISION handshake measurement}). In PROVISION mode the device verifies the SAE certificate chain against the stored SAE CA, which adds post-quantum signature verification on the 48\,MHz Cortex-M33; in ENCRYPT and DECRYPT mode the peer certificate is accepted without that chain verification.
+
+%% ===================================================================
+\chapter{Results: firmware flash and RAM usage}
+\label{ch:fw-res}
+
+The figures are static sizes of the Release images of the secure and the non-secure firmware (built 22 Oct 2026, 14:30), read with \texttt{arm-none-eabi-size} (GNU binutils 2.42). The region sizes come from the linker scripts of both images. The Debug build of the secure image has identical section sizes.
+
+\section{Flash}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+Region & size [KiB] & used [B] & used [\%] \\
+\midrule
+Secure code (code, read-only data, initialised data) & 168 & 164\,335 & 95.5 \\
+Secure veneers (non-secure callable) & 8 & 1\,744 & 21.3 \\
+Secure data pages (credentials, NV record) & 16 & runtime data & -- \\
+Non-secure application & 64 & 25\,744 & 39.3 \\
+\midrule
+Firmware images (secure + non-secure) & 256 & 191\,823 & 73.2 \\
+Firmware images + reserved data pages & 256 & 208\,207 & 79.4 \\
+\bottomrule
+\end{tabular}
+\caption{Flash usage. Used = \texttt{text} + \texttt{data} (load image) per region; 1\,KiB = 1024\,B.}
+\label{tab:flash}
+\end{table}
+
+\section{RAM}
+
+\begin{table}[htbp]
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Region & size [KiB] & data + bss [B] & [\%] & + heap/stack [B] & [\%] \\
+\midrule
+Secure RAM (SRAM1 + low half of SRAM2) & 224 & 176\,384 & 76.9 & 185\,096 & 80.7 \\
+Secure SRAM4 & 16 & 16\,272 & 99.3 & 16\,272 & 99.3 \\
+Non-secure RAM (high half of SRAM2) & 32 & 23\,280 & 71.0 & 24\,816 & 75.7 \\
+\midrule
+Total SRAM & 272 & 215\,936 & 77.5 & 226\,180 & 81.2 \\
+\bottomrule
+\end{tabular}}
+\caption{Static RAM usage. Reserved heap/stack per linker script: secure 0.5\,KiB heap + 8\,KiB stack, non-secure 0.5\,KiB heap + 1\,KiB stack.}
+\label{tab:ram}
+\end{table}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lr}
+\toprule
+Quantity & Value \\
+\midrule
+Total SRAM mapped by the linker scripts & 272\,KiB \\
+Static RAM (data + bss, all regions) & 210.9\,KiB \\
+\quad of which the secure dynamic memory pool & 108\,KiB \\
+Static RAM incl.\ reserved heap and stack & 220.9\,KiB \\
+Measured runtime peak during the keychain benchmark & 68\,KB \todo{measurement method} \\
+\bottomrule
+\end{tabular}
+\caption{Static versus measured runtime RAM.}
+\label{tab:ram-peak}
+\end{table}
+
+Most of the secure RAM is a statically reserved 108\,KiB memory pool from which the TLS and post-quantum operations allocate at run time, plus the USB transmit and receive buffers and the cryptographic contexts. The static figure therefore includes the full pool, while the measured peak of 68\,KB shows how much RAM the operations actually use at the busiest point of the keychain benchmark. Secure flash for code is the tightest resource (95.5\,\% of its 168\,KiB region); the non-secure image uses 39\,\% of its region.
+
+%% ===================================================================
+\chapter{Results: host resource usage}
+
+The measurement runs on the host from Table~\ref{tab:hw-host} with simulated keychains (Section~\ref{sec:topology}). The sequence is:
+
+\begin{enumerate}
+\item UserApps: idle at the menu, INIT LAB on both fresh simulated keychains, PEER CARD / PEER ADD in both directions;
+\item SAE nodes: startup, idle at the operator prompt, PROVISION of keychain 1 by node 1 (new keys generated, QKD key fetch, 237\,KB downlink), then keychain 2 by node 2 (stored keys), both ending with ``Share successful.'';
+\item UserApps: encrypt on keychain 1 and decrypt on keychain 2 of 32, 1024, 4096 and 9216\,B messages, three times each, with every decrypted plaintext equal to the original.
+\end{enumerate}
+
+The simulated keychain uses 446\,B of plaintext per pad, so a 9216\,B message uses 21 pads there. RSS mostly shows what the JVM reserved and touched (committed heap 248\,MiB, metaspace, code cache, thread stacks and Maven); the memory the application needs is the JFR heap used after GC.
+
+\section{SAE node}
+
+\begin{table}[htbp]
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrr}
+\toprule
+Node & Phase & \multicolumn{2}{c}{CPU [\% of 1 core]} & \multicolumn{2}{c}{RSS [MiB]} & VmHWM & heap \\
+ & & mean & max & mean & max & [MiB] & max [MiB] \\
+\midrule
+1 & startup (Maven, HSM, RMI, USB TLS) & 294.0 & 375.2 & 199.3 & 257.2 & 257.2 & 32.5 \\
+1 & idle at the operator prompt & 0.8 & 2.5 & 289.9 & 291.8 & 292.6 & 45.2 \\
+1 & PROVISION (new keys, QKD, downlink) & 6.0 & 59.0 & 307.8 & 311.1 & 311.1 & 69.2 \\
+1 & RMI peer during node 2 PROVISION & 1.7 & 13.6 & 311.5 & 311.6 & 311.6 & 34.9 \\
+1 & idle after & 0.6 & 1.6 & 311.4 & 311.4 & 311.4 & 34.9 \\
+\midrule
+2 & startup (Maven, HSM, RMI, USB TLS) & 278.3 & 360.2 & 209.0 & 275.3 & 275.3 & 46.0 \\
+2 & idle at the operator prompt & 1.0 & 1.7 & 298.1 & 298.2 & 298.2 & 38.0 \\
+2 & RMI peer during node 1 PROVISION & 3.9 & 37.0 & 313.6 & 322.8 & 322.8 & 60.0 \\
+2 & PROVISION (stored keys, downlink) & 8.4 & 93.6 & 327.6 & 328.0 & 328.0 & 60.0 \\
+2 & idle after & 0.9 & 1.7 & 327.8 & 327.8 & 327.8 & 37.2 \\
+\bottomrule
+\end{tabular}}
+\caption{SAE node per phase (1\,s samples; heap from \texttt{jstat}). Source: \texttt{resources-summary.csv}, \texttt{node1-procmon.csv}, \texttt{node2-procmon.csv}. Node 1 idle: the 12.6\,min wait at the operator prompt before the key generation is confirmed.}
+\label{tab:res-sae}
+\end{table}
+
+\section{UserApp}
+
+Encrypt and decrypt are one phase per message size. Where two values are given (``a--b''), they are the lower and the upper value of the encrypt run (UserApp of keychain 1) and the decrypt run (UserApp of keychain 2), three operations each.
+
+\begin{table}[htbp]
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Phase & \multicolumn{2}{c}{CPU [\% of 1 core]} & \multicolumn{2}{c}{RSS [MiB]} & VmHWM & heap \\
+ & mean & max & mean & max & [MiB] & max [MiB] \\
+\midrule
+idle at the menu & 0.8 & 1.6--1.7 & 205.8--214.9 & 205.9--215.0 & 260.7--273.4 & 46.2--48.4 \\
+INIT LAB & 6.1--8.5 & 20.3--29.7 & 201.0--221.8 & 207.7--229.4 & 249.4--275.2 & 53.6 \\
+PEER CARD/ADD/LIST & 1.6--1.7 & 5.0--6.7 & 210.4--230.2 & 210.9--230.9 & 249.4--275.2 & 55.6 \\
+encrypt/decrypt 32\,B & 5.1--5.2 & 24.0--24.1 & 213.4--228.9 & 216.8--231.4 & 260.7--273.4 & 56.4--58.2 \\
+encrypt/decrypt 1024\,B & 1.9--3.1 & 5.8--6.0 & 220.0--233.3 & 222.7--235.1 & 260.7--273.4 & 60.2--62.4 \\
+encrypt/decrypt 4096\,B & 1.9--7.6 & 5.0--30.5 & 250.4--253.4 & 250.5--266.6 & 260.7--287.0 & 24.8--61.8 \\
+encrypt/decrypt 9216\,B & 1.9--2.5 & 4.2--5.1 & 250.7--275.3 & 250.8--279.1 & 260.7--287.0 & 28.8--63.8 \\
+\bottomrule
+\end{tabular}}
+\caption{UserApp per phase (1\,s samples; heap from \texttt{jstat}). Source: \texttt{resources-summary.csv} and the \texttt{ua*-procmon.csv} files.}
+\label{tab:res-user}
+\end{table}
+
+\section{Heap used after GC}
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{lrrrrr}
+\toprule
+JVM (recording) & duration [s] & GCs & \multicolumn{2}{c}{heap after GC [MiB]} & RSS max [MiB] \\
+ & & & mean & max & \\
+\midrule
+SAE node 1 & 957 & 10 & 20.0 & 28.9 & 311.6 \\
+SAE node 2 & 981 & 10 & 20.6 & 29.2 & 328.0 \\
+UserApp 1, INIT LAB + PEER & 103 & 4 & 15.5 & 17.8 & 211.0 \\
+UserApp 2, INIT LAB + PEER & 104 & 4 & 15.1 & 17.6 & 274.7 \\
+UserApp 1, encrypt 32/1024/4096\,B & 880 & 4 & 18.6 & 23.8 & 245.3 \\
+UserApp 1, encrypt 4096/9216\,B & 159 & 5 & 16.6 & 22.3 & 279.2 \\
+UserApp 2, decrypt 32--9216\,B & 1045 & 5 & 16.7 & 20.8 & 250.8 \\
+\bottomrule
+\end{tabular}
+\caption{JFR heap after GC and resident set size per recording. Source: \texttt{jfr-summary-<name>.txt}.}
+\label{tab:res-jfr}
+\end{table}
+
+The applications need about 20--29\,MiB of live heap (SAE node) and 15--24\,MiB (UserApp); the process footprint including the Maven JVM is about 0.3\,GiB for the node and 0.2--0.28\,GiB for the UserApp.
+
+%% ===================================================================
+\chapter{Interpretation}
+
+\section{Bottlenecks}
+
+\begin{itemize}
+\item \textbf{The keychain is the bottleneck, not the host.} During encrypt/decrypt the UserApp averages 2--8\,\% of one core and during PROVISION the SAE node 6--8\,\%; the host mostly waits for the device.
+\item \textbf{PROVISION} is the most expensive operation: 185.18\,s for 507 pads, 0.365\,s per pad including the handshake, the TROPIC01 wipe and the R-MEM writes, an effective rate of 1\,136\,B/s of pad plaintext.
+\item \textbf{Encrypt/decrypt} of 9216\,B takes 24.03\,s. The handshake accounts for 4.29\,s (17.8\,\%); the remaining 19.74\,s scale with the 23 pads used, i.e.\ about 0.86\,s per pad. A pad in a request costs more than twice the time of a pad in PROVISION (0.365\,s).
+\item \textbf{Owner reset and enrollment} take 57.97\,s together, of which OWNER REPLACE (pad and key wipe) is 35.38\,s and INIT LAB 22.59\,s.
+\item \textbf{TLS handshake:} 4.29\,s for an ENCRYPT session and about 10.9\,s for a PROVISION session, which adds certificate chain verification on the device.
+\end{itemize}
+
+\section{Scaling}
+
+The encrypt/decrypt latency follows approximately
+\[
+t(L) \approx t_\text{handshake} + \left\lceil L / 415\,\text{B} \right\rceil \cdot 0.86\,\text{s},
+\]
+with $t_\text{handshake} = 4.29$\,s, derived from the 9216\,B measurement only. A short message (one pad) is therefore dominated by the handshake (about 5.1\,s estimated); the throughput approaches 415\,B / 0.86\,s $\approx$ 480\,B/s for long messages. PROVISION time scales with the number of pads written; only the full fill of 507 pads is measured.
+
+\section{Stability}
+
+All operations are stable from run to run: the CV is 0.14--0.30\,\% for OWNER REPLACE, INIT LAB and PROVISION and 1.73\,\% for encrypt/decrypt. The handshake varies most (CV 9.71\,\%), caused by one slow iteration (5.46\,s in iteration 2); without it the mean is 4.16\,s and the stddev 0.07\,s.
+
+\section{Resources}
+
+The firmware images leave 26.8\,\% of the flash free (20.6\,\% with the reserved data pages counted as used) and 18.8\,\% of the SRAM unallocated (static data, heap and stack counted). Secure code flash (95.5\,\%) and SRAM4 (99.3\,\%) are nearly full, so further secure features need code-size reduction or a different flash split. At run time the operations use at most 68\,KB of RAM, well below the static allocation. On the host, both applications are idle at about 1\,\% of one core and need a few tens of MiB of live heap.
+
+%% ===================================================================
+\chapter{Limitations}
+
+\begin{itemize}
+\item One run with $n = 10$ iterations per operation on one keychain; no data across devices, temperatures or USB hosts. The 95\,\% confidence interval half-width of the mean is at most 0.34\,s (PROVISION).
+\item Latencies are end-to-end host wall-clock times; the split between USB transfer, MCU computation and TROPIC01 access is not measured.
+\item Encrypt/decrypt is measured for one message size (9216\,B); the per-pad cost and the scaling formula are derived, not measured for other sizes. Decrypt is not timed separately.
+\item The PROVISION handshake (about 10.9\,s) is observed, not measured by the benchmark tool.
+\item The host is shared with other work (JFR machine CPU load averaged 14--17\,\% over the recordings) and runs inside WSL2, which can affect host latencies and CPU figures.
+\item Host resource usage is measured only with simulated keychains \placeholder; RSS and heap include the Maven JVM.
+\item Once during the resource run, simulated keychain 1 stopped answering in the TLS handshake of an encrypt request (the 8th request of that UserApp process; no pad used). After a UserApp restart all further requests succeed. The blocked 12.7\,min are excluded from the tables; the cause is not investigated \todo{reproduce on the simulator and on the real keychain}.
+\item Flash and RAM figures are static sizes from the build; only the overall runtime RAM peak (68\,KB) is measured, not per operation.
+\end{itemize}
 
 \medskip
-\todo{Conclusion.}
+Open items:
+\begin{itemize}
+\item \todo{isolated PROVISION handshake measurement on the real keychain}
+\item \todo{resource usage with the real keychain}
+\item \todo{confirm the flashed firmware build and the method of the 68\,KB RAM peak}
+\item \todo{MCU accelerators used}
+\end{itemize}
 
 \end{document}

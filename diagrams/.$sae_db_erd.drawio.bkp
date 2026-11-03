@@ -1,0 +1,158 @@
+<mxfile host="Electron" agent="generated">
+  <diagram name="SAE DB ERD" id="SaeDbErd001">
+    <mxGraphModel dx="2550" dy="1439" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;" value="&lt;b&gt;SAE node database (SQLite): entity–relationship diagram&lt;/b&gt;" vertex="1">
+          <mxGeometry height="40" width="900" x="60" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="key" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Notation&lt;/b&gt;: crow&#39;s foot. &lt;br&gt;&lt;b&gt;Solid line&lt;/b&gt; = real foreign key in the schema. &lt;b&gt;Dashed line&lt;/b&gt; = logical reference only (no foreign key; the target is outside this database). PK = primary key, FK = foreign key. Line ends: two bars = exactly one, circle and bar = zero or one, crow&#39;s foot = many. All columns are NOT NULL unless marked &quot;nullable&quot;." vertex="1">
+          <mxGeometry height="45" width="1880" x="60" y="65" as="geometry" />
+        </mxCell>
+        <mxCell id="crs" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;" value="client_record_state&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:12px&quot;&gt;one row per device pair: a share this SAE holds&lt;/span&gt;" vertex="1">
+          <mxGeometry height="254" width="560" x="160" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.h1" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="&lt;b&gt;PK&lt;/b&gt; client_hash1 : TEXT &amp;nbsp;— identity hash of the device provisioned here" vertex="1">
+          <mxGeometry height="28" width="560" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.h2" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="&lt;b&gt;PK&lt;/b&gt; client_hash2 : TEXT &amp;nbsp;— identity hash of the counterpart device" vertex="1">
+          <mxGeometry height="28" width="560" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.doc" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="date_of_creation : TEXT &amp;nbsp;— ISO-8601 time; old rows are removed" vertex="1">
+          <mxGeometry height="28" width="560" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.ra" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="record_availability : TEXT &amp;nbsp;CHECK = &#39;KEYS_AVAILABLE&#39;" vertex="1">
+          <mxGeometry height="28" width="560" y="114" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.sae" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="sae_id : TEXT &amp;nbsp;— the counterpart SAE" vertex="1">
+          <mxGeometry height="28" width="560" y="142" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.iss" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="issuing_sae_id : TEXT &amp;nbsp;— the SAE whose operation wrote the share" vertex="1">
+          <mxGeometry height="28" width="560" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.tok" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="lease_token : TEXT &amp;nbsp;— token of that operation" vertex="1">
+          <mxGeometry height="28" width="560" y="198" as="geometry" />
+        </mxCell>
+        <mxCell id="crs.pad" parent="crs" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="pad_plain_len : INTEGER &amp;nbsp;DEFAULT 0, CHECK 0..65535" vertex="1">
+          <mxGeometry height="28" width="560" y="226" as="geometry" />
+        </mxCell>
+        <mxCell id="skm" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#D5E8D4;strokeColor=#82b366;" value="shared_key_material&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:12px&quot;&gt;sealed key material of a share; only at the SAE that did not issue it&lt;/span&gt;" vertex="1">
+          <mxGeometry height="198" width="560" x="900" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="skm.h1" parent="skm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="&lt;b&gt;PK, FK&lt;/b&gt; client_hash1 : TEXT" vertex="1">
+          <mxGeometry height="28" width="560" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="skm.h2" parent="skm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="&lt;b&gt;PK, FK&lt;/b&gt; client_hash2 : TEXT" vertex="1">
+          <mxGeometry height="28" width="560" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="skm.ct" parent="skm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="ciphertext : BLOB &amp;nbsp;— key material sealed by the HSM (AES-256-GCM)" vertex="1">
+          <mxGeometry height="28" width="560" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="skm.iv" parent="skm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="gcm_iv : BLOB" vertex="1">
+          <mxGeometry height="28" width="560" y="114" as="geometry" />
+        </mxCell>
+        <mxCell id="skm.tag" parent="skm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="gcm_tag_bits : INT &amp;nbsp;CHECK = 128" vertex="1">
+          <mxGeometry height="28" width="560" y="142" as="geometry" />
+        </mxCell>
+        <mxCell id="skm.alias" parent="skm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="hsm_key_alias : TEXT &amp;nbsp;— name of the sealing key in the HSM" vertex="1">
+          <mxGeometry height="28" width="560" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="fk" edge="1" parent="1" source="crs.h1" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=ERzeroToOne;startArrow=ERmandOne;endFill=0;startFill=0;strokeWidth=2;endSize=12;startSize=12;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="skm.h1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fk-l" connectable="0" parent="fk" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;FK (both hashes)&lt;br&gt;ON DELETE CASCADE&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-32" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lpeer" edge="1" parent="1" source="crs.tok" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endFill=0;startFill=0;rounded=0;endSize=12;startSize=12;startArrow=ERmandOne;endArrow=ERzeroToOne;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.35;entryDx=0;entryDy=0;" target="peer" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="362" />
+              <mxPoint x="780" y="640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lpeer-l" connectable="0" parent="lpeer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;same share:&lt;br&gt;hashes swapped, same lease_token;&lt;br&gt;usable only when both tokens match&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.09" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lhsm" edge="1" parent="1" source="skm.alias" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endFill=0;startFill=0;rounded=0;endSize=12;startSize=12;startArrow=ERmany;endArrow=ERmandOne;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="hsm" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1500" y="334" />
+              <mxPoint x="1500" y="809" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lhsm-l" connectable="0" parent="lhsm" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=#ffffff;" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;hsm_key_alias&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.17" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="foot" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Storage&lt;/b&gt;: one SQLite file per SAE node (DB_URL), created by a single schema migration (V1). WAL mode, foreign keys enforced, write transactions take the write lock at the start. A row in client_record_state is written only while the provisioning operation holds the pair lock on both SAEs, so KEYS_AVAILABLE is the only stored state. Index: application_log_logged_at_idx on application_log (logged_at).&lt;br&gt;&lt;b&gt;Scope&lt;/b&gt;: this is the only database in the system. The KME is the external QuKayDee service, the keychain keeps its pads in the TROPIC01 chip, and the user application stores no data in a database." vertex="1">
+          <mxGeometry height="90" width="1880" x="50" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="L_LeZH64OvVjvggQGVzd-1" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="100" as="sourcePoint" />
+            <mxPoint x="90" y="102.00000000000023" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_LeZH64OvVjvggQGVzd-13" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#FFCC99,#FFFFFF);shadow=1;" value="DB schema on SAE" vertex="1">
+          <mxGeometry height="300" width="1820" x="150" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="log" parent="L_LeZH64OvVjvggQGVzd-13" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;" value="application_log&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:12px&quot;&gt;node log records&lt;/span&gt;" vertex="1">
+          <mxGeometry height="226" width="400" x="1400" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="log.id" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="&lt;b&gt;PK&lt;/b&gt; id : INTEGER &amp;nbsp;AUTOINCREMENT" vertex="1">
+          <mxGeometry height="28" width="400" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="log.at" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="logged_at : TEXT &amp;nbsp;(indexed)" vertex="1">
+          <mxGeometry height="28" width="400" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="log.lv" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="level : TEXT" vertex="1">
+          <mxGeometry height="28" width="400" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="log.lg" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="logger : TEXT" vertex="1">
+          <mxGeometry height="28" width="400" y="114" as="geometry" />
+        </mxCell>
+        <mxCell id="log.th" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="thread : TEXT" vertex="1">
+          <mxGeometry height="28" width="400" y="142" as="geometry" />
+        </mxCell>
+        <mxCell id="log.msg" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="message : TEXT" vertex="1">
+          <mxGeometry height="28" width="400" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="log.thr" parent="log" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;" value="thrown : TEXT &amp;nbsp;nullable" vertex="1">
+          <mxGeometry height="28" width="400" y="198" as="geometry" />
+        </mxCell>
+        <mxCell id="L_LeZH64OvVjvggQGVzd-14" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#FCE6E6,#FFFFFF);shadow=1;" value="Counterpart SAE logical conection" vertex="1">
+          <mxGeometry height="226" width="690" x="140" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="peer" parent="L_LeZH64OvVjvggQGVzd-14" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#9673a6;dashed=1;" value="client_record_state at the counterpart SAE&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:12px&quot;&gt;same table in the other SAE&#39;s own database&lt;/span&gt;" vertex="1">
+          <mxGeometry height="114" width="560" x="70" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="peer.h1" parent="peer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;fontColor=#555555;" value="client_hash1 = this row&#39;s client_hash2" vertex="1">
+          <mxGeometry height="28" width="560" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="peer.h2" parent="peer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;fontColor=#555555;" value="client_hash2 = this row&#39;s client_hash1" vertex="1">
+          <mxGeometry height="28" width="560" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="peer.tok" parent="peer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;fontColor=#555555;" value="lease_token = the same token" vertex="1">
+          <mxGeometry height="28" width="560" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="L_LeZH64OvVjvggQGVzd-23" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#FCE6E6,#FFFFFF);shadow=1;" value="HSM logical conetion" vertex="1">
+          <mxGeometry height="226" width="540" x="920" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="hsm" parent="L_LeZH64OvVjvggQGVzd-23" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" value="HSM key (inside the HSM, not in the database)" vertex="1">
+          <mxGeometry height="58" width="400" x="65" y="65" as="geometry" />
+        </mxCell>
+        <mxCell id="hsm.al" parent="hsm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;html=1;whiteSpace=wrap;fontColor=#555555;" value="key alias (AES-256 sealing key)" vertex="1">
+          <mxGeometry height="28" width="400" y="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

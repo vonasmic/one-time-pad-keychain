@@ -37,25 +37,4 @@
                 <scope>test</scope>
             </dependency>
     </dependencies>
-    <build>
-        <sourceDirectory>${src.root}/SaeNode/main/java</sourceDirectory>
-        <testSourceDirectory>${src.root}/SaeNode/test/java</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>fel/cvut/tls/SoftwareTls.java</include>
-                        <include>fel/cvut/tls/SoftwareLeaf.java</include>
-                        <include>fel/cvut/tls/TlsStores.java</include>
-                    </includes>
-                    <testIncludes>
-                        <testInclude>fel/cvut/integration/tls/NodeTlsSoftwareIdentityTest.java</testInclude>
-                        <testInclude>fel/cvut/integration/tls/SoftwareTlsTwoNodeTest.java</testInclude>
-                    </testIncludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

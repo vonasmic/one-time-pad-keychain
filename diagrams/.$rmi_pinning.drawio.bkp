@@ -1,0 +1,70 @@
+<mxfile host="Electron" agent="generated">
+  <diagram name="RMI_PINNING" id="RmiPinning001">
+    <mxGraphModel dx="1504" dy="915" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2500" pageHeight="2100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lg0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="SAE A (caller)" vertex="1">
+          <mxGeometry height="30" width="150" x="560" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;dashed=1;" value="SAE B (callee, RMI)" vertex="1">
+          <mxGeometry height="30" width="150" x="720" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="l1" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;size=70;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="&lt;b&gt;SAE A&lt;/b&gt;&lt;br&gt;Provisioning logic (caller)" vertex="1">
+          <mxGeometry height="1500" width="240" x="330" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="l2" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;size=70;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="&lt;b&gt;SAE A&lt;/b&gt;&lt;br&gt;RMI client connection" vertex="1">
+          <mxGeometry height="1500" width="240" x="620" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="l3" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;size=70;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;dashed=1;" value="&lt;b&gt;SAE B&lt;/b&gt;&lt;br&gt;RMI listener with pin check" vertex="1">
+          <mxGeometry height="1500" width="240" x="910" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="l4" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;size=70;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;dashed=1;" value="&lt;b&gt;SAE B&lt;/b&gt;&lt;br&gt;Caller identity" vertex="1">
+          <mxGeometry height="1500" width="240" x="1200" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="l5" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;container=0;collapsible=0;recursiveResize=0;outlineConnect=0;size=70;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;dashed=1;" value="&lt;b&gt;SAE B&lt;/b&gt;&lt;br&gt;Inter-SAE commands" vertex="1">
+          <mxGeometry height="1500" width="240" x="1490" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" edge="1" parent="1" source="l1" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.0867;exitDx=0;exitDy=0;entryX=0.5;entryY=0.0867;entryDx=0;entryDy=0;endArrow=block;endFill=1;" target="l2" value="Connect to SAE B:&lt;br&gt;address from the SAE directory">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" edge="1" parent="1" source="l2" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.14;exitDx=0;exitDy=0;entryX=0.5;entryY=0.14;entryDx=0;entryDy=0;endArrow=block;endFill=1;strokeColor=#8b4513;strokeWidth=2;" target="l3" value="Post-quantum TLS 1.3 handshake (ML-KEM-768, ML-DSA-44),&lt;br&gt;both sides authenticated; both chains checked against the RMI root CA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nb1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Server check on SAE A&lt;/b&gt;&lt;br&gt;Server certificate pinned,&lt;br&gt;and does it belong to the SAE&lt;br&gt;at that address?&lt;br&gt;Otherwise the connection is closed" vertex="1">
+          <mxGeometry height="100" width="260" x="610" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" edge="1" parent="1" source="l2" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.2933;exitDx=0;exitDy=0;entryX=0.5;entryY=0.2933;entryDx=0;entryDy=0;endArrow=block;endFill=1;strokeColor=#8b4513;strokeWidth=2;" target="l3" value="Command, e.g. lock the client pair on SAE B&lt;br&gt;(the registry lookup uses the same secured connection)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nb2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Peer check on SAE B&lt;/b&gt;, before any call is read:&lt;br&gt;own certificate ? own SAE ID,&lt;br&gt;otherwise look up the pinned peer.&lt;br&gt;Unpinned peer: warning,&lt;br&gt;connection closed" vertex="1">
+          <mxGeometry height="120" width="260" x="900" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" edge="1" parent="1" source="l3" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.4467;exitDx=0;exitDy=0;entryX=0.5;entryY=0.4467;entryDx=0;entryDy=0;endArrow=block;endFill=1;" target="l4" value="Remember the caller&#39;s SAE ID&lt;br&gt;for this connection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nb3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="Call arguments must match&lt;br&gt;an allow-list of types" vertex="1">
+          <mxGeometry height="60" width="260" x="900" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" edge="1" parent="1" source="l3" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.5333;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5333;entryDx=0;entryDy=0;endArrow=block;endFill=1;" target="l5" value="The call runs on the same connection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" edge="1" parent="1" source="l5" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.5733;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5733;entryDx=0;entryDy=0;endArrow=block;endFill=1;" target="l4" value="Who is calling?">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m7" edge="1" parent="1" source="l4" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.6133;exitDx=0;exitDy=0;entryX=0.5;entryY=0.6133;entryDx=0;entryDy=0;dashed=1;endArrow=open;endFill=0;" target="l5" value="Caller&#39;s SAE ID; unknown caller ? call refused">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nb4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Inter-SAE commands&lt;/b&gt;&lt;br&gt;Every command except ping needs a known caller, identified by its pinned certificate.&lt;br&gt;&lt;b&gt;Lock client pair&lt;/b&gt;: a 5-minute lease in the caller&#39;s name; only the holder renews or releases it.&lt;br&gt;&lt;b&gt;Store keys from peer&lt;/b&gt;: only for the caller&#39;s own share and only while the caller holds the lock; the keys come from this SAE&#39;s own KME and are stored in one step, otherwise refused.&lt;br&gt;&lt;b&gt;Delete stored keys&lt;/b&gt;: only under the caller&#39;s lock and only if the share is still the one the caller saw (another SAE may delete when a device moves; logged).&lt;br&gt;&lt;b&gt;Read share status&lt;/b&gt;: any known caller.&lt;br&gt;&lt;b&gt;Ping&lt;/b&gt;: no caller check" vertex="1">
+          <mxGeometry height="260" width="420" x="1400" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="m8" edge="1" parent="1" source="l5" style="html=1;verticalAlign=bottom;fontSize=12;labelBackgroundColor=#ffffff;exitPerimeter=0;entryPerimeter=0;exitX=0.5;exitY=0.8667;exitDx=0;exitDy=0;entryX=0.5;entryY=0.8667;entryDx=0;entryDy=0;dashed=1;endArrow=open;endFill=0;" target="l1" value="Result, or refusal / error">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bnote" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="Each SAE accepts only peers pinned in its SAE directory. The caller&#39;s identity comes from the TLS connection, never from call arguments. USB and RMI use separate trust stores." vertex="1">
+          <mxGeometry height="40" width="1480" x="330" y="1640" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

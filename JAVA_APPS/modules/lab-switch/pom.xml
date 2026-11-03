@@ -22,8 +22,6 @@
             </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>${src.root}/LabSwitch/main/java</sourceDirectory>
-        <testSourceDirectory>${src.root}/LabSwitch/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

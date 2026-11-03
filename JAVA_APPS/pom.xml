@@ -28,7 +28,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bc.version>1.84</bc.version>
         <junit.version>5.11.4</junit.version>
-        <src.root>${maven.multiModuleProjectDirectory}/src</src.root>
         <!-- Empty = run both @Tag("integration") and @Tag("unit"). Filter with -Dgroups=integration|unit. -->
         <groups></groups>
     </properties>

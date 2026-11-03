@@ -1,0 +1,5 @@
+[
+  { "saeId": "sae-1", "name": "Alice", "location": "Prague", "hostname": "127.0.0.1", "port": 2010, "spkiSha384": "8b4de203d2e3dd7382b225141d15da5ffe55a13c5510d50fdf3a919712c0d9be2469e84abe812fc66f5e2e2d6f23e9bc" },
+  { "saeId": "sae-2", "name": "Bob", "location": "Berlin", "hostname": "127.0.0.1", "port": 2020, "spkiSha384": "3e0a0e19c425f27bca0c618d0639f262e86c83c31fc7dbafe844bc7fdc5688d69799f80d8e0c813286a29aed33213234" },
+  { "saeId": "sae-3", "name": "Carol", "location": "Paris", "hostname": "127.0.0.1", "port": 2030, "spkiSha384": "857ae95d6329b43d8604afa27fcd61cae7f39c5d65e95a3fbef7b441464c26d570d7d4471eba3dbfc0764a0007d5273b" }
+]

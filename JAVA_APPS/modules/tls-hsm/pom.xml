@@ -64,8 +64,6 @@
         </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>${src.root}/SaeNode/main/java</sourceDirectory>
-        <testSourceDirectory>${src.root}/SaeNode/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -85,22 +83,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>fel/cvut/tls/HsmNodeTls.java</include>
-                        <include>fel/cvut/tls/TlsProviders.java</include>
-                        <include>fel/cvut/utimaco/**</include>
-                        <include>com/utimaco/**</include>
-                    </includes>
-                    <testIncludes>
-                        <testInclude>fel/cvut/integration/utimaco/HsmLiveNoFallbackTest.java</testInclude>
-                        <testInclude>fel/cvut/integration/utimaco/HsmSimulatorTest.java</testInclude>
-                    </testIncludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

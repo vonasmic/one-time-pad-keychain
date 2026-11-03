@@ -90,38 +90,7 @@
         </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>${src.root}/SaeNode/main/java</sourceDirectory>
-        <testSourceDirectory>${src.root}/SaeNode/test/java</testSourceDirectory>
-        <resources>
-            <resource>
-                <directory>${src.root}/SaeNode/main/resources</directory>
-            </resource>
-        </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>fel/cvut/se/**</exclude>
-                        <exclude>fel/cvut/terminal/**</exclude>
-                        <exclude>fel/cvut/tls/SoftwareTls.java</exclude>
-                        <exclude>fel/cvut/tls/SoftwareLeaf.java</exclude>
-                        <exclude>fel/cvut/tls/TlsStores.java</exclude>
-                        <exclude>fel/cvut/tls/HsmNodeTls.java</exclude>
-                        <exclude>fel/cvut/tls/TlsProviders.java</exclude>
-                        <exclude>fel/cvut/utimaco/**</exclude>
-                    </excludes>
-                    <testExcludes>
-                        <testExclude>fel/cvut/unit/se/**</testExclude>
-                        <testExclude>fel/cvut/unit/terminal/**</testExclude>
-                        <testExclude>fel/cvut/integration/tls/NodeTlsSoftwareIdentityTest.java</testExclude>
-                        <testExclude>fel/cvut/integration/tls/SoftwareTlsTwoNodeTest.java</testExclude>
-                        <testExclude>fel/cvut/integration/utimaco/HsmLiveNoFallbackTest.java</testExclude>
-                        <testExclude>fel/cvut/integration/utimaco/HsmSimulatorTest.java</testExclude>
-                    </testExcludes>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -129,7 +98,7 @@
                 <configuration>
                     <url>${env.DB_URL}</url>
                     <locations>
-                        <location>filesystem:${src.root}/SaeNode/main/resources/db/migration</location>
+                        <location>filesystem:${project.basedir}/src/main/resources/db/migration</location>
                     </locations>
                 </configuration>
                 <dependencies>

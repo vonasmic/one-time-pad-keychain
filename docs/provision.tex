@@ -1,75 +1,967 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage[listings]{tcolorbox}
+
+% The chapter below is written for the thesis (report class); in this
+% standalone article it becomes an unnumbered top-level heading.
+\providecommand{\chapter}{}
+\renewcommand{\chapter}[1]{\section*{#1}\addcontentsline{toc}{section}{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  tabsize=2,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  showstringspaces=false
+}
+
+\title{Provision}
+\date{}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+\lstlistoflistings
+\clearpage
 \chapter{Provision}
 \label{chap:provision}
 
 % Export diagrams/provision_flow.drawio → diagrams/provision_flow.pdf.
-% Float drží celou stranu na diagram; text kapitoly má zůstat na jedné straně.
-\begin{figure}[p]
+% The float reserves a full page for the diagram; the chapter text should stay short.
+\begin{figure}[h]
   \centering
-  \IfFileExists{../diagrams/provision_flow.pdf}{%
-    \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]%
-      {../diagrams/provision_flow.pdf}%
+  \IfFileExists{provision_flow.drawio.pdf}{%
+    \includegraphics[width=1.2\textwidth,keepaspectratio]%
+      {provision_flow.drawio.pdf}%
   }{%
     \fbox{%
-      \parbox[c][0.82\textheight][c]{0.94\textwidth}{\centering}%
+      \parbox[c][1\textheight][c]{1\textwidth}{\centering}%
     }%
   }
-  \caption{Rozhodovací strom příkazu \texttt{PROVISION}
+  \caption{Decision tree of the \texttt{PROVISION} command
     (\texttt{diagrams/provision\_flow}).}
   \label{fig:provision-flow}
 \end{figure}
 
+% Long identifiers: allow extra stretch in this chapter only.
+\begingroup
+\setlength{\emergencystretch}{2.5em}
 \noindent
-Příkaz \texttt{PROVISION} naplní čip jednorázovými pady z QKD.
-SE otevře TLS jen při \texttt{se\_\allowbreak ready\_\allowbreak provision()} (vlastník, certifikát
-a klíč zařízení, SAE CA, ML-KEM klíč) a synchronizovaném čase. Po mTLS pošle
-uplink v5 vázaný na TLS exporter (\texttt{SeSessionUplink.\allowbreak readAndVerify})
-a souběžně smaže QKD sloty R-MEM; konec hlásí \texttt{TROPIC\_\allowbreak WIPE\_\allowbreak FINISHED}.
-Obrázek~\ref{fig:provision-flow} je strom SaeNode: výběr peer SAE a peer
-zařízení, lokální \texttt{synchronize()} a podle výsledku nová výměna
-(\texttt{INSERTED}), uložený share (\texttt{ORIGIN\_PROVISIONED}, nebo
-\texttt{RECORD\_SHARED\_WITH\_DIFFERENT\_SAE}), nebo konec bez klíčů
-(\texttt{NOT\_INSERTED}).
+The \texttt{PROVISION} command fills the chip with one-time pads from QKD.
+The SE opens TLS only if \texttt{se\_\allowbreak ready\_\allowbreak provision()}
+holds (owner, device certificate and key, SAE CA, ML-KEM key) and its clock is
+synchronised. After the mTLS handshake it sends a version~5 uplink bound to the
+TLS exporter (\texttt{SeSessionUplink.\allowbreak readAndVerify}) and, in
+parallel, erases its QKD R-MEM slots; it signals completion with
+\texttt{TROPIC\_\allowbreak WIPE\_\allowbreak FINISHED}.
+Figure~\ref{fig:provision-flow} shows the SaeNode decision tree: the operator
+selects the peer SAE and the peer device, and the node looks up its own
+\texttt{client\_\allowbreak record\_\allowbreak state} row for the pair. Without
+a row the operator may generate new keys; a row of a share with the selected
+SAE that another SAE issued is a stored share for this device; for any other
+row the operator keeps the keys or deletes them.
 
-Nová výměna v \texttt{PeerRecordSync} rezervuje pár
-na obou SAE (\texttt{RECORD\_\allowbreak SYNCHRONIZATION}), zamkne fetch
-(\texttt{RECORD\_\allowbreak FETCHING\_\allowbreak STARTED}) a stáhne pady z KME. Peer SAE je přes
-RMI \texttt{insert} dohledá podle ID klíčů u svého KME a uloží zabalené v HSM.
-Oba řádky pak přejdou do \texttt{RECORD\_\allowbreak SHARED}. Origin pošle downlink.
-Po \texttt{SE\_\allowbreak OK} čipu zapíše \texttt{ORIGIN\_\allowbreak PROVISIONED} nejdřív na peeru,
-pak u sebe. Až po návratu obou zápisů terminál vytiskne 100\,\% a na dalším
-řádku \texttt{Share successful.}
-Peer čip dostane materiál později, jen když jsou oba řádky
-\texttt{ORIGIN\_\allowbreak PROVISIONED}. Peer SAE smaže nejdřív řádek na originu,
-pak svůj, a teprve potom pošle downlink.
+Every operation on a client pair (new share, delivery of a stored share,
+operator delete) runs under a \emph{pair lock} on both SAEs of the pair
+(\texttt{PairLocks}, \texttt{PairLockRegistry}). The lock is keyed by the
+sorted pair of client hashes and kept in memory. The operation takes the lock
+of the SAE with the lower ID first and then the lock of the SAE with the
+higher ID, over RMI \texttt{lockPair} for a remote SAE. If a lock is refused,
+the first one is released and the operator sees \texttt{Another operation for
+this device pair is in progress on an SAE. Retry later.}; nobody waits for a
+lock. A lock is a lease of 5~minutes with a random 128-bit token and the
+issuing SAE. The holder renews both leases every 60\,s (\texttt{renewPair})
+and synchronously before and after each commit step
+(\texttt{PairOperation.\allowbreak checkpoint}); a failed renewal aborts the
+operation and closes the device session. Every row write and delete runs in
+one \texttt{BEGIN IMMEDIATE} transaction that checks the token, expiry and
+issuer of the lease. At the end the operation releases both locks by token,
+the remote one first (\texttt{releasePair}).
 
-Mazání je vždy nejdřív vzdálené: rollback, \texttt{deleteShareAndRestart}
-i doručení. Každé RMI volání jde přes mTLS s připnutým SPKI peeru. Volající
-musí být vydávající SAE, nebo strana záznamu. Výjimkou je \texttt{deleteShare}
-od jiného SAE (předání share), povolené jen pro dokončený share.
+For a new share the origin SAE, holding both locks, checks that no local row
+has appeared and reads the target row over RMI; a target row that names a
+third SAE leads to the delete prompt. The origin then fetches key IDs and pads
+from its KME, renews both locks and sends the downlink to the device, renewing
+both locks every 60\,s during the transfer. After the chip answers
+\texttt{SE\_\allowbreak OK}, the origin renews both locks, the peer writes
+\texttt{KEYS\_\allowbreak AVAILABLE} with the operation token (RMI
+\texttt{insert}: the peer resolves the same pads by key ID at its own KME and
+stores them wrapped by the HSM, in one transaction under the caller's lease),
+and then the origin writes its own \texttt{KEYS\_\allowbreak AVAILABLE} row
+with the token. After a final renewal of both locks the terminal prints
+100\,\% followed by \texttt{Share successful.} on the next line. If a write
+fails, the peer row is deleted by token and the node logs a warning that the
+device stored the keys but the share could not be recorded on both SAEs.
 
-\section{Formální ověření}
+The peer chip receives its material later. Under both locks the peer SAE
+checks that its row still carries the token shown to the operator and reads
+the origin row over RMI; the share is delivered only when both rows are
+\texttt{KEYS\_\allowbreak AVAILABLE}, carry the same token and issuer and name
+each other. The peer SAE then deletes the row on the origin, then its own row,
+both by token, and only then sends the downlink. A share that fails this check
+is deleted as an orphan, remote first, without delivery.
 
-PlusCal v \texttt{specs/sae-provision/SaeProvision.tla} sleduje tuto ságu
-včetně pádu origin i peer JVM mezi každým krokem, vypršení pětiminutové
-rezervace, výpadku spojení na origin nebo peer a jednoho pozdějšího pokusu
-(nový fill, nebo doručení na peer).
-TLS, PIN a bajty padů v modelu nejsou. Důkaz je prohledání stavů TLC podle
-\texttt{SaeProvision.cfg}. Ve všech dosažitelných stavech platí:
+An operator delete locks both SAEs of the shown share, re-reads the shown row
+and deletes the counterpart row first and the shown row last, each only if it
+still carries the token the operator saw (compare-and-delete, RMI
+\texttt{deleteRecord}). Otherwise nothing is deleted and the operator is asked
+again. Every RMI call runs over mTLS with a pinned peer SPKI, and the caller's
+SAE ID comes from its certificate; lease calls, \texttt{insert} and
+\texttt{deleteRecord} act only on a lease the caller holds.
+
+Two limitations are open. A device may hold keys after a failed commit without
+\texttt{Share successful.}; the operator provisions both devices again. The
+locks are kept in memory, so an SAE restart releases all of its locks, and
+operations that held one fail at their next renewal or fenced write.
+
+\section{Formal verification}
+\label{sec:provision-formal}
+
+The TLA+ model \texttt{specs/sae-provision/SaeProvision.tla} (plain TLA+, no
+PlusCal) verifies this protocol for several SAEs, several concurrent
+provision attempts, operator deletes and faults. Each attempt is given as a
+triple $\langle$origin, peer, device$\rangle$ in the constant \texttt{Edges};
+all attempts concern one client pair, so every SAE has one lock entry and one
+row per device for that pair. A lock entry is
+$[\mathit{iss}, \mathit{tok}, \mathit{st}]$ with the state \texttt{free},
+\texttt{held} (the holder renews it) or \texttt{lapsing} (nobody renews it and
+\texttt{Expire} may free it at any time); time is abstract. A row is
+\texttt{none} or \texttt{KEYS\_AVAILABLE} with issuer, counterpart SAE, token
+and key material. An attempt runs the steps \texttt{lock1} (lower SAE ID),
+\texttt{lock2} (higher SAE ID), \texttt{check} (keep or delete an existing
+share), \texttt{kme}, \texttt{xfer}, \texttt{pwrite} (peer write fenced by
+its lock entry), \texttt{owrite}, \texttt{complete} and the releases
+\texttt{relR}, \texttt{relL}, remote first. An operator delete takes both locks
+with a new token, deletes the remote row and then the local row by
+compare-and-delete, releases and provisions again.
+
+The faults are: \texttt{LostReply} (the reply of a remote acquire, insert,
+delete or release is lost; the handler runs later, fenced by its token),
+\texttt{Stall} (the holder stops renewing, its entries lapse and may expire),
+\texttt{AbortOp} (KME or renewal failure), \texttt{RenewFails} (a renewal finds
+an entry without the token), and \texttt{Crash} (all lock entries of the SAE
+are lost, rows survive, its session ends without \texttt{Share successful.}).
+After a renewal gap the holder renews both entries before its next step
+(\texttt{LeaseGuard}). TLS, the PIN, pad bytes, record retention and more than
+one client pair are not modelled.
+
+The constants \texttt{MaxSessions}, \texttt{MaxCrashes}, \texttt{MaxStalls},
+\texttt{MaxAborts} and \texttt{MaxLost} bound the state space;
+\texttt{OperatorDeletes} allows operator deletes and \texttt{RetryOnRefusal}
+lets a refused attempt retry in the same session. The constants
+\texttt{LockOrder}, \texttt{FencePeerWrite}, \texttt{DeleteTakesLocks},
+\texttt{DeleteChecksSeen} and \texttt{LeaseGuard} select the guards; every
+configuration in Table~\ref{tab:provision-tlc} uses the design values
+(\texttt{"lower"} and \texttt{TRUE}). Every configuration checks for deadlock
+(\texttt{CHECK\_DEADLOCK TRUE}). \texttt{SaeProvision}, \texttt{\_fan},
+\texttt{\_chain} and \texttt{\_ring} also check the liveness property
+\texttt{AllSagasFinish}: eventually every attempt terminates.
+\texttt{\_races} and \texttt{\_racesfull} combine concurrent sessions,
+operator deletes, stalls and lost replies (\texttt{\_racesfull} adds a crash)
+and check safety only.
+
+\begin{table}[h!]
+  \centering
+  \small
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{@{}llcccccrrrr@{}}
+    \toprule
+    cfg & attempts & sess. & crash & stall & lost & delete & generated & distinct & depth & time \\
+    \midrule
+    \texttt{SaeProvision} & 1$\to$2 & 3 & 1 & 1 & 1 & yes & 103\,643 & 38\,910 & 40 & 02\,s \\
+    \texttt{\_fan} & 1$\to$2, 3$\to$1, 3$\to$2 & 2 & 0 & 1 & 1 & no & 2\,472\,791 & 846\,298 & 57 & 35\,s \\
+    \texttt{\_chain} & fan, 4$\to$2, 3$\to$4 & 1 & 0 & 0 & 1 & no & 1\,339\,900 & 393\,993 & 48 & 25\,s \\
+    \texttt{\_ring} & 1$\to$2$\to$3$\to$4$\to$1 & 2 & 1 & 0 & 0 & no & 4\,320\,172 & 1\,191\,007 & 54 & 1\,min 08\,s \\
+    \texttt{\_races} & fan & 2 & 0 & 1 & 1 & yes & 12\,646\,725 & 4\,602\,913 & 98 & 45\,s \\
+    \texttt{\_racesfull} & fan & 2 & 1 & 1 & 1 & yes & 258\,450\,361 & 79\,448\,065 & 107 & 13\,min 23\,s \\
+    \bottomrule
+  \end{tabular}}
+  \caption{TLC configurations. All six find no invariant violation and no
+    deadlock; the first four also find no liveness violation. \texttt{SaeProvision}
+    allows one abort, \texttt{\_ring} retries on refusal. Numbers from the runs
+    in Section~\ref{sec:provision-tlc-online} (7 workers).}
+  \label{tab:provision-tlc}
+\end{table}
+
+\noindent
+In all reachable states of the six configurations the following invariants
+hold:
 
 \begin{itemize}
   \setlength{\itemsep}{0.15em}
-  \item Oba committnuté share mají shodné příznaky materiálu.
-  \item \texttt{ORIGIN\_PROVISIONED} na originu znamená totéž na peeru
-        a oba vznikají jen po ACK origin čipu.
-  \item Klíče na peer čipu znamenají klíče na origin čipu a už smazané řádky.
-  \item Hláška úspěchu odpovídá konzistentnímu share, nebo jeho pozdějšímu
-        spotřebování.
-  \item Po čtení při dosažitelném originu i peeru za oknem rezervace je osiřelý
-        \texttt{RECORD\_SHARED} pryč, nebo origin ještě drží čerstvou rezervaci.
+  \item \texttt{TypeOK}: every variable stays in its domain.
+  \item \texttt{MutualExclusion}: two operations that hold both of their lock
+        entries never share an SAE.
+  \item \texttt{TerminalSuccessMeansConsistentShare}: \texttt{Share
+        successful.} is reported only when both rows are
+        \texttt{KEYS\_AVAILABLE} with the attempt's token and key material and
+        the origin device holds those pads.
+  \item \texttt{OriginMarkedAfterPeer}: the origin writes
+        \texttt{KEYS\_AVAILABLE} with a token only while the peer row already
+        carries it.
+  \item \texttt{MatchingSharesWhenCommitted}: two counterpart rows with the
+        same token hold the same key material.
+  \item \texttt{NoMismatchedDelivery}: a peer device receives only the pads of
+        the attempt whose rows it checked, and the origin device of that
+        attempt holds them.
+  \item \texttt{CompletedShareNotSilentlyLost}: a share reported as complete
+        stays intact until an operator delete removes it.
+  \item \texttt{OperatorDeleteOnlyConfirmedShare}: an operator delete removes
+        only the share the operator confirmed.
+  \item \texttt{OperatorDeleteOnlyRowsPresentAtLock}: an operator delete
+        removes only rows present when it held both locks.
+  \item \texttt{RemoteFirstDelete}: a local delete runs only after the remote
+        delete succeeded.
 \end{itemize}
 
 \noindent
-Stejné invarianty drží dva krajní běhy. Nedosažitelný origin nebo peer se
-nemaže ani neplní, takže \texttt{RECORD\_SHARED} může zůstat. Pád po smazání řádků
-a před zápisem na peer čip nechá klíče jen na originu, a stejný share se
-nepošle dvakrát.
+The ring configuration is the candidate for a distributed deadlock: every SAE
+is the origin of one attempt and the peer of another, and refused attempts
+retry. TLC finds no deadlock and no liveness violation, because every
+attempt takes the lower SAE ID first.
+
+\noindent
+The implementation and the model share the following guards.
+
+\begin{itemize}
+  \setlength{\itemsep}{0.15em}
+  \item One session per SAE: \texttt{Node.usbLoop} serves one device at a
+        time (\texttt{usb[n]}).
+  \item Lock order: the lock of the lower SAE ID is taken first; a refusal
+        releases the first lock by token and ends the attempt
+        (\texttt{LockOrder}).
+  \item Fenced peer write: the peer writes \texttt{KEYS\_AVAILABLE} only under
+        a live lease of the caller with the operation token, in one
+        transaction with the key material (\texttt{FencePeerWrite}).
+  \item Origin write after the peer write, both after the device ack.
+  \item Renewal of both locks after a gap: \texttt{PairOperation.checkpoint}
+        runs before and after each commit step (\texttt{LeaseGuard}).
+  \item Operator delete under both locks (\texttt{DeleteTakesLocks}), remote
+        first, by compare-and-delete on the token the operator confirmed
+        (\texttt{DeleteChecksSeen}).
+  \item Use-time token match: a stored share is delivered only when both rows
+        carry the same token, and both rows are deleted, remote first, before
+        the downlink.
+  \item Device reads time out after 100\,s during the handshake and uplink and
+        after 15 minutes during the wipe, key transfer and ack; a timeout ends
+        the session.
+\end{itemize}
+
+\noindent
+Each guard switched off on its own makes TLC fail
+(Table~\ref{tab:provision-mutations}); the mutation configurations are in
+\texttt{specs/sae-provision/mutations/}.
+
+\begin{table}[h!]
+  \centering
+  \small
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{@{}lllrrr@{}}
+    \toprule
+    cfg & guard switched off & violated & generated & distinct & trace \\
+    \midrule
+    \texttt{mut\_a\_localfirst} & \texttt{LockOrder = "local"} (ring) & \texttt{AllSagasFinish} & 4\,663\,491 & 1\,268\,593 & 30 \\
+    \texttt{mut\_b\_nofence} & \texttt{FencePeerWrite} (single) & \texttt{OriginMarkedAfterPeer} & 11\,993 & 5\,376 & 19 \\
+    \texttt{mut\_d\_noseen} & \texttt{DeleteChecksSeen} (races) & \texttt{OperatorDeleteOnlyConfirmedShare} & 1\,991\,361 & 733\,664 & 32 \\
+    \texttt{mut\_e\_noleaseguard} & \texttt{LeaseGuard} (races) & \texttt{TerminalSuccessMeansConsistentShare} & 471\,473 & 157\,505 & 22 \\
+    \bottomrule
+  \end{tabular}}
+  \caption{Mutation checks. Each configuration equals the base configuration
+    in parentheses except for one guard. \texttt{mut\_a\_localfirst} ends in a
+    lasso (back to state 15): the ring attempts refuse each other forever.
+    Trace: number of states of the counterexample.}
+  \label{tab:provision-mutations}
+\end{table}
+\endgroup
+
+\section{TLC results}
+\label{sec:provision-tlc-online}
+
+The listings below are the output of TLC2 Version 2.19 of 08 August 2024
+(rev: 5a47802), run on Linux (Debian, OpenJDK 21) with 7 workers on 8 cores
+and \texttt{java -Xmx6g -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC
+-workers 7 -metadir /tmp/tlcp-<cfg> -config <cfg>.cfg SaeProvision.tla} from
+\texttt{specs/sae-provision} (\texttt{-config mutations/<cfg>.cfg} for the
+mutation checks), not with the online TLA+ tool. The parsing and
+semantic-processing lines are omitted; in the mutation counterexamples only
+the state headers are kept and the state contents are omitted.
+\clearpage{}
+\begin{lstlisting}[float, caption={SaeProvision.cfg result}, captionpos=t, label={lst:tlc-saeprovision}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 9 and seed 3968208812242439294 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 61947] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:41:28)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:41:28.
+Progress(40) at 2026-10-23 01:41:29: 103,643 states generated, 38,910 distinct states found, 0 states left on queue.
+Checking temporal properties for the complete state space with 38910 total distinct states at (2026-10-23 01:41:29)
+Finished checking temporal properties in 00s at 2026-10-23 01:41:29
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.4E-10
+  based on the actual fingerprints:  val = 6.3E-11
+103643 states generated, 38910 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 40.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 3).
+Finished in 02s at (2026-10-23 01:41:29)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={SaeProvision\_fan.cfg result}, captionpos=t, label={lst:tlc-saeprovision-fan}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 81 and seed 8011788905735990176 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 62019] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:41:30)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:41:30.
+Checking temporal properties for the current state space with 74068 total distinct states at (2026-10-23 01:41:33)
+Finished checking temporal properties in 00s at 2026-10-23 01:41:33
+Progress(19) at 2026-10-23 01:41:33: 193,981 states generated (193,981 s/min), 74,098 distinct states found (74,098 ds/min), 17,813 states left on queue.
+Progress(57) at 2026-10-23 01:42:00: 2,472,791 states generated, 846,298 distinct states found, 0 states left on queue.
+Checking temporal properties for the complete state space with 846298 total distinct states at (2026-10-23 01:42:00)
+Finished checking temporal properties in 04s at 2026-10-23 01:42:05
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 7.5E-8
+  based on the actual fingerprints:  val = 6.1E-8
+2472791 states generated, 846298 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 57.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 3).
+Finished in 35s at (2026-10-23 01:42:05)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={SaeProvision\_chain.cfg result}, captionpos=t, label={lst:tlc-saeprovision-chain}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 7 and seed 2591812127481628145 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 62352] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:42:06)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:42:06.
+Checking temporal properties for the current state space with 50323 total distinct states at (2026-10-23 01:42:09)
+Finished checking temporal properties in 00s at 2026-10-23 01:42:09
+Progress(20) at 2026-10-23 01:42:09: 142,410 states generated (142,410 s/min), 50,323 distinct states found (50,323 ds/min), 10,773 states left on queue.
+Progress(48) at 2026-10-23 01:42:28: 1,339,900 states generated, 393,993 distinct states found, 0 states left on queue.
+Checking temporal properties for the complete state space with 393993 total distinct states at (2026-10-23 01:42:28)
+Finished checking temporal properties in 02s at 2026-10-23 01:42:30
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 2.0E-8
+  based on the actual fingerprints:  val = 2.9E-8
+1339900 states generated, 393993 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 48.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 8 and the 95th percentile is 3).
+Finished in 25s at (2026-10-23 01:42:31)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={SaeProvision\_ring.cfg result}, captionpos=t, label={lst:tlc-saeprovision-ring}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 103 and seed -6885856220373530048 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 62570] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:42:31)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:42:31.
+Checking temporal properties for the current state space with 52558 total distinct states at (2026-10-23 01:42:34)
+Finished checking temporal properties in 00s at 2026-10-23 01:42:35
+Progress(17) at 2026-10-23 01:42:35: 173,071 states generated (173,071 s/min), 52,558 distinct states found (52,558 ds/min), 14,053 states left on queue.
+Progress(54) at 2026-10-23 01:43:33: 4,320,172 states generated, 1,191,007 distinct states found, 0 states left on queue.
+Checking temporal properties for the complete state space with 1191007 total distinct states at (2026-10-23 01:43:33)
+Finished checking temporal properties in 06s at 2026-10-23 01:43:39
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 2.0E-7
+  based on the actual fingerprints:  val = 7.6E-8
+4320172 states generated, 1191007 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 54.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 7 and the 95th percentile is 2).
+Finished in 01min 08s at (2026-10-23 01:43:39)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={SaeProvision\_races.cfg result}, captionpos=t, label={lst:tlc-saeprovision-races}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 23 and seed -3973241392135545154 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 63052] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:43:40)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:43:40.
+Progress(25) at 2026-10-23 01:43:43: 685,666 states generated (685,666 s/min), 253,893 distinct states found (253,893 ds/min), 46,278 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 2.0E-6
+  based on the actual fingerprints:  val = 8.5E-7
+12646725 states generated, 4602913 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 98.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 2).
+Finished in 45s at (2026-10-23 01:44:25)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={SaeProvision\_racesfull.cfg result}, captionpos=t, label={lst:tlc-saeprovision-racesfull}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 27 and seed 5034720135037240659 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 64020] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:45:45)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:45:45.
+Progress(19) at 2026-10-23 01:45:48: 747,280 states generated (747,280 s/min), 242,017 distinct states found (242,017 ds/min), 73,935 states left on queue.
+Progress(32) at 2026-10-23 01:46:48: 22,697,976 states generated (21,950,696 s/min), 6,935,295 distinct states found (6,693,278 ds/min), 1,076,947 states left on queue.
+Progress(37) at 2026-10-23 01:47:48: 44,378,642 states generated (21,680,666 s/min), 13,543,769 distinct states found (6,608,474 ds/min), 1,668,623 states left on queue.
+Progress(40) at 2026-10-23 01:48:48: 65,530,027 states generated (21,151,385 s/min), 19,960,483 distinct states found (6,416,714 ds/min), 2,054,627 states left on queue.
+Progress(43) at 2026-10-23 01:49:48: 87,002,426 states generated (21,472,399 s/min), 26,459,905 distinct states found (6,499,422 ds/min), 2,300,069 states left on queue.
+Progress(46) at 2026-10-23 01:50:48: 108,107,767 states generated (21,105,341 s/min), 32,860,191 distinct states found (6,400,286 ds/min), 2,445,548 states left on queue.
+Progress(48) at 2026-10-23 01:51:48: 128,257,564 states generated (20,149,797 s/min), 38,932,510 distinct states found (6,072,319 ds/min), 2,453,473 states left on queue.
+Progress(51) at 2026-10-23 01:52:48: 148,190,003 states generated (19,932,439 s/min), 44,991,523 distinct states found (6,059,013 ds/min), 2,385,569 states left on queue.
+Progress(54) at 2026-10-23 01:53:48: 168,582,904 states generated (20,392,901 s/min), 51,195,552 distinct states found (6,204,029 ds/min), 2,201,288 states left on queue.
+Progress(57) at 2026-10-23 01:54:48: 188,444,682 states generated (19,861,778 s/min), 57,287,251 distinct states found (6,091,699 ds/min), 1,922,768 states left on queue.
+Progress(60) at 2026-10-23 01:55:48: 206,591,702 states generated (18,147,020 s/min), 62,925,345 distinct states found (5,638,094 ds/min), 1,597,326 states left on queue.
+Progress(64) at 2026-10-23 01:56:48: 223,117,623 states generated (16,525,921 s/min), 68,145,108 distinct states found (5,219,763 ds/min), 1,260,977 states left on queue.
+Progress(69) at 2026-10-23 01:57:48: 238,614,662 states generated (15,497,039 s/min), 73,098,055 distinct states found (4,952,947 ds/min), 879,028 states left on queue.
+Progress(78) at 2026-10-23 01:58:48: 254,202,482 states generated (15,587,820 s/min), 78,089,322 distinct states found (4,991,267 ds/min), 291,578 states left on queue.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 7.7E-4
+  based on the actual fingerprints:  val = .0024
+258450361 states generated, 79448065 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 107.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 9 and the 95th percentile is 2).
+Finished in 13min 23s at (2026-10-23 01:59:09)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={mutations/mut\_a\_localfirst.cfg result}, captionpos=t, label={lst:tlc-mut-a-localfirst}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 91 and seed 5827032060511972997 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 63288] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:44:26)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:44:26.
+Checking temporal properties for the current state space with 48210 total distinct states at (2026-10-23 01:44:29)
+Finished checking temporal properties in 00s at 2026-10-23 01:44:29
+Progress(17) at 2026-10-23 01:44:29: 160,133 states generated (160,133 s/min), 48,210 distinct states found (48,210 ds/min), 13,825 states left on queue.
+Checking temporal properties for the current state space with 1268589 total distinct states at (2026-10-23 01:45:29)
+Error: Temporal properties were violated.
+
+Error: The following behavior constitutes a counter-example:
+
+State 1: <Initial predicate>
+State 2: <Crash line 425, col 3 to line 434, col 30 of module SaeProvision>
+State 3: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 4: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 5: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 6: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 7: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 8: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 9: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 10: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 11: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 12: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 13: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 14: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 15: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 16: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 17: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 18: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 19: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 20: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 21: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 22: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 23: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 24: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 25: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 26: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 27: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 28: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 29: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 30: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+Back to state 15: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+(state contents omitted)
+Finished checking temporal properties in 00s at 2026-10-23 01:45:30
+4663491 states generated, 1268593 distinct states found, 43733 states left on queue.
+Finished in 01min 04s at (2026-10-23 01:45:30)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={mutations/mut\_b\_nofence.cfg result}, captionpos=t, label={lst:tlc-mut-b-nofence}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 74 and seed 5675278146326365799 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 63727] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:45:31)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:45:31.
+Error: Invariant OriginMarkedAfterPeer is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+State 2: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 3: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 4: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 5: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 6: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 7: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 8: <LostReply line 366, col 3 to line 389, col 30 of module SaeProvision>
+State 9: <Crash line 425, col 3 to line 434, col 30 of module SaeProvision>
+State 10: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 11: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 12: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 13: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 14: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 15: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 16: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 17: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 18: <Next line 469, col 6 to line 469, col 31 of module SaeProvision>
+State 19: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+(state contents omitted)
+11993 states generated, 5376 distinct states found, 1244 states left on queue.
+The depth of the complete state graph search is 19.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 4).
+Finished in 00s at (2026-10-23 01:45:31)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={mutations/mut\_d\_noseen.cfg result}, captionpos=t, label={lst:tlc-mut-d-noseen}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 12 and seed 5924658829868420189 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 63890] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:45:34)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:45:34.
+Progress(26) at 2026-10-23 01:45:37: 771,165 states generated (771,165 s/min), 285,473 distinct states found (285,473 ds/min), 50,630 states left on queue.
+Error: Invariant OperatorDeleteOnlyConfirmedShare is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+State 2: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 3: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 4: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 5: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 6: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 7: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 8: <LostReply line 366, col 3 to line 389, col 30 of module SaeProvision>
+State 9: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 10: <Next line 469, col 6 to line 469, col 31 of module SaeProvision>
+State 11: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 12: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 13: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 14: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 15: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 16: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 17: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 18: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 19: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 20: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 21: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 22: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 23: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 24: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 25: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 26: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 27: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 28: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 29: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 30: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 31: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 32: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+(state contents omitted)
+1991361 states generated, 733664 distinct states found, 95599 states left on queue.
+The depth of the complete state graph search is 32.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 3).
+Finished in 07s at (2026-10-23 01:45:41)
+\end{lstlisting}
+\bigskip
+
+\begin{lstlisting}[float, caption={mutations/mut\_e\_noleaseguard.cfg result}, captionpos=t, label={lst:tlc-mut-e-noleaseguard}]
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 52 and seed -6678417646294727805 with 7 workers on 8 cores with 5461MB heap and 64MB offheap memory [pid: 63958] (Linux 6.12.94+ amd64, Debian 21.0.12.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+(parsing and semantic-processing lines omitted)
+Starting... (2026-10-23 01:45:42)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-23 01:45:42.
+Error: Invariant TerminalSuccessMeansConsistentShare is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+State 2: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 3: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 4: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 5: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 6: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 7: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 8: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 9: <Stall line 394, col 3 to line 400, col 36 of module SaeProvision>
+State 10: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 11: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 12: <Expire line 437, col 3 to line 439, col 43 of module SaeProvision>
+State 13: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 14: <Expire line 437, col 3 to line 439, col 43 of module SaeProvision>
+State 15: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 16: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 17: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 18: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 19: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 20: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 21: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+State 22: <SagaStep line 358, col 3 to line 358, col 47 of module SaeProvision>
+(state contents omitted)
+471473 states generated, 157505 distinct states found, 36652 states left on queue.
+The depth of the complete state graph search is 22.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 7 and the 95th percentile is 3).
+Finished in 02s at (2026-10-23 01:45:44)
+\end{lstlisting}
+\bigskip
+
+\clearpage
+\appendix
+\section{Model source}
+\label{sec:provision-source}
+
+\lstinputlisting[]{sae-provision/SaeProvision.tla}
+
+\begin{lstlisting}[float, caption={SaeProvision.cfg}, captionpos=t]
+\* Single attempt 1->2 with every fault: replugs, crash, stall, abort, lost RMI reply, operator deletes.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2}
+  Edges <- SingleEdges
+  MaxSessions = 3
+  MaxCrashes = 1
+  MaxStalls = 1
+  MaxAborts = 1
+  MaxLost = 1
+  OperatorDeletes = TRUE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+PROPERTY AllSagasFinish
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={SaeProvision\_fan.cfg}, captionpos=t]
+\* Fan 1->2, 3->1, 3->2: replugs, one stall, one lost RMI reply.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3}
+  Edges <- FanEdges
+  MaxSessions = 2
+  MaxCrashes = 0
+  MaxStalls = 1
+  MaxAborts = 0
+  MaxLost = 1
+  OperatorDeletes = FALSE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+PROPERTY AllSagasFinish
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={SaeProvision\_chain.cfg}, captionpos=t]
+\* Chain: fan + 4->2, 3->4; one lost RMI reply, one session each.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3, 4}
+  Edges <- ChainEdges
+  MaxSessions = 1
+  MaxCrashes = 0
+  MaxStalls = 0
+  MaxAborts = 0
+  MaxLost = 1
+  OperatorDeletes = FALSE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+PROPERTY AllSagasFinish
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={SaeProvision\_ring.cfg}, captionpos=t]
+\* Ring 1->2->3->4->1, unbounded retry on refusal, one crash.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3, 4}
+  Edges <- RingEdges
+  MaxSessions = 2
+  MaxCrashes = 1
+  MaxStalls = 0
+  MaxAborts = 0
+  MaxLost = 0
+  OperatorDeletes = FALSE
+  RetryOnRefusal = TRUE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+PROPERTY AllSagasFinish
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={SaeProvision\_races.cfg}, captionpos=t]
+\* Fan with operator deletes, one stall, one lost RMI reply, replugs (safety only).
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3}
+  Edges <- FanEdges
+  MaxSessions = 2
+  MaxCrashes = 0
+  MaxStalls = 1
+  MaxAborts = 0
+  MaxLost = 1
+  OperatorDeletes = TRUE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+\* PROPERTY AllSagasFinish   (safety-only run)
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={SaeProvision\_racesfull.cfg}, captionpos=t]
+\* Full fan races: operator deletes, crash, stall, lost RMI reply, replugs (safety only).
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3}
+  Edges <- FanEdges
+  MaxSessions = 2
+  MaxCrashes = 1
+  MaxStalls = 1
+  MaxAborts = 0
+  MaxLost = 1
+  OperatorDeletes = TRUE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+\* PROPERTY AllSagasFinish   (safety-only run)
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={mutations/mut\_a\_localfirst.cfg}, captionpos=t]
+\* Mutation: each operation locks its own SAE first (LockOrder = "local"); ring as SaeProvision_ring.cfg.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3, 4}
+  Edges <- RingEdges
+  MaxSessions = 2
+  MaxCrashes = 1
+  MaxStalls = 0
+  MaxAborts = 0
+  MaxLost = 0
+  OperatorDeletes = FALSE
+  RetryOnRefusal = TRUE
+  LockOrder = "local"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+PROPERTY AllSagasFinish
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={mutations/mut\_b\_nofence.cfg}, captionpos=t]
+\* Mutation: the peer write is not fenced by the lock token (FencePeerWrite = FALSE); single attempt as SaeProvision.cfg.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2}
+  Edges <- SingleEdges
+  MaxSessions = 3
+  MaxCrashes = 1
+  MaxStalls = 1
+  MaxAborts = 1
+  MaxLost = 1
+  OperatorDeletes = TRUE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = FALSE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+PROPERTY AllSagasFinish
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={mutations/mut\_d\_noseen.cfg}, captionpos=t]
+\* Mutation: the operator delete does not compare the row token with the confirmed one (DeleteChecksSeen = FALSE); fan as SaeProvision_races.cfg.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3}
+  Edges <- FanEdges
+  MaxSessions = 2
+  MaxCrashes = 0
+  MaxStalls = 1
+  MaxAborts = 0
+  MaxLost = 1
+  OperatorDeletes = TRUE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = FALSE
+  LeaseGuard = TRUE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+\* PROPERTY AllSagasFinish   (safety-only run)
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[float, caption={mutations/mut\_e\_noleaseguard.cfg}, captionpos=t]
+\* Mutation: no renewal of both locks after a renewal gap (LeaseGuard = FALSE); fan as SaeProvision_races.cfg.
+SPECIFICATION Spec
+CONSTANTS
+  Nodes = {1, 2, 3}
+  Edges <- FanEdges
+  MaxSessions = 2
+  MaxCrashes = 0
+  MaxStalls = 1
+  MaxAborts = 0
+  MaxLost = 1
+  OperatorDeletes = TRUE
+  RetryOnRefusal = FALSE
+  LockOrder = "lower"
+  FencePeerWrite = TRUE
+  DeleteTakesLocks = TRUE
+  DeleteChecksSeen = TRUE
+  LeaseGuard = FALSE
+INVARIANT TypeOK
+INVARIANT MutualExclusion
+INVARIANT TerminalSuccessMeansConsistentShare
+INVARIANT OriginMarkedAfterPeer
+INVARIANT MatchingSharesWhenCommitted
+INVARIANT NoMismatchedDelivery
+INVARIANT CompletedShareNotSilentlyLost
+INVARIANT OperatorDeleteOnlyConfirmedShare
+INVARIANT OperatorDeleteOnlyRowsPresentAtLock
+INVARIANT RemoteFirstDelete
+\* PROPERTY AllSagasFinish   (safety-only run)
+CHECK_DEADLOCK TRUE
+\end{lstlisting}
+
+\end{document}

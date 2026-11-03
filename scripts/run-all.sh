@@ -32,7 +32,7 @@ Start the HSM simulator first. CONFIG is a file in scripts/configs/
   scripts/hsm.sh               csadm setup if needed
   scripts/java.sh compile      mvn install (local reactor jars)
   scripts/java.sh certgen      CertGenerator
-  scripts/host.sh prepare      embed certs + build se_host
+  scripts/host.sh prepare      libtropic submodule, model venv, deps, build se_host
   scripts/java.sh migrate      Flyway node-1 / node-2
   tmux session '$SESSION'      one row per selected group; pairs split left|right
 

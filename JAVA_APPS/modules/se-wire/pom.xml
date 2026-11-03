@@ -33,24 +33,4 @@
                 <scope>test</scope>
             </dependency>
     </dependencies>
-    <build>
-        <sourceDirectory>${src.root}/SaeNode/main/java</sourceDirectory>
-        <testSourceDirectory>${src.root}/SaeNode/test/java</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>fel/cvut/se/**</include>
-                        <include>fel/cvut/terminal/**</include>
-                    </includes>
-                    <testIncludes>
-                        <testInclude>fel/cvut/unit/se/**</testInclude>
-                        <testInclude>fel/cvut/unit/terminal/**</testInclude>
-                    </testIncludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -1,114 +1,372 @@
-<mxfile host="drawio" agent="generated"><diagram name="PROVISION" id="ProvisionProcessTree001"><mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="2900" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/>
-<mxCell id="lg0" value="SE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1"><mxGeometry x="560" y="10" width="140" height="30" as="geometry"/></mxCell>
-<mxCell id="lg1" value="SAE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="710" y="10" width="140" height="30" as="geometry"/></mxCell>
-<mxCell id="lg2" value="Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1"><mxGeometry x="860" y="10" width="140" height="30" as="geometry"/></mxCell>
-<mxCell id="lg3" value="QKD / KME" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1010" y="10" width="140" height="30" as="geometry"/></mxCell>
-<mxCell id="lg4" value="Peer / origin SAE (RMI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1160" y="10" width="140" height="30" as="geometry"/></mxCell>
-<mxCell id="lg5" value="End without keys" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1310" y="10" width="140" height="30" as="geometry"/></mxCell>
-<mxCell id="start" value="PROVISION {unix}&lt;br&gt;PIN stays off USB" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1"><mxGeometry x="820" y="70" width="300" height="70" as="geometry"/></mxCell>
-<mxCell id="arm" value="se_ready_provision()?&lt;br&gt;owner, device cert + key,&lt;br&gt;SAE CA, ML-KEM key;&lt;br&gt;time synced" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1"><mxGeometry x="790" y="170" width="360" height="130" as="geometry"/></mxCell>
-<mxCell id="refused" value="Refused: TLS is not armed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1600" y="205" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="tls" value="TLS 1.3 mTLS, PURE_PQC&lt;br&gt;SE: SAE leaf vs. SAE CA&lt;br&gt;SAE: device leaf vs. client_ca" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="800" y="330" width="340" height="80" as="geometry"/></mxCell>
-<mxCell id="uplink" value="Uplink LV v5: session_sig, ecc_pub, client_hash,&lt;br&gt;slot_size, pad_count, fill_id, ML-KEM pk,&lt;br&gt;peers (hash, name, pad_plain)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1"><mxGeometry x="770" y="440" width="400" height="90" as="geometry"/></mxCell>
-<mxCell id="wipe" value="Erase QKD R-MEM slots&lt;br&gt;then send TROPIC_WIPE_FINISHED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1280" y="450" width="340" height="70" as="geometry"/></mxCell>
-<mxCell id="verify" value="SeSessionUplink.readAndVerify&lt;br&gt;client_hash = SHA-384(TLS SPKI ‖ ecc_pub)?&lt;br&gt;ECDSA over SHA-384(client_hash ‖ exporter)?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="760" y="560" width="420" height="150" as="geometry"/></mxCell>
-<mxCell id="badup" value="Abort (bad uplink)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1600" y="605" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="select" value="Operator: choose peer SAE and peer device&lt;br&gt;(InputHandler.selectForUplink)&lt;br&gt;pad_plain = min(plainMax, peer pad_plain)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1"><mxGeometry x="800" y="740" width="340" height="80" as="geometry"/></mxCell>
-<mxCell id="sync" value="Local synchronize()&lt;br&gt;(AtomicRecordStateMap)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="790" y="850" width="360" height="130" as="geometry"/></mxCell>
-<mxCell id="busy" value="NOT_INSERTED: Record sharing is in&lt;br&gt;progress on another SAE. Wait 10 s, retry." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1600" y="885" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="rules" value="&lt;b&gt;synchronize() eligibility&lt;/b&gt; (window 5 min)&lt;br&gt;&lt;b&gt;INSERTED&lt;/b&gt;: no row or retention expired; stale RECORD_SYNCHRONIZATION, RECORD_FETCHING_STARTED or RECORD_SHARED; RECORD_SYNCHRONIZATION of the same issuer, or the issuer ID is higher than this SAE ID&lt;br&gt;&lt;b&gt;ORIGIN_PROVISIONED&lt;/b&gt;: finished row, same target SAE&lt;br&gt;&lt;b&gt;RECORD_SHARED_WITH_DIFFERENT_SAE&lt;/b&gt;: RECORD_SHARED, ORIGIN_PROVISIONED or a live RECORD_SYNCHRONIZATION for a different target SAE&lt;br&gt;&lt;b&gt;NOT_INSERTED&lt;/b&gt;: fresh RECORD_FETCHING_STARTED; for the same target SAE a fresh RECORD_SHARED or a live RECORD_SYNCHRONIZATION of another issuer&lt;br&gt;&lt;b&gt;Lifecycle&lt;/b&gt;: RECORD_SYNCHRONIZATION → RECORD_FETCHING_STARTED → RECORD_SHARED → ORIGIN_PROVISIONED&lt;br&gt;&lt;b&gt;RMI&lt;/b&gt;: every call is mTLS with a pinned peer SPKI; issuingSaeId must be the caller; removeRecord / markOriginProvisioned only by a party; deleteShare by a non-party only for a completed share (handover)" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="20" y="90" width="520" height="330" as="geometry"/></mxCell>
-<mxCell id="gen" value="No shared keys were found for this pair.&lt;br&gt;Generate new keys now?&lt;br&gt;(skipped after a delete)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1"><mxGeometry x="20" y="1070" width="380" height="150" as="geometry"/></mxCell>
-<mxCell id="psync" value="RMI synchronize() on peer SAE&lt;br&gt;(reversed hashes) → RECORD_SYNCHRONIZATION" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="40" y="1260" width="340" height="70" as="geometry"/></mxCell>
-<mxCell id="pout" value="Peer outcome?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="40" y="1360" width="340" height="120" as="geometry"/></mxCell>
-<mxCell id="rej" value="Rollback origin row. Target SAE&lt;br&gt;rejected the insert; retry later." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="460" y="1530" width="280" height="70" as="geometry"/></mxCell>
-<mxCell id="pdel" value="getRecordMetadata() on peer.&lt;br&gt;This will permanently delete&lt;br&gt;those keys. Delete them and&lt;br&gt;generate new ones?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1"><mxGeometry x="440" y="1230" width="300" height="150" as="geometry"/></mxCell>
-<mxCell id="handover" value="RMI deleteShare() on peer (handover):&lt;br&gt;peer removes its counterpart&lt;br&gt;on its row SAE first, then its own row" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="440" y="1070" width="300" height="100" as="geometry"/></mxCell>
-<mxCell id="kept1" value="tryDelete local row.&lt;br&gt;Existing keys were kept." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="460" y="1412" width="280" height="46" as="geometry"/></mxCell>
-<mxCell id="lock" value="lockFetch(): origin, then RMI on peer&lt;br&gt;→ RECORD_FETCHING_STARTED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="40" y="1520" width="340" height="70" as="geometry"/></mxCell>
-<mxCell id="fetch" value="QkdPadMaterialFetcher.fetch()&lt;br&gt;enc_keys from the KME: key IDs + pads" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1"><mxGeometry x="40" y="1620" width="340" height="70" as="geometry"/></mxCell>
-<mxCell id="insert" value="RMI insert(record with key IDs)&lt;br&gt;peer: getKeyWithKeyIds at its KME,&lt;br&gt;HSM-wrapped pads, finishRecordInsert&lt;br&gt;→ RECORD_SHARED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="1720" width="340" height="100" as="geometry"/></mxCell>
-<mxCell id="fin" value="Peer insert OK and origin&lt;br&gt;finishRecordInsert()&lt;br&gt;→ RECORD_SHARED?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="1850" width="340" height="130" as="geometry"/></mxCell>
-<mxCell id="rb" value="rollbackBoth: RMI removeRecord() on&lt;br&gt;peer first, then local tryDelete;&lt;br&gt;session ends with an error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="2020" width="340" height="80" as="geometry"/></mxCell>
-<mxCell id="issuer" value="ORIGIN_PROVISIONED:&lt;br&gt;issuingSaeId == this SAE?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="800" y="1070" width="340" height="130" as="geometry"/></mxCell>
-<mxCell id="recreate" value="Shared keys already exist with&lt;br&gt;SAE … (created …).&lt;br&gt;Delete them and generate&lt;br&gt;new keys?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="1240" width="340" height="150" as="geometry"/></mxCell>
-<mxCell id="kept2" value="Existing keys were kept.&lt;br&gt;No keys were sent to the device." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="820" y="1430" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="delrestart" value="deleteShareAndRestart: RMI removeRecord()&lt;br&gt;on the row SAE first, then local&lt;br&gt;forceDelete; restart synchronize()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="790" y="1520" width="360" height="90" as="geometry"/></mxCell>
-<mxCell id="use" value="Shared keys already exist&lt;br&gt;with SAE … (created …).&lt;br&gt;Did you mean to use&lt;br&gt;those keys?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1200" y="1070" width="340" height="150" as="geometry"/></mxCell>
-<mxCell id="reallydel" value="This will permanently delete&lt;br&gt;those keys. Do you really&lt;br&gt;want to delete them and&lt;br&gt;generate new ones?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1600" y="1070" width="340" height="150" as="geometry"/></mxCell>
-<mxCell id="kept3" value="Existing keys were kept.&lt;br&gt;No keys were sent to the device." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="1260" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="deliver" value="deliverExistingShare:&lt;br&gt;local row ORIGIN_PROVISIONED&lt;br&gt;and plainMax ≥ padPlainLen?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1200" y="1250" width="340" height="150" as="geometry"/></mxCell>
-<mxCell id="notready" value="Origin SAE has not finished provision,&lt;br&gt;or the chip is smaller. No keys sent." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="1355" width="300" height="70" as="geometry"/></mxCell>
-<mxCell id="oget" value="RMI getRecordMetadata()&lt;br&gt;on the origin (issuingSaeId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1220" y="1440" width="300" height="70" as="geometry"/></mxCell>
-<mxCell id="decide" value="OriginShareCheck.decide()" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1200" y="1540" width="340" height="130" as="geometry"/></mxCell>
-<mxCell id="unreach" value="Origin SAE is unreachable.&lt;br&gt;Keys were not sent to the device." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="1460" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="inprog" value="IN_PROGRESS: Origin SAE has not&lt;br&gt;finished provision. No keys sent." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="1560" width="300" height="60" as="geometry"/></mxCell>
-<mxCell id="delboth" value="DELETE_BOTH: RMI removeRecord() on&lt;br&gt;origin first, then local forceDelete.&lt;br&gt;Shared keys were deleted. Retry." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="1660" width="300" height="90" as="geometry"/></mxCell>
-<mxCell id="sendstored" value="sendStoredShare: RMI removeRecord()&lt;br&gt;on origin first, read the payload,&lt;br&gt;local forceDelete, remove payload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1200" y="1710" width="340" height="100" as="geometry"/></mxCell>
-<mxCell id="dlo" value="SeKemFill.buildDownlink()&lt;br&gt;ML-KEM-768 encapsulation, sealed pads,&lt;br&gt;decrypt_half = ORIGIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="2020" width="340" height="80" as="geometry"/></mxCell>
-<mxCell id="dlp" value="SeKemFill.buildDownlink()&lt;br&gt;ML-KEM-768 encapsulation, sealed pads,&lt;br&gt;decrypt_half = PEER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1200" y="2020" width="340" height="80" as="geometry"/></mxCell>
-<mxCell id="stream" value="Wait for TROPIC_WIPE_FINISHED, then&lt;br&gt;stream the LV downlink v3&lt;br&gt;(device reports every 10 KiB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1000" y="2140" width="340" height="80" as="geometry"/></mxCell>
-<mxCell id="store" value="secure_qkd_ingest()&lt;br&gt;stores all pads?&lt;br&gt;→ SE_OK" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1000" y="2250" width="340" height="130" as="geometry"/></mxCell>
-<mxCell id="abort" value="Abort / close TLS" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1620" y="2275" width="300" height="80" as="geometry"/></mxCell>
-<mxCell id="newsh" value="Outcome Generated&lt;br&gt;(new origin share)?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1000" y="2410" width="340" height="120" as="geometry"/></mxCell>
-<mxCell id="mark" value="markOriginProvisioned(): RMI on peer&lt;br&gt;first, then local → ORIGIN_PROVISIONED&lt;br&gt;on both rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="790" y="2560" width="360" height="90" as="geometry"/></mxCell>
-<mxCell id="marked" value="Both rows marked?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1"><mxGeometry x="790" y="2680" width="360" height="120" as="geometry"/></mxCell>
-<mxCell id="notcons" value="Device stored the keys, but the share was not&lt;br&gt;marked provisioned. Rows stay RECORD_SHARED." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="2705" width="380" height="70" as="geometry"/></mxCell>
-<mxCell id="ok" value="Loading to device: 100 %&lt;br&gt;Share successful." style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1200" y="2690" width="340" height="100" as="geometry"/></mxCell>
-<mxCell id="nokeys" value="&lt;b&gt;Every grey end&lt;/b&gt; closes TLS without a downlink. The chip has already erased its QKD R-MEM slots after the uplink. Exceptions (QKD, RMI) end the session with an operator error message." style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1600" y="1820" width="340" height="150" as="geometry"/></mxCell>
-<mxCell id="e0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="start" target="arm"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e1" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="arm" target="tls"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e2" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="arm" target="refused"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="tls" target="uplink"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uplink" target="verify"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e5" value="in parallel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;" edge="1" parent="1" source="uplink" target="wipe"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e6" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="verify" target="badup"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e7" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="verify" target="select"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="select" target="sync"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e9" value="NOT_INSERTED" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="sync" target="busy"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e10" value="INSERTED" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="sync" target="gen"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e11" value="No: tryDelete, Reselect" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="gen" target="select"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="210" y="780"/></Array></mxGeometry></mxCell>
-<mxCell id="e12" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="gen" target="psync"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="psync" target="pout"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e14" value="RECORD_SHARED_WITH_DIFFERENT_SAE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="pout" target="pdel"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e15" value="other" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.75;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="pout" target="rej"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="600" y="1450"/></Array></mxGeometry></mxCell>
-<mxCell id="e16" value="INSERTED" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="pout" target="lock"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e17" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="pdel" target="handover"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e18" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="pdel" target="kept1"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e19" value="generate again,&lt;br&gt;no prompt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="handover" target="psync"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="420" y="1120"/><mxPoint x="420" y="1277"/></Array></mxGeometry></mxCell>
-<mxCell id="e20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="lock" target="fetch"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="fetch" target="insert"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="insert" target="fin"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e23" value="No / exception" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="fin" target="rb"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e24" value="lock refused" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="lock" target="rej"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e25" value="ORIGIN_PROVISIONED" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="sync" target="issuer"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e26" value="RECORD_SHARED_WITH_DIFFERENT_SAE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.75;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sync" target="use"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1370" y="947"/></Array></mxGeometry></mxCell>
-<mxCell id="e27" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="issuer" target="recreate"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e28" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="issuer" target="deliver"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e29" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="recreate" target="kept2"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e30" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="recreate" target="delrestart"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e31" value="restart" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="delrestart" target="sync"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="740" y="1565"/><mxPoint x="740" y="915"/></Array></mxGeometry></mxCell>
-<mxCell id="e32" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="use" target="deliver"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e33" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="use" target="reallydel"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e34" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="reallydel" target="kept3"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e35" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="reallydel" target="delrestart"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1980" y="1145"/><mxPoint x="1980" y="1565"/></Array></mxGeometry></mxCell>
-<mxCell id="e36" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="deliver" target="notready"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e37" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="deliver" target="oget"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e38" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="oget" target="decide"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e39" value="unreachable" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="oget" target="unreach"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e40" value="IN_PROGRESS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="decide" target="inprog"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e41" value="DELETE_BOTH" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="decide" target="delboth"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e42" value="PROVISIONED" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="decide" target="sendstored"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e43" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="fin" target="dlo"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e44" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="sendstored" target="dlp"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e45" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="dlo" target="stream"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e46" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="dlp" target="stream"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e47" value="TROPIC_WIPE_FINISHED" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="wipe" target="stream"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1570" y="485"/><mxPoint x="1570" y="2180"/></Array></mxGeometry></mxCell>
-<mxCell id="e48" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="stream" target="store"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e49" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="store" target="abort"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e50" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="store" target="newsh"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e51" value="Yes (Generated)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="newsh" target="mark"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e52" value="No (Existing)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="newsh" target="ok"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e53" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="mark" target="marked"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e54" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="marked" target="notcons"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-<mxCell id="e55" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="marked" target="ok"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
-</root></mxGraphModel></diagram></mxfile>
+<mxfile host="Electron" agent="generated">
+  <diagram name="PROVISION" id="ProvisionProcessTree001">
+    <mxGraphModel dx="4276" dy="2648" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="2900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lg0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" value="SE" vertex="1">
+          <mxGeometry height="30" width="140" x="560" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="SAE" vertex="1">
+          <mxGeometry height="30" width="140" x="710" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="Operator" vertex="1">
+          <mxGeometry height="30" width="140" x="860" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;fontSize=12;" value="QKD / KME" vertex="1">
+          <mxGeometry height="30" width="140" x="1010" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=12;" value="Peer / origin SAE (RMI)" vertex="1">
+          <mxGeometry height="30" width="140" x="1160" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="End without keys" vertex="1">
+          <mxGeometry height="30" width="140" x="1310" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="PROVISION with current time&lt;br&gt;PIN stays off USB" vertex="1">
+          <mxGeometry height="60" width="300" x="820" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="arm" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Device ready to provision?&lt;br&gt;owner, device certificate + key,&lt;br&gt;SAE CA, ML-KEM key;&lt;br&gt;time synced" vertex="1">
+          <mxGeometry height="130" width="360" x="790" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="refused" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=13;" value="Refused: TLS is not armed" vertex="1">
+          <mxGeometry height="60" width="300" x="1600" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="tls" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Post-quantum mutual TLS 1.3&lt;br&gt;Device checks the SAE certificate&lt;br&gt;SAE checks the device certificate" vertex="1">
+          <mxGeometry height="80" width="340" x="800" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="uplink" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Device sends: session signature, its identity,&lt;br&gt;slot size and pad count, ML-KEM public key,&lt;br&gt;its peers (identity, name, pad size)" vertex="1">
+          <mxGeometry height="80" width="400" x="770" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="wipe" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Device erases its QKD key slots,&lt;br&gt;then reports wipe finished" vertex="1">
+          <mxGeometry height="60" width="340" x="1240" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="verify" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Uplink from this device&lt;br&gt;and this TLS session?&lt;br&gt;(identity hash and signature)" vertex="1">
+          <mxGeometry height="150" width="420" x="760" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="badup" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=13;" value="Abort (bad uplink)" vertex="1">
+          <mxGeometry height="60" width="300" x="1250" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="select" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="Operator: choose peer SAE and peer device;&lt;br&gt;pad size = smaller of the two devices" vertex="1">
+          <mxGeometry height="60" width="340" x="800" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="dlo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="Build the downlink: ML-KEM encapsulation,&lt;br&gt;sealed pads for the origin device" vertex="1">
+          <mxGeometry height="60" width="340" x="800" y="2020" as="geometry" />
+        </mxCell>
+        <mxCell id="dlp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="Build the downlink: ML-KEM encapsulation,&lt;br&gt;sealed pads for the peer device" vertex="1">
+          <mxGeometry height="60" width="340" x="1200" y="2020" as="geometry" />
+        </mxCell>
+        <mxCell id="stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="Wait for wipe finished, then&lt;br&gt;stream the pads to the device&lt;br&gt;(progress every 10 KiB);&lt;br&gt;renew both locks every 60 s" vertex="1">
+          <mxGeometry height="80" width="340" x="1000" y="2140" as="geometry" />
+        </mxCell>
+        <mxCell id="store" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Device stores all pads?" vertex="1">
+          <mxGeometry height="130" width="340" x="1000" y="2250" as="geometry" />
+        </mxCell>
+        <mxCell id="abort" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=13;" value="Abort / close TLS" vertex="1">
+          <mxGeometry height="80" width="300" x="1620" y="2275" as="geometry" />
+        </mxCell>
+        <mxCell id="nokeys" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Every grey end&lt;/b&gt; closes TLS without a downlink. The device has already erased its QKD key slots after the uplink. Errors (QKD, RMI) end the session with an operator error message. Every end releases the pair locks, remote first." vertex="1">
+          <mxGeometry height="110" width="340" x="1600" y="1820" as="geometry" />
+        </mxCell>
+        <mxCell id="ok" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;fontSize=13;" value="Loading to device: 100 %&lt;br&gt;Share successful." vertex="1">
+          <mxGeometry height="100" width="340" x="1200" y="2690" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="arm" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="arm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="tls" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="arm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="refused" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="tls" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="uplink" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="uplink" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="verify" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="uplink" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;" target="wipe" value="in parallel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="verify" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="badup" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="verify" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="select" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e45" edge="1" parent="1" source="dlo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="stream" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e46" edge="1" parent="1" source="dlp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="stream" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e47" edge="1" parent="1" source="wipe" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="stream" value="wipe finished">
+          <mxGeometry relative="1" x="-0.8321" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1980" y="480" />
+              <mxPoint x="1980" y="2180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e48" edge="1" parent="1" source="stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="store" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e49" edge="1" parent="1" source="store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="abort" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e50" edge="1" parent="1" source="store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="newsh" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rules" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;fontSize=12;" value="&lt;b&gt;Pair locks&lt;/b&gt;&lt;br&gt;&lt;b&gt;Every operation&lt;/b&gt; on a client pair (new share, stored share, operator delete) locks the pair on both SAEs: the lower SAE ID first, then the higher. A refusal releases the first lock; nobody waits.&lt;br&gt;&lt;b&gt;Lease&lt;/b&gt;: in memory, 5 min, random token and issuing SAE; renewed every 60 s and before and after each commit step.&lt;br&gt;&lt;b&gt;Fencing&lt;/b&gt;: every write and delete checks in one transaction that the lease is still held. A lost lock aborts the operation and closes the device session.&lt;br&gt;&lt;b&gt;Release&lt;/b&gt;: remote first.&lt;br&gt;&lt;b&gt;Stored share&lt;/b&gt;: one state, keys available, with the lock token, the issuer and the counterpart SAE.&lt;br&gt;&lt;b&gt;RMI&lt;/b&gt;: mutual TLS with pinned peers; the caller is identified by its certificate." vertex="1">
+          <mxGeometry height="260" width="520" x="20" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="sync" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Stored share for this pair?" vertex="1">
+          <mxGeometry height="130" width="360" x="790" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="gen" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="No shared keys were found for this pair.&lt;br&gt;Generate new keys now?&lt;br&gt;(skipped after a delete)" vertex="1">
+          <mxGeometry height="150" width="380" x="20" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="lock" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" value="Lock the pair: lower SAE ID first,&lt;br&gt;then higher" vertex="1">
+          <mxGeometry height="60" width="340" x="40" y="1260" as="geometry" />
+        </mxCell>
+        <mxCell id="busy" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Another operation for this device pair&lt;br&gt;is in progress on an SAE. Retry later." vertex="1">
+          <mxGeometry height="70" width="280" x="445" y="1255" as="geometry" />
+        </mxCell>
+        <mxCell id="tgt" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Still no local share.&lt;br&gt;Does the target SAE hold&lt;br&gt;a share with another SAE?" vertex="1">
+          <mxGeometry height="140" width="340" x="40" y="1380" as="geometry" />
+        </mxCell>
+        <mxCell id="pdel" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="Release the locks.&lt;br&gt;This will permanently delete&lt;br&gt;those keys. Delete them and&lt;br&gt;generate new ones?" vertex="1">
+          <mxGeometry height="150" width="300" x="435" y="1377.5" as="geometry" />
+        </mxCell>
+        <mxCell id="kept1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Existing keys were kept.&lt;br&gt;No keys were sent to the device." vertex="1">
+          <mxGeometry height="46" width="280" x="445" y="1566.5" as="geometry" />
+        </mxCell>
+        <mxCell id="fetch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;fontSize=13;" value="Generating new keys.&lt;br&gt;Get keys from the KME,&lt;br&gt;then renew both locks" vertex="1">
+          <mxGeometry height="80" width="340" x="40" y="1570" as="geometry" />
+        </mxCell>
+        <mxCell id="issuer" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Share with the selected SAE:&lt;br&gt;created by this SAE?" vertex="1">
+          <mxGeometry height="130" width="340" x="800" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="recreate" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="Shared keys already exist with&lt;br&gt;SAE … (created …).&lt;br&gt;Delete them and generate&lt;br&gt;new keys?" vertex="1">
+          <mxGeometry height="150" width="340" x="800" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="kept2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Existing keys were kept.&lt;br&gt;No keys were sent to the device." vertex="1">
+          <mxGeometry height="60" width="300" x="820" y="1430" as="geometry" />
+        </mxCell>
+        <mxCell id="delrestart" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" value="Operator delete: lock both SAEs&lt;br&gt;(lower ID first), re-read the shown share;&lt;br&gt;delete only if unchanged:&lt;br&gt;counterpart first, then the shown share;&lt;br&gt;release remote first" vertex="1">
+          <mxGeometry height="110" width="360" x="790" y="1520" as="geometry" />
+        </mxCell>
+        <mxCell id="changed" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="The shared keys changed while you were&lt;br&gt;deciding. Nothing was deleted; check them again." vertex="1">
+          <mxGeometry height="60" width="360" x="790" y="1690" as="geometry" />
+        </mxCell>
+        <mxCell id="use" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="Shared keys already exist&lt;br&gt;with SAE … (created …).&lt;br&gt;Did you mean to use&lt;br&gt;those keys?" vertex="1">
+          <mxGeometry height="150" width="340" x="1200" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="reallydel" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="This will permanently delete&lt;br&gt;those keys. Do you really&lt;br&gt;want to delete them and&lt;br&gt;generate new ones?" vertex="1">
+          <mxGeometry height="150" width="340" x="1600" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="kept3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Existing keys were kept.&lt;br&gt;No keys were sent to the device." vertex="1">
+          <mxGeometry height="60" width="300" x="1620" y="1260" as="geometry" />
+        </mxCell>
+        <mxCell id="deliver" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Keys created by the other SAE&lt;br&gt;and the device has room?" vertex="1">
+          <mxGeometry height="150" width="340" x="1200" y="1245" as="geometry" />
+        </mxCell>
+        <mxCell id="notready" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Keys generated on this SAE, or the&lt;br&gt;chip is smaller. No keys sent." vertex="1">
+          <mxGeometry height="70" width="300" x="1620" y="1355" as="geometry" />
+        </mxCell>
+        <mxCell id="oget" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" value="Lock both SAEs (lower ID first);&lt;br&gt;local share is the one shown;&lt;br&gt;read the share on the origin" vertex="1">
+          <mxGeometry height="80" width="300" x="1220" y="1440" as="geometry" />
+        </mxCell>
+        <mxCell id="unreach" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Lock refused, origin unreachable or&lt;br&gt;share changed. Keys were not sent." vertex="1">
+          <mxGeometry height="70" width="300" x="1620" y="1460" as="geometry" />
+        </mxCell>
+        <mxCell id="decide" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Use-time check: both SAEs hold&lt;br&gt;the same share, naming each other?" vertex="1">
+          <mxGeometry height="140" width="340" x="1200" y="1550" as="geometry" />
+        </mxCell>
+        <mxCell id="delboth" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Delete the orphan, remote first.&lt;br&gt;The stored keys were deleted and not&lt;br&gt;sent. Provision both devices again." vertex="1">
+          <mxGeometry height="90" width="300" x="1620" y="1660" as="geometry" />
+        </mxCell>
+        <mxCell id="sendstored" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" value="Read the keys; delete the share&lt;br&gt;on the origin, then locally" vertex="1">
+          <mxGeometry height="60" width="340" x="1200" y="1720" as="geometry" />
+        </mxCell>
+        <mxCell id="newsh" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="New share generated?" vertex="1">
+          <mxGeometry height="120" width="340" x="1000" y="2410" as="geometry" />
+        </mxCell>
+        <mxCell id="mark" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" value="Renew both locks; store the share&lt;br&gt;on the peer, then on the origin;&lt;br&gt;renew both locks" vertex="1">
+          <mxGeometry height="80" width="360" x="790" y="2560" as="geometry" />
+        </mxCell>
+        <mxCell id="marked" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Both rows written,&lt;br&gt;locks still held?" vertex="1">
+          <mxGeometry height="120" width="360" x="790" y="2680" as="geometry" />
+        </mxCell>
+        <mxCell id="notcons" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6e6e6;strokeColor=#666666;fontSize=12;" value="Peer share deleted. Device stored&lt;br&gt;the keys, but the share could not be&lt;br&gt;recorded on both SAEs. Provision both&lt;br&gt;devices again." vertex="1">
+          <mxGeometry height="90" width="380" x="280" y="2695" as="geometry" />
+        </mxCell>
+        <mxCell id="release" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontSize=13;" value="Release both locks, remote first" vertex="1">
+          <mxGeometry height="50" width="340" x="1200" y="2830" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="select" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="sync" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="sync" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="gen" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="gen" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="select" value="No: Reselect">
+          <mxGeometry relative="1" x="0.1306" as="geometry">
+            <Array as="points">
+              <mxPoint x="115" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="gen" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="lock" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="lock" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="busy" value="refused">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="lock" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="tgt" value="both held">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="tgt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="pdel" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="pdel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="delrestart" value="Yes (on the target)">
+          <mxGeometry relative="1" x="0.2958" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="750" y="1452.5" />
+              <mxPoint x="750" y="1575" />
+            </Array>
+            <mxPoint x="720" y="1475" as="sourcePoint" />
+            <mxPoint x="770" y="1580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="pdel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="kept1" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="tgt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="fetch" value="No, or names this SAE">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e25" edge="1" parent="1" source="sync" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="issuer" value="Yes, same target">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e26" edge="1" parent="1" source="sync" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="use" value="Yes, other SAE">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1370" y="947" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e27" edge="1" parent="1" source="issuer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="recreate" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e28" edge="1" parent="1" source="issuer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="deliver" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e29" edge="1" parent="1" source="recreate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="kept2" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e30" edge="1" parent="1" source="recreate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="delrestart" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e31" edge="1" parent="1" source="delrestart" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" target="sync" value="deleted: restart,&lt;br&gt;prompt skipped">
+          <mxGeometry relative="1" x="-0.138" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="1547.5" />
+              <mxPoint x="780" y="1020" />
+              <mxPoint x="880" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="delrestart" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="changed" value="share changed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="changed" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;dashed=1;strokeColor=#8b4513;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" target="sync" value="ask again">
+          <mxGeometry relative="1" x="-0.2244" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1170" y="1720" />
+              <mxPoint x="1170" y="1020" />
+              <mxPoint x="1060" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e32" edge="1" parent="1" source="use" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="deliver" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e33" edge="1" parent="1" source="use" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="reallydel" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e34" edge="1" parent="1" source="reallydel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="kept3" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e35" edge="1" parent="1" source="reallydel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.9;entryDx=0;entryDy=0;" target="delrestart" value="Yes">
+          <mxGeometry relative="1" x="-0.0452" as="geometry">
+            <Array as="points">
+              <mxPoint x="1950" y="1145" />
+              <mxPoint x="1950" y="1640" />
+              <mxPoint x="1150" y="1640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e36" edge="1" parent="1" source="deliver" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="notready" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e37" edge="1" parent="1" source="deliver" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="oget" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e38" edge="1" parent="1" source="oget" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="decide" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e39" edge="1" parent="1" source="oget" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="unreach" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e40" edge="1" parent="1" source="decide" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="delboth" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e42" edge="1" parent="1" source="decide" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="sendstored" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e43" edge="1" parent="1" source="fetch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="dlo" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e44" edge="1" parent="1" source="sendstored" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="dlp" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e51" edge="1" parent="1" source="newsh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="mark" value="Yes">
+          <mxGeometry relative="1" x="0.1667" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="1300" y="2540" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e52" edge="1" parent="1" source="newsh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="ok" value="No (stored keys were used)">
+          <mxGeometry relative="1" x="-0.2" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1370" y="2470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e53" edge="1" parent="1" source="mark" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="marked" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e54" edge="1" parent="1" source="marked" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="notcons" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e55" edge="1" parent="1" source="marked" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="ok" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e56" edge="1" parent="1" source="ok" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;" target="release" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e57" edge="1" parent="1" source="stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="abort" value="lock lost or timeout">
+          <mxGeometry relative="1" x="-0.0376" as="geometry">
+            <Array as="points">
+              <mxPoint x="1770" y="2200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
