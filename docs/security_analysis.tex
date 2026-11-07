@@ -106,7 +106,7 @@ The firmware core holds: the TrustZone split, the owner-pinned USER sessions, th
 \item[SAE] \texttt{JAVA\_APPS/modules/sae-node} (node, provisioning session, RMI, QKD client, SQLite, HSM TLS), \texttt{TerminalBridge} (USB framing), and \texttt{CertGenerator} where it creates CAs and node identities.
 \item[USER] \texttt{JAVA\_APPS/modules/user-app}: files on disk, prompts, and network listeners.
 \end{description}
-Vendored trees (wolfSSL, libtropic, HAL/CMSIS, Utimaco jars) are trusted at their integration boundary (\hyperref[ta:TA-2]{TA-2}). The host-side \code{tropic_model} and \code{se_host} are lab stand-ins and are not targets. Real \code{env/*.env} files, PKCS\#12 files, PEM keys, and \code{pairing-key.hex} are deployment data, not part of the target. We analyse main repository commit \texttt{bbd5f32} (3 Nov 2026) with firmware repository commit \texttt{bc9c7ed} (4 Nov 2026); all line numbers refer to these commits.
+Vendored trees (wolfSSL, libtropic, HAL/CMSIS, Utimaco jars) are trusted at their integration boundary (\hyperref[ta:TA-2]{TA-2}). The host-side \code{tropic_model} and \code{se_host} are lab stand-ins and are not targets. Real \code{env/*.env} files, PKCS\#12 files, PEM keys, and \code{pairing-key.hex} are deployment data, not part of the target. We analyse main repository commit \texttt{00721fe} (7 Nov 2026) with firmware repository commit \texttt{87e2989} (6 Nov 2026); all line numbers refer to these commits.
 
 \subsection{Deployment assumptions}
 \begin{enumerate}
@@ -544,7 +544,7 @@ These controls are implemented in the current source and covered by its tests. P
 \item File check: \code{SaeNodes.loadTrusted} (lines 124--139) resolves symlinks and refuses a target that is not a regular file or that is group- or other-writable (on POSIX file systems). Every field is required; \code{saeId}, \code{name}, \code{spkiSha384} and \code{hostname} with \code{port} must each be unique (lines 67--84).
 \item Server side: the accepted socket is wrapped. After the \code{root-ca} mutual-TLS handshake, the first read resolves the peer leaf against the pins, or against the node's own leaf. An unpinned peer is disconnected before any RMI byte is parsed. Every read binds the resolved SAE ID as the caller of the dispatch thread (\code{RmiPeerPinning} lines 42--74 and 148--191; \code{RmiCallerContext}).
 \item Client side: the server leaf must be pinned. If the directory names the endpoint, the leaf must belong to that SAE (\code{RmiManager} line~288).
-\item Self-pin check: before RMI starts, the own entry's \code{spkiSha384} must equal the SPKI SHA-384 of the node's own leaf, so a swapped certificate or directory stops the node (\code{Node} lines 155 and 561--564; \code{SaeNodes.requireOwnPin} line~173).
+\item Self-pin check: before RMI starts, the own entry's \code{spkiSha384} must equal the SPKI SHA-384 of the node's own leaf, so a swapped certificate or directory stops the node (\code{Node} lines 155 and 591--594; \code{SaeNodes.requireOwnPin} line~173).
 \end{itemize}
 \item[C-2 Caller-based authorization in \code{NodeCommandsService}]\phantomsection\label{c:C-2}
 \begin{itemize}
@@ -886,7 +886,7 @@ Enrollment check & Confirm \code{OWNER SET} ``ok'' and the CSR & Closes the \hyp
 \hyperref[f:F-05]{F-05} & \code{stm32u535-trustzone-usb/Secure/Core/Src/se_auth.c} & \code{se_auth_begin_owner} 33--52; \code{run_owner_set} 54--101\\
 \hyperref[f:F-06]{F-06} & \code{.../interNodeCommunication/RmiPeerPinning.java} & pin check after the TLS handshake (148--191)\\
 \hyperref[f:F-07]{F-07} & \code{.../interNodeCommunication/NodeCommandsService.java} & \code{lockPair} 71; \code{deleteRecord} 140--153 (log 144)\\
-\hyperref[f:F-08]{F-08} & \code{.../Secure/Core/Src/se_tls_client.c}, \code{se_tls_user.c} & \code{tls_accept_peer_leaf} 299; \code{tls_start} 343--370; \code{se_tls_user_pin_peer}\\
+\hyperref[f:F-08]{F-08} & \code{.../Secure/Core/Src/se_tls_client.c}, \code{se_tls_user.c} & \code{tls_accept_peer_leaf} 303; \code{tls_start} 347--374; \code{se_tls_user_pin_peer}\\
 \hyperref[f:F-09]{F-09} & \code{.../Secure/Core/Src/se_manage.c} & \code{do_pairing_load} 325--349\\
 \hyperref[f:F-10]{F-10} & \code{.../NonSecure/Core/Src/tls_usb_io.c}; \code{docs/ACCESS_POINTS.md} SE-L1 & console handlers\\
 \hyperref[f:F-11]{F-11} & \code{.../Secure/STM32U535CCTX_FLASH.ld}, \code{se_nv.c} & \code{FLASH_NV} (page 22)\\

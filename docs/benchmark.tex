@@ -70,7 +70,7 @@ Flash & 256\,KiB (secure 192\,KiB incl.\ two 8\,KiB data pages and one 8\,KiB ve
 RAM & 272\,KiB SRAM mapped by the linker scripts (secure 224\,KiB, non-secure 32\,KiB, SRAM4 16\,KiB); usage in Chapter~\ref{ch:fw-res} \\
 Secure element & Tropic Square TROPIC01 (one-time pads in R-MEM, ECC keys), accessed via libtropic v4.1.0; \\
 TLS & wolfSSL 5.9.4, TLS~1.3 client on the device (TLS13-AES256-GCM-SHA384), post-quantum mutual authentication \\
-Firmware build & firmware repository commit \texttt{bc9c7ed} (4 Nov 2026), main repository commit \texttt{bbd5f32} (3 Nov 2026); Release configuration, \texttt{-Os} \\
+Firmware build & firmware repository commit \texttt{87e2989} (6 Nov 2026), main repository commit \texttt{00721fe} (7 Nov 2026); Release configuration, \texttt{-Os} \\
 Toolchain & GNU Tools for STM32 14.3.rel1 (arm-none-eabi-gcc 14.3.1), STM32CubeIDE 1.19.0 \\
 Host interface & USB full-speed CDC ACM. \\
 One-time pads & 507 pads in TROPIC01 R-MEM, 415\,B of plaintext per pad; 253 pads in the decrypt half, 254 in the encrypt half \\
@@ -317,7 +317,7 @@ The handshake of an ENCRYPT session takes 4.29\,s on average (median 4.14\,s). T
 \chapter{Results: firmware flash and RAM usage}
 \label{ch:fw-res}
 
-The figures are static sizes of the Release images of the secure and the non-secure firmware (firmware repository commit \texttt{bc9c7ed}, built 4 Nov 2026), read with \texttt{arm-none-eabi-size} (GNU binutils 2.44). The region sizes come from the linker scripts of both images. The Debug build of the secure image has identical section sizes.
+The figures are static sizes of the Release images of the secure and the non-secure firmware (firmware repository commit \texttt{87e2989}, built 6 Nov 2026), read with \texttt{arm-none-eabi-size} (GNU binutils 2.44). The region sizes come from the linker scripts of both images. The Debug build of the secure image has identical section sizes.
 
 \section{Flash}
 

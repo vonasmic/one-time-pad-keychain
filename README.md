@@ -74,4 +74,6 @@ This repository is a demonstration. It is provided "as is", without warranty of 
 
 ## License
 
-See [`LICENSE.txt`](LICENSE.txt).
+Original code in this repository is Apache-2.0. See [`LICENSE.txt`](LICENSE.txt). That file also lists the Java dependencies (MIT or Apache-2.0 at runtime), the MIT qukaydee certificate scripts, and the Utimaco SDKs, which are proprietary and not committed.
+
+The firmware tree is separate. Original code there is Apache-2.0. The Secure image links wolfSSL and is conveyed under GPLv3. The NonSecure image links USBX and stays under the Microsoft terms. HAL, CMSIS, libtropic, and nanopb keep their own terms. See [`stm32u535-trustzone-usb/LICENSE.txt`](stm32u535-trustzone-usb/LICENSE.txt).
