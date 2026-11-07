@@ -16,10 +16,11 @@ import java.util.logging.Logger;
  * Everything else uses stderr, which is where {@link ConsoleHandler} already writes.
  *
  * <p>{@code APP_LOG=FULL} points {@link System#out} at stderr and turns loggers up,
- * so debug and Bouncy Castle show up there. {@code APP_LOG=TERMINAL} (default)
- * drops stdout and stderr after that, except for WARNING and SEVERE records: those go
- * to the original stderr as one line each ({@link #terminalLine}). Warnings and errors
- * therefore reach the terminal in both modes. SQLite logging is unchanged.
+ * so debug and Bouncy Castle show up there. {@code APP_LOG=TERMINAL} (default;
+ * also used when the variable is unset) drops stdout and stderr after that.
+ * The terminal then shows operator text and {@code SEVERE} records only
+ * ({@link #terminalLine}: level, message, exception message, no stack trace).
+ * INFO and WARNING stay in SQLite and off the terminal.
  */
 public final class AppLogging {
 
@@ -63,7 +64,7 @@ public final class AppLogging {
         return realOut != null ? realOut : System.out;
     }
 
-    /** Operator errors and warnings. Same stream as {@link #terminalOut()}. */
+    /** Operator errors. Same stream as {@link #terminalOut()}. */
     public static PrintStream terminalErr() {
         return terminalOut();
     }
@@ -125,7 +126,7 @@ public final class AppLogging {
     }
 
     /**
-     * One terminal line for a WARNING or SEVERE record in {@code TERMINAL} mode:
+     * One terminal line for a {@code SEVERE} record in {@code TERMINAL} mode:
      * level, message, and the exception message when the message does not already contain it.
      * No stack trace ({@code FULL} prints those).
      */
@@ -150,18 +151,24 @@ public final class AppLogging {
         return line.toString();
     }
 
-    /** WARNING and SEVERE to the original stderr; INFO and below stay off the terminal. */
+    /** {@code SEVERE} reaches the terminal. INFO and WARNING stay in SQLite only. */
+    public static boolean shownOnTerminal(LogRecord record) {
+        return record != null && record.getLevel() != null
+                && record.getLevel().intValue() >= Level.SEVERE.intValue();
+    }
+
+    /** {@code SEVERE} to the original stderr. INFO and WARNING stay off the terminal. */
     private static final class TerminalAlertHandler extends Handler {
         private final PrintStream out;
 
         TerminalAlertHandler(PrintStream out) {
             this.out = out;
-            setLevel(Level.WARNING);
+            setLevel(Level.SEVERE);
         }
 
         @Override
         public synchronized void publish(LogRecord record) {
-            if (record == null || !isLoggable(record)) {
+            if (record == null || !isLoggable(record) || !shownOnTerminal(record)) {
                 return;
             }
             out.println(terminalLine(record));

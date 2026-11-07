@@ -17,6 +17,9 @@ import java.util.function.IntConsumer;
 public final class SeProvisionAck {
 
     public static final String WIPE_FINISHED = "TROPIC_WIPE_FINISHED";
+    /** Device line when the downlink is rejected. The operator text ends with {@link #REFRESH_TRIES}. */
+    public static final String DEVICE_FAIL = "SE_FAIL";
+    public static final String REFRESH_TRIES = "Go home and refresh the tries.";
     public static final int PROGRESS_BYTES = 10 * 1024;
 
     private static final int MAX_LINE = 64;
@@ -56,10 +59,27 @@ public final class SeProvisionAck {
                 LOAD_LABEL, bar, pct, doneKb, totalKb);
     }
 
+    /**
+     * What the operator terminal prints for {@code SE_FAIL <code>}.
+     * Code 5 is a chip store failure, including a flash log that could not be programmed.
+     */
+    public static String deviceFail(int code) {
+        String what = switch (code) {
+            case 2 -> "The key download is too large";
+            case 3 -> "The key download could not be parsed";
+            case 4 -> "The key download version is not supported";
+            case 5 -> "The device could not store the keys";
+            case 6 -> "The device could not build its key offer";
+            case 7 -> "The device could not erase its key slots";
+            default -> "The device stopped while storing the keys";
+        };
+        return what + ". " + REFRESH_TRIES;
+    }
+
     public static void awaitWipeFinished(InputStream in) throws IOException {
         String line = readLine(in);
         if (!line.equals(WIPE_FINISHED)) {
-            throw new IOException("Expected " + WIPE_FINISHED + " from device, got: " + line);
+            throw failOr("Expected " + WIPE_FINISHED + " from device, got: " + line, line);
         }
     }
 
@@ -89,7 +109,7 @@ public final class SeProvisionAck {
     public static void read(InputStream in) throws IOException {
         String line = readLine(in);
         if (!line.equals("SE_OK")) {
-            throw new IOException("Expected SE_OK from device, got: " + line);
+            throw failOr("Expected SE_OK from device, got: " + line, line);
         }
     }
 
@@ -98,7 +118,31 @@ public final class SeProvisionAck {
         try {
             return Integer.parseInt(line);
         } catch (NumberFormatException ex) {
-            throw new IOException("Expected KB progress from device, got: " + line);
+            throw failOr("Expected KB progress from device, got: " + line, line);
+        }
+    }
+
+    static String deviceFailLine(String line) {
+        if (line == null || !line.startsWith(DEVICE_FAIL)) {
+            return null;
+        }
+        return deviceFail(failCode(line));
+    }
+
+    private static IOException failOr(String fallback, String line) {
+        String fail = deviceFailLine(line);
+        if (fail != null) {
+            return new IOException(fail);
+        }
+        return new IOException(fallback);
+    }
+
+    private static int failCode(String line) {
+        String rest = line.substring(DEVICE_FAIL.length()).trim();
+        try {
+            return Integer.parseInt(rest);
+        } catch (NumberFormatException ex) {
+            return 0;
         }
     }
 

@@ -5,6 +5,7 @@ import org.bouncycastle.jsse.BCSSLSocket;
 import javax.net.ssl.SSLSocket;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,6 +120,7 @@ public record SeSessionUplink(
     public static SeSessionUplink readAndVerify(InputStream in, byte[] exporter, byte[] peerTlsSpki)
             throws IOException {
         Objects.requireNonNull(in, "in must not be null");
+        in = rejectDeviceFail(in);
         SecureLv.Envelope envelope = SecureLv.readFrom(in);
         if (envelope.version() != SeConstants.LV_UPLINK_VERSION) {
             throw new IOException("Uplink schema mismatch: got v" + envelope.version()
@@ -155,5 +157,35 @@ public record SeSessionUplink(
             peers.add(new PeerEntry(hash, name, padPlain));
         }
         return new SeSessionUplink(clientHash, slotSize, padCount, fillId, mlkemPublicKey, peers);
+    }
+
+    /** A failed device sends {@code SE_FAIL} instead of the uplink envelope. */
+    private static InputStream rejectDeviceFail(InputStream in) throws IOException {
+        PushbackInputStream push = new PushbackInputStream(in, 1);
+        int first = push.read();
+        if (first < 0) {
+            throw new IOException("Uplink closed");
+        }
+        if (first != 'S') {
+            push.unread(first);
+            return push;
+        }
+        StringBuilder line = new StringBuilder();
+        line.append('S');
+        while (line.length() < 64) {
+            int b = push.read();
+            if (b < 0 || b == '\n') {
+                break;
+            }
+            if (b != '\r') {
+                line.append((char) b);
+            }
+        }
+        String text = line.toString().strip();
+        String fail = SeProvisionAck.deviceFailLine(text);
+        if (fail != null) {
+            throw new IOException(fail);
+        }
+        throw new IOException("Uplink was not a key offer: " + text);
     }
 }

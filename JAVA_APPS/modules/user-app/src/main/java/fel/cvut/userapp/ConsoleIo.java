@@ -50,7 +50,7 @@ final class ConsoleIo {
     }
 
     static byte[] readEncryptReplyHex(Scanner sc, byte[] lastEncryptReply) {
-        ConsoleStyle.prompt("Encrypt reply hex (empty = last): ");
+        ConsoleStyle.prompt("Encrypt reply hex: ");
         if (!sc.hasNextLine()) {
             return null;
         }

@@ -67,23 +67,22 @@ Each test is shown as a card with its name, its status and what it verifies. Not
 \end{itemize}
 
 \section*{Summary of results (14 Oct 2026)}
+The results refer to main repository commit \texttt{bbd5f32} (3 Nov 2026) and firmware repository commit \texttt{bc9c7ed} (4 Nov 2026).
+
 \begin{tcolorbox}[colback=cardbg,colframe=cardborder,boxrule=0.5pt,arc=2.5pt]
 \centering
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 Suite & Passed & Skipped & Failed & Total \\
 \midrule
-Java (all modules) & 345 & 2 & 0 & 347 \\
+Java (all modules) & 347 & 0 & 0 & 347 \\
 \quad of which \texttt{-Punit} & & & & 277 \\
 \quad of which \texttt{-Pintegration} & & & & 70 \\
 SE (ctest) & 12 & 0 & 0 & 12 \\
 \midrule
-\textbf{Total} & \textbf{357} & \textbf{2} & \textbf{0} & \textbf{359} \\
+\textbf{Total} & \textbf{359} & \textbf{0} & \textbf{0} & \textbf{359} \\
 \bottomrule
 \end{tabular}
-
-\smallskip
-{\small In \texttt{sae-node}: 129 unit and 59 integration tests. The two skipped tests are \texttt{HsmLiveNoFallbackTest}, which runs only with \texttt{env/hsm.env} sourced and the Utimaco simulator reachable.}
 \end{tcolorbox}
 
 \chapter{Test strategy}
@@ -94,16 +93,7 @@ Tests in \texttt{JAVA\_APPS} are split with the JUnit~5 \texttt{@Tag} annotation
 Unit tests check one class in isolation and run in milliseconds. Collaborators (RMI, QKD client, HSM, USB link) are replaced with Mockito mocks or simple fakes, or the test uses a single SQLite map, a decision table, a parser, framing, store tamper or status strings.
 
 \section{Integration tests}
-Integration tests combine several real components: a real \texttt{NodeCommandsService} on two or three SQLite maps, the production \texttt{ProvisionSession} FSM (including three-node handover via \texttt{ProvisionCluster}), exported RMI over TLS, an embedded HTTP KME, a real TLS handshake, the HSM simulator, or multi-node concurrency. They live in the \texttt{fel.cvut.integration.*} packages. Each lives in the module it tests: the TLS integration tests in \texttt{modules/tls-software/src/test/java} and the HSM simulator tests in \texttt{modules/tls-hsm/src/test/java}.
-
-Shared-record states are \texttt{RECORD\_SYNCHRONIZATION}, \texttt{RECORD\_FETCHING\_STARTED}, \texttt{RECORD\_SHARED} and \texttt{ORIGIN\_PROVISIONED} (there is no AVAILABILITY enum value).
-
-\section{Selecting tests}
-The parent \texttt{pom.xml} passes the \texttt{groups} property to Surefire. Its default is empty, so \texttt{mvn -B verify} runs both groups. Profiles limit the run to one group:
-\begin{itemize}
-  \item \texttt{mvn -B verify -Punit} -- unit tests only,
-  \item \texttt{mvn -B verify -Pintegration} -- integration tests only (including the HSM tests when the simulator is reachable).
-\end{itemize}
+Integration tests combine several real components: a real \texttt{NodeCommandsService} on two or three SQLite maps, the production \texttt{ProvisionSession} FSM (including three-node handover via \texttt{ProvisionCluster}), exported RMI over TLS, an embedded HTTP KME, a real TLS handshake, the HSM simulator, or multi-node concurrency.
 
 \section{HSM tests}
 \begin{itemize}
@@ -113,10 +103,6 @@ The parent \texttt{pom.xml} passes the \texttt{groups} property to Surefire. Its
 \end{itemize}
 
 \chapter{Integration tests}
-
-Integration tests are the real multi-SAE, fail-during-transmit, security-gate, and production-\texttt{ProvisionSession} cases (two or three SQLite maps, exported RMI, mocked HSM/QKD/device). They must pass for the application to be considered consistent and safe.
-
-Every \texttt{NodeCommandsService} call requires an authenticated caller SAE. Over real RMI it comes from the pinned TLS peer certificate. The in-process harnesses (\texttt{ProvisionCluster}, \texttt{TestRmiNetwork}, \texttt{AsCaller}) bind the calling node's SAE ID to each exported stub, so the multi-SAE, handover and provision tests run with the real authorization checks.
 
 \section{Multi-SAE consistency and transmit failure}
 \subsubsection{integration / multi-SAE}
@@ -202,7 +188,7 @@ These tests run the production \texttt{ProvisionSession} FSM end to end through 
 \section{ETSI QKD 014 flow into SQLite (sae-node)}
 \subsubsection{integration / qkd}
 
-A mock KME (\texttt{MockKme}, \texttt{com.sun.net.httpserver}) implements \texttt{status}, \texttt{enc\_keys} and \texttt{dec\_keys} (GET and POST). Origin and peer both use a real \texttt{Qkd014Client}; the peer is a real \texttt{NodeCommandsService} on its own SQLite database, called as the authenticated origin (\texttt{AsCaller}).
+A mock KME (\texttt{MockKme}, \texttt{com.sun.net.httpserver}) implements \texttt{status}, \texttt{enc\_keys} and \texttt{dec\_keys} (GET and POST). 
 
 \testcase{Qkd014KeyExchangeFlowTest.keysFlowFromKmeIntoBothDatabases}{passed}{Keys from \texttt{enc\_keys} reach the peer through \texttt{dec\_keys}, both rows are RECORD\_SHARED, the peer's stored (sealed) material equals the origin's, and every issued ID is consumed.}
 
@@ -212,8 +198,6 @@ A mock KME (\texttt{MockKme}, \texttt{com.sun.net.httpserver}) implements \textt
 
 \section{TLS between two nodes (tls-software)}
 \subsubsection{integration / tls}
-
-The tests generate an ML-DSA root CA and \texttt{sae-1} / \texttt{sae-2} leaf certificates (PEM and PKCS12) in a temporary directory and open real TLS connections through \texttt{SoftwareTls}.
 
 \testcase{SoftwareTlsTwoNodeTest.mutualPqcHandshakeAndApplicationDataBothDirections}{passed}{A PEM context and a PKCS12 context complete a mutually authenticated pure post-quantum handshake, data flows in both directions and each side sees the peer's CN.}
 
@@ -230,9 +214,9 @@ The tests generate an ML-DSA root CA and \texttt{sae-1} / \texttt{sae-2} leaf ce
 \section{Security}
 \subsubsection{integration / security}
 
-\testcase{HsmLiveNoFallbackTest.encryptDecryptRoundTripOnCryptoServer}{skipped}{Against the live CryptoServer, \texttt{HsmAesGcm} seals a plaintext under an HSM alias (not \texttt{BC}) and decrypts it back. Skipped unless \texttt{env/hsm.env} is sourced and the simulator is reachable.}
+\testcase{HsmLiveNoFallbackTest.encryptDecryptRoundTripOnCryptoServer}{passed}{Against the live CryptoServer, \texttt{HsmAesGcm} seals a plaintext under an HSM alias (not \texttt{BC}) and decrypts it back. Runs with \texttt{env/hsm.env} sourced and the simulator reachable.}
 
-\testcase{HsmLiveNoFallbackTest.missingAliasDoesNotFallBackToInMemoryAes}{skipped}{Decrypting a blob under a non-existent HSM alias throws instead of falling back to in-memory AES. Skipped unless \texttt{env/hsm.env} is sourced and the simulator is reachable.}
+\testcase{HsmLiveNoFallbackTest.missingAliasDoesNotFallBackToInMemoryAes}{passed}{Decrypting a blob under a non-existent HSM alias throws instead of falling back to in-memory AES. Runs with \texttt{env/hsm.env} sourced and the simulator reachable.}
 
 \testcase{NodeTlsSoftwareIdentityTest.pkcs12AndPemLeavesMatch}{passed}{The ML-DSA leaf loaded from PEM and from PKCS12 has the same DER encoding as the generated certificate.}
 
@@ -292,13 +276,6 @@ Two \texttt{RmiManager} instances run in one JVM over TLS (\texttt{PURE\_PQC}). 
 \section{HSM simulator (tls-hsm)}\label{sec:hsm-sim}
 \subsubsection{integration / hsm}
 
-\texttt{HsmSimulatorTest} tests \texttt{Pqmi}, \texttt{HsmAesGcm} and \texttt{HsmNodeTls} against a running Utimaco CryptoServer simulator. It runs only when \texttt{HSM\_DEVICE} is set and the given \texttt{port@host} accepts TCP connections; otherwise the whole class is skipped via \texttt{Assumptions} (reported by Surefire as 0 tests run). It only creates keys with the \texttt{it-sim-} prefix, so existing simulator state is left alone. Run it with:
-\begin{center}
-\small\texttt{HSM\_DEVICE=3001@<host> HSM\_TIMEOUT\_MS=60000 HSM\_USER=CXI\_HMAC HSM\_PIN=\ldots{}} \\
-\small\texttt{HSM\_MLDSA\_GROUP=JAVA\_APPS HSM\_MLDSA\_SPEC=0 mvn -B verify}
-\end{center}
-From WSL, a simulator running on Windows is reachable via the host IP (e.g.\ \texttt{172.28.0.1}), not via \texttt{127.0.0.1}. The Linux simulator in the GP~6.5 package is 32-bit and needs i386 libraries; the tests use the simulator running on port 3001.
-
 \testcase{HsmSimulatorTest.aesGcmRoundTripUsesHsmKey}{passed}{The AES-GCM key is created in the HSM idempotently, every encryption uses a fresh IV, and decryption returns the original data.}
 
 \testcase{HsmSimulatorTest.aesGcmDetectsTamperingAndUnknownAlias}{passed}{A modified ciphertext and a non-existent key alias both throw instead of returning wrong output.}
@@ -309,7 +286,7 @@ From WSL, a simulator running on Windows is reachable via the host IP (e.g.\ \te
 
 \chapter{Unit tests}
 
-Unit tests cover parsers, decision tables, framing, store tamper, QKD packing, and the \texttt{ProvisionSession}/\texttt{OriginShareCheck} FSMs with fakes. A failure here is local; it does not by itself prove a split-brain or a leaked pad.
+Unit tests cover parsers, decision tables, framing, store tamper, QKD packing, and the \texttt{ProvisionSession}/\texttt{OriginShareCheck} FSMs with fakes.
 
 \section{sae-node}
 \subsubsection{unit / sae-node / node}
@@ -747,7 +724,8 @@ Host and TROPIC01 model tests (ctest in \texttt{stm32u535-trustzone-usb/host/tro
 
 \chapter{Code coverage}
 
-JaCoCo runs in the \texttt{verify} phase of every module; the \texttt{modules/coverage-report} module (\texttt{report-aggregate}) also merges the data of all eight modules into one report, \texttt{modules/coverage-report/target/site/jacoco-aggregate/index.html} (plus \texttt{jacoco.csv}). The Utimaco library (\texttt{com/utimaco/**}) and interactive entry points (\texttt{Node}, \texttt{NodeBootstrap}, \texttt{LabSwitchApp}, \texttt{Qkd014Demo}, \texttt{UserApplication}, \texttt{ConsoleIo}) are excluded. The combined report is produced by \texttt{mvn -B verify}. The figures are measured with the HSM simulator reachable (without it \texttt{tls-hsm} has 0\,\% coverage).
+JaCoCo runs in the \texttt{verify} phase of every module; the \texttt{modules/coverage-report} module (\texttt{report-aggregate}) also merges the data of all eight modules into one report, \\
+\texttt{modules/coverage-report/target/site/jacoco-aggregate/index.html} (plus \texttt{jacoco.csv}). The combined report is produced by \texttt{mvn -B verify}. The figures are measured with the HSM simulator reachable (without it \texttt{tls-hsm} has 0\,\% coverage).
 
 \begin{center}
 \begin{tabular}{@{}lrrrr@{}}

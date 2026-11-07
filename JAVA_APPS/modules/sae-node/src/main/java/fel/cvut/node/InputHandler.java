@@ -79,9 +79,9 @@ public class InputHandler {
 
     private static List<ClientSelector.LabeledOption> buildClientOptions(
             List<SeSessionUplink.PeerEntry> peers
-    ) {
+    ) throws IOException {
         if (peers.isEmpty()) {
-            throw new IllegalArgumentException("uplink must contain at least one peer entry");
+            throw new IOException("This device has no peers.");
         }
         List<ClientSelector.LabeledOption> options = new ArrayList<>(peers.size());
         for (SeSessionUplink.PeerEntry peer : peers) {

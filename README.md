@@ -13,6 +13,7 @@ provision / QKD fill). UserApp is not an SAE. CDC bytes are framed (`0x00` comma
 - [Firmware](#firmware)
 - [Java applications](#java-applications)
 - [Requirements](#requirements)
+- [Security guarantees](#security-guarantees)
 - [License](#license)
 
 ## Layout
@@ -66,6 +67,10 @@ Deployment design and install steps (user site, and one SAE; the second SAE is t
 - Python 3, cmake, a C compiler, make, tmux, git (lab stack)
 - STM32CubeIDE + STM32CubeProgrammer (silicon)
 - Utimaco SDKs under `ultimaco/` and JCE jars under `JAVA_APPS/vendor/` (not committed)
+
+## Security guarantees
+
+This repository is a demonstration. It is provided "as is", without warranty of any kind, express or implied. The author does not warrant that the code is correct or secure, and accepts no responsibility for its use. You should review the implementation yourself and decide whether it is suitable for your purposes.
 
 ## License
 

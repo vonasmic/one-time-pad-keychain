@@ -69,6 +69,9 @@ public final class SeUsbLink implements AutoCloseable {
     private static final long RESET_DRAIN_IDLE_MS = 400;
     private static final long RESET_DRAIN_MAX_MS = 4_000;
 
+    /** Operator text when the chip answers {@code failed} to a TLS arm command. */
+    public static final String DEVICE_NOT_INITIALIZED = "This device is not initialized.";
+
     private final String serialPortName;
     private final SerialPort serial;
     private final InputStream serialIn;
@@ -134,11 +137,30 @@ public final class SeUsbLink implements AutoCloseable {
 
     /**
      * Send ENCRYPT/DECRYPT/MANAGE/PROVISION as a command frame. The next Secure
-     * frames are TLS (ClientHello) or the command reply is {@code failed}.
+     * frames are TLS (ClientHello), or the console reply is {@code failed}.
      */
     public void armTls(String verb) throws IOException {
         Objects.requireNonNull(verb, "verb");
         sendCommand(verb.strip() + " " + Instant.now().getEpochSecond());
+        if (chipRepliedFailed()) {
+            throw new IOException(DEVICE_NOT_INITIALIZED);
+        }
+    }
+
+    /** {@code failed} on the console before any Secure byte. Secure bytes stay buffered. */
+    private boolean chipRepliedFailed() throws IOException {
+        long end = System.currentTimeMillis() + 2_000L;
+        synchronized (this) {
+            try {
+                while (System.currentTimeMillis() < end && secBuf.size() == 0 && cmdBuf.size() == 0) {
+                    wait(Math.min(SERIAL_READ_TIMEOUT_MS, Math.max(1L, end - System.currentTimeMillis())));
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while reading USB");
+            }
+            return secBuf.size() == 0 && cmdBuf.toString(StandardCharsets.US_ASCII).contains("failed");
+        }
     }
 
     /**

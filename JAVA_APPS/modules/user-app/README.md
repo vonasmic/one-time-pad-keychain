@@ -45,9 +45,9 @@ or `NO_COLOR` / `USERAPP_NO_COLOR` is set. `FORCE_COLOR` (anything other than
 `0` or `false`) turns it back on. Bold and dim stay when `NO_COLOR` is set.
 
 `APP_LOG=FULL` sends logs and library prints to stderr. The command menu stays
-on stdout. `APP_LOG=TERMINAL` (the default, production) prints that menu,
-command results, and one stderr line per WARNING or SEVERE log record (no stack
-trace). Warnings and errors reach the terminal in both modes.
+on stdout. `APP_LOG=TERMINAL` (the default, including when unset) prints that menu,
+command results, and one stderr line per SEVERE log record (no stack
+trace). INFO and WARNING stay off the terminal.
 
 ### APP commands
 
@@ -154,7 +154,7 @@ Template: [`env/example/userapp.env.example`](../../env/example/userapp.env.exam
 | `USERAPP_CLIENT_CA_P12` | no | `ca/client_ca.p12` | Lab client CA used by INIT LAB to sign `CLIENT CSR` |
 | `USERAPP_CLIENT_CA_P12_PASSWORD` | no* | (prompt) | Client CA PKCS#12 password (*masked terminal prompt at startup if unset; **do not set in production env**) |
 | `USERAPP_SAE_CA` | no | `ca/root-ca.pem` | SAE root CA written into the chip on OWNER / INIT |
-| `APP_LOG` | no | `TERMINAL` | `FULL` sends logs to stderr. `TERMINAL` prints the command console plus WARNING and SEVERE lines on stderr |
+| `APP_LOG` | no | `TERMINAL` | `FULL` sends logs to stderr. `TERMINAL` (also when unset) prints the command console plus SEVERE lines on stderr. INFO and WARNING stay off the terminal |
 
 No HSM variables. This process never calls `Pqmi`. Secrets use `EnvSecrets.envOrScan` — see
 [JAVA_APPS README — Secrets](../../README.md#secrets).

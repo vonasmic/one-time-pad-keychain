@@ -82,7 +82,7 @@ site-local settings; network-wide facts are in the [SAE directory](#sae-director
 | `QKD_TRUSTSTORE_PASSWORD` | no* | (prompt) | PKCS#12 password (*or `QKD_KEYSTORE_PASSWORD`; masked terminal prompt if neither is set, startup fails without a terminal; **do not set in production env**) |
 | `DB_URL` | **yes** | — | SQLite JDBC URL, one file per node (`jdbc:sqlite:data/qkd-sae-N.db`) |
 | `RECORD_RETENTION_DAYS` | no | `14` | Refuse / purge rows older than this many days |
-| `APP_LOG` | no | `TERMINAL` | `FULL` sends logs and library prints to stderr. `TERMINAL` prints operator prompts plus one stderr line per WARNING or SEVERE record. Warnings and errors reach the terminal in both modes. SQLite records logs in both modes |
+| `APP_LOG` | no | `TERMINAL` | `FULL` sends logs and library prints to stderr. `TERMINAL` (also the value when unset) prints operator text plus one stderr line per SEVERE record. INFO and WARNING stay in SQLite only |
 | `PQC_CERTS_DIR` | no | `certs` | Certificate directory |
 
 ## Config — HSM (`env/hsm.env`, must be sourced)
@@ -116,12 +116,12 @@ That store is written for both `APP_LOG` values. SLF4J is bridged through
 
 `APP_LOG=FULL` points ordinary stdout at stderr, which is where Java already
 writes logs, so debug and Bouncy Castle stay off the prompt stream.
-`APP_LOG=TERMINAL` (the default, production) drops that stream and prints
-SELECT / CONFIRM / NOTIFY, plus one stderr line per WARNING or SEVERE record
-(level, message and exception message; no stack trace). Warnings and errors
-therefore always reach the terminal, including startup failures before the
-database is open (missing `DB_URL`, `SAE_ID`, an invalid `SAE_NODES_FILE`).
-INFO and below stay off the terminal.
+`APP_LOG=TERMINAL` (the default, including when unset) drops that stream and prints
+SELECT / CONFIRM / NOTIFY, plus one stderr line per SEVERE record
+(level, message and exception message; no stack trace). Startup failures
+before the database is open (missing `DB_URL`, `SAE_ID`, an invalid
+`SAE_NODES_FILE`) are SEVERE, so they still reach the terminal. INFO and
+WARNING stay off the terminal and in SQLite.
 
 Share state: a row is `KEYS_AVAILABLE` and carries the `lease_token` of the
 operation that wrote it, the `issuing_sae_id` and the counterpart SAE. A share

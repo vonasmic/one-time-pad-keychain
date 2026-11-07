@@ -10,7 +10,7 @@ import java.util.logging.Logger;
  * Routes java.util.logging into the node SQLite file.
  *
  * <p>Console printing is {@link AppLogging}: {@code APP_LOG=FULL} leaves logs on stderr,
- * {@code APP_LOG=TERMINAL} drops them. SQLite still stores {@code fel.cvut} at INFO
+ * {@code APP_LOG=TERMINAL} prints SEVERE only. SQLite still stores {@code fel.cvut} at INFO
  * and above, and WARNING and above from every other logger, in both modes.
  */
 public final class SqliteLogging {

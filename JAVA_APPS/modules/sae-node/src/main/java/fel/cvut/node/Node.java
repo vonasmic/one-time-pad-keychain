@@ -220,13 +220,14 @@ public class Node implements AutoCloseable {
         }
         while (running && !Thread.currentThread().isInterrupted()) {
             try (SeUsbLink usb = SeUsbLink.open(target.serialPort(), target.baudRate())) {
+                notifyOperator("Device found, waiting for uplink.");
                 LOG.info("USB provision on " + usb.serialPortName());
                 oneProvisionSession(usb);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
             } catch (Exception ex) {
-                LOG.warning("USB provision session ended: " + explainFailure(ex));
+                tellOperator("USB provision session ended: " + explainFailure(ex));
             }
             if (!running) {
                 return;
@@ -267,8 +268,8 @@ public class Node implements AutoCloseable {
             );
             outcomeReported = true;
         } catch (Exception ex) {
-            if (handshakeDone[0] && !outcomeReported) {
-                notifyOperator(operatorFailure(ex));
+            if (!outcomeReported) {
+                notifyOperator(provisionFailure(ex, handshakeDone[0]));
             }
             if (handshakeDone[0]) {
                 logSocketFailure(ex);
@@ -370,11 +371,9 @@ public class Node implements AutoCloseable {
                 LOG.info(status);
                 notifyOperator(status);
             } else if (newShare) {
-                // WARNING records reach the terminal in every APP_LOG mode; no second copy.
-                LOG.warning(status);
+                tellOperator(status);
             } else {
-                String message = PairLockLostException.ABORT_MESSAGE;
-                LOG.warning(message);
+                tellOperator(PairLockLostException.ABORT_MESSAGE);
             }
         }
     }
@@ -426,6 +425,17 @@ public class Node implements AutoCloseable {
         }
     }
 
+    /**
+     * Operator text in {@code TERMINAL}. {@code FULL} already prints the WARNING line,
+     * so the console is not given a second copy. The record is stored either way.
+     */
+    private void tellOperator(String message) {
+        LOG.warning(message);
+        if (AppLogging.mode() == AppLogging.Mode.TERMINAL) {
+            notifyOperator(message);
+        }
+    }
+
     private ProvisionSession provisionSession() {
         return new ProvisionSession(
                 selfRef.getNodeId(),
@@ -464,6 +474,16 @@ public class Node implements AutoCloseable {
         LOG.log(Level.WARNING, "Socket input handling failed: " + explainFailure(ex), ex);
     }
 
+    public static String provisionFailure(Throwable ex, boolean handshakeDone) {
+        if (SeUsbLink.DEVICE_NOT_INITIALIZED.equals(ex.getMessage())) {
+            return ex.getMessage();
+        }
+        if (!handshakeDone) {
+            return "The device did not complete the TLS handshake. " + SeProvisionAck.REFRESH_TRIES;
+        }
+        return operatorFailure(ex);
+    }
+
     private static String operatorFailure(Throwable ex) {
         PairLockLostException lockLost = findCause(ex, PairLockLostException.class);
         if (lockLost != null) {
@@ -485,6 +505,16 @@ public class Node implements AutoCloseable {
         }
         if (ex instanceof RemoteException) {
             return "SAE unreachable";
+        }
+        for (Throwable current = ex; current != null; current = current.getCause()) {
+            String device = current.getMessage();
+            if (device != null && device.endsWith(SeProvisionAck.REFRESH_TRIES)) {
+                return device;
+            }
+        }
+        IOException io = findCause(ex, IOException.class);
+        if (io != null && io.getMessage() != null && !io.getMessage().isBlank()) {
+            return io.getMessage();
         }
         return "transmission failed";
     }
@@ -623,8 +653,8 @@ public class Node implements AutoCloseable {
      *       (falls back to {@code QKD_KEYSTORE_PASSWORD}; stdin prompt if neither is set)</li>
      *   <li>{@code PQC_CERTS_DIR}             – cert directory (default: {@code certs})</li>
      *   <li>{@code APP_LOG}                  – {@code FULL} prints every log; {@code TERMINAL}
-     *       (default) prints operator prompts plus one stderr line per WARNING / SEVERE record.
-     *       SQLite logging stays on either way.</li>
+     *       (default, also when unset) prints operator text and one stderr line per
+     *       SEVERE record. INFO and WARNING stay in SQLite only.</li>
      * </ul>
      *
      * <p>Node identity certs are HSM-backed: {@code $PQC_CERTS_DIR/<name>.pem} (leaf)

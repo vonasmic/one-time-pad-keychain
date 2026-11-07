@@ -55,6 +55,20 @@ class AppLoggingTest {
         assertEquals("SEVERE: Socket failed (NullPointerException)", AppLogging.terminalLine(noDetail));
     }
 
+    @Test
+    void terminalPrintsErrorsOnly() {
+        LogRecord noise = record("org.bouncycastle.jsse.provider.DisabledAlgorithmConstraints", Level.WARNING,
+                "Ignoring unsupported entry in 'jdk.tls.disabledAlgorithms': ecdsa_sha1 usage HandshakeSignature");
+        assertFalse(AppLogging.shownOnTerminal(noise));
+        assertTrue(AppLogging.storedInSqlite(noise));
+
+        assertFalse(AppLogging.shownOnTerminal(
+                record("fel.cvut.node.Node", Level.WARNING, "USB provision session ended: port closed")));
+        assertFalse(AppLogging.shownOnTerminal(record("fel.cvut.node.Node", Level.INFO, "Node started")));
+        assertTrue(AppLogging.shownOnTerminal(
+                record("fel.cvut.node.Node", Level.SEVERE, "Failed to start node")));
+    }
+
     private static LogRecord record(String logger, Level level, String message) {
         LogRecord record = new LogRecord(level, message);
         record.setLoggerName(logger);

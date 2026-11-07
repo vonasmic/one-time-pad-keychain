@@ -9,9 +9,11 @@ import fel.cvut.terminal.OperatorConsole;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,6 +27,22 @@ class InputHandlerTest {
         InputHandler.OperatorSelection selection = select(uplink(64, peer), peer);
 
         assertEquals(64 - SeConstants.RMEM_OVERHEAD, selection.clientRecord().getClientHeader().padPlainLen());
+    }
+
+    @Test
+    void selectForUplinkTellsTheOperatorWhenTheDeviceHasNoPeers() {
+        SeSessionUplink uplink = new SeSessionUplink(
+                new byte[SeConstants.CLIENT_HASH_LEN],
+                64,
+                1,
+                new byte[SeConstants.FILL_ID_LEN],
+                new byte[SeConstants.MLKEM_PK_LEN],
+                List.of());
+
+        IOException ex = assertThrows(IOException.class, () -> new InputHandler().selectForUplink(
+                uplink, List.of(new RmiManager.SaeNode("sae-2", "lab")), mock(OperatorConsole.class)));
+
+        assertEquals("This device has no peers.", ex.getMessage());
     }
 
     @Test

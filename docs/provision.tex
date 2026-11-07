@@ -8,6 +8,7 @@
 \usepackage{listings}
 \usepackage[hidelinks]{hyperref}
 \usepackage[listings]{tcolorbox}
+\usepackage{float}
 
 % The chapter below is written for the thesis (report class); in this
 % standalone article it becomes an unnumbered top-level heading.
@@ -45,11 +46,11 @@
 
 % Export diagrams/provision_flow.drawio → diagrams/provision_flow.pdf.
 % The float reserves a full page for the diagram; the chapter text should stay short.
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
-  \IfFileExists{provision_flow.drawio.pdf}{%
-    \includegraphics[width=1.2\textwidth,keepaspectratio]%
-      {provision_flow.drawio.pdf}%
+  \IfFileExists{provision_flow.pdf}{%
+    \includegraphics[width=1\textwidth]%
+      {provision_flow.pdf}%
   }{%
     \fbox{%
       \parbox[c][1\textheight][c]{1\textwidth}{\centering}%
@@ -65,12 +66,17 @@
 \setlength{\emergencystretch}{2.5em}
 \noindent
 The \texttt{PROVISION} command fills the chip with one-time pads from QKD.
+
 The SE opens TLS only if \texttt{se\_\allowbreak ready\_\allowbreak provision()}
 holds (owner, device certificate and key, SAE CA, ML-KEM key) and its clock is
-synchronised. After the mTLS handshake it sends a version~5 uplink bound to the
+synchronised. 
+
+After the mTLS handshake it sends a uplink bound to the
 TLS exporter (\texttt{SeSessionUplink.\allowbreak readAndVerify}) and, in
 parallel, erases its QKD R-MEM slots; it signals completion with
 \texttt{TROPIC\_\allowbreak WIPE\_\allowbreak FINISHED}.
+
+
 Figure~\ref{fig:provision-flow} shows the SaeNode decision tree: the operator
 selects the peer SAE and the peer device, and the node looks up its own
 \texttt{client\_\allowbreak record\_\allowbreak state} row for the pair. Without
@@ -83,10 +89,14 @@ operator delete) runs under a \emph{pair lock} on both SAEs of the pair
 (\texttt{PairLocks}, \texttt{PairLockRegistry}). The lock is keyed by the
 sorted pair of client hashes and kept in memory. The operation takes the lock
 of the SAE with the lower ID first and then the lock of the SAE with the
-higher ID, over RMI \texttt{lockPair} for a remote SAE. If a lock is refused,
+higher ID, over RMI \texttt{lockPair} for a remote SAE. 
+
+If a lock is refused,
 the first one is released and the operator sees \texttt{Another operation for
 this device pair is in progress on an SAE. Retry later.}; nobody waits for a
-lock. A lock is a lease of 5~minutes with a random 128-bit token and the
+lock. 
+
+A lock is a lease of 5~minutes with a random 128-bit token and the
 issuing SAE. The holder renews both leases every 60\,s (\texttt{renewPair})
 and synchronously before and after each commit step
 (\texttt{PairOperation.\allowbreak checkpoint}); a failed renewal aborts the
@@ -96,17 +106,18 @@ issuer of the lease. At the end the operation releases both locks by token,
 the remote one first (\texttt{releasePair}).
 
 For a new share the origin SAE, holding both locks, checks that no local row
-has appeared and reads the target row over RMI; a target row that names a
-third SAE leads to the delete prompt. The origin then fetches key IDs and pads
+has appeared and checks also the target row over RMI. The origin then fetches key IDs and pads
 from its KME, renews both locks and sends the downlink to the device, renewing
-both locks every 60\,s during the transfer. After the chip answers
-\texttt{SE\_\allowbreak OK}, the origin renews both locks, the peer writes
-\texttt{KEYS\_\allowbreak AVAILABLE} with the operation token (RMI
+both locks every 60\,s during the transfer. 
+
+After the chip answers
+\texttt{SE\_OK}, the origin renews both locks, the peer writes
+\texttt{KEYS\_AVAILABLE} with the operation token (RMI
 \texttt{insert}: the peer resolves the same pads by key ID at its own KME and
 stores them wrapped by the HSM, in one transaction under the caller's lease),
 and then the origin writes its own \texttt{KEYS\_\allowbreak AVAILABLE} row
 with the token. After a final renewal of both locks the terminal prints
-100\,\% followed by \texttt{Share successful.} on the next line. If a write
+100\,\% followed by \texttt{Share successful.}. If a write
 fails, the peer row is deleted by token and the node logs a warning that the
 device stored the keys but the share could not be recorded on both SAEs.
 
@@ -125,11 +136,6 @@ still carries the token the operator saw (compare-and-delete, RMI
 again. Every RMI call runs over mTLS with a pinned peer SPKI, and the caller's
 SAE ID comes from its certificate; lease calls, \texttt{insert} and
 \texttt{deleteRecord} act only on a lease the caller holds.
-
-Two limitations are open. A device may hold keys after a failed commit without
-\texttt{Share successful.}; the operator provisions both devices again. The
-locks are kept in memory, so an SAE restart releases all of its locks, and
-operations that held one fail at their next renewal or fenced write.
 
 \section{Formal verification}
 \label{sec:provision-formal}
@@ -299,7 +305,7 @@ The listings below are the output of TLC2 Version 2.19 of 08 August 2024
 and \texttt{java -Xmx6g -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC
 -workers 7 -metadir /tmp/tlcp-<cfg> -config <cfg>.cfg SaeProvision.tla} from
 \texttt{specs/sae-provision} (\texttt{-config mutations/<cfg>.cfg} for the
-mutation checks), not with the online TLA+ tool. The parsing and
+mutation checks). The parsing and
 semantic-processing lines are omitted; in the mutation counterexamples only
 the state headers are kept and the state contents are omitted.
 \clearpage{}

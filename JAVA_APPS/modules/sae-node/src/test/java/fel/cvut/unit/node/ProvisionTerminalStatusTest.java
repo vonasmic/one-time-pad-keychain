@@ -2,8 +2,11 @@ package fel.cvut.unit.node;
 
 import fel.cvut.node.*;
 import fel.cvut.se.SeProvisionAck;
+import fel.cvut.usb.SeUsbLink;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,6 +25,13 @@ class ProvisionTerminalStatusTest {
         assertEquals(
                 Node.SHARE_NOT_CONSISTENT,
                 Node.afterDeviceAckStatus(true, false, 4096));
+    }
+
+    @Test
+    void uninitializedDeviceIsNamedOnTheTerminal() {
+        assertEquals(
+                SeUsbLink.DEVICE_NOT_INITIALIZED,
+                Node.provisionFailure(new IOException(SeUsbLink.DEVICE_NOT_INITIALIZED), false));
     }
 
     @Test

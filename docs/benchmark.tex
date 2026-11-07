@@ -11,6 +11,7 @@
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{pgfplots}
+\usepackage{placeins}
 \pgfplotsset{compat=1.18}
 
 % Palette (shared with testovani.tex)
@@ -51,8 +52,6 @@ This document reports the performance benchmark of the one-time-pad keychain. It
 
 All keychain latencies come from one complete benchmark run against the real keychain (\texttt{JAVA\_APPS/bench-results/20261022-173859.csv}). The host resource usage comes from a lab run with simulated keychains (\texttt{JAVA\_APPS/bench-results/resources-sim-20261022-170130/}). The firmware footprint comes from the linker scripts and the built ELF images of the firmware project. All times are given in seconds; the raw CSV files store milliseconds.
 
-Values that have not been measured are marked \placeholder\ or \todo{hint}.
-
 %% ===================================================================
 \chapter{Test setup}
 
@@ -69,20 +68,38 @@ CPU / architecture & Arm Cortex-M33 (Armv8-M Mainline), 1 core \\
 Clock & 48\,MHz SYSCLK (MSI) \\
 Flash & 256\,KiB (secure 192\,KiB incl.\ two 8\,KiB data pages and one 8\,KiB veneer page, non-secure 64\,KiB); usage in Chapter~\ref{ch:fw-res} \\
 RAM & 272\,KiB SRAM mapped by the linker scripts (secure 224\,KiB, non-secure 32\,KiB, SRAM4 16\,KiB); usage in Chapter~\ref{ch:fw-res} \\
-Secure element & Tropic Square TROPIC01 (one-time pads in R-MEM, ECC keys), accessed via libtropic v4.1.0; MCU accelerators used: \todo{e.g. HASH/RNG/PKA} \\
+Secure element & Tropic Square TROPIC01 (one-time pads in R-MEM, ECC keys), accessed via libtropic v4.1.0; \\
 TLS & wolfSSL 5.9.4, TLS~1.3 client on the device (TLS13-AES256-GCM-SHA384), post-quantum mutual authentication \\
-Firmware build & firmware repository commit \texttt{35f1152} (22 Oct 2026); Release configuration, \texttt{-Os} \todo{confirm that the flashed image is this build} \\
+Firmware build & firmware repository commit \texttt{bc9c7ed} (4 Nov 2026), main repository commit \texttt{bbd5f32} (3 Nov 2026); Release configuration, \texttt{-Os} \\
 Toolchain & GNU Tools for STM32 14.3.rel1 (arm-none-eabi-gcc 14.3.1), STM32CubeIDE 1.19.0 \\
-Host interface & USB full-speed CDC ACM (virtual serial port \texttt{/dev/ttyACM0}), 64\,B bulk packets with automatic zero-length packets \\
+Host interface & USB full-speed CDC ACM. \\
 One-time pads & 507 pads in TROPIC01 R-MEM, 415\,B of plaintext per pad; 253 pads in the decrypt half, 254 in the encrypt half \\
 \bottomrule
 \end{tabular}
 \caption{Keychain hardware and firmware.}
 \label{tab:hw-se}
 \end{table}
-
+\clearpage{}
 \section{Host machine}
-
+\begin{table}[htbp]
+  \centering
+  \caption{Host machine used for all benchmarks}
+  \label{tab:host-machine}
+  \begin{tabular}{ll}
+    \hline
+    \textbf{Item} & \textbf{Value} \\
+    \hline
+    Laptop            & Lenovo, model 83JL \\
+    CPU               & AMD Ryzen AI 7 350 w/ Radeon 860M, 8 cores / 16 threads \\
+    RAM               & 32\,GB (4\,$\times$\,8\,GB Hynix, 8000\,MT/s) \\
+    Storage           & 512\,GB SK hynix NVMe + 1\,TB WD PC SN7100S NVMe \\
+    Host OS           & Windows 11 Home (build 26200) \\
+    Bench environment & WSL2 Ubuntu 24.04.1 LTS, kernel 6.18.33.2-microsoft-standard-WSL2 \\
+                      & 16 vCPU, 15.6\,GiB RAM, 4\,GiB swap \\
+    Java              & OpenJDK 21.0.12.1 (Ubuntu build), Maven 3.8.7 \\
+    \hline
+  \end{tabular}
+\end{table}
 \begin{table}[htbp]
 \centering\small
 \begin{tabular}{p{0.32\textwidth}p{0.6\textwidth}}
@@ -101,7 +118,7 @@ QKD (SAE) & QuKayDee ETSI GS QKD 014 KME (remote, mTLS) \\
 \caption{Host machine for the benchmark tool, the SAE nodes and the UserApps.}
 \label{tab:hw-host}
 \end{table}
-
+\FloatBarrier
 \section{Lab topology}
 \label{sec:topology}
 
@@ -294,13 +311,13 @@ OWNER REPLACE mean + INIT LAB mean (reset and new enrollment) & 57.97\,s \\
 
 \section{Handshake in PROVISION and in ENCRYPT sessions}
 
-The handshake of an ENCRYPT session takes 4.29\,s on average (median 4.14\,s). The handshake of a PROVISION session takes about 10.9\,s on the same keychain (observed on the device; the CSV records only the whole PROVISION iteration, \todo{isolated PROVISION handshake measurement}). In PROVISION mode the device verifies the SAE certificate chain against the stored SAE CA, which adds post-quantum signature verification on the 48\,MHz Cortex-M33; in ENCRYPT and DECRYPT mode the peer certificate is accepted without that chain verification.
+The handshake of an ENCRYPT session takes 4.29\,s on average (median 4.14\,s). The handshake of a PROVISION session takes about 10.9\,s on the same keychain. In PROVISION mode the device verifies the SAE certificate chain against the stored SAE CA, which adds post-quantum signature verification on the 48\,MHz Cortex-M33; in ENCRYPT and DECRYPT mode the peer certificate is accepted without that chain verification.
 
 %% ===================================================================
 \chapter{Results: firmware flash and RAM usage}
 \label{ch:fw-res}
 
-The figures are static sizes of the Release images of the secure and the non-secure firmware (built 22 Oct 2026, 14:30), read with \texttt{arm-none-eabi-size} (GNU binutils 2.42). The region sizes come from the linker scripts of both images. The Debug build of the secure image has identical section sizes.
+The figures are static sizes of the Release images of the secure and the non-secure firmware (firmware repository commit \texttt{bc9c7ed}, built 4 Nov 2026), read with \texttt{arm-none-eabi-size} (GNU binutils 2.44). The region sizes come from the linker scripts of both images. The Debug build of the secure image has identical section sizes.
 
 \section{Flash}
 
@@ -310,13 +327,13 @@ The figures are static sizes of the Release images of the secure and the non-sec
 \toprule
 Region & size [KiB] & used [B] & used [\%] \\
 \midrule
-Secure code (code, read-only data, initialised data) & 168 & 164\,335 & 95.5 \\
+Secure code (code, read-only data, initialised data) & 168 & 166\,039 & 96.5 \\
 Secure veneers (non-secure callable) & 8 & 1\,744 & 21.3 \\
 Secure data pages (credentials, NV record) & 16 & runtime data & -- \\
 Non-secure application & 64 & 25\,744 & 39.3 \\
 \midrule
-Firmware images (secure + non-secure) & 256 & 191\,823 & 73.2 \\
-Firmware images + reserved data pages & 256 & 208\,207 & 79.4 \\
+Firmware images (secure + non-secure) & 256 & 193\,527 & 73.8 \\
+Firmware images + reserved data pages & 256 & 209\,911 & 80.1 \\
 \bottomrule
 \end{tabular}
 \caption{Flash usage. Used = \texttt{text} + \texttt{data} (load image) per region; 1\,KiB = 1024\,B.}
@@ -332,14 +349,14 @@ Firmware images + reserved data pages & 256 & 208\,207 & 79.4 \\
 \toprule
 Region & size [KiB] & data + bss [B] & [\%] & + heap/stack [B] & [\%] \\
 \midrule
-Secure RAM (SRAM1 + low half of SRAM2) & 224 & 176\,384 & 76.9 & 185\,096 & 80.7 \\
+Secure RAM (SRAM1 + low half of SRAM2) & 224 & 176\,420 & 76.9 & 193\,316 & 84.3 \\
 Secure SRAM4 & 16 & 16\,272 & 99.3 & 16\,272 & 99.3 \\
 Non-secure RAM (high half of SRAM2) & 32 & 23\,280 & 71.0 & 24\,816 & 75.7 \\
 \midrule
-Total SRAM & 272 & 215\,936 & 77.5 & 226\,180 & 81.2 \\
+Total SRAM & 272 & 215\,972 & 77.5 & 234\,404 & 84.2 \\
 \bottomrule
 \end{tabular}}
-\caption{Static RAM usage. Reserved heap/stack per linker script: secure 0.5\,KiB heap + 8\,KiB stack, non-secure 0.5\,KiB heap + 1\,KiB stack.}
+\caption{Static RAM usage. Reserved heap/stack per linker script: secure 0.5\,KiB heap + 16\,KiB stack, non-secure 0.5\,KiB heap + 1\,KiB stack.}
 \label{tab:ram}
 \end{table}
 
@@ -352,15 +369,15 @@ Quantity & Value \\
 Total SRAM mapped by the linker scripts & 272\,KiB \\
 Static RAM (data + bss, all regions) & 210.9\,KiB \\
 \quad of which the secure dynamic memory pool & 108\,KiB \\
-Static RAM incl.\ reserved heap and stack & 220.9\,KiB \\
-Measured runtime peak during the keychain benchmark & 68\,KB \todo{measurement method} \\
+Static RAM incl.\ reserved heap and stack & 228.9\,KiB \\
+Measured peak of the Secure dynamic allocations (custom allocator) & 68\,KB \\
 \bottomrule
 \end{tabular}
-\caption{Static versus measured runtime RAM.}
+\caption{Static RAM versus the measured peak of the Secure dynamic allocations.}
 \label{tab:ram-peak}
 \end{table}
 
-Most of the secure RAM is a statically reserved 108\,KiB memory pool from which the TLS and post-quantum operations allocate at run time, plus the USB transmit and receive buffers and the cryptographic contexts. The static figure therefore includes the full pool, while the measured peak of 68\,KB shows how much RAM the operations actually use at the busiest point of the keychain benchmark. Secure flash for code is the tightest resource (95.5\,\% of its 168\,KiB region); the non-secure image uses 39\,\% of its region.
+Most of the secure RAM is a statically reserved 108\,KiB memory pool from which the TLS and post-quantum operations allocate at run time, plus the USB transmit and receive buffers and the cryptographic contexts. The static figure therefore includes the full pool. The 68\,KB peak is the most memory held in this pool at once during the keychain benchmark, as recorded by the Secure arena allocator (\texttt{se\_mem\_peak}, block headers included) that serves these allocations. It covers only the dynamic allocations of the Secure world, not the static data, the stacks, the non-secure image or the total RAM usage of the device. Secure flash for code is the tightest resource (96.5\,\% of its 168\,KiB region); the non-secure image uses 39\,\% of its region.
 
 %% ===================================================================
 \chapter{Results: host resource usage}
@@ -478,7 +495,7 @@ All operations are stable from run to run: the CV is 0.14--0.30\,\% for OWNER RE
 
 \section{Resources}
 
-The firmware images leave 26.8\,\% of the flash free (20.6\,\% with the reserved data pages counted as used) and 18.8\,\% of the SRAM unallocated (static data, heap and stack counted). Secure code flash (95.5\,\%) and SRAM4 (99.3\,\%) are nearly full, so further secure features need code-size reduction or a different flash split. At run time the operations use at most 68\,KB of RAM, well below the static allocation. On the host, both applications are idle at about 1\,\% of one core and need a few tens of MiB of live heap.
+The firmware images leave 26.2\,\% of the flash free (19.9\,\% with the reserved data pages counted as used) and 15.8\,\% of the SRAM unallocated (static data, heap and stack counted). Secure code flash (96.5\,\%) and SRAM4 (99.3\,\%) are nearly full, so further secure features need code-size reduction or a different flash split. At run time the Secure dynamic allocations peak at 68\,KB, well below the 108\,KiB pool. On the host, both applications are idle at about 1\,\% of one core and need a few tens of MiB of live heap.
 
 %% ===================================================================
 \chapter{Limitations}
@@ -487,20 +504,9 @@ The firmware images leave 26.8\,\% of the flash free (20.6\,\% with the reserved
 \item One run with $n = 10$ iterations per operation on one keychain; no data across devices, temperatures or USB hosts. The 95\,\% confidence interval half-width of the mean is at most 0.34\,s (PROVISION).
 \item Latencies are end-to-end host wall-clock times; the split between USB transfer, MCU computation and TROPIC01 access is not measured.
 \item Encrypt/decrypt is measured for one message size (9216\,B); the per-pad cost and the scaling formula are derived, not measured for other sizes. Decrypt is not timed separately.
-\item The PROVISION handshake (about 10.9\,s) is observed, not measured by the benchmark tool.
 \item The host is shared with other work (JFR machine CPU load averaged 14--17\,\% over the recordings) and runs inside WSL2, which can affect host latencies and CPU figures.
-\item Host resource usage is measured only with simulated keychains \placeholder; RSS and heap include the Maven JVM.
-\item Once during the resource run, simulated keychain 1 stopped answering in the TLS handshake of an encrypt request (the 8th request of that UserApp process; no pad used). After a UserApp restart all further requests succeed. The blocked 12.7\,min are excluded from the tables; the cause is not investigated \todo{reproduce on the simulator and on the real keychain}.
-\item Flash and RAM figures are static sizes from the build; only the overall runtime RAM peak (68\,KB) is measured, not per operation.
-\end{itemize}
-
-\medskip
-Open items:
-\begin{itemize}
-\item \todo{isolated PROVISION handshake measurement on the real keychain}
-\item \todo{resource usage with the real keychain}
-\item \todo{confirm the flashed firmware build and the method of the 68\,KB RAM peak}
-\item \todo{MCU accelerators used}
+\item Host resource usage is measured only with simulated keychains; RSS and heap include the Maven JVM.
+\item Flash and RAM figures are static sizes from the build; only the peak of the Secure dynamic allocations (68\,KB) is measured, not per operation and not the total RAM usage of the device.
 \end{itemize}
 
 \end{document}

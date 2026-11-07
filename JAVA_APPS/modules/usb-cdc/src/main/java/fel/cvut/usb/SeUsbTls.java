@@ -63,7 +63,7 @@ public final class SeUsbTls {
                 }
             } catch (Exception e) {
                 last = e;
-                if (started) {
+                if (started || SeUsbLink.DEVICE_NOT_INITIALIZED.equals(e.getMessage())) {
                     throw e;
                 }
             } finally {

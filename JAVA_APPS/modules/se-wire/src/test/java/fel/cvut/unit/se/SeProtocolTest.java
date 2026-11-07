@@ -279,6 +279,19 @@ class SeProtocolTest {
     }
 
     @Test
+    void writeTrackingDeviceFailTellsOperatorToRefresh() {
+        byte[] payload = new byte[SeProvisionAck.PROGRESS_BYTES];
+        IOException ex = assertThrows(IOException.class, () -> SeProvisionAck.writeTracking(
+                new java.io.ByteArrayOutputStream(),
+                new ByteArrayInputStream("SE_FAIL 5\n".getBytes(StandardCharsets.US_ASCII)),
+                payload,
+                kb -> { }));
+        assertEquals(
+                "The device could not store the keys. Go home and refresh the tries.",
+                ex.getMessage());
+    }
+
+    @Test
     void downloadProgressCapsPercentUntilComplete() {
         assertEquals(
                 "Loading to device: [########--] 80% (189 of 236 KB)",
@@ -300,6 +313,18 @@ class SeProtocolTest {
                         new byte[32],
                         new byte[32]));
         assertTrue(ex.getMessage().contains("expect v" + SeConstants.LV_UPLINK_VERSION));
+    }
+
+    @Test
+    void uplinkDeviceFailNamesTheProblem() {
+        IOException ex = assertThrows(IOException.class, () ->
+                SeSessionUplink.readAndVerify(
+                        new ByteArrayInputStream("SE_FAIL 6\n".getBytes(StandardCharsets.US_ASCII)),
+                        new byte[32],
+                        new byte[32]));
+        assertEquals(
+                "The device could not build its key offer. Go home and refresh the tries.",
+                ex.getMessage());
     }
 
     private static SeSessionUplink buildVerifiedUplink(
